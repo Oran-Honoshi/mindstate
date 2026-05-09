@@ -281,7 +281,7 @@ export default function MinesweeperGame() {
 
         {/* Board */}
         <div
-          className="border:"0.5px solid #E2E8F0" rounded-xl overflow-hidden"
+          style={{border:"0.5px solid #E2E8F0",borderRadius:12,overflow:"hidden"}}
           style={{ display: "grid", gridTemplateColumns: `repeat(${board.cols}, ${cellSize}px)`, gap: "2px", padding: "4px", background: "#171717" }}
         >
           {cells.map((row, r) =>
