@@ -2,225 +2,148 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Brain, Lock, ChevronRight, Zap, Star, Trophy } from "lucide-react";
+import { ArrowRight, Search, Trophy, Zap, Star } from "lucide-react";
 import Link from "next/link";
+import { Navbar } from "@/components/nav/Navbar";
+import { GameIcon } from "@/components/icons/GameIcons";
 
 const GAMES = [
-  {
-    slug: "tango",
-    label: "Tango",
-    desc: "Balance each row and column with equal Suns and Moons. No three in a row.",
-    longDesc: "A grid logic game where every row and column must contain equal symbols. Constraint clues guide your deductions.",
-    free: true,
-    stages: 100,
-    difficulties: ["Easy 4×4", "Medium 6×6", "Hard 8×8"],
-    color: "#00FFFF",
-    icon: "◐",
-  },
-  {
-    slug: "memory",
-    label: "Memory",
-    desc: "Flip cards and find matching pairs. Speed and recall are rewarded.",
-    longDesc: "Classic concentration game with escalating grid sizes and shorter reveal windows as difficulty increases.",
-    free: true,
-    stages: 100,
-    difficulties: ["Easy 4×4", "Medium 6×6", "Hard 8×8"],
-    color: "#39FF14",
-    icon: "◈",
-  },
-  {
-    slug: "sudoku",
-    label: "Mini Sudoku",
-    desc: "Fill the grid so every row, column, and box contains each number once.",
-    longDesc: "Classic Sudoku scaled to 6×6 for quick sessions, with full 9×9 unlocked at hard difficulty.",
-    free: false,
-    stages: 100,
-    difficulties: ["Easy 6×6", "Medium 6×6", "Hard 9×9"],
-    color: "#FFD700",
-    icon: "⊞",
-  },
-  {
-    slug: "queens",
-    label: "Queens",
-    desc: "Place one queen per row, column, and color region — none attacking another.",
-    longDesc: "A constraint-satisfaction puzzle inspired by N-Queens. Each colored region must contain exactly one queen.",
-    free: false,
-    stages: 100,
-    difficulties: ["Easy 6×6", "Medium 8×8", "Hard 10×10"],
-    color: "#FF6B9D",
-    icon: "♛",
-  },
-  {
-    slug: "zip",
-    label: "Zip",
-    desc: "Connect the dots in order, filling every cell in the grid exactly once.",
-    longDesc: "Trace a continuous path through a numbered grid, visiting every cell. Plan ahead — dead ends are punishing.",
-    free: false,
-    stages: 100,
-    difficulties: ["Easy 5×5", "Medium 7×7", "Hard 9×9"],
-    color: "#A78BFA",
-    icon: "⟡",
-  },
-  {
-    slug: "minesweeper",
-    label: "Minesweeper",
-    desc: "Deduce mine locations from number clues. One wrong click ends it.",
-    longDesc: "Pure logic minesweeper — no luck required. Every board is guaranteed solvable without guessing.",
-    free: false,
-    stages: 100,
-    difficulties: ["Easy 8×8", "Medium 12×12", "Hard 16×16"],
-    color: "#FB923C",
-    icon: "◉",
-  },
+  { slug:"tango",         name:"Tango",          desc:"Balance rows & columns with equal Sun and Moon symbols",  free:true,  stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(79,110,247,0.08)"   },
+  { slug:"memory",        name:"Memory",          desc:"Flip cards and find matching pairs before XP fades",      free:true,  stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(124,158,135,0.08)"  },
+  { slug:"queens",        name:"Queens",          desc:"Place one queen per row, column, and color region",       free:true,  stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(156,107,232,0.08)"  },
+  { slug:"sudoku",        name:"Mini Sudoku",     desc:"Fill the grid — no repeats in any row or box",           free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(196,120,90,0.08)"   },
+  { slug:"zip",           name:"Zip",             desc:"Trace a path through every cell in order",                free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(77,182,172,0.08)"   },
+  { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce every mine from number clues. No guessing",       free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(232,112,112,0.08)"  },
+  { slug:"patches",       name:"Patches",         desc:"Tile the board with irregular polyomino shapes",          free:false, stages:100, daily:true,  difficulty:"Medium–Hard", bg:"rgba(232,168,48,0.08)" },
+  { slug:"hearts",        name:"Hearts",          desc:"Classic trick-avoidance card game, solo mode",            free:false, stages:100, daily:false, difficulty:"Medium",    bg:"rgba(232,112,112,0.08)"  },
+  { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike with a polished twist",                 free:false, stages:100, daily:false, difficulty:"Easy–Med",  bg:"rgba(99,102,241,0.08)"   },
+  { slug:"word-sling",    name:"Word Sling",      desc:"Build the highest-scoring words from letter tiles",      free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(124,158,135,0.08)"  },
+  { slug:"2048-pro",      name:"2048 Pro",        desc:"Merge tiles strategically to reach 2048",                free:false, stages:100, daily:false, difficulty:"Easy–Hard", bg:"rgba(34,197,94,0.08)"    },
+  { slug:"logic-path",    name:"Logic Path",      desc:"Connect matching pipe ends to fill every cell",           free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(79,110,247,0.08)"   },
+  { slug:"pattern-match", name:"Pattern Match",   desc:"Identify the hidden rule and complete the sequence",     free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(156,107,232,0.08)"  },
+  { slug:"hex-merge",     name:"Hex Merge",       desc:"Merge hexagonal tiles in chain reactions",               free:false, stages:100, daily:false, difficulty:"Med–Hard",  bg:"rgba(77,182,172,0.08)"   },
+  { slug:"gravity-sort",  name:"Gravity Sort",    desc:"Sort falling blocks into correct columns",               free:false, stages:100, daily:false, difficulty:"Easy–Hard", bg:"rgba(196,120,90,0.08)"   },
+  { slug:"bridges",       name:"Bridges",         desc:"Connect every island with the right number of bridges",  free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(232,168,48,0.08)"   },
+  { slug:"kakuro",        name:"Kakuro",          desc:"Crossword meets Sudoku — digit sums guide every entry",  free:false, stages:100, daily:true,  difficulty:"Med–Hard",  bg:"rgba(99,102,241,0.08)"   },
+  { slug:"nonogram",      name:"Nonogram",        desc:"Solve pixel puzzles from row and column clues",          free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(217,70,168,0.08)"   },
+  { slug:"flow",          name:"Flow",            desc:"Connect color dots without crossing paths",              free:false, stages:100, daily:true,  difficulty:"Easy–Hard", bg:"rgba(34,197,94,0.08)"    },
+  { slug:"lightup",       name:"Light Up",        desc:"Place bulbs to illuminate every cell exactly once",      free:false, stages:100, daily:true,  difficulty:"Med–Hard",  bg:"rgba(232,112,112,0.08)"  },
 ];
 
+const FILTERS = ["All","Free","Daily","Easy","Hard"];
+const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
+
 export default function GamesPage() {
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+
+  const filtered = GAMES.filter(g => {
+    const matchSearch = g.name.toLowerCase().includes(search.toLowerCase()) ||
+      g.desc.toLowerCase().includes(search.toLowerCase());
+    const matchFilter =
+      filter === "All"   ? true :
+      filter === "Free"  ? g.free :
+      filter === "Daily" ? g.daily :
+      filter === "Easy"  ? g.difficulty.includes("Easy") :
+      filter === "Hard"  ? g.difficulty.includes("Hard") : true;
+    return matchSearch && matchFilter;
+  });
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
-      {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 border-b border-neutral-800/60 backdrop-blur-md bg-[#121212]/80">
-        <Link href="/" className="flex items-center gap-2">
-          <Brain size={20} className="text-cyan-400" />
-          <span className="font-mono font-bold tracking-widest text-sm">MINDSTATE</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/auth/signin" className="text-xs font-mono tracking-wider text-neutral-300 hover:text-white transition-colors">SIGN IN</Link>
-          <Link href="/auth/signup" className="text-xs font-mono tracking-wider px-4 py-1.5 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all rounded">START FREE</Link>
-        </div>
-      </nav>
+    <div style={{ minHeight:"100vh", background:"#FDFCFB", color:"#1C1917" }}>
+      <Navbar/>
+      <main style={{ maxWidth:1100, margin:"0 auto", padding:"88px 32px 60px" }}>
 
-      <main className="pt-24 pb-20 px-6 max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <p className="text-xs font-mono tracking-[0.3em] text-neutral-500 uppercase mb-3">The Suite</p>
-          <h1 className="text-4xl font-bold tracking-tight mb-3">Six Games.</h1>
-          <p className="text-neutral-400 max-w-xl">
-            Each game has 100 stages — 30 Easy, 40 Medium, 30 Hard. XP decays with time. Use hints wisely.
+        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:32 }}>
+          <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"#94A3B8", marginBottom:8 }}>
+            The Collection
+          </p>
+          <h1 style={{ fontSize:40, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:8 }}>
+            Twenty Games.
+          </h1>
+          <p style={{ fontSize:15, color:"#64748B", maxWidth:520, lineHeight:1.6 }}>
+            Every game includes a free Daily Challenge. Subscribe to unlock all 100 stages, Infinite Mode, and leaderboards.
           </p>
         </motion.div>
 
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-6 mb-10 p-4 bg-neutral-900 border border-neutral-800 rounded-xl"
-        >
+        {/* Stats */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:28 }}>
           {[
-            { icon: Star,   label: "Total Stages",  value: "600" },
-            { icon: Zap,    label: "XP Per Stage",  value: "1000" },
-            { icon: Trophy, label: "Leaderboards",  value: "Global + Family" },
-          ].map((stat, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <stat.icon size={15} className="text-cyan-400" />
+            { icon:Star,   label:"Total Stages",   value:"2,000+" },
+            { icon:Zap,    label:"Max XP / Stage",  value:"1,000"  },
+            { icon:Trophy, label:"Leaderboards",    value:"Global + Family" },
+          ].map((s,i) => (
+            <div key={i} style={{ background:"white", borderRadius:16, border:"0.5px solid rgba(0,0,0,0.07)", padding:"14px 16px", display:"flex", alignItems:"center", gap:12, boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
+              <div style={{ width:34, height:34, borderRadius:10, background:"rgba(79,110,247,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <s.icon size={16} color="#4F6EF7"/>
+              </div>
               <div>
-                <p className="text-xs text-neutral-500 font-mono">{stat.label}</p>
-                <p className="text-sm font-bold">{stat.value}</p>
+                <p style={{ fontSize:11, color:"#94A3B8", marginBottom:1 }}>{s.label}</p>
+                <p style={{ fontSize:14, fontWeight:700, color:"#1C1917" }}>{s.value}</p>
               </div>
             </div>
           ))}
-        </motion.div>
+        </div>
+
+        {/* Search + filters */}
+        <div style={{ display:"flex", gap:10, marginBottom:24, flexWrap:"wrap" }}>
+          <div style={{ position:"relative", flex:1, minWidth:200 }}>
+            <Search size={14} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#94A3B8" }}/>
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search games..."
+              style={{ width:"100%", padding:"10px 14px 10px 36px", borderRadius:12, border:"0.5px solid #E2E8F0", fontSize:13, color:"#1C1917", background:"white", outline:"none", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}/>
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            {FILTERS.map(f => (
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ padding:"10px 14px", borderRadius:12, border:"0.5px solid", cursor:"pointer", fontSize:12, fontWeight:600, transition:"all 0.15s",
+                  background: filter===f ? "#4F6EF7" : "white",
+                  color: filter===f ? "white" : "#64748B",
+                  borderColor: filter===f ? "#4F6EF7" : "#E2E8F0",
+                  boxShadow: filter===f ? "0 4px 12px rgba(79,110,247,0.2)" : "0 2px 6px rgba(0,0,0,0.04)",
+                }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Games grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {GAMES.map((game, i) => (
-            <motion.div
-              key={game.slug}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              onMouseEnter={() => setHovered(game.slug)}
-              onMouseLeave={() => setHovered(null)}
-              className="relative"
-            >
-              <Link
-                href={game.free ? `/games/${game.slug}` : "/pricing"}
-                className="block"
-              >
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:32 }}>
+          {filtered.map((game, i) => (
+            <motion.div key={game.slug}
+              initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+              transition={{ delay:i*0.03 }}>
+              <Link href={game.free ? `/games/${game.slug}` : "/pricing"} style={{ display:"block", height:"100%", textDecoration:"none" }}>
                 <div
-                  className="relative p-6 bg-neutral-900 border rounded-xl transition-all duration-300 overflow-hidden"
-                  style={{
-                    borderColor: hovered === game.slug ? game.color + "60" : "#262626",
-                    boxShadow: hovered === game.slug ? `0 0 30px ${game.color}10` : "none",
-                  }}
+                  style={{ background:"white", borderRadius:18, border:"0.5px solid rgba(0,0,0,0.07)", overflow:"hidden", height:"100%", display:"flex", flexDirection:"column", boxShadow:"0 2px 8px rgba(0,0,0,0.04)", transition:"box-shadow 0.2s,transform 0.2s", cursor:"pointer" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 10px 28px rgba(0,0,0,0.09)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 2px 8px rgba(0,0,0,0.04)"; }}
                 >
-                  {/* Glow bg on hover */}
-                  <div
-                    className="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(circle at 50% 0%, ${game.color}08 0%, transparent 70%)`,
-                      opacity: hovered === game.slug ? 1 : 0,
-                    }}
-                  />
-
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold border"
-                        style={{ borderColor: game.color + "40", color: game.color, background: game.color + "10" }}
-                      >
-                        {game.icon}
-                      </div>
-                      <div>
-                        <h2 className="font-bold text-base tracking-wide">{game.label}</h2>
-                        <p className="text-[10px] font-mono text-neutral-500">{game.stages} stages</p>
-                      </div>
-                    </div>
-                    {game.free ? (
-                      <span
-                        className="text-[10px] font-mono font-bold tracking-wider px-2 py-1 rounded border"
-                        style={{ color: game.color, borderColor: game.color + "40", background: game.color + "10" }}
-                      >
-                        FREE
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-neutral-600">
-                        <Lock size={12} />
-                        <span className="text-[10px] font-mono">PRO</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-sm text-neutral-400 leading-relaxed mb-5">
-                    {hovered === game.slug ? game.longDesc : game.desc}
-                  </p>
-
-                  {/* Difficulty pills */}
-                  <div className="flex flex-wrap gap-2 mb-5">
-                    {game.difficulties.map((d) => (
-                      <span key={d} className="text-[10px] font-mono text-neutral-500 border border-neutral-800 px-2 py-0.5 rounded-full">
-                        {d}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Progress bar (placeholder) */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-[10px] font-mono text-neutral-600 mb-1">
-                      <span>Progress</span>
-                      <span>0 / 100</span>
-                    </div>
-                    <div className="h-1 bg-neutral-800 rounded-full">
-                      <div className="h-1 rounded-full w-0" style={{ background: game.color }} />
+                  {/* Icon area — pastel bg, never dark */}
+                  <div style={{ height:76, background:game.bg, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", flexShrink:0 }}>
+                    <GameIcon slug={game.slug} size={36}/>
+                    <div style={{ position:"absolute", top:8, right:8 }}>
+                      {game.free ? (
+                        <span style={{ fontSize:9, fontWeight:700, padding:"3px 8px", borderRadius:10, background:"rgba(79,110,247,0.12)", color:"#3B5CF6" }}>
+                          Daily: Free
+                        </span>
+                      ) : (
+                        <span style={{ fontSize:9, fontWeight:600, padding:"3px 8px", borderRadius:10, background:"rgba(0,0,0,0.06)", color:"#64748B" }}>
+                          Pro
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  {/* CTA */}
-                  <div
-                    className="flex items-center justify-between text-xs font-mono tracking-wider transition-colors"
-                    style={{ color: hovered === game.slug ? game.color : "#525252" }}
-                  >
-                    <span>{game.free ? "PLAY NOW" : "UNLOCK WITH PRO"}</span>
-                    <ChevronRight size={14} />
+                  {/* Text */}
+                  <div style={{ padding:"12px 14px 14px", flex:1, display:"flex", flexDirection:"column" }}>
+                    <p style={{ fontSize:13, fontWeight:700, color:"#1C1917", marginBottom:4 }}>{game.name}</p>
+                    <p style={{ fontSize:11, color:"#64748B", lineHeight:1.5, flex:1 }}>{game.desc}</p>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:10, paddingTop:10, borderTop:"0.5px solid #F8F7F5" }}>
+                      <span style={{ fontSize:10, color:"#CBD5E1" }}>{game.stages} stages</span>
+                      <ArrowRight size={12} color="#CBD5E1"/>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -228,24 +151,23 @@ export default function GamesPage() {
           ))}
         </div>
 
-        {/* Pro banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 p-6 border border-cyan-400/20 bg-cyan-400/5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4"
-        >
-          <div>
-            <h3 className="font-bold mb-1">Unlock all 6 games</h3>
-            <p className="text-sm text-neutral-400">Individual plan — $2/mo. Family plan from $5/mo.</p>
+        {filtered.length === 0 && (
+          <div style={{ textAlign:"center", padding:"48px 24px", color:"#94A3B8" }}>
+            <p style={{ fontSize:16, fontWeight:600, marginBottom:4 }}>No games found</p>
+            <p style={{ fontSize:13 }}>Try a different search or filter</p>
           </div>
-          <Link
-            href="/pricing"
-            className="shrink-0 px-6 py-2.5 bg-cyan-400 text-black font-mono font-bold text-xs tracking-wider rounded hover:bg-green-400 transition-colors"
-          >
-            VIEW PLANS
+        )}
+
+        {/* Pro banner */}
+        <div style={{ borderRadius:24, padding:"28px 32px", background:ACCENT, color:"white", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+          <div>
+            <h2 style={{ fontSize:20, fontWeight:700, marginBottom:4, fontFamily:"Georgia,serif" }}>Unlock Everything</h2>
+            <p style={{ fontSize:13, color:"rgba(255,255,255,0.75)" }}>All 20 games, 2,000+ stages, Infinite Mode — from $2/mo.</p>
+          </div>
+          <Link href="/pricing" style={{ padding:"11px 22px", borderRadius:14, background:"white", color:"#4F6EF7", fontWeight:700, fontSize:13, textDecoration:"none", flexShrink:0, boxShadow:"0 4px 12px rgba(0,0,0,0.15)" }}>
+            View Plans
           </Link>
-        </motion.div>
+        </div>
       </main>
     </div>
   );
