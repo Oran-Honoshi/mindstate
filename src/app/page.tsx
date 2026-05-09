@@ -16,7 +16,6 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { GameIcon, SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 
-// ── Asset URLs ────────────────────────────────────────────────────────────────
 const BASE = "https://ixlcndaryfgkbcjooitu.supabase.co/storage/v1/object/public/asset%20library/";
 const IMGS = {
   cafe:   BASE + "2%20women%20at%20a%20cafe%20playing%20phones.jpg",
@@ -30,47 +29,427 @@ const IMGS = {
   bed:    BASE + "woman%20lying%20in%20bed%20holding%20phone%20smiling.jpg",
 };
 
-// ── Games ─────────────────────────────────────────────────────────────────────
-const GAMES = [
-  { slug:"tango",         name:"Tango",          desc:"Balance rows & columns with equal symbols",       free:true  },
-  { slug:"memory",        name:"Memory",          desc:"Flip cards, find pairs before XP fades",          free:true  },
-  { slug:"queens",        name:"Queens",          desc:"One queen per row, column, and color region",     free:true  },
-  { slug:"sudoku",        name:"Mini Sudoku",     desc:"Fill the grid — no repeats in any row or box",   free:false },
-  { slug:"zip",           name:"Zip",             desc:"Trace a path through every cell in order",        free:false },
-  { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce every mine from number clues",             free:false },
-  { slug:"patches",       name:"Patches",         desc:"Tile the board with polyomino shapes",            free:false },
-  { slug:"hearts",        name:"Hearts",          desc:"Classic trick-avoidance in solo mode",            free:false },
-  { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike with a polished twist",          free:false },
-  { slug:"word-sling",    name:"Word Sling",      desc:"Build high-scoring words from letter tiles",      free:false },
-  { slug:"2048-pro",      name:"2048 Pro",        desc:"Merge tiles to reach 2048 and beyond",            free:false },
-  { slug:"logic-path",    name:"Logic Path",      desc:"Connect matching pipe ends to fill the board",    free:false },
-  { slug:"pattern-match", name:"Pattern Match",   desc:"Identify the rule, complete the sequence",        free:false },
-  { slug:"hex-merge",     name:"Hex Merge",       desc:"Merge hexagonal tiles in chain reactions",        free:false },
-  { slug:"gravity-sort",  name:"Gravity Sort",    desc:"Sort falling blocks into correct columns",        free:false },
-  { slug:"bridges",       name:"Bridges",         desc:"Connect islands with exactly the right bridges",  free:false },
-  { slug:"kakuro",        name:"Kakuro",          desc:"Crossword meets Sudoku — sums guide every entry", free:false },
-  { slug:"nonogram",      name:"Nonogram",        desc:"Solve pixel puzzles from row/column clues",       free:false },
-  { slug:"flow",          name:"Flow",            desc:"Connect color dots without crossing paths",        free:false },
-  { slug:"lightup",       name:"Light Up",        desc:"Place bulbs to illuminate every cell once",       free:false },
-];
-
 const PLANS = [
-  { name:"Individual", price:"$2",  features:["All 20 games","100 stages/game","Daily challenges","Global leaderboard","Infinite mode"], highlight:false },
+  { name:"Individual", price:"$2",  features:["All 20 games","1000 stages/game","Daily challenges","Global leaderboard","Infinite mode"], highlight:false },
   { name:"Family · 3", price:"$5",  features:["3 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:true },
   { name:"Family · 7", price:"$10", features:["7 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:false },
 ];
 
-const TESTIMONIALS = [
-  { img:IMGS.cafe,   name:"Sarah & Maya",   role:"Daily players",          quote:"We play together every morning. It's become our ritual." },
-  { img:IMGS.subway, name:"James K.",        role:"Commuter",               quote:"Makes my subway ride fly by. Tango is genuinely addictive." },
-  { img:IMGS.park,   name:"Noa R.",          role:"Park regular",           quote:"Queens is my favourite. I love how it makes me think." },
-  { img:IMGS.work_w, name:"Dana L.",         role:"Product designer",       quote:"The cleanest puzzle app I've ever used. Zero clutter." },
-  { img:IMGS.bed,    name:"Yael M.",         role:"Night owl",              quote:"One more stage... ten stages later I finally sleep." },
-  { img:IMGS.sofa,   name:"Tom H.",          role:"Works from home",        quote:"Perfect lunch break game. Genuinely sharpens my focus." },
+// ── Mini game previews ────────────────────────────────────────────────────────
+
+function MiniTango() {
+  const [board] = useState<TangoBoard>(() => generateTangoBoard("preview-easy-1","easy"));
+  const [playerGrid, setPlayerGrid] = useState<Cell[][]>(() => board.puzzle.map(r=>[...r]));
+  const [statuses, setStatuses] = useState<CellStatus[][]>(() =>
+    board.puzzle.map(r=>r.map(c=>c!==null?"given":"empty"))
+  );
+  const [solved, setSolved] = useState(false);
+  const cm = new Map<string,"same"|"diff">();
+  board.constraints.forEach(c=>cm.set(`${c.row1}-${c.col1}-${c.row2}-${c.col2}`,c.type));
+
+  function handleClick(r:number,c:number){
+    if(solved||statuses[r][c]==="given")return;
+    const cur=playerGrid[r][c];
+    const next:Cell=cur===null?"S":cur==="S"?"M":null;
+    const ng=playerGrid.map((row,ri)=>row.map((cell,ci)=>ri===r&&ci===c?next:cell));
+    setPlayerGrid(ng);
+    const ns=validateBoard(board.puzzle,ng,board.solution);
+    setStatuses(ns); playClick();
+    if(ns.every(row=>row.every(s=>s==="correct"||s==="given"))){setSolved(true);playSuccess();}
+  }
+
+  const CELL=36;
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      {solved && <div style={{fontSize:9,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"1px 8px",borderRadius:10,marginBottom:2}}>Solved! ✓</div>}
+      <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${CELL}px)`,gap:5}}>
+        {board.puzzle.map((_,r)=>board.puzzle[r].map((_,c)=>{
+          const isGiven=statuses[r][c]==="given";
+          const value=playerGrid[r][c];
+          const rightC=cm.get(`${r}-${c}-${r}-${c+1}`);
+          const bottomC=cm.get(`${r}-${c}-${r+1}-${c}`);
+          return (
+            <div key={`${r}-${c}`} style={{position:"relative",width:CELL,height:CELL}}>
+              <motion.button whileTap={{scale:0.85}} onClick={()=>handleClick(r,c)}
+                style={{width:"100%",height:"100%",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
+                  border:"1.5px solid",background:isGiven?"#F8F7F5":"white",
+                  borderColor:isGiven?"#EDE9E4":value?"#DDD6F8":"#EDE9E4",
+                  cursor:isGiven?"default":"pointer",outline:"none",
+                  boxShadow:value?"0 2px 8px rgba(79,110,247,0.1)":"none"}}>
+                {value==="S"&&<SunIcon size={18}/>}
+                {value==="M"&&<MoonIcon size={18}/>}
+                {!value&&<div style={{width:5,height:5,borderRadius:"50%",background:isGiven?"#CCC":"#E8E4DE"}}/>}
+              </motion.button>
+              {rightC&&c<board.size-1&&(
+                <div style={{position:"absolute",right:-6,top:"50%",transform:"translateY(-50%)",zIndex:10,
+                  width:12,height:12,borderRadius:"50%",background:"white",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:7,fontWeight:700,border:`1px solid ${rightC==="same"?"#4F6EF7":"#F87171"}`,
+                  color:rightC==="same"?"#4F6EF7":"#F87171"}}>
+                  {rightC==="same"?"=":"×"}
+                </div>
+              )}
+              {bottomC&&r<board.size-1&&(
+                <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",zIndex:10,
+                  width:12,height:12,borderRadius:"50%",background:"white",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:7,fontWeight:700,border:`1px solid ${bottomC==="same"?"#4F6EF7":"#F87171"}`,
+                  color:bottomC==="same"?"#4F6EF7":"#F87171"}}>
+                  {bottomC==="same"?"=":"×"}
+                </div>
+              )}
+            </div>
+          );
+        }))}
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>Click cells to play</p>
+    </div>
+  );
+}
+
+function MiniMemory() {
+  const ICONS = ["🌿","🔥","💧","⭐","🌙","☀️","❄️","💎"];
+  const [cards] = useState(() => {
+    const doubled = [...ICONS,...ICONS];
+    const seed = 42;
+    let s = seed;
+    const arr = [...doubled];
+    for(let i=arr.length-1;i>0;i--){s=(s*1664525+1013904223)&0xffffffff;const j=Math.abs(s)%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}
+    return arr.map((v,i)=>({id:i,value:v,flipped:false,matched:false}));
+  });
+  const [state,setState] = useState(cards);
+  const [sel,setSel] = useState<number[]>([]);
+  const checking = useState(false);
+
+  function flip(id:number){
+    const card=state.find(c=>c.id===id);
+    if(!card||card.flipped||card.matched||sel.length===2)return;
+    const ns=state.map(c=>c.id===id?{...c,flipped:true}:c);
+    const nsel=[...sel,id];
+    setState(ns); setSel(nsel);
+    if(nsel.length===2){
+      const [a,b]=nsel.map(sid=>ns.find(c=>c.id===sid)!);
+      if(a.value===b.value){
+        setState(prev=>prev.map(c=>c.id===a.id||c.id===b.id?{...c,matched:true}:c));
+        setSel([]);
+      } else {
+        setTimeout(()=>{
+          setState(prev=>prev.map(c=>c.id===a.id||c.id===b.id?{...c,flipped:false}:c));
+          setSel([]);
+        },700);
+      }
+    }
+  }
+
+  const CELL=38;
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`,gap:5}}>
+        {state.map(card=>(
+          <motion.button key={card.id} onClick={()=>flip(card.id)} whileTap={{scale:0.88}}
+            style={{width:CELL,height:CELL,borderRadius:8,border:"1.5px solid",outline:"none",cursor:"pointer",
+              background:card.flipped||card.matched?"white":"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              borderColor:card.matched?"#86EFAC":card.flipped?"#EDE9E4":"transparent",
+              fontSize:card.flipped||card.matched?18:0,
+              display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {(card.flipped||card.matched)&&card.value}
+          </motion.button>
+        ))}
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>Find matching pairs</p>
+    </div>
+  );
+}
+
+function MiniQueens() {
+  const SIZE=5;
+  const REGIONS=[[0,0,0,1,1],[0,0,1,1,2],[3,3,1,2,2],[3,4,4,4,2],[3,3,4,4,4]];
+  const PALS=[
+    {fill:"#EFF6FF",border:"#3B82F6",queen:"#1D4ED8"},
+    {fill:"#FFF7ED",border:"#F97316",queen:"#C2410C"},
+    {fill:"#F0FDF4",border:"#22C55E",queen:"#15803D"},
+    {fill:"#FDF4FF",border:"#A855F7",queen:"#7E22CE"},
+    {fill:"#FFFBEB",border:"#EAB308",queen:"#A16207"},
+  ];
+  const [queens,setQueens]=useState<Set<string>>(new Set());
+  const CELL=34;
+
+  function toggle(r:number,c:number){
+    const key=`${r},${c}`;
+    const nq=new Set(queens);
+    if(nq.has(key))nq.delete(key); else nq.add(key);
+    setQueens(nq);
+  }
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      <div style={{border:"1.5px solid #E2E8F0",borderRadius:8,overflow:"hidden"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
+          {REGIONS.map((row,r)=>row.map((regionId,c)=>{
+            const key=`${r},${c}`;
+            const hasQueen=queens.has(key);
+            const pal=PALS[regionId];
+            const rightDiff=c<SIZE-1&&REGIONS[r][c+1]!==regionId;
+            const bottomDiff=r<SIZE-1&&REGIONS[r+1][c]!==regionId;
+            return (
+              <button key={key} onClick={()=>toggle(r,c)}
+                style={{width:CELL,height:CELL,display:"flex",alignItems:"center",justifyContent:"center",
+                  background:pal.fill,cursor:"pointer",outline:"none",fontSize:18,
+                  borderTop:"none",borderLeft:"none",
+                  borderRight:rightDiff?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
+                  borderBottom:bottomDiff?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)"}}>
+                {hasQueen&&<span style={{color:pal.queen,lineHeight:1,fontSize:16}}>♛</span>}
+              </button>
+            );
+          }))}
+        </div>
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>One queen per region</p>
+    </div>
+  );
+}
+
+function MiniSudoku() {
+  const GRID=[[4,null,6,null,null,3],[null,3,null,6,null,null],[null,null,3,null,6,null],[3,null,null,4,null,6],[null,6,null,null,3,null],[6,null,4,null,null,4]];
+  const BOX_R=2,BOX_C=3,SIZE=6;
+  const CELL=28;
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      <div style={{border:"2px solid #DC2626",borderRadius:8,overflow:"hidden"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
+          {GRID.map((row,r)=>row.map((val,c)=>{
+            const rightBox=(c+1)%BOX_C===0&&c<SIZE-1;
+            const bottomBox=(r+1)%BOX_R===0&&r<SIZE-1;
+            return (
+              <div key={`${r}-${c}`} style={{width:CELL,height:CELL,display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:12,fontWeight:700,color:val?"#DC2626":"#CBD5E1",
+                background:val?"#FEF2F2":"#FDFCFB",
+                borderRight:rightBox?"2px solid #DC2626":"0.5px solid rgba(0,0,0,0.1)",
+                borderBottom:bottomBox?"2px solid #DC2626":"0.5px solid rgba(0,0,0,0.1)",
+                borderTop:"none",borderLeft:"none"}}>
+                {val||""}
+              </div>
+            );
+          }))}
+        </div>
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>No repeats in rows or boxes</p>
+    </div>
+  );
+}
+
+function MiniZip() {
+  const PATH=[[0,0],[0,1],[0,2],[1,2],[2,2],[2,1],[2,0],[1,0],[1,1]];
+  const WAYPOINTS:{[k:string]:number}={"0,0":1,"0,2":2,"2,2":3,"2,0":4,"1,1":5};
+  const SIZE=3,CELL=44;
+  const [userPath,setUserPath]=useState<[number,number][]>([[0,0]]);
+  const pathSet=new Set(userPath.map(([r,c])=>`${r},${c}`));
+  const last=userPath[userPath.length-1];
+
+  function handleClick(r:number,c:number){
+    const key=`${r},${c}`;
+    if(pathSet.has(key)&&userPath.length>=2&&userPath[userPath.length-2][0]===r&&userPath[userPath.length-2][1]===c){
+      setUserPath(p=>p.slice(0,-1)); return;
+    }
+    if(pathSet.has(key))return;
+    if(Math.abs(last[0]-r)+Math.abs(last[1]-c)!==1)return;
+    setUserPath(p=>[...p,[r,c]]);
+  }
+
+  const complete=userPath.length===SIZE*SIZE;
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      <div style={{position:"relative",width:SIZE*(CELL+6)-6,height:SIZE*(CELL+6)-6}}>
+        <svg style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1}} width={SIZE*(CELL+6)-6} height={SIZE*(CELL+6)-6}>
+          {userPath.slice(1).map(([r,c],i)=>{
+            const [pr,pc]=userPath[i];
+            const cx=(CELL+6)/2,step=CELL+6;
+            return <line key={i} x1={pc*step+cx} y1={pr*step+cx} x2={c*step+cx} y2={r*step+cx} stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>;
+          })}
+        </svg>
+        {Array.from({length:SIZE},(_,r)=>Array.from({length:SIZE},(_,c)=>{
+          const key=`${r},${c}`;
+          const inPath=pathSet.has(key);
+          const wp=WAYPOINTS[key];
+          const isLast=last[0]===r&&last[1]===c;
+          return (
+            <motion.button key={key} onClick={()=>handleClick(r,c)} whileTap={{scale:0.88}}
+              style={{position:"absolute",left:c*(CELL+6),top:r*(CELL+6),width:CELL,height:CELL,
+                borderRadius:10,border:"1.5px solid",outline:"none",cursor:"pointer",zIndex:2,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                background:inPath?(isLast?"#EEF2FF":"#F5F7FF"):"white",
+                borderColor:inPath?(isLast?"#4F6EF7":"#A5B4FC"):"#E2E8F0",
+                fontSize:wp?14:8,fontWeight:700,color:wp?"#4F6EF7":"#94A3B8"}}>
+              {wp||""}
+            </motion.button>
+          );
+        }))}
+      </div>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        {complete&&<span style={{fontSize:9,color:"#16A34A",fontWeight:700}}>Complete!</span>}
+        <button onClick={()=>setUserPath([[0,0]])} style={{fontSize:9,color:"#94A3B8",background:"none",border:"none",cursor:"pointer"}}>Reset</button>
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>Connect all cells in order</p>
+    </div>
+  );
+}
+
+function MiniMinesweeper() {
+  const GRID=[
+    [{n:0,mine:false},{n:1,mine:false},{n:null,mine:true},{n:1,mine:false}],
+    [{n:1,mine:false},{n:2,mine:false},{n:2,mine:false},{n:1,mine:false}],
+    [{n:null,mine:true},{n:2,mine:false},{n:null,mine:true},{n:1,mine:false}],
+    [{n:1,mine:false},{n:2,mine:false},{n:2,mine:false},{n:1,mine:false}],
+  ];
+  const NUM_COLORS:{[k:number]:string}={1:"#3B82F6",2:"#16A34A",3:"#DC2626"};
+  const [revealed,setRevealed]=useState<Set<string>>(new Set(["0,0","0,1","1,0","1,1","1,2","1,3","2,1","3,0","3,1","3,2","3,3","0,3","2,3"]));
+  const [dead,setDead]=useState(false);
+  const CELL=38;
+
+  function click(r:number,c:number){
+    if(dead)return;
+    const key=`${r},${c}`;
+    if(revealed.has(key))return;
+    if(GRID[r][c].mine){setDead(true);setRevealed(prev=>new Set([...prev,key]));return;}
+    setRevealed(prev=>new Set([...prev,key]));
+  }
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+      {dead&&<button onClick={()=>{setDead(false);setRevealed(new Set(["0,0","0,1","1,0","1,1","1,2","1,3","2,1","3,0","3,1","3,2","3,3","0,3","2,3"]));}}
+        style={{fontSize:9,color:"#EF4444",background:"#FEF2F2",border:"1px solid #FCA5A5",borderRadius:8,padding:"1px 8px",cursor:"pointer"}}>
+        💥 Try again
+      </button>}
+      <div style={{border:"1.5px solid #E2E8F0",borderRadius:8,overflow:"hidden"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`}}>
+          {GRID.map((row,r)=>row.map((cell,c)=>{
+            const key=`${r},${c}`;
+            const isRev=revealed.has(key);
+            return (
+              <button key={key} onClick={()=>click(r,c)}
+                style={{width:CELL,height:CELL,display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:13,fontWeight:700,cursor:isRev?"default":"pointer",outline:"none",
+                  background:isRev?(cell.mine?"#FEF2F2":"#F8F7F5"):"white",
+                  borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",
+                  borderTop:"none",borderLeft:"none",
+                  color:cell.mine?"#DC2626":NUM_COLORS[cell.n??0]??"transparent"}}>
+                {isRev?(cell.mine?"💣":cell.n||""):""}
+              </button>
+            );
+          }))}
+        </div>
+      </div>
+      <p style={{fontSize:9,color:"#94A3B8"}}>Deduce the mines</p>
+    </div>
+  );
+}
+
+// ── Game card with live preview ───────────────────────────────────────────────
+const GAME_PREVIEWS: Record<string, React.ReactNode> = {
+  tango:       <MiniTango/>,
+  memory:      <MiniMemory/>,
+  queens:      <MiniQueens/>,
+  sudoku:      <MiniSudoku/>,
+  zip:         <MiniZip/>,
+  minesweeper: <MiniMinesweeper/>,
+};
+
+const GAMES = [
+  { slug:"tango",         name:"Tango",          desc:"Balance rows & columns",                  free:true  },
+  { slug:"memory",        name:"Memory",          desc:"Flip cards, find matching pairs",          free:true  },
+  { slug:"queens",        name:"Queens",          desc:"One queen per row, col & region",          free:true  },
+  { slug:"sudoku",        name:"Mini Sudoku",     desc:"Fill the grid, no repeats",               free:false },
+  { slug:"zip",           name:"Zip",             desc:"Trace a path through every cell",          free:false },
+  { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce every mine from clues",             free:false },
+  { slug:"patches",       name:"Patches",         desc:"Tile with polyomino shapes",               free:false },
+  { slug:"hearts",        name:"Hearts",          desc:"Trick-avoidance in solo mode",             free:false },
+  { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike, polished",               free:false },
+  { slug:"word-sling",    name:"Word Sling",      desc:"Build high-scoring words",                 free:false },
+  { slug:"2048-pro",      name:"2048 Pro",        desc:"Merge tiles to reach 2048",                free:false },
+  { slug:"logic-path",    name:"Logic Path",      desc:"Connect pipe ends to fill board",          free:false },
+  { slug:"pattern-match", name:"Pattern Match",   desc:"Identify the rule, complete it",           free:false },
+  { slug:"hex-merge",     name:"Hex Merge",       desc:"Merge hexagons in chain reactions",        free:false },
+  { slug:"gravity-sort",  name:"Gravity Sort",    desc:"Sort falling blocks by column",            free:false },
+  { slug:"bridges",       name:"Bridges",         desc:"Connect islands with right bridges",       free:false },
+  { slug:"kakuro",        name:"Kakuro",          desc:"Crossword meets Sudoku",                   free:false },
+  { slug:"nonogram",      name:"Nonogram",        desc:"Solve pixel puzzles from clues",           free:false },
+  { slug:"flow",          name:"Flow",            desc:"Connect dots without crossing",            free:false },
+  { slug:"lightup",       name:"Light Up",        desc:"Illuminate every cell once",               free:false },
 ];
 
-// ── Tango Demo ────────────────────────────────────────────────────────────────
-function TangoDemo() {
+function GameCard({ game, index }: { game: typeof GAMES[0]; index: number }) {
+  const [hovered, setHovered] = useState(false);
+  const freeGames = ["tango","memory","queens"];
+  const isFree = freeGames.includes(game.slug);
+  const hasPreview = !!GAME_PREVIEWS[game.slug];
+  const href = isFree ? `/games/${game.slug}` : "/pricing";
+
+  return (
+    <motion.div
+      initial={{ opacity:0, y:20 }}
+      whileInView={{ opacity:1, y:0 }}
+      viewport={{ once:true }}
+      transition={{ delay:(index%4)*0.06, duration:0.4 }}
+    >
+      <Link href={href} style={{ display:"block", textDecoration:"none" }}>
+        <div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            background:"white", borderRadius:20,
+            border:`0.5px solid ${hovered?"rgba(79,110,247,0.25)":"rgba(0,0,0,0.07)"}`,
+            overflow:"hidden", cursor:"pointer",
+            boxShadow: hovered
+              ? "0 16px 40px rgba(79,110,247,0.12), 0 4px 12px rgba(0,0,0,0.06)"
+              : "0 2px 8px rgba(0,0,0,0.04)",
+            transform: hovered ? "translateY(-4px)" : "translateY(0)",
+            transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
+          }}>
+
+          {/* Preview area */}
+          <div style={{
+            minHeight: hasPreview ? 180 : 100,
+            background: hovered
+              ? "linear-gradient(135deg,rgba(79,110,247,0.06),rgba(156,107,232,0.08))"
+              : "rgba(79,110,247,0.04)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            padding: hasPreview ? "20px 16px 16px" : "24px 16px",
+            position:"relative",
+            transition:"background 0.25s",
+          }}>
+            {hasPreview ? (
+              <div style={{ transform:"scale(0.95)", transformOrigin:"center" }}>
+                {GAME_PREVIEWS[game.slug]}
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+                <GameIcon slug={game.slug} size={48}/>
+                <span style={{ fontSize:10, color:"#94A3B8" }}>Coming soon</span>
+              </div>
+            )}
+            {/* Badge */}
+            <div style={{ position:"absolute", top:10, right:10 }}>
+              <span style={{
+                fontSize:9, fontWeight:700, padding:"3px 9px", borderRadius:10,
+                background: isFree ? "rgba(79,110,247,0.1)" : "rgba(0,0,0,0.05)",
+                color: isFree ? "#4F6EF7" : "#94A3B8",
+              }}>
+                {isFree ? "Free" : "Pro"}
+              </span>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div style={{ padding:"12px 14px 14px" }}>
+            <p style={{ fontSize:13, fontWeight:700, color:"#1C1917", marginBottom:3 }}>{game.name}</p>
+            <p style={{ fontSize:11, color:"#64748B", lineHeight:1.5 }}>{game.desc}</p>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+// ── Main Tango Demo (hero) ────────────────────────────────────────────────────
+function HeroTangoDemo() {
   const [board] = useState<TangoBoard>(() => generateTangoBoard("landing-easy-3","easy"));
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>(() => board.puzzle.map(r=>[...r]));
   const [statuses, setStatuses] = useState<CellStatus[][]>(() =>
@@ -118,9 +497,8 @@ function TangoDemo() {
       </div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${CELL}px)`,gap:7,marginBottom:12}}>
         {board.puzzle.map((_,r)=>board.puzzle[r].map((_,c)=>{
-          const status=statuses[r][c];
+          const isGiven=statuses[r][c]==="given";
           const value=playerGrid[r][c];
-          const isGiven=status==="given";
           const key=`${r}-${c}`;
           const rightC=cm.get(`${r}-${c}-${r}-${c+1}`);
           const bottomC=cm.get(`${r}-${c}-${r+1}-${c}`);
@@ -167,7 +545,7 @@ function TangoDemo() {
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
   const W = { maxWidth:1100, margin:"0 auto", padding:"0 40px" };
@@ -175,7 +553,7 @@ export default function LandingPage() {
   return (
     <div style={{background:"#FDFCFB",minHeight:"100vh",color:"#1C1917"}}>
 
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:50,background:"rgba(253,252,251,0.92)",backdropFilter:"blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,0.07)",padding:"0 40px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
           <div style={{width:28,height:28,borderRadius:"22.5%",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 3px 8px rgba(79,110,247,0.3)"}}>
@@ -198,19 +576,19 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <section style={{...W,paddingTop:100,paddingBottom:72,display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center",minHeight:"100vh"}}>
         <motion.div initial={{opacity:0,x:-30}} animate={{opacity:1,x:0}} transition={{duration:0.6}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:20,background:"white",border:"0.5px solid rgba(0,0,0,0.08)",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",marginBottom:24,fontSize:12,color:"#64748B",fontWeight:500}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",display:"block",animation:"pulse 2s infinite"}}/>
-            20 Games · 2,000+ Stages · Free to Start
+            <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",display:"block"}}/>
+            20 Games · 1,000 Stages Each · Free to Start
           </div>
           <h1 style={{fontFamily:"Georgia,serif",fontWeight:700,lineHeight:1.08,marginBottom:20,fontSize:"clamp(42px,4.5vw,62px)"}}>
             <span style={{display:"block",color:"#1C1917"}}>Sharper</span>
             <span style={{display:"block",fontStyle:"italic",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8,#C4785A)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Every Day.</span>
           </h1>
           <p style={{fontSize:16,color:"#64748B",lineHeight:1.7,marginBottom:28,maxWidth:400}}>
-            Explore 20 logic disciplines and 2,000+ hand-crafted stages. An elegant training suite for the modern mind. Countless hours of fun, zero nonsense.
+            Explore 20 logic disciplines and 1,000 hand-crafted stages each. An elegant training suite for the modern mind. Countless hours of fun, zero nonsense.
           </p>
           <div style={{display:"flex",gap:12,marginBottom:36,flexWrap:"wrap"}}>
             <Link href="/auth/signup" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"13px 24px",borderRadius:14,background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",color:"white",fontWeight:700,fontSize:14,textDecoration:"none",boxShadow:"0 6px 20px rgba(79,110,247,0.3)"}}>
@@ -220,7 +598,6 @@ export default function LandingPage() {
               Explore Games <ArrowRight size={14}/>
             </Link>
           </div>
-          {/* Social proof with real photos */}
           <div style={{display:"flex",alignItems:"center",gap:14}}>
             <div style={{display:"flex"}}>
               {[IMGS.cafe,IMGS.park,IMGS.work_w,IMGS.subway,IMGS.dining].map((img,i)=>(
@@ -247,9 +624,7 @@ export default function LandingPage() {
                   <span style={{fontSize:10,fontWeight:600,color:"#94A3B8",fontFamily:"monospace"}}>9:41</span>
                   <div style={{display:"flex",gap:3}}>{[0,1,2].map(i=><div key={i} style={{width:4,height:4,borderRadius:"50%",background:"#E2E8F0"}}/>)}</div>
                 </div>
-                <div style={{padding:"14px 16px 16px"}}>
-                  <TangoDemo/>
-                </div>
+                <div style={{padding:"14px 16px 16px"}}><HeroTangoDemo/></div>
                 <div style={{padding:"0 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{fontSize:10,color:"#CBD5E1"}}>No account needed</span>
                   <Link href="/games/tango" style={{fontSize:11,fontWeight:600,color:"#4F6EF7",display:"flex",alignItems:"center",gap:3,textDecoration:"none"}}>
@@ -263,9 +638,9 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── LIFESTYLE PHOTO STRIP ── */}
-      <section style={{padding:"0 0 72px",overflow:"hidden"}}>
-        <div style={{display:"flex",gap:12,padding:"0 40px",overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none"}}>
+      {/* LIFESTYLE STRIP */}
+      <section style={{paddingBottom:72,overflow:"hidden"}}>
+        <div style={{display:"flex",gap:12,padding:"0 40px",overflowX:"auto",scrollbarWidth:"none"}}>
           {[
             {img:IMGS.cafe,   label:"At the café"},
             {img:IMGS.subway, label:"On the commute"},
@@ -276,12 +651,10 @@ export default function LandingPage() {
             {img:IMGS.dining, label:"At home"},
             {img:IMGS.street, label:"On the go"},
           ].map((item,i)=>(
-            <motion.div key={i}
-              initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}}
-              viewport={{once:true}} transition={{delay:i*0.06}}
-              style={{flexShrink:0,position:"relative",borderRadius:20,overflow:"hidden",width:200,height:260,boxShadow:"0 8px 24px rgba(0,0,0,0.12)"}}>
+            <motion.div key={i} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.05}}
+              style={{flexShrink:0,position:"relative",borderRadius:20,overflow:"hidden",width:190,height:250,boxShadow:"0 8px 24px rgba(0,0,0,0.12)"}}>
               <img src={item.img} alt={item.label} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"32px 14px 14px",background:"linear-gradient(transparent,rgba(0,0,0,0.55))",color:"white",fontSize:12,fontWeight:600}}>
+              <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"28px 14px 12px",background:"linear-gradient(transparent,rgba(0,0,0,0.55)",color:"white",fontSize:11,fontWeight:600}}>
                 {item.label}
               </div>
             </motion.div>
@@ -289,7 +662,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── GAMES COLLECTION ── */}
+      {/* GAMES COLLECTION — 4 cols, live previews */}
       <section style={{...W,paddingBottom:72}}>
         <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} style={{marginBottom:28}}>
           <p style={{fontSize:11,fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",color:"#94A3B8",marginBottom:8}}>The Collection</p>
@@ -298,110 +671,49 @@ export default function LandingPage() {
             <em style={{fontStyle:"italic",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>One Subscription.</em>
           </h2>
           <p style={{fontSize:14,color:"#64748B",lineHeight:1.7,maxWidth:500}}>
-            Every game includes a free Daily Challenge. Subscribe to unlock all 100 stages, Infinite Mode, and family leaderboards.
+            Every game includes a free Daily Challenge. Subscribe to unlock all 1,000 stages, Infinite Mode, and family leaderboards.
           </p>
         </motion.div>
-        {/* 4 columns × 5 rows */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
-          {GAMES.map((game,i)=>(
-            <motion.div key={game.slug} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:(i%4)*0.06}}>
-              <Link href={["tango","memory","queens"].includes(game.slug)?`/games/${game.slug}`:"/pricing"} style={{display:"block",textDecoration:"none"}}>
-                <div
-                  style={{background:"white",borderRadius:18,border:"0.5px solid rgba(0,0,0,0.07)",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",transition:"all 0.2s",cursor:"pointer"}}
-                  onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-3px)";el.style.boxShadow="0 12px 32px rgba(0,0,0,0.1)";}}
-                  onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(0)";el.style.boxShadow="0 2px 8px rgba(0,0,0,0.04)";}}>
-                  {/* Icon area */}
-                  <div style={{height:90,background:"rgba(79,110,247,0.06)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-                    <GameIcon slug={game.slug} size={42}/>
-                    <span style={{position:"absolute",top:8,right:8,fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:10,
-                      background:game.free?"rgba(79,110,247,0.1)":"rgba(0,0,0,0.05)",
-                      color:game.free?"#4F6EF7":"#94A3B8"}}>
-                      {game.free?"Free":"Pro"}
-                    </span>
-                  </div>
-                  {/* Text */}
-                  <div style={{padding:"12px 14px 14px"}}>
-                    <p style={{fontSize:13,fontWeight:700,color:"#1C1917",marginBottom:4}}>{game.name}</p>
-                    <p style={{fontSize:11,color:"#64748B",lineHeight:1.5}}>{game.desc}</p>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          {GAMES.map((game,i)=><GameCard key={game.slug} game={game} index={i}/>)}
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section style={{background:"white",borderTop:"0.5px solid rgba(0,0,0,0.06)",borderBottom:"0.5px solid rgba(0,0,0,0.06)",padding:"72px 0"}}>
-        <div style={{...W}}>
-          <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} style={{marginBottom:40,textAlign:"center"}}>
-            <p style={{fontSize:11,fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",color:"#94A3B8",marginBottom:8}}>Testimonials</p>
-            <h2 style={{fontSize:34,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif"}}>
-              Played everywhere.<br/>Loved by everyone.
-            </h2>
-          </motion.div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
-            {TESTIMONIALS.map((t,i)=>(
-              <motion.div key={i} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.07}}
-                style={{background:"#FDFCFB",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-                {/* Photo */}
-                <div style={{height:180,overflow:"hidden",position:"relative"}}>
-                  <img src={t.img} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.3))"}}/>
+      {/* HOW IT WORKS */}
+      <section style={{background:"white",borderTop:"0.5px solid rgba(0,0,0,0.06)",borderBottom:"0.5px solid rgba(0,0,0,0.06)",padding:"64px 40px"}}>
+        <div style={{maxWidth:900,margin:"0 auto"}}>
+          <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:34,color:"#1C1917",textAlign:"center",marginBottom:48}}>
+            Built for the Modern Mind
+          </h2>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:24}}>
+            {[
+              {from:"#4F6EF7",to:"#7C4FD4",num:"01",title:"Choose a discipline",body:"20 logic games, each with its own rhythm. Start free with the Daily Challenge — no account needed."},
+              {from:"#9C6BE8",to:"#C4785A",num:"02",title:"Train daily",body:"XP decays in real time. The faster you solve, the more you earn. Streaks reward consistency."},
+              {from:"#7C9E87",to:"#4A7C59",num:"03",title:"Master & compete",body:"Family leaderboards, shareable links, and real-time celebrations when records fall."},
+            ].map((s,i)=>(
+              <motion.div key={i} initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}}
+                style={{background:"#FDFCFB",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",padding:24,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+                <div style={{width:40,height:40,borderRadius:"22.5%",background:`linear-gradient(135deg,${s.from},${s.to})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"white",fontFamily:"Georgia,serif",marginBottom:14}}>
+                  {s.num}
                 </div>
-                {/* Quote */}
-                <div style={{padding:"16px 18px 20px"}}>
-                  <Quote size={16} color="#4F6EF7" style={{marginBottom:8,opacity:0.5}}/>
-                  <p style={{fontSize:13,color:"#374151",lineHeight:1.65,marginBottom:14,fontStyle:"italic"}}>"{t.quote}"</p>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:32,height:32,borderRadius:"50%",overflow:"hidden",flexShrink:0,boxShadow:"0 2px 6px rgba(0,0,0,0.1)"}}>
-                      <img src={t.img} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-                    </div>
-                    <div>
-                      <p style={{fontSize:12,fontWeight:700,color:"#1C1917"}}>{t.name}</p>
-                      <p style={{fontSize:11,color:"#94A3B8"}}>{t.role}</p>
-                    </div>
-                  </div>
-                </div>
+                <p style={{fontSize:15,fontWeight:700,color:"#1C1917",marginBottom:8}}>{s.title}</p>
+                <p style={{fontSize:13,color:"#64748B",lineHeight:1.65}}>{s.body}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section style={{...W,paddingTop:72,paddingBottom:72}}>
-        <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} style={{textAlign:"center",marginBottom:48}}>
-          <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:34,color:"#1C1917"}}>Built for the Modern Mind</h2>
-        </motion.div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
-          {[
-            {from:"#4F6EF7",to:"#7C4FD4",num:"01",title:"Choose a discipline",body:"20 logic games, each with its own rhythm. Start free with the Daily Challenge — no account needed."},
-            {from:"#9C6BE8",to:"#C4785A",num:"02",title:"Train daily",body:"XP decays in real time. The faster you solve, the more you earn. Streaks reward consistency."},
-            {from:"#7C9E87",to:"#4A7C59",num:"03",title:"Master & compete",body:"Family leaderboards, shareable links, and real-time celebrations when records fall."},
-          ].map((s,i)=>(
-            <motion.div key={i} initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}}
-              style={{background:"white",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",padding:24,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-              <div style={{width:40,height:40,borderRadius:"22.5%",background:`linear-gradient(135deg,${s.from},${s.to})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"white",fontFamily:"Georgia,serif",marginBottom:14}}>
-                {s.num}
-              </div>
-              <p style={{fontSize:15,fontWeight:700,color:"#1C1917",marginBottom:8}}>{s.title}</p>
-              <p style={{fontSize:13,color:"#64748B",lineHeight:1.65}}>{s.body}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── FULL WIDTH PHOTO CTA ── */}
-      <section style={{position:"relative",height:480,overflow:"hidden",marginBottom:0}}>
-        <img src={IMGS.work_m} alt="Playing MindState" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 30%"}}/>
+      {/* FULL WIDTH PHOTO CTA */}
+      <section style={{position:"relative",height:420,overflow:"hidden"}}>
+        <img src={IMGS.work_m} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 30%"}}/>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(79,110,247,0.85),rgba(156,107,232,0.75))"}}/>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px"}}>
           <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}}>
-            <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:42,color:"white",marginBottom:12,lineHeight:1.1}}>
+            <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:40,color:"white",marginBottom:12,lineHeight:1.1}}>
               Your sharpest self<br/><em>starts here.</em>
             </h2>
-            <p style={{fontSize:16,color:"rgba(255,255,255,0.8)",marginBottom:28,maxWidth:420}}>
+            <p style={{fontSize:15,color:"rgba(255,255,255,0.8)",marginBottom:28,maxWidth:400}}>
               Join thousands of players training their minds daily. It only takes one stage to get hooked.
             </p>
             <Link href="/auth/signup" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"14px 28px",borderRadius:16,background:"white",color:"#4F6EF7",fontWeight:700,fontSize:15,textDecoration:"none",boxShadow:"0 8px 24px rgba(0,0,0,0.2)"}}>
@@ -411,7 +723,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PRICING ── */}
+      {/* PRICING */}
       <section style={{...W,paddingTop:72,paddingBottom:72}}>
         <div style={{textAlign:"center",marginBottom:48}}>
           <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:34,color:"#1C1917",marginBottom:8}}>Simple, Honest Pricing</h2>
@@ -456,7 +768,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer style={{borderTop:"0.5px solid rgba(0,0,0,0.06)",background:"rgba(255,255,255,0.8)",padding:"28px 40px"}}>
         <div style={{maxWidth:1100,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:12}}>
           <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
