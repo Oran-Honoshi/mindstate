@@ -54,7 +54,7 @@ export function generateBridges(seed: string, difficulty: "easy"|"medium"|"hard"
           const count = rng()<0.35?2:1;
           solution.push({from:island.id,to:target.id,count:count as 1|2});
           connections.get(island.id)?.push(target.id);
-          connections.get(target.id)!.push(island.id);
+          connections.get(target.id)?.push(island.id);
         }
         break;
       }
