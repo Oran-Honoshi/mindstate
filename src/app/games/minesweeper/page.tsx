@@ -17,8 +17,8 @@ import { buildSeed } from "@/lib/games/tangoGenerator";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 
 function getDifficulty(stage: number): Difficulty {
-  if (stage <= 30) return "easy";
-  if (stage <= 70) return "medium";
+  if (stage <= 300) return "easy";
+  if (stage <= 700) return "medium";
   return "hard";
 }
 
