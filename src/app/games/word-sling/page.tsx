@@ -1,69 +1,219 @@
 "use client";
+import{useState,useEffect,useCallback,useRef}from"react";
+import{motion,AnimatePresence}from"framer-motion";
+import{ArrowLeft,RotateCcw,ChevronRight,Share2,Delete,Check,X}from"lucide-react";
+import Link from"next/link";
+import{Navbar}from"@/components/nav/Navbar";
+import{generateWordBoard,isValidWord,scoreWord,type WordBoard}from"@/lib/games/wordSlingGenerator";
+import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
+import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
+import{triggerConfetti}from"@/components/effects/Confetti";
+import{saveScore}from"@/lib/supabase/scores";
+import{useAuthStore}from"@/store/authStore";
+import{consumeToken}from"@/lib/games/tokenEngine";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Lock, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { Navbar } from "@/components/nav/Navbar";
-import { ProModal } from "@/components/modals/ProModal";
+function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
+function shareResult(stage:number,score:number,words:number){
+  const text=`📝 MindState · Word Sling Stage ${stage} · ${score} pts · ${words} words found`;
+  const url="https://mindstate.vercel.app";
+  if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});
+  else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");
+}
 
-export default function WordSlingPage() {
-  const [showPro, setShowPro] = useState(false);
-  return (
+function XPBar({xpState}:{xpState:XPState}){
+  const[snap,setSnap]=useState(()=>calculateXP(xpState));
+  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
+  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"#F1EDE8",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"#94A3B8"}}>XP</span></div>);
+}
+
+export default function WordSlingPage(){
+  const{user}=useAuthStore();
+  const[stage,setStage]=useState(1);
+  const[board,setBoard]=useState<WordBoard|null>(null);
+  const[current,setCurrent]=useState<string[]>([]);
+  const[found,setFound]=useState<string[]>([]);
+  const[totalScore,setTotalScore]=useState(0);
+  const[feedback,setFeedback]=useState<{text:string;ok:boolean}|null>(null);
+  const[xpState,setXpState]=useState<XPState|null>(null);
+  const[elapsed,setElapsed]=useState("00:00");
+  const[completed,setCompleted]=useState(false);
+  const[finalXP,setFinalXP]=useState(0);
+  const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+
+  const loadStage=useCallback((s:number)=>{
+    const diff=getDifficulty(s);
+    const b=generateWordBoard(`words-${diff}-${s}`,diff);
+    const xp=createXPState(diff);
+    setBoard(b);setCurrent([]);setFound([]);setTotalScore(0);setFeedback(null);
+    setXpState(xp);setCompleted(false);setFinalXP(0);setElapsed("00:00");
+    if(timerRef.current)clearInterval(timerRef.current);
+    timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
+    if(user)consumeToken(user.id);
+  },[user]);
+
+  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
+
+  function addLetter(letter:string,idx:number){
+    if(current.includes(`${letter}-${idx}`))return;
+    setCurrent(prev=>[...prev,`${letter}-${idx}`]);
+    playClick();
+  }
+
+  function submitWord(){
+    if(!board||current.length<board.minLength)return;
+    const word=current.map(l=>l.split("-")[0]).join("").toLowerCase();
+    if(found.includes(word)){
+      setFeedback({text:"Already found!",ok:false});
+      setTimeout(()=>setFeedback(null),1200);
+      playError();setCurrent([]);return;
+    }
+    if(isValidWord(word,board)){
+      const pts=scoreWord(word);
+      const newFound=[...found,word];
+      const newScore=totalScore+pts;
+      setFound(newFound);setTotalScore(newScore);
+      setFeedback({text:`+${pts} pts · ${word.toUpperCase()}`,ok:true});
+      setTimeout(()=>setFeedback(null),1400);
+      playSuccess();setCurrent([]);
+      // Complete when all solutions found OR enough score
+      const target=board.solutions.length;
+      if(newFound.length>=target&&xpState){
+        const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
+        if(timerRef.current)clearInterval(timerRef.current);
+        setTimeout(()=>triggerConfetti(),80);
+        if(user)saveScore({user_id:user.id,game_slug:"word-sling",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+      }
+    } else {
+      setFeedback({text:"Not a word",ok:false});
+      setTimeout(()=>setFeedback(null),1200);
+      playError();setCurrent([]);
+    }
+  }
+
+  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"#FDFCFB",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"#94A3B8",fontSize:13}}>Generating board...</p></div>);
+
+  const diff=getDifficulty(stage);
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const wordDisplay=current.map(l=>l.split("-")[0]).join("");
+
+  return(
     <div style={{minHeight:"100vh",background:"#FDFCFB",display:"flex",flexDirection:"column"}}>
       <Navbar/>
-      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"76px 24px 48px",gap:24}}>
-
-        {/* Game icon */}
-        <motion.div initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}}
-          style={{width:96,height:96,borderRadius:28,background:"#ECFDF5",display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,boxShadow:"0 16px 40px rgba(0,0,0,0.1)"}}>
-          📝
-        </motion.div>
-
-        <div style={{textAlign:"center",maxWidth:400}}>
-          <h1 style={{fontSize:28,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:8}}>Word Sling</h1>
-          <p style={{fontSize:15,color:"#64748B",lineHeight:1.65,marginBottom:24}}>Build the highest-scoring words from a rack of letter tiles. Beat the clock.</p>
-
-          {/* Pro lock */}
-          <div style={{background:"white",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.08)",padding:"20px 24px",marginBottom:20,boxShadow:"0 4px 16px rgba(0,0,0,0.06)"}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-              <div style={{width:36,height:36,borderRadius:10,background:"rgba(79,110,247,0.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Lock size={16} color="#4F6EF7"/>
-              </div>
-              <div style={{textAlign:"left"}}>
-                <p style={{fontSize:13,fontWeight:700,color:"#1C1917"}}>Pro Feature</p>
-                <p style={{fontSize:11,color:"#94A3B8"}}>Unlock all 20 games from $2/mo</p>
-              </div>
+      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
+        <div style={{width:"100%",maxWidth:520,background:"white",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <Link href="/games" style={{color:"#94A3B8",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
+              <span style={{fontSize:20,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
-              {["1,000 stages","Daily challenges","XP leaderboard","Family groups"].map(f=>(
-                <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#374151"}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:"#047857",flexShrink:0}}/>
-                  {f}
-                </div>
-              ))}
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:12,color:"#4F6EF7",fontWeight:700}}>{totalScore} pts</span>
+              <span style={{fontSize:11,color:"#94A3B8"}}>{found.length}/{board.solutions.length} words</span>
+              <span style={{fontSize:12,color:"#94A3B8",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid #E2E8F0",background:"white",cursor:"pointer",color:"#94A3B8",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
-            <button onClick={()=>setShowPro(true)}
-              style={{width:"100%",padding:"13px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:14,fontWeight:700,color:"white",cursor:"pointer",boxShadow:"0 6px 20px rgba(79,110,247,0.3)"}}>
-              Unlock Word Sling
-            </button>
           </div>
+          <XPBar xpState={xpState}/>
+        </div>
 
-          {/* Preview */}
-          <div style={{background:"#ECFDF5",borderRadius:20,padding:"20px",marginBottom:16,border:"0.5px solid rgba(0,0,0,0.06)"}}>
-            <p style={{fontSize:11,fontWeight:600,color:"#047857",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Coming in v1.1</p>
-            <p style={{fontSize:13,color:"#374151",lineHeight:1.6}}>
-              Full gameplay with 1,000 algorithmically generated stages across Easy, Medium, and Hard difficulty. Daily challenge included.
+        {/* Current word display */}
+        <div style={{width:"100%",maxWidth:520,background:"white",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",padding:"20px 24px",minHeight:80,display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+          <div style={{flex:1}}>
+            {feedback ? (
+              <motion.p initial={{scale:0.9}} animate={{scale:1}}
+                style={{fontSize:20,fontWeight:700,color:feedback.ok?"#22C55E":"#EF4444",fontFamily:"Georgia,serif"}}>
+                {feedback.text}
+              </motion.p>
+            ) : (
+              <p style={{fontSize:28,fontWeight:700,color:wordDisplay?"#1C1917":"#CBD5E1",fontFamily:"monospace",letterSpacing:"0.1em",minHeight:40}}>
+                {wordDisplay||"—"}
+              </p>
+            )}
+            <p style={{fontSize:11,color:"#94A3B8",marginTop:4}}>
+              {current.length>0?`${current.length} letters`:`Min ${board.minLength} letters`}
             </p>
           </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setCurrent([])} style={{padding:10,borderRadius:12,border:"0.5px solid #E2E8F0",background:"white",cursor:"pointer",display:"flex",alignItems:"center"}}>
+              <Delete size={16} color="#94A3B8"/>
+            </button>
+            <button onClick={submitWord} disabled={current.length<board.minLength}
+              style={{padding:"10px 20px",borderRadius:12,border:"none",background:current.length>=board.minLength?"linear-gradient(135deg,#4F6EF7,#9C6BE8)":"#E2E8F0",cursor:current.length>=board.minLength?"pointer":"not-allowed",fontSize:13,fontWeight:700,color:"white",display:"flex",alignItems:"center",gap:6}}>
+              <Check size={14}/> Submit
+            </button>
+          </div>
+        </div>
 
-          <Link href="/games"
-            style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,color:"#64748B",textDecoration:"none"}}>
-            <ArrowLeft size={14}/> Back to all games
-          </Link>
+        {/* Letter tiles */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",maxWidth:400}}>
+          {board.letters.map((letter,i)=>{
+            const key=`${letter}-${i}`;
+            const isUsed=current.includes(key);
+            return(
+              <motion.button key={key} onClick={()=>addLetter(letter,i)}
+                whileTap={{scale:0.88}}
+                disabled={isUsed}
+                style={{width:52,height:52,borderRadius:14,border:"1.5px solid",
+                  background:isUsed?"#F8F7F5":"white",
+                  borderColor:isUsed?"#E2E8F0":"#DDD6F8",
+                  fontSize:20,fontWeight:700,color:isUsed?"#CBD5E1":"#1C1917",
+                  cursor:isUsed?"not-allowed":"pointer",outline:"none",
+                  boxShadow:isUsed?"none":"0 4px 12px rgba(79,110,247,0.1)",
+                  transform:isUsed?"scale(0.92)":"scale(1)",
+                  transition:"all 0.15s"}}>
+                {letter}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Found words */}
+        {found.length>0&&(
+          <div style={{width:"100%",maxWidth:520,background:"white",borderRadius:20,border:"0.5px solid rgba(0,0,0,0.07)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+            <p style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>Found Words</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {found.map(word=>(
+                <motion.div key={word} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}}
+                  style={{padding:"4px 12px",borderRadius:20,background:"#F0FDF4",border:"0.5px solid #86EFAC",fontSize:13,fontWeight:600,color:"#15803D"}}>
+                  {word.toUpperCase()} +{scoreWord(word)}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Solutions hint */}
+        <div style={{width:"100%",maxWidth:520}}>
+          <p style={{fontSize:11,color:"#94A3B8",textAlign:"center"}}>
+            Find all {board.solutions.length} hidden words to complete the stage
+          </p>
+        </div>
+
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid #E2E8F0",background:"white",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"#64748B",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"#94A3B8"}}>Stage {stage} of 1000</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid #E2E8F0",background:"white",cursor:"pointer",fontSize:12,color:"#374151",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
-      <ProModal open={showPro} onClose={()=>setShowPro(false)} feature="Word Sling"/>
+
+      <AnimatePresence>
+        {completed&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
+          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"white",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
+            <div style={{fontSize:48,marginBottom:16}}>📝</div>
+            <h2 style={{fontSize:26,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete</h2>
+            <p style={{fontSize:13,color:"#94A3B8",marginBottom:24}}>{found.length} words · {totalScore} pts · {elapsed}</p>
+            <div style={{background:"#F8F7F5",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"#94A3B8",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div>
+            <button onClick={()=>shareResult(stage,totalScore,found.length)} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid #E2E8F0",background:"white",fontSize:13,fontWeight:600,color:"#374151",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid #E2E8F0",background:"white",fontSize:13,fontWeight:600,color:"#374151",cursor:"pointer"}}>Retry</button>
+              <button onClick={()=>{setCompleted(false);setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+            </div>
+          </motion.div>
+        </motion.div>)}
+      </AnimatePresence>
     </div>
   );
 }
