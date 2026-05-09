@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-mono-var), monospace;
+  --color-cream: #FDFCFB;
+  --color-sage: #7C9E87;
+  --color-terra: #C4785A;
+  --color-cobalt: #3B6FE8;
+  --color-lavender: #8B6FC0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #FDFCFB;
+  color: #1C1917;
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+[dir="rtl"] { text-align: right; }
+[dir="rtl"] .ltr-force { direction: ltr; text-align: left; }
+
+::selection { background-color: rgba(139,111,192,0.18); }
+:focus-visible { outline: 2px solid #3B6FE8; outline-offset: 2px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #F5F3F0; }
+::-webkit-scrollbar-thumb { background: #D6D0C8; border-radius: 2px; }
+
+/* ── Glass card ── */
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* ── Soft card ── */
+.card-soft {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.055);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 0 0.5px rgba(0,0,0,0.03);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.card-soft:hover {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.09), 0 2px 8px rgba(0,0,0,0.05);
+  transform: translateY(-3px);
+}
+
+/* ── Squircle ── */
+.squircle { border-radius: 22.5%; }
+
+/* ── Bento card ── */
+.bento {
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Grain overlay (luxury feel) ── */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.4;
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #3B6FE8 0%, #8B6FC0 50%, #C4785A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Squish animation ── */
+@keyframes squish {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.88, 1.08); }
+  60%  { transform: scale(1.06, 0.96); }
+  100% { transform: scale(1); }
+}
+.squish { animation: squish 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* ── Dark mode ── */
+html.dark body { background-color: #0F0F14; color: #F1EFE9; }
+html.dark .card-soft { background:#1A1A24; border-color:rgba(255,255,255,0.07); }
+html.dark .glass { background:rgba(20,20,32,0.82); border-color:rgba(255,255,255,0.08); }
+html.dark .bento { border-color:rgba(255,255,255,0.08); }

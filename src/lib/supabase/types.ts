@@ -1,0 +1,29 @@
+export interface Profile {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+  lang_pref: string;
+  is_silent_mode: boolean;
+  subscription_status: "free" | "individual" | "family";
+  created_at: string;
+}
+
+export interface Score {
+  id: string;
+  user_id: string;
+  game_slug: string;
+  stage_number: number;
+  difficulty: string;
+  xp_earned: number;
+  time_taken: number;
+  completed_at: string;
+}
+
+export interface FamilyGroup {
+  id: string;
+  admin_id: string;
+  name: string;
+  member_limit: number;
+  invite_code: string;
+  created_at: string;
+}
