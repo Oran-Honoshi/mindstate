@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   keywords:["brain training","logic games","puzzle","mindstate","tango game","queens puzzle","focus","wellness","cognitive training","daily challenge"],
   authors:[{ name:"MindState" }],
   creator:"MindState",
-  metadataBase: new URL("https://mindstate.app"),
+  metadataBase: new URL("https://mindstate.vercel.app"),
   openGraph:{
-    type:"website", url:"https://mindstate.app", siteName:"MindState",
+    type:"website", url:"https://mindstate.vercel.app", siteName:"MindState",
     title:"MindState — Sharper Every Day.",
     description:"20 logic games. 2,000+ stages. One elegant training suite.",
     images:[{ url:"/og-image.png", width:1200, height:630 }],
@@ -49,10 +49,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/icons/icon-192.png"/>
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
         <script dangerouslySetInnerHTML={{ __html:`
-          try{
-            const s=JSON.parse(localStorage.getItem('mindstate-settings')||'{}');
-            const theme = s?.state?.theme; if(theme === 'dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
-          }catch(e){}
+          (function(){
+            try {
+              var s = JSON.parse(localStorage.getItem('mindstate-settings') || '{}');
+              var theme = s && s.state && s.state.theme;
+              if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+              }
+            } catch(e) {
+              document.documentElement.classList.remove('dark');
+            }
+          })();
         `}}/>
       </head>
       <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable}`}>
