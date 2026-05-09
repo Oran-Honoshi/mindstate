@@ -96,3 +96,12 @@ html.dark body { background-color: #0F0F14; color: #F1EFE9; }
 html.dark .card-soft { background:#1A1A24; border-color:rgba(255,255,255,0.07); }
 html.dark .glass { background:rgba(20,20,32,0.82); border-color:rgba(255,255,255,0.08); }
 html.dark .bento { border-color:rgba(255,255,255,0.08); }
+
+/* Production fixes */
+body { overflow-x: hidden; }
+
+/* Force light backgrounds — overrides any dark theme leaking into cards */
+.game-card-light {
+  background: #ffffff !important;
+  color: #1C1917 !important;
+}
