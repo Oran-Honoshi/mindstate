@@ -19,6 +19,8 @@ import { SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
+import { TokenHUD } from "@/components/ui/TokenGate";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = `🧠 MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;

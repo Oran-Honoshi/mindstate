@@ -22,6 +22,8 @@ import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
+import { TokenHUD } from "@/components/ui/TokenGate";
 
 function getDifficulty(stage: number): Difficulty {
   if (stage <= 300) return "easy";

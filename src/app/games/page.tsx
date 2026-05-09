@@ -115,7 +115,7 @@ export default function GamesPage() {
             <motion.div key={game.slug}
               initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
               transition={{ delay:i*0.03 }}>
-              <Link href={game.free ? `/games/${game.slug}` : "/pricing"} style={{ display:"block", height:"100%", textDecoration:"none" }}>
+              <Link href={`/games/${game.slug}`} style={{ display:"block", height:"100%", textDecoration:"none" }}>
                 <div
                   style={{ background:"white", borderRadius:18, border:"0.5px solid rgba(0,0,0,0.07)", overflow:"hidden", height:"100%", display:"flex", flexDirection:"column", boxShadow:"0 2px 8px rgba(0,0,0,0.04)", transition:"box-shadow 0.2s,transform 0.2s", cursor:"pointer" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 10px 28px rgba(0,0,0,0.09)"; }}

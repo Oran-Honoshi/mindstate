@@ -460,7 +460,7 @@ function GameCard({ game, index }: { game: typeof GAMES[0]; index: number }) {
   const [hovered, setHovered] = useState(false);
   const freeGames = ["tango","memory","queens"];
   const isFree = freeGames.includes(game.slug);
-  const href = isFree ? `/games/${game.slug}` : `/games/${game.slug}`;
+  const href = `/games/${game.slug}`;
 
   return (
     <motion.div
@@ -510,8 +510,8 @@ function GameCard({ game, index }: { game: typeof GAMES[0]; index: number }) {
                   Free
                 </span>
               ) : (
-                <span style={{ display:"flex", alignItems:"center", gap:3, fontSize:9, fontWeight:600, padding:"3px 9px", borderRadius:10, background:"rgba(0,0,0,0.06)", color:"#64748B" }}>
-                  <Lock size={8}/> Pro
+                <span style={{ fontSize:9, fontWeight:600, padding:"3px 9px", borderRadius:10, background:"rgba(245,158,11,0.12)", color:"#B45309" }}>
+                  Soon
                 </span>
               )}
             </div>
