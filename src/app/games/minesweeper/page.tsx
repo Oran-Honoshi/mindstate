@@ -37,7 +37,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   const color = xpColor(snap.percentRemaining);
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-1 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+      <div style={{flex:1,height:4,background:"#F1EDE8",borderRadius:2,overflow:"hidden"}}>
         <div className="h-full rounded-full transition-all duration-500"
           style={{ width: `${snap.percentRemaining * 100}%`, background: color }} />
       </div>
@@ -206,9 +206,9 @@ export default function MinesweeperGame() {
   const totalSafe = board.rows * board.cols - board.mineCount;
 
   return (
-    <div className="min-h-screen  text-white flex flex-col">
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
-        <Link href="/games" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors">
+    <div style={{minHeight:"100vh",background:"#FDFCFB",color:"#1C1917",display:"flex",flexDirection:"column"}}>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 24px",borderBottom:"0.5px solid rgba(0,0,0,0.07)",background:"rgba(253,252,251,0.95)"}}>
+        <Link href="/games" style={{display:"flex",alignItems:"center",gap:6,color:"#64748B",textDecoration:"none",fontSize:13}}>
           <ArrowLeft size={16} />
           <Brain size={18} className="text-cyan-400" />
           <span className="font-mono text-sm font-bold tracking-widest">MINESWEEPER</span>
@@ -218,7 +218,7 @@ export default function MinesweeperGame() {
             className="text-neutral-500 hover:text-cyan-400 transition-colors p-2">
             <Share2 size={15} />
           </button>
-          <button onClick={() => loadStage(stage)} className="text-neutral-500 hover:text-white transition-colors p-2">
+          <button onClick={() => loadStage(stage)} style={{padding:8,borderRadius:10,border:"0.5px solid #E2E8F0",background:"white",cursor:"pointer",color:"#94A3B8",display:"flex",alignItems:"center"}}>
             <RotateCcw size={15} />
           </button>
         </div>
@@ -251,7 +251,7 @@ export default function MinesweeperGame() {
 
         {/* Progress */}
         <div className="w-full max-w-lg flex items-center gap-3">
-          <div className="flex-1 h-1 bg-neutral-800 rounded-full overflow-hidden">
+          <div style={{flex:1,height:4,background:"#F1EDE8",borderRadius:2,overflow:"hidden"}}>
             <div className="h-full bg-cyan-400/60 rounded-full transition-all duration-300"
               style={{ width: `${(revealedCount / totalSafe) * 100}%` }} />
           </div>
@@ -281,7 +281,7 @@ export default function MinesweeperGame() {
 
         {/* Board */}
         <div
-          className="border border-neutral-800 rounded-xl overflow-hidden"
+          className="border:"0.5px solid #E2E8F0" rounded-xl overflow-hidden"
           style={{ display: "grid", gridTemplateColumns: `repeat(${board.cols}, ${cellSize}px)`, gap: "2px", padding: "4px", background: "#171717" }}
         >
           {cells.map((row, r) =>
@@ -325,7 +325,7 @@ export default function MinesweeperGame() {
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
           >
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
-              className="bg-neutral-900 border border-red-800 rounded-2xl p-8 max-w-sm w-full text-center"
+              style={{background:"white",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.18)",border:"1px solid #FCA5A5"}}
             >
               <Bomb size={40} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-1 text-red-400">Mine Hit</h2>
@@ -348,12 +348,12 @@ export default function MinesweeperGame() {
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
           >
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
-              className="bg-neutral-900 border border-neutral-700 rounded-2xl p-8 max-w-sm w-full text-center"
+              style={{background:"white",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.18)"}}
             >
               <CheckCircle size={40} className="text-cyan-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-1">Stage {stage} Clear</h2>
               <p className="text-neutral-500 text-sm mb-6">{elapsed} · {diff}</p>
-              <div className="bg-neutral-800 rounded-xl p-4 mb-6">
+              <div style={{background:"#F8F7F5",borderRadius:16,padding:20,marginBottom:24}}>
                 <p className="text-xs font-mono text-neutral-500 mb-1">XP EARNED</p>
                 <p className="text-4xl font-bold" style={{ color: xpColor(finalXP / 1000) }}>{finalXP}</p>
               </div>
