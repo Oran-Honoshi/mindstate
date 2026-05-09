@@ -16,6 +16,17 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 
+function shareResult(game: string, stage: number, xp: number, elapsed: string) {
+  const text = `♛ I just solved ${game} Stage ${stage} on MindState with ${xp} XP in ${elapsed}! Challenge accepted?`;
+  const url = `https://mindstate.vercel.app/games/${game.toLowerCase()}`;
+  if (navigator.share) {
+    navigator.share({ title:"MindState", text, url }).catch(()=>{});
+  } else {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text+"
+"+url)}`, "_blank");
+  }
+}
+
 function getDifficulty(stage: number): Difficulty {
   if (stage <= 300) return "easy";
   if (stage <= 700) return "medium";
@@ -274,6 +285,10 @@ export default function QueensGame() {
                 <p style={{ fontSize:11, color:"#94A3B8", fontWeight:600, marginBottom:4 }}>XP EARNED</p>
                 <p style={{ fontSize:48, fontWeight:700, color:"#4F6EF7", fontFamily:"Georgia,serif" }}>{finalXP}</p>
               </div>
+              <button onClick={()=>shareResult("Queens",stage,finalXP,elapsed)}
+                style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid #E2E8F0",background:"white",fontSize:13,fontWeight:600,color:"#374151",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <Share2 size={14}/> Share Result
+              </button>
               <div style={{ display:"flex", gap:10 }}>
                 <button onClick={() => loadStage(stage)}
                   style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid #E2E8F0", background:"white", fontSize:13, fontWeight:600, color:"#374151", cursor:"pointer" }}>
