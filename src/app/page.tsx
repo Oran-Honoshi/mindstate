@@ -387,7 +387,7 @@ function MiniZip() {
     if(Math.abs(last[0]-r)+Math.abs(last[1]-c)!==1)return;
     const wp=WAYPOINTS[key];
     if(wp!==undefined){
-      const lastWp=Array.from(WAYPOINTS.entries()).filter(([k])=>pathSet.has(k)).map(([,v])=>v);
+      const lastWp=Object.entries(WAYPOINTS).filter(([k])=>pathSet.has(k)).map(([,v])=>v as number);
       const maxWp=lastWp.length>0?Math.max(...lastWp):0;
       if(wp!==maxWp+1)return;
     }
