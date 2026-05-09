@@ -88,7 +88,7 @@ function MiniTango() {
     if(ns.every(row=>row.every(s=>s==="correct"||s==="given"))){setSolved(true);playSuccess();}
   }
 
-  const CELL = board.size === 6 ? 30 : 34;
+  const CELL = board.size >= 6 ? 28 : 32;
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
       {solved&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Solved! ✓</motion.div>}
@@ -198,7 +198,7 @@ function MiniQueens() {
   ];
   const PALS=REGION_PALETTE;
   const [grid,setGrid]=useState<number[][]>(()=>Array.from({length:SIZE},()=>new Array(SIZE).fill(0)));
-  const CELL=36;
+  const CELL=32;
 
   function checkWon(g:number[][]){
     const queens:[number,number][]=[];
@@ -268,7 +268,7 @@ function MiniSudoku() {
   ];
   const [selected,setSelected]=useState<[number,number]|null>(null);
   const [board,setBoard]=useState(GIVEN.map(r=>[...r]));
-  const CELL=26;
+  const CELL=22;
   const NUM_C:{[k:number]:string}={1:"#2563EB",2:"#16A34A",3:"#DC2626",4:"#7C3AED",5:"#C2410C",6:"#0891B2",7:"#B45309",8:"#BE185D",9:"#374151"};
 
   return(
@@ -329,7 +329,7 @@ function MiniMinesweeper() {
     return grid;
   });
   const [dead,setDead]=useState(false);
-  const CELL=36;
+  const CELL=30;
   const NC:{[k:number]:string}={1:"#2563EB",2:"#16A34A",3:"#DC2626",4:"#7C3AED",5:"#C2410C",6:"#0891B2"};
 
   function click(r:number,c:number){
@@ -378,7 +378,7 @@ function MiniZip() {
   const [userPath,setUserPath]=useState<[number,number][]>([[0,0]]);
   const pathSet=new Set(userPath.map(([r,c])=>`${r},${c}`));
   const last=userPath[userPath.length-1];
-  const CELL=46;
+  const CELL=38;
 
   function handleClick(r:number,c:number){
     const key=`${r},${c}`;
@@ -398,18 +398,18 @@ function MiniZip() {
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
       {complete&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Complete! ✓</motion.div>}
-      <div style={{position:"relative",width:SIZE*(CELL+5)-5,height:SIZE*(CELL+5)-5}}>
-        <svg style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1}} width={SIZE*(CELL+5)-5} height={SIZE*(CELL+5)-5}>
+      <div style={{position:"relative",width:SIZE*(CELL+4)-4,height:SIZE*(CELL+4)-4}}>
+        <svg style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1}} width={SIZE*(CELL+4)-4} height={SIZE*(CELL+4)-4}>
           {userPath.slice(1).map(([r,c],i)=>{
             const[pr,pc]=userPath[i];const step=CELL+5;const cx=CELL/2;
-            return<line key={i} x1={pc*step+cx} y1={pr*step+cx} x2={c*step+cx} y2={r*step+cx} stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round" opacity="0.6"/>;
+            return<line key={i} x1={pc*(CELL+4)+CELL/2} y1={pr*(CELL+4)+CELL/2} x2={c*(CELL+4)+CELL/2} y2={r*(CELL+4)+CELL/2} stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round" opacity="0.6"/>;
           })}
         </svg>
         {Array.from({length:SIZE},(_,r)=>Array.from({length:SIZE},(_,c)=>{
           const key=`${r},${c}`;const inPath=pathSet.has(key);const wp=WAYPOINTS[key];const isLast=last[0]===r&&last[1]===c;
           return(
             <motion.button key={key} onClick={()=>handleClick(r,c)} whileTap={{scale:0.88}}
-              style={{position:"absolute",left:c*(CELL+5),top:r*(CELL+5),width:CELL,height:CELL,borderRadius:10,border:"1.5px solid",outline:"none",cursor:"pointer",zIndex:2,display:"flex",alignItems:"center",justifyContent:"center",
+              style={{position:"absolute",left:c*(CELL+4),top:r*(CELL+4),width:CELL,height:CELL,borderRadius:10,border:"1.5px solid",outline:"none",cursor:"pointer",zIndex:2,display:"flex",alignItems:"center",justifyContent:"center",
                 background:inPath?(isLast?"#EEF2FF":wp?"#F0FDF4":"#F5F7FF"):"white",
                 borderColor:inPath?(isLast?"#4F6EF7":wp?"#86EFAC":"#C7D2FE"):"#E2E8F0",
                 fontSize:wp?15:0,fontWeight:700,color:wp?"#4F6EF7":"transparent"}}>
