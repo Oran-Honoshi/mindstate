@@ -257,26 +257,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* BENTO STATS */}
-      <section style={{maxWidth:1100,margin:"0 auto",padding:"0 40px 56px",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-        {[
-          {icon:Zap,   label:"Active Streaks",  value:"3,821",  sub:"players on 7-day streak",  from:"#4F6EF7",to:"#3B5CF6"},
-          {icon:Trophy,label:"Top XP Today",    value:"987",    sub:"@zenmaster · Tango Lv.94",  from:"#9C6BE8",to:"#7C4FD4"},
-          {icon:Users, label:"Games Completed", value:"14,302", sub:"in the last 24 hours",      from:"#7C9E87",to:"#4A7C59"},
-          {icon:Star,  label:"Global #1 Score", value:"99,820", sub:"@shira_t · All games",      from:"#C4785A",to:"#A0522D"},
-        ].map((s,i)=>(
-          <motion.div key={i} initial={{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.07}}
-            style={{borderRadius:20,padding:"18px 20px",background:`linear-gradient(135deg,${s.from}12,${s.to}20)`,border:"0.5px solid rgba(255,255,255,0.6)",boxShadow:"0 2px 12px rgba(0,0,0,0.05)"}}>
-            <div style={{width:32,height:32,borderRadius:10,background:`linear-gradient(135deg,${s.from},${s.to})`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:10}}>
-              <s.icon size={15} color="white"/>
-            </div>
-            <p style={{fontSize:22,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:2}}>{s.value}</p>
-            <p style={{fontSize:11,fontWeight:600,color:"#374151",marginBottom:1}}>{s.label}</p>
-            <p style={{fontSize:10,color:"#94A3B8"}}>{s.sub}</p>
-          </motion.div>
-        ))}
-      </section>
-
       {/* GAMES COLLECTION */}
       <section style={{maxWidth:1100,margin:"0 auto",padding:"0 40px 64px"}}>
         <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} style={{marginBottom:28}}>
