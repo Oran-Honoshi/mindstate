@@ -171,7 +171,7 @@ export default function LeaderboardPage() {
   return (
     <div style={{ minHeight:"100vh", background:"#FDFCFB" }}>
       <Navbar/>
-      <main style={{ maxWidth:760, margin:"0 auto", padding:"88px 24px 60px" }}>
+      <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 16px 48px" }}>
 
         {/* Header */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:28 }}>

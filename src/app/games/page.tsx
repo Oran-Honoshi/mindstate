@@ -52,7 +52,7 @@ export default function GamesPage() {
   return (
     <div style={{ minHeight:"100vh", background:"#FDFCFB", color:"#1C1917" }}>
       <Navbar/>
-      <main style={{ maxWidth:1100, margin:"0 auto", padding:"88px 32px 60px" }}>
+      <main className="section-pad" style={{ maxWidth:1100, margin:"0 auto", padding:"76px 32px 60px" }}>
 
         {/* Header */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:32 }}>
@@ -110,7 +110,7 @@ export default function GamesPage() {
         </div>
 
         {/* Games grid */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:32 }}>
+        <div className="games-grid-4" style={{ marginBottom:32 }}>
           {filtered.map((game, i) => (
             <motion.div key={game.slug}
               initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}

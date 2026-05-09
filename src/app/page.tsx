@@ -577,13 +577,13 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section style={{...W,paddingTop:100,paddingBottom:72,display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center",minHeight:"100vh"}}>
+      <section style={{...W,paddingTop:100,paddingBottom:72,minHeight:"100vh"}} className="hero-grid">
         <motion.div initial={{opacity:0,x:-30}} animate={{opacity:1,x:0}} transition={{duration:0.6}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:20,background:"white",border:"0.5px solid rgba(0,0,0,0.08)",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",marginBottom:24,fontSize:12,color:"#64748B",fontWeight:500}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",display:"block"}}/>
             20 Games · 1,000 Stages Each · Free to Start
           </div>
-          <h1 style={{fontFamily:"Georgia,serif",fontWeight:700,lineHeight:1.08,marginBottom:20,fontSize:"clamp(42px,4.5vw,62px)"}}>
+          <h1 className="hero-h1" style={{fontFamily:"Georgia,serif",fontWeight:700,lineHeight:1.08,marginBottom:20,fontSize:"clamp(42px,4.5vw,62px)"}}>
             <span style={{display:"block",color:"#1C1917"}}>Sharper</span>
             <span style={{display:"block",fontStyle:"italic",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8,#C4785A)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Every Day.</span>
           </h1>
@@ -616,7 +616,7 @@ export default function LandingPage() {
         </motion.div>
 
         {/* Device frame */}
-        <motion.div initial={{opacity:0,x:30}} animate={{opacity:1,x:0}} transition={{duration:0.6,delay:0.15}} style={{display:"flex",justifyContent:"center"}}>
+        <motion.div initial={{opacity:0,x:30}} animate={{opacity:1,x:0}} transition={{duration:0.6,delay:0.15}} className="hero-device" style={{display:"flex",justifyContent:"center"}}>
           <div style={{position:"relative"}}>
             <div style={{background:"linear-gradient(145deg,#E8E4DE,#CEC9C1)",borderRadius:28,padding:10,boxShadow:"0 32px 64px rgba(0,0,0,0.15),0 8px 24px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.5)"}}>
               <div style={{background:"#FDFCFB",borderRadius:20,overflow:"hidden",minWidth:310}}>
@@ -640,7 +640,7 @@ export default function LandingPage() {
 
       {/* LIFESTYLE STRIP */}
       <section style={{paddingBottom:72,overflow:"hidden"}}>
-        <div style={{display:"flex",gap:12,padding:"0 40px",overflowX:"auto",scrollbarWidth:"none"}}>
+        <div className="lifestyle-strip">
           {[
             {img:IMGS.cafe,   label:"At the café"},
             {img:IMGS.subway, label:"On the commute"},
@@ -674,18 +674,18 @@ export default function LandingPage() {
             Every game includes a free Daily Challenge. Subscribe to unlock all 1,000 stages, Infinite Mode, and family leaderboards.
           </p>
         </motion.div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
+        <div className="games-grid-4">
           {GAMES.map((game,i)=><GameCard key={game.slug} game={game} index={i}/>)}
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section style={{background:"white",borderTop:"0.5px solid rgba(0,0,0,0.06)",borderBottom:"0.5px solid rgba(0,0,0,0.06)",padding:"64px 40px"}}>
+      <section className="section-pad" style={{background:"white",borderTop:"0.5px solid rgba(0,0,0,0.06)",borderBottom:"0.5px solid rgba(0,0,0,0.06)",padding:"64px 40px"}}>
         <div style={{maxWidth:900,margin:"0 auto"}}>
           <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:34,color:"#1C1917",textAlign:"center",marginBottom:48}}>
             Built for the Modern Mind
           </h2>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:24}}>
+          <div className="how-grid">
             {[
               {from:"#4F6EF7",to:"#7C4FD4",num:"01",title:"Choose a discipline",body:"20 logic games, each with its own rhythm. Start free with the Daily Challenge — no account needed."},
               {from:"#9C6BE8",to:"#C4785A",num:"02",title:"Train daily",body:"XP decays in real time. The faster you solve, the more you earn. Streaks reward consistency."},
@@ -729,7 +729,7 @@ export default function LandingPage() {
           <h2 style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:34,color:"#1C1917",marginBottom:8}}>Simple, Honest Pricing</h2>
           <p style={{fontSize:14,color:"#94A3B8"}}>Less than a coffee. Sharper than ever.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,alignItems:"start",maxWidth:860,margin:"0 auto"}}>
+        <div className="pricing-grid" style={{alignItems:"start",maxWidth:860,margin:"0 auto"}}>
           {PLANS.map((plan,i)=>(
             <motion.div key={i} initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.08}}
               style={{borderRadius:22,padding:26,position:"relative",

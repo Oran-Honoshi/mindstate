@@ -8,10 +8,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html {
-  scroll-behavior: smooth;
-  background: #FDFCFB;
-}
+html { scroll-behavior: smooth; background: #FDFCFB; }
 
 body {
   background: #FDFCFB !important;
@@ -28,7 +25,6 @@ body {
 ::-webkit-scrollbar-track { background: #F5F3F0; }
 ::-webkit-scrollbar-thumb { background: #D6D0C8; border-radius: 2px; }
 
-/* Glass */
 .glass {
   background: rgba(255,255,255,0.82) !important;
   backdrop-filter: blur(20px) saturate(1.6);
@@ -37,7 +33,6 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
 
-/* Card — always white, never dark */
 .card-soft {
   background: #FFFFFF !important;
   border-radius: 18px;
@@ -46,22 +41,9 @@ body {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   color: #1C1917 !important;
 }
-.card-soft:hover {
-  box-shadow: 0 10px 32px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
-}
 
-/* Squircle */
 .squircle { border-radius: 22.5%; }
 
-/* Bento */
-.bento {
-  border-radius: 20px;
-  border: 0.5px solid rgba(255,255,255,0.6);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-}
-
-/* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #4F6EF7 0%, #9C6BE8 60%, #C4785A 100%);
   -webkit-background-clip: text;
@@ -69,27 +51,86 @@ body {
   background-clip: text;
 }
 
-/* Squish animation */
-@keyframes squish {
-  0%,100% { transform: scale(1); }
-  30% { transform: scaleX(0.88) scaleY(1.1); }
-  60% { transform: scaleX(1.06) scaleY(0.95); }
+/* ── Mobile responsive helpers ── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  align-items: center;
 }
 
-/* ── Dark mode — ONLY when .dark class explicitly set ── */
-html.dark {
-  background: #0F0F14 !important;
+.games-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
-html.dark body {
-  background: #0F0F14 !important;
-  color: #F1EFE9;
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
-html.dark .card-soft {
-  background: #1A1A26 !important;
-  border-color: rgba(255,255,255,0.07);
-  color: #F1EFE9 !important;
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
 }
-html.dark .glass {
-  background: rgba(15,15,20,0.88) !important;
-  border-color: rgba(255,255,255,0.07);
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
+
+.lifestyle-strip {
+  display: flex;
+  gap: 12px;
+  padding: 0 40px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.lifestyle-strip::-webkit-scrollbar { display: none; }
+
+.nav-links-desktop { display: flex; align-items: center; gap: 4px; }
+.nav-mobile-only { display: none; }
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1024px) {
+  .games-grid-4 { grid-template-columns: repeat(3, 1fr); }
+  .bento-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    min-height: unset !important;
+    padding-top: 80px !important;
+  }
+  .hero-device { display: none !important; }
+  .games-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .how-grid { grid-template-columns: 1fr; gap: 16px; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; max-width: 380px !important; margin: 0 auto; }
+  .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .lifestyle-strip { padding: 0 20px; }
+  .nav-links-desktop { display: none !important; }
+  .nav-mobile-only { display: flex !important; }
+  .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+  .hide-mobile { display: none !important; }
+  .hero-h1 { font-size: 48px !important; }
+}
+
+@media (max-width: 480px) {
+  .games-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .hero-h1 { font-size: 38px !important; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .bento-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Dark mode */
+html.dark { background: #0F0F14 !important; }
+html.dark body { background: #0F0F14 !important; color: #F1EFE9; }
+html.dark .card-soft { background: #1A1A26 !important; border-color: rgba(255,255,255,0.07); color: #F1EFE9 !important; }
+html.dark .glass { background: rgba(15,15,20,0.88) !important; border-color: rgba(255,255,255,0.07); }

@@ -177,7 +177,7 @@ export default function TangoGame() {
   return (
     <div style={{ minHeight:"100vh", background:"#FDFCFB", display:"flex", flexDirection:"column" }}>
       <Navbar/>
-      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 20px 32px", gap:20 }}>
+      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:20 }}>
 
         {/* Stage header — clean, no grid */}
         <div style={{ width:"100%", maxWidth:580, background:"white", borderRadius:20, border:"0.5px solid rgba(0,0,0,0.07)", padding:"16px 20px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
