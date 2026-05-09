@@ -122,7 +122,7 @@ export function checkKakuro(board: KakuroBoard, userGrid: (number|null)[][]): bo
         const run: (number|null)[] = [];
         for (let cc = c + 1; cc < size && grid[r][cc]?.type === "white"; cc++) run.push(userGrid[r][cc]);
         if (run.some(v => v === null)) return false;
-        if (run.reduce((s, v) => s + (v??0), 0) !== clue.right) return false;
+        if (run.reduce((s: number, v) => s + (v??0), 0) !== clue.right) return false;
         if (new Set(run).size !== run.length) return false;
       }
 
@@ -130,7 +130,7 @@ export function checkKakuro(board: KakuroBoard, userGrid: (number|null)[][]): bo
         const run: (number|null)[] = [];
         for (let rr = r + 1; rr < size && grid[rr][c]?.type === "white"; rr++) run.push(userGrid[rr][c]);
         if (run.some(v => v === null)) return false;
-        if (run.reduce((s, v) => s + (v??0), 0) !== clue.down) return false;
+        if (run.reduce((s: number, v) => s + (v??0), 0) !== clue.down) return false;
         if (new Set(run).size !== run.length) return false;
       }
     }
