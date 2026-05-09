@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html:`
           try{
             const s=JSON.parse(localStorage.getItem('mindstate-settings')||'{}');
-            if(s?.state?.theme==='dark') document.documentElement.classList.add('dark');
+            const theme = s?.state?.theme; if(theme === 'dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
           }catch(e){}
         `}}/>
       </head>
