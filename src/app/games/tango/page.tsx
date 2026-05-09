@@ -21,13 +21,13 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
-  const text = `🧠 I just solved ${game} Stage ${stage} on MindState with ${xp} XP in ${elapsed}! Can you beat my score?`;
-  const url = `https://mindstate.vercel.app/games/${game.toLowerCase()}`;
+  const text = `🧠 MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const url = "https://mindstate.vercel.app";
   if (navigator.share) {
     navigator.share({ title:"MindState", text, url }).catch(()=>{});
   } else {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text+"
-"+url)}`, "_blank");
+    const tweet = encodeURIComponent(text + " " + url);
+    window.open("https://twitter.com/intent/tweet?text=" + tweet, "_blank");
   }
 }
 
