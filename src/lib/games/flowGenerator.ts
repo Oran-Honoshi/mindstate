@@ -121,7 +121,7 @@ export function checkFlowComplete(
   if (filled.size !== total) return false;
   // Every color dot must be connected
   for (const [pos, color] of board.dots) {
-    const path = [...paths.values()].find(p => p.color === color);
+    const path = [...[...paths.values()].find(p => p.color === color);
     if (!path) return false;
     if (!path.cells.includes(pos)) return false;
   }
