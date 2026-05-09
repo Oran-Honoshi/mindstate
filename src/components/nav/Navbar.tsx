@@ -42,11 +42,11 @@ export function Navbar() {
       }}>
         {/* Logo */}
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
-          <div style={{ width:28, height:28, borderRadius:"22.5%", background:ACCENT,
-            display:"flex", alignItems:"center", justifyContent:"center",
-            boxShadow:"0 3px 8px rgba(79,110,247,0.28)" }}>
-            <Brain size={14} color="white"/>
-          </div>
+          <img
+            src="/icons/icon-192.png"
+            alt="MindState"
+            style={{ width:32, height:32, borderRadius:"22.5%", objectFit:"cover" }}
+          />
           <span style={{ fontWeight:700, fontSize:15, color:"#1C1917", fontFamily:"Georgia,serif" }}>
             MindState
           </span>

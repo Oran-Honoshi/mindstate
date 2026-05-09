@@ -556,9 +556,7 @@ export default function LandingPage() {
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:50,background:"rgba(253,252,251,0.92)",backdropFilter:"blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,0.07)",padding:"0 40px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
-          <div style={{width:28,height:28,borderRadius:"22.5%",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 3px 8px rgba(79,110,247,0.3)"}}>
-            <Brain size={14} color="white"/>
-          </div>
+          <img src="/icons/icon-192.png" alt="MindState" style={{width:32,height:32,borderRadius:"22.5%",objectFit:"cover"}}/>
           <span style={{fontWeight:700,fontSize:16,color:"#1C1917",fontFamily:"Georgia,serif"}}>MindState</span>
         </Link>
         <div style={{display:"flex",alignItems:"center",gap:4}}>
@@ -772,9 +770,7 @@ export default function LandingPage() {
       <footer style={{borderTop:"0.5px solid rgba(0,0,0,0.06)",background:"rgba(255,255,255,0.8)",padding:"28px 40px"}}>
         <div style={{maxWidth:1100,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:12}}>
           <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
-            <div style={{width:24,height:24,borderRadius:"22.5%",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <Brain size={11} color="white"/>
-            </div>
+            <img src="/icons/icon-192.png" alt="MindState" style={{width:24,height:24,borderRadius:"22.5%",objectFit:"cover"}}/>
             <span style={{fontWeight:700,fontSize:13,color:"#374151",fontFamily:"Georgia,serif"}}>MindState</span>
           </Link>
           <p style={{fontSize:12,color:"#CBD5E1"}}>&copy; {new Date().getFullYear()} MindState. All rights reserved.</p>
