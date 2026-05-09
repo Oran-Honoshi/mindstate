@@ -273,7 +273,7 @@ export default function FamilyPage() {
     if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
-      const g = await getUserFamilyGroup(user.id);
+      const g = await getUserFamilyGroup(user.id) as any;
       setGroup(g);
       if (g) {
         const [m, lb] = await Promise.all([
