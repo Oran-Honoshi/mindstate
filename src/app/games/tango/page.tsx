@@ -97,27 +97,27 @@ export default function TangoGame() {
     return () => { if(timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // Check rows/cols for errors only when they are fully filled
+  // Only show errors when a row/col is completely filled AND wrong
   function checkRowColErrors(grid: Cell[][], size: number) {
     const newErrorRows = new Set<number>();
     const newErrorCols = new Set<number>();
     for (let r = 0; r < size; r++) {
       const row = grid[r];
-      if (row.every(c => c !== null)) {
-        const suns = row.filter(c => c === "S").length;
-        const moons = row.filter(c => c === "M").length;
-        const hasTriple = row.some((c,i) => i < size-2 && c === row[i+1] && c === row[i+2]);
-        if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorRows.add(r);
-      }
+      // Only check FULLY filled rows
+      if (!row.every(c => c !== null)) continue;
+      const suns = row.filter(c => c === "S").length;
+      const moons = row.filter(c => c === "M").length;
+      const hasTriple = row.some((c,i) => i <= size-3 && c !== null && c === row[i+1] && c === row[i+2]);
+      if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorRows.add(r);
     }
     for (let c = 0; c < size; c++) {
       const col = grid.map(r => r[c]);
-      if (col.every(v => v !== null)) {
-        const suns = col.filter(v => v === "S").length;
-        const moons = col.filter(v => v === "M").length;
-        const hasTriple = col.some((v,i) => i < size-2 && v === col[i+1] && v === col[i+2]);
-        if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorCols.add(c);
-      }
+      // Only check FULLY filled cols
+      if (!col.every(v => v !== null)) continue;
+      const suns = col.filter(v => v === "S").length;
+      const moons = col.filter(v => v === "M").length;
+      const hasTriple = col.some((v,i) => i <= size-3 && v !== null && v === col[i+1] && v === col[i+2]);
+      if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorCols.add(c);
     }
     setErrorRows(newErrorRows);
     setErrorCols(newErrorCols);
@@ -251,13 +251,11 @@ export default function TangoGame() {
                     display:"flex", alignItems:"center", justifyContent:"center",
                     border:"1.5px solid",
                     background: isGiven ? "#F8F7F5"
-                      : hasError && value ? "rgba(239,68,68,0.06)"
+                      : hasError ? "rgba(239,68,68,0.08)"
                       : value ? "white" : "white",
                     borderColor: isGiven ? "#EDE9E4"
-                      : hasError && value ? "rgba(239,68,68,0.3)"
                       : value ? "#DDD6F8" : "#EDE9E4",
                     boxShadow: isGiven ? "none"
-                      : hasError && value ? "0 0 0 3px rgba(239,68,68,0.08)"
                       : value ? "0 4px 16px rgba(79,110,247,0.12), 0 2px 6px rgba(0,0,0,0.06)"
                       : "0 2px 6px rgba(0,0,0,0.05)",
                     cursor: isGiven ? "default" : "pointer",
