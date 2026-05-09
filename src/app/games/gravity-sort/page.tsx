@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { ProModal } from "@/components/modals/ProModal";
 
-export default function Gravity SortPage() {
+export default function GravitySortPage() {
   const [showPro, setShowPro] = useState(false);
   return (
     <div style={{minHeight:"100vh",background:"#FDFCFB",display:"flex",flexDirection:"column"}}>
