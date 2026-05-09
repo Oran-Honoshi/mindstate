@@ -39,6 +39,13 @@ function canFoundation(card:Card,top:Card|null):boolean{
 }
 function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
+function XPBar({xpState}:{xpState:XPState}){
+  const[snap,setSnap]=useState(()=>calculateXP(xpState));
+  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
+  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);
+}
+
 function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean}){
   const w=small?36:48,h=small?52:68;
   if(!card.faceUp)return(
