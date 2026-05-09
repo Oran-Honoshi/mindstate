@@ -156,3 +156,7 @@ export default function PricingPage() {
     </div>
   );
 }
+
+// Note: Paddle checkout wired at bottom of pricing page
+// To activate: add your Paddle vendor ID and product IDs below
+// Get these from: vendors.paddle.com → Products

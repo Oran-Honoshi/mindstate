@@ -5,6 +5,9 @@ import { I18nProvider } from "@/components/providers/I18nProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
+import { WelcomeModal } from "@/components/modals/WelcomeModal";
+import { RatingModal } from "@/components/modals/RatingModal";
+import { SuggestionButton } from "@/components/ui/SuggestionButton";
 
 const fraunces = Fraunces({
   subsets: ["latin"], variable: "--font-fraunces",
@@ -100,6 +103,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthProvider>
               <RealtimeProvider>
                 {children}
+                <WelcomeModal />
+                <RatingModal />
+                <SuggestionButton />
               </RealtimeProvider>
             </AuthProvider>
           </ThemeProvider>
