@@ -35,9 +35,9 @@ export function Navbar() {
         position:"fixed", top:0, left:0, right:0, zIndex:50,
         display:"flex", alignItems:"center", justifyContent:"space-between",
         padding:"0 24px", height:58,
-        background:"rgba(253,252,251,0.94)",
+        background:"color-mix(in srgb, var(--bg) 93%, transparent)",
         backdropFilter:"blur(20px)",
-        borderBottom:"0.5px solid rgba(0,0,0,0.07)",
+        borderBottom:"0.5px solid var(--border)",
         boxShadow:"0 1px 3px rgba(0,0,0,0.04)",
       }}>
         {/* Logo */}
@@ -47,7 +47,7 @@ export function Navbar() {
             alt="MindState"
             style={{ width:32, height:32, borderRadius:"22.5%", objectFit:"cover" }}
           />
-          <span style={{ fontWeight:700, fontSize:15, color:"#1C1917", fontFamily:"Georgia,serif" }}>
+          <span style={{ fontWeight:700, fontSize:15, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
             MindState
           </span>
         </Link>
@@ -71,11 +71,11 @@ export function Navbar() {
         {/* Right */}
         <div style={{ display:"flex", alignItems:"center", gap:3 }}>
           <button onClick={toggleSilentMode}
-            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"#94A3B8", display:"flex" }}>
+            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
             {isSilentMode ? <VolumeX size={15}/> : <Volume2 size={15}/>}
           </button>
           <button onClick={toggleTheme}
-            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"#94A3B8", display:"flex" }}>
+            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
             {theme === "dark" ? <Sun size={15}/> : <Moon size={15}/>}
           </button>
 
@@ -84,7 +84,7 @@ export function Navbar() {
               <button onClick={() => setProfileOpen(o=>!o)} style={{
                 display:"flex", alignItems:"center", gap:6,
                 padding:"5px 9px 5px 5px", borderRadius:13,
-                border:"0.5px solid rgba(0,0,0,0.09)", background:"white",
+                border:"0.5px solid rgba(0,0,0,0.09)", background:"var(--surface)",
                 cursor:"pointer", boxShadow:"0 1px 4px rgba(0,0,0,0.06)",
               }}>
                 <div style={{ width:24, height:24, borderRadius:"50%", background:ACCENT,
@@ -92,7 +92,7 @@ export function Navbar() {
                   fontSize:10, fontWeight:700, color:"white" }}>
                   {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
                 </div>
-                <span className="hide-mobile" style={{ fontSize:12, fontWeight:600, color:"#374151", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                <span className="hide-mobile" style={{ fontSize:12, fontWeight:600, color:"var(--text2)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                   {profile?.username ?? "Profile"}
                 </span>
                 <ChevronDown size={11} color="#94A3B8"/>
@@ -109,15 +109,15 @@ export function Navbar() {
                       transition={{ duration:0.14 }}
                       style={{
                         position:"absolute", right:0, top:"calc(100% + 8px)", width:200,
-                        background:"white", border:"0.5px solid rgba(0,0,0,0.08)",
+                        background:"var(--surface)", border:"0.5px solid var(--border)",
                         borderRadius:18, boxShadow:"0 16px 48px rgba(0,0,0,0.12)",
                         zIndex:50, overflow:"hidden",
                       }}>
                       <div style={{ padding:"13px 15px 9px", borderBottom:"0.5px solid #F8F7F5" }}>
-                        <p style={{ fontSize:13, fontWeight:700, color:"#1C1917", marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                        <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                           {profile?.username ?? "Player"}
                         </p>
-                        <p style={{ fontSize:11, color:"#94A3B8", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                        <p style={{ fontSize:11, color:"var(--text4)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                           {user.email}
                         </p>
                       </div>
@@ -131,7 +131,7 @@ export function Navbar() {
                           onClick={() => setProfileOpen(false)}
                           style={{
                             display:"flex", alignItems:"center", gap:10,
-                            padding:"10px 15px", fontSize:13, color:"#374151",
+                            padding:"10px 15px", fontSize:13, color:"var(--text2)",
                             textDecoration:"none", borderBottom:"0.5px solid #FAFAF9",
                             transition:"background 0.1s",
                           }}
@@ -158,7 +158,7 @@ export function Navbar() {
           ) : (
             <div style={{ display:"flex", alignItems:"center", gap:5, marginLeft:4 }}>
               <Link href="/auth/signin" className="hide-mobile"
-                style={{ fontSize:13, color:"#64748B", padding:"7px 11px", borderRadius:10, textDecoration:"none" }}>
+                style={{ fontSize:13, color:"var(--text3)", padding:"7px 11px", borderRadius:10, textDecoration:"none" }}>
                 Sign in
               </Link>
               <Link href="/auth/signup"
@@ -172,7 +172,7 @@ export function Navbar() {
 
           {/* Mobile hamburger */}
           <button onClick={() => setMenuOpen(o=>!o)} className="nav-mobile-only"
-            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"#64748B", marginLeft:4 }}>
+            style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text3)", marginLeft:4 }}>
             {menuOpen ? <X size={18}/> : <Menu size={18}/>}
           </button>
         </div>
@@ -194,7 +194,7 @@ export function Navbar() {
                 display:"flex", flexDirection:"column" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
                 padding:"16px 20px", borderBottom:"0.5px solid #F1EDE8" }}>
-                <span style={{ fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif" }}>Menu</span>
+                <span style={{ fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Menu</span>
                 <button onClick={() => setMenuOpen(false)}
                   style={{ padding:6, borderRadius:8, background:"#F8F7F5", border:"none", cursor:"pointer" }}>
                   <X size={16} color="#64748B"/>
@@ -223,7 +223,7 @@ export function Navbar() {
                       <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
                         style={{ display:"flex", alignItems:"center", gap:10,
                           padding:"12px 14px", borderRadius:12, textDecoration:"none",
-                          fontSize:14, fontWeight:500, color:"#374151" }}>
+                          fontSize:14, fontWeight:500, color:"var(--text2)" }}>
                         <item.icon size={16} color="#94A3B8"/>
                         {item.label}
                       </Link>
@@ -244,7 +244,7 @@ export function Navbar() {
                   <Link href="/auth/signin" onClick={() => setMenuOpen(false)}
                     style={{ display:"block", textAlign:"center", padding:"12px",
                       borderRadius:12, border:"0.5px solid #E2E8F0",
-                      fontSize:13, fontWeight:600, color:"#374151", textDecoration:"none" }}>
+                      fontSize:13, fontWeight:600, color:"var(--text2)", textDecoration:"none" }}>
                     Sign in
                   </Link>
                   <Link href="/auth/signup" onClick={() => setMenuOpen(false)}

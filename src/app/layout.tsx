@@ -89,8 +89,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             try {
               var s=JSON.parse(localStorage.getItem('mindstate-settings')||'{}');
               var theme=s&&s.state&&s.state.theme;
-              if(theme==='dark'){document.documentElement.classList.add('dark');}
-              else{document.documentElement.classList.remove('dark');}
+              if(theme==='dark'){
+                document.documentElement.classList.add('dark');
+                document.documentElement.style.colorScheme='dark';
+              } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.style.colorScheme='light';
+              }
+              var lang=s&&s.state&&s.state.language;
+              if(lang==='he'){document.documentElement.dir='rtl';document.documentElement.lang='he';}
             } catch(e) {
               document.documentElement.classList.remove('dark');
             }

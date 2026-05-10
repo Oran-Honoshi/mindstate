@@ -47,7 +47,7 @@ function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
   const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"#F1EDE8",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"#94A3B8"}}>XP</span></div>);
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
 }
 
 function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;onClick?:()=>void;faceDown?:boolean}){
@@ -149,7 +149,7 @@ export default function HeartsPage(){
     },1200);
   }
 
-  if(!xpState)return(<div style={{minHeight:"100vh",background:"#FDFCFB",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"#94A3B8",fontSize:13}}>Dealing cards...</p></div>);
+  if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Dealing cards...</p></div>);
 
   const diff=getDifficulty(stage);
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
@@ -177,7 +177,7 @@ export default function HeartsPage(){
 
         {/* Scores */}
         <div style={{display:"flex",gap:16,width:"100%",maxWidth:540}}>
-          {[{label:"You",score:playerScore,color:"#EF4444"},{label:"CPU",score:cpuScore,color:"#94A3B8"}].map(s=>(
+          {[{label:"You",score:playerScore,color:"#EF4444"},{label:"CPU",score:cpuScore,color:"var(--text4)"}].map(s=>(
             <div key={s.label} style={{flex:1,background:"rgba(255,255,255,0.1)",borderRadius:16,padding:"12px 16px",backdropFilter:"blur(8px)",border:"0.5px solid rgba(255,255,255,0.15)"}}>
               <p style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginBottom:4}}>{s.label}</p>
               <p style={{fontSize:24,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{s.score} <span style={{fontSize:14,color:s.color}}>pts</span></p>
@@ -222,7 +222,7 @@ export default function HeartsPage(){
 
         {selected!==null&&phase==="play"&&(
           <button onClick={playCard}
-            style={{padding:"12px 32px",borderRadius:14,border:"none",background:"white",fontSize:14,fontWeight:700,color:"#1A6B3A",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
+            style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--surface)",fontSize:14,fontWeight:700,color:"#1A6B3A",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
             Play {hand[selected].label}{hand[selected].suit}
           </button>
         )}
@@ -236,13 +236,13 @@ export default function HeartsPage(){
 
       <AnimatePresence>
         {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"white",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
+          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
             <div style={{fontSize:48,marginBottom:16}}>{won?"🏆":"😔"}</div>
-            <h2 style={{fontSize:26,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
-            <p style={{fontSize:13,color:"#64748B",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
-            {won&&<><div style={{background:"#F8F7F5",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"#94A3B8",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div><button onClick={()=>{const text=`♥ MindState · Hearts Stage ${stage} · ${playerScore} pts (CPU: ${cpuScore})`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid #E2E8F0",background:"white",fontSize:13,fontWeight:600,color:"#374151",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button></>}
+            <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
+            <p style={{fontSize:13,color:"var(--text3)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
+            {won&&<><div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div><button onClick={()=>{const text=`♥ MindState · Hearts Stage ${stage} · ${playerScore} pts (CPU: ${cpuScore})`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button></>}
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid #E2E8F0",background:"white",fontSize:13,fontWeight:600,color:"#374151",cursor:"pointer"}}>Retry</button>
+              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
               <button onClick={()=>{setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
             </div>
           </motion.div>
