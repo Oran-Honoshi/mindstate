@@ -122,11 +122,11 @@ export default function SolitairePage(){
         if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));
         else setTableau(t=>{const nt=t.map(p=>[...p]);nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;return nt;});
         setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();
-        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)})};}}
         return;
       }
     }
-    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});
+    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});}
     playClick();
   }
 
