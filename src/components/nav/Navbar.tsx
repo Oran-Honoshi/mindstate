@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Volume2, VolumeX, Sun, Moon, Menu, X,
   User, Trophy, Settings, LogOut, ChevronDown,
-  Gamepad2, BarChart2, Users,
+  Gamepad2, BarChart2, Users, Star, Flame,
 } from "lucide-react";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -23,6 +23,7 @@ export function Navbar() {
 
   const navLinks = [
     { href:"/games",       label:"Games",       icon:Gamepad2  },
+    { href:"/daily",       label:"Daily",       icon:Star      },
     { href:"/leaderboard", label:"Leaderboard", icon:BarChart2 },
     { href:"/family",      label:"Family",      icon:Users     },
   ];

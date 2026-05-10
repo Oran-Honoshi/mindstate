@@ -4,7 +4,7 @@
   "description": "Sharper Every Day — 20 precision logic games for the modern mind.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FDFCFB",
+  "background_color": "#0F0F14",
   "theme_color": "#4F6EF7",
   "orientation": "portrait-primary",
   "icons": [
@@ -22,20 +22,17 @@
     }
   ],
   "categories": ["games", "education", "productivity"],
-  "screenshots": [
+  "lang": "en",
+  "shortcuts": [
     {
-      "src": "/screenshots/desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
+      "name": "Daily Challenge",
+      "url": "/daily",
+      "description": "Play today's daily challenge"
     },
     {
-      "src": "/screenshots/mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
+      "name": "All Games",
+      "url": "/games",
+      "description": "Browse all 20 games"
     }
-  ],
-  "lang": "en",
-  "dir": "ltr"
+  ]
 }

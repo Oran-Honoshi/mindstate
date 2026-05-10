@@ -2,43 +2,84 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Zap, Target, Star, ArrowRight, LogIn } from "lucide-react";
+import { Trophy, Zap, Target, Star, ArrowRight, LogIn, Flame, Calendar, Crown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
 import { getUserScores } from "@/lib/supabase/scores";
+import { getStreak } from "@/lib/supabase/streaks";
 import { GameIcon } from "@/components/icons/GameIcons";
 import type { Score } from "@/lib/supabase/types";
+import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 
 const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
 const GAME_NAMES: Record<string,string> = {
   tango:"Tango", memory:"Memory", queens:"Queens",
   sudoku:"Mini Sudoku", zip:"Zip", minesweeper:"Minesweeper",
+  flow:"Flow", nonogram:"Nonogram", bridges:"Bridges",
+  "pattern-match":"Pattern Match", "2048-pro":"2048 Pro",
+  kakuro:"Kakuro", "gravity-sort":"Gravity Sort", "hex-merge":"Hex Merge",
+  "logic-path":"Logic Path", lightup:"Light Up", patches:"Patches",
+  "word-sling":"Word Sling", hearts:"Hearts", solitaire:"Solitaire",
 };
+
+const ACHIEVEMENTS = [
+  { id:"first_win",    icon:"🏆", name:"First Victory",      desc:"Complete your first stage",          check:(s:Score[])=>s.length>=1 },
+  { id:"ten_stages",   icon:"🎯", name:"Ten Stages",         desc:"Complete 10 stages",                 check:(s:Score[])=>s.length>=10 },
+  { id:"five_games",   icon:"🎮", name:"Multidisciplinary",  desc:"Play 5 different games",             check:(s:Score[])=>new Set(s.map(x=>x.game_slug)).size>=5 },
+  { id:"all_games",    icon:"🌟", name:"Completionist",      desc:"Play all 20 games",                  check:(s:Score[])=>new Set(s.map(x=>x.game_slug)).size>=20 },
+  { id:"perfect_xp",  icon:"💎", name:"Perfect Score",      desc:"Earn 1000 XP on any stage",         check:(s:Score[])=>s.some(x=>x.xp_earned>=1000) },
+  { id:"speed_demon",  icon:"⚡", name:"Speed Demon",        desc:"Complete a stage in under 30s",      check:(s:Score[])=>s.some(x=>x.time_taken<=30) },
+  { id:"hundred",      icon:"💯", name:"Century Club",       desc:"Complete 100 stages total",          check:(s:Score[])=>s.length>=100 },
+  { id:"top_scorer",   icon:"🥇", name:"High Achiever",     desc:"Accumulate 10,000 total XP",         check:(s:Score[])=>s.reduce((t,x)=>t+x.xp_earned,0)>=10000 },
+];
+
+function StatCard({ icon:Icon, label, value, color }: { icon:any; label:string; value:string; color:string }) {
+  return (
+    <div style={{ background:"var(--surface)", borderRadius:18, border:"0.5px solid var(--border)", padding:"16px 18px", boxShadow:"var(--shadow-sm)" }}>
+      <div style={{ width:32, height:32, borderRadius:10, background:`${color}18`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
+        <Icon size={16} color={color}/>
+      </div>
+      <p style={{ fontSize:22, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:2 }}>{value}</p>
+      <p style={{ fontSize:11, color:"var(--text4)" }}>{label}</p>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const { user, profile } = useAuthStore();
   const [scores, setScores] = useState<Score[]>([]);
+  const [streakData, setStreakData] = useState<{ current_streak:number; longest_streak:number } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
+  const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
 
   useEffect(() => {
-    if (user) getUserScores(user.id).then(s => { setScores(s); setLoading(false); });
-    else setLoading(false);
+    if (!user) { setLoading(false); return; }
+    Promise.all([
+      getUserScores(user.id),
+      getStreak(user.id),
+    ]).then(([s, streak]) => {
+      setScores(s ?? []);
+      if (streak) setStreakData({ current_streak: streak.current_streak ?? 0, longest_streak: streak.longest_streak ?? 0 });
+      setTokens(getTokensRemaining(user.id));
+      setLoading(false);
+    });
   }, [user]);
 
   if (!user) return (
-    <div style={{ minHeight:"100vh", background:"#FDFCFB" }}>
+    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
       <Navbar/>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"80vh", gap:20, textAlign:"center", padding:24 }}>
         <div style={{ width:64, height:64, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <LogIn size={28} color="#4F6EF7"/>
         </div>
         <div>
-          <h2 style={{ fontSize:22, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:6 }}>Sign in to view your profile</h2>
-          <p style={{ fontSize:14, color:"#64748B" }}>Track your progress, scores, and streaks.</p>
+          <h2 style={{ fontSize:22, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:6 }}>Sign in to view your profile</h2>
+          <p style={{ fontSize:14, color:"var(--text3)" }}>Track your progress, scores, and streaks.</p>
         </div>
         <div style={{ display:"flex", gap:12 }}>
-          <Link href="/auth/signin" style={{ padding:"11px 22px", borderRadius:14, border:"1.5px solid #E2E8F0", color:"#374151", fontWeight:600, fontSize:13, textDecoration:"none" }}>Sign In</Link>
+          <Link href="/auth/signin" style={{ padding:"11px 22px", borderRadius:14, border:"1.5px solid var(--border2)", color:"var(--text2)", fontWeight:600, fontSize:13, textDecoration:"none" }}>Sign In</Link>
           <Link href="/auth/signup" style={{ padding:"11px 22px", borderRadius:14, background:ACCENT, color:"white", fontWeight:700, fontSize:13, textDecoration:"none" }}>Create Account</Link>
         </div>
       </div>
@@ -48,117 +89,191 @@ export default function ProfilePage() {
   const totalXP = scores.reduce((s,sc)=>s+sc.xp_earned,0);
   const bestScore = scores.reduce((b,s)=>s.xp_earned>b?s.xp_earned:b,0);
   const uniqueGames = new Set(scores.map(s=>s.game_slug)).size;
-  const recent = scores.slice(0,10);
   const byGame = Object.entries(
     scores.reduce((acc,s)=>{
       if(!acc[s.game_slug]) acc[s.game_slug]={count:0,totalXP:0,best:0};
-      acc[s.game_slug].count++; acc[s.game_slug].totalXP+=s.xp_earned;
+      acc[s.game_slug].count++;
+      acc[s.game_slug].totalXP+=s.xp_earned;
       acc[s.game_slug].best=Math.max(acc[s.game_slug].best,s.xp_earned);
       return acc;
     },{} as Record<string,{count:number;totalXP:number;best:number}>)
   ).sort((a,b)=>b[1].totalXP-a[1].totalXP);
 
-  return (
-    <div style={{ minHeight:"100vh", background:"#FDFCFB" }}>
-      <Navbar/>
-      <main style={{ maxWidth:720, margin:"0 auto", padding:"76px 16px 60px" }}>
+  const earned = ACHIEVEMENTS.filter(a=>a.check(scores));
+  const currentStreak = streakData?.current_streak ?? 0;
+  const longestStreak = streakData?.longest_streak ?? 0;
 
-        {/* Header */}
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} style={{ display:"flex", alignItems:"center", gap:16, marginBottom:28, marginTop:12 }}>
-          <div style={{ width:60, height:60, borderRadius:18, background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, fontWeight:700, color:"white", fontFamily:"Georgia,serif", boxShadow:"0 8px 24px rgba(79,110,247,0.3)" }}>
+  return (
+    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
+      <Navbar/>
+      <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 20px 60px" }}>
+
+        {/* Profile header */}
+        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+          style={{ display:"flex", alignItems:"center", gap:20, marginBottom:28, marginTop:12, flexWrap:"wrap" }}>
+          <div style={{ width:72, height:72, borderRadius:22, background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, fontWeight:700, color:"white", fontFamily:"Georgia,serif", boxShadow:"0 8px 24px rgba(79,110,247,0.3)", flexShrink:0 }}>
             {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
           </div>
-          <div>
-            <h1 style={{ fontSize:22, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:2 }}>
-              {profile?.username ?? "Player"}
-            </h1>
-            <p style={{ fontSize:12, color:"#94A3B8" }}>{user.email}</p>
-            <span style={{ display:"inline-block", marginTop:4, fontSize:10, fontWeight:700, padding:"2px 10px", borderRadius:10,
-              background: profile?.subscription_status==="free" ? "#F1F5F9" : "#EEF2FF",
-              color: profile?.subscription_status==="free" ? "#64748B" : "#4F6EF7" }}>
-              {profile?.subscription_status==="free" ? "Free Plan" : "Pro Subscriber"}
-            </span>
+          <div style={{ flex:1, minWidth:200 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4, flexWrap:"wrap" }}>
+              <h1 style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
+                {profile?.username ?? "Player"}
+              </h1>
+              {currentStreak >= 3 && (
+                <div style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:20, background:"rgba(245,158,11,0.1)", border:"0.5px solid rgba(245,158,11,0.3)" }}>
+                  <Flame size={13} color="#F59E0B" fill="#F59E0B"/>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#B45309" }}>{currentStreak} day streak</span>
+                </div>
+              )}
+            </div>
+            <p style={{ fontSize:12, color:"var(--text4)", marginBottom:8 }}>{user.email}</p>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+              <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10,
+                background: isPro ? "#EEF2FF" : "#F1F5F9",
+                color: isPro ? "#4F6EF7" : "var(--text4)" }}>
+                {isPro ? "⚡ Pro Subscriber" : "Free Plan"}
+              </span>
+              {!isPro && (
+                <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10, background:"rgba(79,110,247,0.08)", color:"#4F6EF7" }}>
+                  <Zap size={9} style={{ display:"inline", marginRight:3 }}/>{tokens}/{FREE_DAILY_TOKENS} plays today
+                </span>
+              )}
+            </div>
           </div>
+          <Link href="/daily" style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:14, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:700, flexShrink:0 }}>
+            <Calendar size={14}/> Daily Challenges
+          </Link>
         </motion.div>
 
         {/* Stats */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12, marginBottom:20 }}>
-          {[
-            { icon:Zap,    label:"Total XP",    value:totalXP.toLocaleString(), color:"#4F6EF7" },
-            { icon:Target, label:"Games Played", value:scores.length.toString(), color:"#9C6BE8" },
-            { icon:Trophy, label:"Best Score",   value:bestScore.toString(),     color:"#F59E0B" },
-            { icon:Star,   label:"Games Tried",  value:`${uniqueGames}/6`,       color:"#22C55E" },
-          ].map((s,i)=>(
-            <motion.div key={i} initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
-              style={{ background:"white", borderRadius:18, border:"0.5px solid rgba(0,0,0,0.07)", padding:"16px 18px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-              <div style={{ width:32, height:32, borderRadius:10, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
-                <s.icon size={16} color={s.color}/>
-              </div>
-              <p style={{ fontSize:22, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:2 }}>{s.value}</p>
-              <p style={{ fontSize:11, color:"#94A3B8" }}>{s.label}</p>
-            </motion.div>
-          ))}
+          <StatCard icon={Zap}      label="Total XP"       value={totalXP.toLocaleString()} color="#4F6EF7"/>
+          <StatCard icon={Target}   label="Stages Played"  value={scores.length.toString()}  color="#9C6BE8"/>
+          <StatCard icon={Trophy}   label="Best Score"     value={bestScore.toString()}       color="#F59E0B"/>
+          <StatCard icon={Star}     label="Games Tried"    value={`${uniqueGames}/20`}        color="#22C55E"/>
         </div>
 
+        {/* Streak card */}
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }}
+          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <Flame size={18} color="#F59E0B" fill="#F59E0B"/>
+              <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)" }}>Streak</h2>
+            </div>
+            <div style={{ display:"flex", gap:20 }}>
+              <div style={{ textAlign:"center" }}>
+                <p style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{currentStreak}</p>
+                <p style={{ fontSize:10, color:"var(--text4)" }}>Current</p>
+              </div>
+              <div style={{ textAlign:"center" }}>
+                <p style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{longestStreak}</p>
+                <p style={{ fontSize:10, color:"var(--text4)" }}>Best</p>
+              </div>
+            </div>
+          </div>
+          {/* 7-day streak progress */}
+          <div style={{ display:"flex", gap:6 }}>
+            {Array.from({length:7},(_,i)=>{
+              const filled = currentStreak > 0 && i < (currentStreak%7||7);
+              return(
+                <div key={i} style={{ flex:1, height:8, borderRadius:4,
+                  background:filled?"linear-gradient(90deg,#F97316,#F59E0B)":"var(--bg3)",
+                  transition:"background 0.3s" }}/>
+              );
+            })}
+          </div>
+          <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
+            {currentStreak%7===0&&currentStreak>0
+              ? "🎉 7-day streak! +10 bonus plays awarded!"
+              : `${7-(currentStreak%7||7)} more days for +10 bonus plays`}
+          </p>
+        </motion.div>
+
+        {/* Achievements */}
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.12 }}
+          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
+            <Crown size={16} color="#F59E0B"/>
+            <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)" }}>Achievements</h2>
+            <span style={{ fontSize:11, color:"var(--text4)", marginLeft:"auto" }}>{earned.length}/{ACHIEVEMENTS.length} earned</span>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
+            {ACHIEVEMENTS.map(a=>{
+              const done = a.check(scores);
+              return(
+                <div key={a.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:14,
+                  background:done?"rgba(79,110,247,0.06)":"var(--bg2)",
+                  border:`0.5px solid ${done?"rgba(79,110,247,0.2)":"var(--border)"}`,
+                  opacity:done?1:0.5 }}>
+                  <span style={{ fontSize:20, flexShrink:0 }}>{a.icon}</span>
+                  <div style={{ minWidth:0 }}>
+                    <p style={{ fontSize:12, fontWeight:700, color:"var(--text1)", marginBottom:1 }}>{a.name}</p>
+                    <p style={{ fontSize:10, color:"var(--text4)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
         {/* By game */}
-        <div style={{ background:"white", borderRadius:20, border:"0.5px solid rgba(0,0,0,0.07)", padding:20, marginBottom:16, boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-          <h2 style={{ fontSize:16, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:16 }}>By Game</h2>
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.16 }}
+          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>By Game</h2>
           {loading ? (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[1,2,3].map(i=><div key={i} style={{ height:48, borderRadius:12, background:"#F8F7F5", animation:"pulse 1.5s infinite" }}/>)}
+              {[1,2,3].map(i=><div key={i} style={{ height:48, borderRadius:12, background:"var(--bg2)" }}/>)}
             </div>
           ) : byGame.length===0 ? (
             <div style={{ textAlign:"center", padding:"24px 0" }}>
-              <p style={{ color:"#94A3B8", fontSize:13, marginBottom:12 }}>No games played yet.</p>
+              <p style={{ color:"var(--text4)", fontSize:13, marginBottom:12 }}>No games played yet.</p>
               <Link href="/games" style={{ fontSize:13, fontWeight:600, color:"#4F6EF7", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}>
                 Start playing <ArrowRight size={13}/>
               </Link>
             </div>
           ) : byGame.map(([slug,data])=>(
-            <Link key={slug} href={`/games/${slug}`} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid #FAFAF9", textDecoration:"none" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"#F8F7F5", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Link key={slug} href={`/games/${slug}`} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--border)", textDecoration:"none" }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"var(--bg2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <GameIcon slug={slug} size={22}/>
               </div>
-              <div style={{ flex:1 }}>
+              <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                  <p style={{ fontSize:13, fontWeight:600, color:"#1C1917" }}>{GAME_NAMES[slug]??slug}</p>
+                  <p style={{ fontSize:13, fontWeight:600, color:"var(--text1)" }}>{GAME_NAMES[slug]??slug}</p>
                   <p style={{ fontSize:12, fontWeight:700, color:"#4F6EF7" }}>{data.totalXP.toLocaleString()} XP</p>
                 </div>
-                <div style={{ height:3, background:"#F1EDE8", borderRadius:2 }}>
+                <div style={{ height:3, background:"var(--bg3)", borderRadius:2 }}>
                   <div style={{ height:3, borderRadius:2, background:ACCENT, width:`${Math.min((data.totalXP/Math.max(totalXP,1))*100,100)}%` }}/>
                 </div>
               </div>
             </Link>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Recent activity */}
-        <div style={{ background:"white", borderRadius:20, border:"0.5px solid rgba(0,0,0,0.07)", padding:20, boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-          <h2 style={{ fontSize:16, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:16 }}>Recent Activity</h2>
-          {recent.length===0 ? (
-            <p style={{ color:"#94A3B8", fontSize:13, textAlign:"center", padding:"16px 0" }}>No activity yet.</p>
-          ) : recent.map(s=>(
-            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid #FAFAF9" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"#F8F7F5", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <GameIcon slug={s.game_slug} size={22}/>
+        {/* Recent */}
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
+          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:20, boxShadow:"var(--shadow-sm)" }}>
+          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>Recent Activity</h2>
+          {scores.slice(0,8).map(s=>(
+            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--border)" }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"var(--bg2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <GameIcon slug={s.game_slug} size={20}/>
               </div>
               <div style={{ flex:1 }}>
-                <p style={{ fontSize:13, fontWeight:600, color:"#1C1917" }}>{GAME_NAMES[s.game_slug]??s.game_slug} · Stage {s.stage_number}</p>
-                <p style={{ fontSize:11, color:"#94A3B8", textTransform:"capitalize" }}>{s.difficulty}</p>
+                <p style={{ fontSize:13, fontWeight:600, color:"var(--text1)" }}>{GAME_NAMES[s.game_slug]??s.game_slug} · Stage {s.stage_number}</p>
+                <p style={{ fontSize:11, color:"var(--text4)", textTransform:"capitalize" }}>{s.difficulty} · {new Date(s.completed_at).toLocaleDateString()}</p>
               </div>
-              <div style={{ textAlign:"right" }}>
-                <p style={{ fontSize:13, fontWeight:700, color:"#4F6EF7" }}>{s.xp_earned} XP</p>
-                <p style={{ fontSize:11, color:"#94A3B8" }}>{new Date(s.completed_at).toLocaleDateString()}</p>
-              </div>
+              <p style={{ fontSize:13, fontWeight:700, color:"#4F6EF7", flexShrink:0 }}>{s.xp_earned} XP</p>
             </div>
           ))}
-        </div>
+          {scores.length===0&&<p style={{ color:"var(--text4)", fontSize:13, textAlign:"center", padding:"16px 0" }}>No activity yet.</p>}
+        </motion.div>
 
-        {profile?.subscription_status==="free" && (
-          <motion.div initial={{opacity:0}} whileInView={{opacity:1}} viewport={{once:true}}
-            style={{ marginTop:20, borderRadius:20, padding:"20px 24px", background:ACCENT, color:"white", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+        {!isPro && (
+          <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }}
+            style={{ borderRadius:20, padding:"20px 24px", background:ACCENT, color:"white", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
             <div>
-              <p style={{ fontSize:15, fontWeight:700, marginBottom:3 }}>Unlock All 20 Games</p>
+              <p style={{ fontSize:15, fontWeight:700, marginBottom:3 }}>Unlock Unlimited Plays</p>
               <p style={{ fontSize:12, color:"rgba(255,255,255,0.75)" }}>1,000 stages each · Infinite Mode · Family Leaderboards — $2/mo.</p>
             </div>
             <Link href="/pricing" style={{ padding:"10px 20px", borderRadius:14, background:"white", color:"#4F6EF7", fontWeight:700, fontSize:13, textDecoration:"none", flexShrink:0 }}>

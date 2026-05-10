@@ -139,7 +139,7 @@ export default function HeartsPage(){
           }
           if(xpState){
             const won=playerScore<=cpuScore;
-            if(won){const earned=finalizeXP(xpState);setFinalXP(earned);playSuccess();setTimeout(()=>triggerConfetti(),80);if(user)saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+            if(won){const earned=finalizeXP(xpState);setFinalXP(earned);playSuccess();setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
             else playError();
           }
         },800);

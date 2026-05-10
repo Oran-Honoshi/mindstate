@@ -83,7 +83,7 @@ export default function WordSlingPage(){
         const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
         if(timerRef.current)clearInterval(timerRef.current);
         setTimeout(()=>triggerConfetti(),80);
-        if(user)saveScore({user_id:user.id,game_slug:"word-sling",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+        if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"word-sling",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
       }
     } else {
       setFeedback({text:"Not a word",ok:false});

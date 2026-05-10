@@ -36,14 +36,14 @@ export const metadata: Metadata = {
     title:"MindState — Sharper Every Day.",
     description:"20 logic games. 1,000+ stages each. One elegant training suite.",
     images:[{
-      url:"https://mindstate.vercel.app/icons/icon-512.png",
+      url:"https://mindstate.vercel.app/og-image.svg",
       width:512, height:512, alt:"MindState"
     }],
   },
   twitter:{
     card:"summary",
     title:"MindState — Sharper Every Day.",
-    images:["https://mindstate.vercel.app/icons/icon-512.png"],
+    images:["https://mindstate.vercel.app/og-image.svg"],
   },
   robots:{ index:true, follow:true },
   manifest:"/manifest.json",
@@ -84,6 +84,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="msapplication-TileColor" content="#4F6EF7"/>
 
         {/* Theme init — prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html:`
+          if('serviceWorker' in navigator){
+            window.addEventListener('load', function(){
+              navigator.serviceWorker.register('/sw.js').catch(function(){});
+            });
+          }
+        `}}/>
         <script dangerouslySetInnerHTML={{ __html:`
           (function(){
             try {
