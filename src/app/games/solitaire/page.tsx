@@ -126,7 +126,7 @@ export default function SolitairePage(){
         return;
       }
     }
-    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});}
+    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});
     playClick();
   }
 
