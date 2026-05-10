@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 import { generateQueensBoard, type QueensBoard } from "@/lib/games/queensGenerator";
 import {
   createXPState, calculateXP, finalizeXP,

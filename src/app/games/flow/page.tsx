@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 import { generateFlowBoard, checkFlowComplete, type FlowBoard, type Color } from "@/lib/games/flowGenerator";
 import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -185,6 +186,7 @@ export default function FlowGame() {
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:12, color:"#94A3B8" }}>{connected}/{total} flows</span>
               <span style={{ fontSize:12, color:"#94A3B8", fontFamily:"monospace" }}>{elapsed}</span>
+              <GameInstructions game="flow"/>
               <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid #E2E8F0", background:"white", cursor:"pointer", color:"#94A3B8", display:"flex" }}><RotateCcw size={13}/></button>
             </div>
           </div>

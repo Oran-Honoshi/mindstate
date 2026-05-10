@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Flag, Bomb } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 import {
   createXPState, calculateXP, finalizeXP,
   formatElapsed, type XPState, type Difficulty,

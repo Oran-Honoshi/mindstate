@@ -114,6 +114,7 @@ export default function WordSlingPage(){
               <span style={{fontSize:12,color:"#4F6EF7",fontWeight:700}}>{totalScore} pts</span>
               <span style={{fontSize:11,color:"#94A3B8"}}>{found.length}/{board.solutions.length} words</span>
               <span style={{fontSize:12,color:"#94A3B8",fontFamily:"monospace"}}>{elapsed}</span>
+              <GameInstructions game="word-sling"/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid #E2E8F0",background:"white",cursor:"pointer",color:"#94A3B8",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lightbulb, Share2, RotateCcw, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 import {
   generateTangoBoard, validateBoard, buildSeed,
   type Cell, type TangoBoard, type CellStatus,

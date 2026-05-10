@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 import {
   createXPState, calculateXP, finalizeXP,
   formatElapsed, xpColor, type XPState, type Difficulty
