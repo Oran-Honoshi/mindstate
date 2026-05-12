@@ -41,6 +41,7 @@ function getDifficulty(stage: number): Difficulty {
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
+  const[hintsUsed,setHintsUsed]=useState(0);
   useEffect(() => {
     const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
     return () => clearInterval(iv);

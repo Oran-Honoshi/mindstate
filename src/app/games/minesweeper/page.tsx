@@ -119,6 +119,7 @@ const NUM_COLORS: Record<number,string> = {1:"#2563EB",2:"#16A34A",3:"#DC2626",4
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap,setSnap] = useState(()=>calculateXP(xpState));
+  const[hintsUsed,setHintsUsed]=useState(0);
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
   const pct=snap.percentRemaining;
   const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
