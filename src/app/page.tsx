@@ -1,4 +1,5 @@
 "use client";
+// Game snapshot components imported inline below
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -160,6 +161,163 @@ const GAMES = [
   { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike",       free:false },
   { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce the mines",       free:false },
 ];
+
+
+// ── Landing page mini snapshots for non-preview game cards ───────────────────
+function LandingSnapshot({ slug }: { slug: string }) {
+  const snaps: Record<string, React.ReactNode> = {
+    "flow": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(79,110,247,0.04)" rx={8}/>
+        {[["#EF4444","0,0","0,3"],[" #3B82F6","3,0","3,3"],["#22C55E","0,2","2,0"],["#F59E0B","1,3","3,2"]].map(([c,s,e],i)=>(
+          <g key={i}>
+            <circle cx={parseInt(s.split(",")[1])*20+10} cy={parseInt(s.split(",")[0])*20+10} r={8} fill={c}/>
+            <circle cx={parseInt(e.split(",")[1])*20+10} cy={parseInt(e.split(",")[0])*20+10} r={8} fill={c}/>
+          </g>
+        ))}
+      </svg>
+    ),
+    "bridges": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(180,83,9,0.04)" rx={8}/>
+        <line x1={15} y1={15} x2={65} y2={15} stroke="#374151" strokeWidth={2}/>
+        <line x1={15} y1={65} x2={65} y2={65} stroke="#374151" strokeWidth={2}/>
+        <line x1={15} y1={15} x2={15} y2={65} stroke="#374151" strokeWidth={2}/>
+        <line x1={65} y1={15} x2={65} y2={65} stroke="#374151" strokeWidth={2}/>
+        {[[15,15,3],[65,15,2],[15,65,2],[65,65,3]].map(([x,y,n],i)=>(
+          <g key={i}><circle cx={x} cy={y} r={10} fill="#4F6EF7"/><text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"white"}}>{n}</text></g>
+        ))}
+      </svg>
+    ),
+    "nonogram": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(190,24,93,0.04)" rx={8}/>
+        {[[1,0,1,1],[0,1,1,0],[1,1,0,1],[1,0,1,1]].map((row,r)=>row.map((cell,c)=>(
+          <rect key={`${r}-${c}`} x={c*16+16} y={r*16+16} width={14} height={14} fill={cell?"#1C1917":"rgba(0,0,0,0.06)"} rx={2}/>
+        )))}
+      </svg>
+    ),
+    "pattern-match": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(124,58,237,0.04)" rx={8}/>
+        {[3,6,9,12].map((n,i)=>(
+          <g key={i}><rect x={i*16+4} y={25} width={13} height={13} rx={3} fill="rgba(124,58,237,0.15)" stroke="#7C3AED" strokeWidth={1}/><text x={i*16+10.5} y={34} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#7C3AED"}}>{n}</text></g>
+        ))}
+        <rect x={68} y={25} width={13} height={13} rx={3} fill="none" stroke="#7C3AED" strokeWidth={1.5} strokeDasharray="3"/>
+        <text x={74.5} y={34} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#7C3AED"}}>?</text>
+        <text x={40} y={55} textAnchor="middle" style={{fontSize:9,fill:"#94A3B8"}}>Add 3 each time</text>
+      </svg>
+    ),
+    "2048-pro": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="#FAF8EF" rx={8}/>
+        <rect x={4} y={4} width={72} height={72} rx={6} fill="#BBADA0"/>
+        {[[2,4,8,16],[32,64,128,256],[0,2,4,8],[0,0,2,4]].map((row,r)=>row.map((val,c)=>{
+          const clrs:Record<number,string>={0:"#CDC1B4",2:"#EEE4DA",4:"#EDE0C8",8:"#F2B179",16:"#F59563",32:"#F67C5F",64:"#F65E3B",128:"#EDCF72",256:"#EDC22E"};
+          return<rect key={`${r}-${c}`} x={c*17+8} y={r*17+8} width={14} height={14} rx={2} fill={clrs[val]||"#CDC1B4"}/>;
+        }))}
+      </svg>
+    ),
+    "kakuro": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(29,78,216,0.04)" rx={8}/>
+        {[[0,0,"B"],[0,1,"W"],[0,2,"W"],[1,0,"W"],[1,1,"W"],[1,2,"B"],[2,0,"W"],[2,1,"B"],[2,2,"W"]].map(([r,c,t],i)=>(
+          <g key={i}>
+            <rect x={c*22+12} y={r*22+12} width={20} height={20} fill={t==="B"?"#374151":"white"} stroke="#E2E8F0" strokeWidth={0.5}/>
+            {t==="B"&&i===0&&<><line x1={12} y1={12} x2={32} y2={32} stroke="#555" strokeWidth={0.5}/><text x={28} y={30} style={{fontSize:7,fill:"white",fontWeight:700}}>9</text></>}
+            {t==="B"&&i===5&&<><line x1={56} y1={34} x2={76} y2={54} stroke="#555" strokeWidth={0.5}/><text x={70} y={52} style={{fontSize:7,fill:"white",fontWeight:700}}>3</text></>}
+            {t==="W"&&i===1&&<text x={22+12+10} y={22+10+8} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"#4F6EF7"}}>4</text>}
+          </g>
+        ))}
+      </svg>
+    ),
+    "gravity-sort": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(194,65,12,0.04)" rx={8}/>
+        {[["#EF4444","#3B82F6","#22C55E"],["#3B82F6","#22C55E","#EF4444"],["#22C55E","#EF4444","#3B82F6"]].map((col,c)=>col.map((color,r)=>(
+          <rect key={`${c}-${r}`} x={c*22+12} y={r*18+14} width={18} height={15} rx={4} fill={color} opacity={0.85}/>
+        )))}
+        <text x={40} y={74} textAnchor="middle" style={{fontSize:8,fill:"#94A3B8"}}>Sort by color</text>
+      </svg>
+    ),
+    "hex-merge": (
+      <svg width={80} height={80} viewBox="-40 -40 80 80">
+        <rect x={-40} y={-40} width={80} height={80} fill="rgba(13,148,136,0.04)" rx={8}/>
+        {[[-1,-1,2],[0,-1,4],[1,-2,2],[-1,0,4],[0,0,8],[1,-1,4],[-1,1,2],[0,1,4],[1,0,2]].map(([q,r,val],i)=>{
+          const x=14*(1.5*q),y=14*(Math.sqrt(3)/2*q+Math.sqrt(3)*r);
+          const clrs:Record<number,string>={2:"#DBEAFE",4:"#BBF7D0",8:"#FDE68A"};
+          const pts=Array.from({length:6},(_,k)=>{const a=Math.PI/180*(60*k-30);return`${x+12*Math.cos(a)},${y+12*Math.sin(a)}`;}).join(" ");
+          return<g key={i}><polygon points={pts} fill={clrs[val]} stroke="rgba(0,0,0,0.1)" strokeWidth={0.5}/><text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#374151"}}>{val}</text></g>;
+        })}
+      </svg>
+    ),
+    "logic-path": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(8,145,178,0.04)" rx={8}/>
+        {[[false,true,false,true],[true,false,true,false],[false,true,false,true],[true,true,false,false],[false,false,true,true],[true,false,true,false],[false,true,true,false],[false,false,false,true],[true,false,false,false]].map((pipe,i)=>{
+          const r=Math.floor(i/3),c=i%3,cx=c*22+22,cy=r*22+22,w=3;const color="#4F6EF7";
+          return<g key={i}>{pipe[0]&&<rect x={cx-w/2} y={cy-11} width={w} height={11} fill={color} rx={1}/>}{pipe[1]&&<rect x={cx} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}{pipe[2]&&<rect x={cx-w/2} y={cy} width={w} height={11} fill={color} rx={1}/>}{pipe[3]&&<rect x={cx-11} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}<circle cx={cx} cy={cy} r={w*0.9} fill={color}/></g>;
+        })}
+      </svg>
+    ),
+    "lightup": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(202,138,4,0.04)" rx={8}/>
+        {[[0,0,"B1"],[0,1,"💡"],[0,2,"lit"],[1,0,"💡"],[1,1,"B"],[1,2,"💡"],[2,0,"lit"],[2,1,"💡"],[2,2,"B0"]].map((item,i)=>{
+          const r=Math.floor(i/3),c=i%3,type=item[2] as string;
+          const isBlack=type.startsWith("B");
+          return<g key={i}><rect x={c*24+8} y={r*24+8} width={22} height={22} fill={isBlack?"#374151":type==="💡"?"#FFFBEB":"#FFFDE7"} stroke="#E2E8F0" strokeWidth={0.5}/>{type==="💡"&&<text x={c*24+19} y={r*24+21} textAnchor="middle" style={{fontSize:13}}>💡</text>}{isBlack&&type.length>1&&<text x={c*24+19} y={r*24+21} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{type.slice(1)}</text>}</g>;
+        })}
+      </svg>
+    ),
+    "patches": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(245,158,11,0.04)" rx={8}/>
+        {[[0,"#EF4444"],[0,"#EF4444"],[1,"#3B82F6"],[1,"#3B82F6"],[0,"#EF4444"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[3,"#F59E0B"],[2,"#22C55E"],[3,"#F59E0B"]].map(([,color],i)=>{
+          const r=Math.floor(i/4),c=i%4;
+          return<rect key={i} x={c*16+8} y={r*16+8} width={15} height={15} fill={color} opacity={0.8} rx={2}/>;
+        })}
+      </svg>
+    ),
+    "word-sling": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(4,120,87,0.04)" rx={8}/>
+        {["B","R","A","I","N"].map((l,i)=>(
+          <g key={i}><rect x={i*13+7} y={8} width={12} height={16} rx={3} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={i*13+13} y={18} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"#1C1917"}}>{l}</text></g>
+        ))}
+        {["T","R","A","I","N"].map((l,i)=>(
+          <g key={i}><rect x={i*13+7} y={28} width={12} height={16} rx={3} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={i*13+13} y={38} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"#1C1917"}}>{l}</text></g>
+        ))}
+        <rect x={8} y={52} width={28} height={13} rx={6} fill="#F0FDF4" stroke="#86EFAC" strokeWidth={1}/>
+        <text x={22} y={60} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#15803D"}}>BRAIN</text>
+        <rect x={40} y={52} width={28} height={13} rx={6} fill="#F0FDF4" stroke="#86EFAC" strokeWidth={1}/>
+        <text x={54} y={60} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#15803D"}}>TRAIN</text>
+      </svg>
+    ),
+    "hearts": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(225,29,72,0.04)" rx={8}/>
+        {[["A♠","#1C1917"],["K♥","#DC2626"],["Q♦","#DC2626"],["J♣","#1C1917"]].map(([card,color],i)=>(
+          <g key={i}><rect x={i*17+6} y={28} width={15} height={24} rx={3} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={i*17+13.5} y={40} textAnchor="middle" dominantBaseline="middle" style={{fontSize:7,fontWeight:700,fill:color}}>{card}</text></g>
+        ))}
+        <text x={40} y={65} textAnchor="middle" style={{fontSize:9,fontWeight:600,fill:"#94A3B8"}}>Avoid ♥ & Q♠</text>
+      </svg>
+    ),
+    "solitaire": (
+      <svg width={80} height={80} viewBox="0 0 80 80">
+        <rect width={80} height={80} fill="rgba(67,56,202,0.04)" rx={8}/>
+        {[["A♥","#DC2626",6,6],["A♦","#DC2626",22,6],["A♣","#1C1917",38,6],["A♠","#1C1917",54,6],
+          ["K♠","#1C1917",6,34],["Q♥","#DC2626",6,46],["J♣","#1C1917",6,58]].map(([card,color,x,y],i)=>(
+          <g key={i}><rect x={x} y={y} width={14} height={20} rx={2} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={x+7} y={y+12} textAnchor="middle" dominantBaseline="middle" style={{fontSize:6,fontWeight:700,fill:color}}>{card}</text></g>
+        ))}
+      </svg>
+    ),
+  };
+
+  const snap = snaps[slug];
+  if (!snap) return <GameIcon slug={slug} size={52}/>;
+  return <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{snap}</div>;
+}
 
 // ── Game Card ─────────────────────────────────────────────────────────────────
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {

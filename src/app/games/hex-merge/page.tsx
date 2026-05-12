@@ -13,6 +13,7 @@ import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 function shareResult(stage:number,xp:number,best:number){const text=`⬡ MindState · Hex Merge Stage ${stage} · ${xp} XP · Best: ${best}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
@@ -124,7 +125,7 @@ export default function HexMergePage(){
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:12,color:"var(--text4)"}}>Best: {bestTile||"—"}</span>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="hex-merge"/>
+              <GameInstructions game="hex-merge" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
