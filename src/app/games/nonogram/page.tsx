@@ -38,6 +38,7 @@ export default function NonogramGame() {
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
@@ -53,7 +54,10 @@ export default function NonogramGame() {
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user)consumeToken(user.id);
+    if(user){
+      const ok=consumeToken(user.id);
+      if(!ok){setShowTokenModal(true);return;}
+    }
   },[user]);
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);

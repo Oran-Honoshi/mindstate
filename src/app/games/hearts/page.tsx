@@ -6,6 +6,7 @@ import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
 import{CheckProgressButton}from"@/components/ui/CheckProgressButton";

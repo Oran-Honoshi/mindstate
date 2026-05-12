@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 
 function getDifficulty(stage: number): Difficulty {

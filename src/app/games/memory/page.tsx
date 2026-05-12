@@ -25,6 +25,7 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 
 function getDifficulty(stage: number): Difficulty {
   if (stage <= 300) return "easy";
@@ -290,6 +291,11 @@ export default function MemoryGame() {
       </main>
 
       
+      
+      <OutOfTokensModal
+        gameName="Memory"
+        open={showTokenModal}
+        onClose={()=>setShowTokenModal(false)}/>
       <CompletionPopup
         open={completed}
         stage={stage}

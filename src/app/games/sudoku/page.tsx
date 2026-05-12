@@ -17,6 +17,7 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 
 type SudokuCell = number | null;
 type SudokuBoard = SudokuCell[][];
@@ -114,6 +115,7 @@ export default function SudokuGame() {
   const [xpState, setXpState] = useState<XPState|null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
   const [flashSections, setFlashSections] = useState<Set<string>>(new Set());
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -293,6 +295,11 @@ export default function SudokuGame() {
       </main>
 
       
+      
+      <OutOfTokensModal
+        gameName="Sudoku"
+        open={showTokenModal}
+        onClose={()=>setShowTokenModal(false)}/>
       <CompletionPopup
         open={completed}
         stage={stage}

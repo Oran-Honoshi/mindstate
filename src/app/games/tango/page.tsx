@@ -21,6 +21,7 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
@@ -70,6 +71,7 @@ export default function TangoGame() {
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintFlash, setHintFlash] = useState(false);
   const [squish, setSquish] = useState<string|null>(null);
@@ -356,6 +358,11 @@ export default function TangoGame() {
 
       {/* Completion overlay */}
       
+      
+      <OutOfTokensModal
+        gameName="Tango"
+        open={showTokenModal}
+        onClose={()=>setShowTokenModal(false)}/>
       <CompletionPopup
         open={completed}
         stage={stage}
