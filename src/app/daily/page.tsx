@@ -6,6 +6,7 @@ import { Flame, Calendar, ChevronRight, Check, Zap, Clock } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { GameIcon } from "@/components/icons/GameIcons";
+import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { useAuthStore } from "@/store/authStore";
 import {
   DAILY_GAMES, getTodaysFeaturedGame, getDailyDate,
@@ -162,7 +163,7 @@ export default function DailyPage() {
                   </div>
                 </div>
                 <div style={{ opacity:0.25, transform:"scale(1.8) rotate(-10deg)" }}>
-                  <GameIcon slug={todayFeatured} size={80}/>
+                  <div style={{transform:"scale(0.85)",transformOrigin:"center"}}><GameSnapshot slug={todayFeatured}/></div>
                 </div>
               </div>
             </div>
@@ -194,10 +195,13 @@ export default function DailyPage() {
                     onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px)";el.style.boxShadow="var(--shadow-md)";}}
                     onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(0)";el.style.boxShadow="var(--shadow-sm)";}}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                        <div style={{ width:36, height:36, borderRadius:10,
-                          background:`linear-gradient(135deg,${gc2.from}20,${gc2.to}30)`,
-                          display:"flex", alignItems:"center", justifyContent:"center" }}>
-                          <GameIcon slug={game} size={20}/>
+                        <div style={{ width:52, height:52, borderRadius:12,
+                          background:"var(--bg2)",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          overflow:"hidden" }}>
+                          <div style={{ transform:"scale(0.55)", transformOrigin:"center" }}>
+                            <GameSnapshot slug={game}/>
+                          </div>
                         </div>
                         {done ? (
                           <div style={{ width:22, height:22, borderRadius:"50%", background:"#F0FDF4", border:"1.5px solid #86EFAC", display:"flex", alignItems:"center", justifyContent:"center" }}>
