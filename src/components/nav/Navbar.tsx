@@ -30,10 +30,11 @@ export function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   const navLinks = [
-    { href:"/games", section:"games",       label:"Games",       icon:Gamepad2  },
-    { href:"/daily", section:"how-it-works",       label:"Daily",       icon:Star      },
-    { href:"/leaderboard", section:"coming-soon", label:"Leaderboard", icon:BarChart2 },
-    { href:"/family", section:"faq",      label:"Family",      icon:Users     },
+    { href:"/games",       section:"games",        label:"Games",       icon:Gamepad2 },
+    { href:"/daily",       section:"how-it-works", label:"Daily",       icon:Star     },
+    { href:"/leaderboard", section:"coming-soon",  label:"Leaderboard", icon:BarChart2},
+    { href:"/family",      section:"pricing",      label:"Family",      icon:Users    },
+    { href:"/pricing",     section:"pricing",      label:"Pricing",     icon:Tag      },
   ];
 
   const isActive = (href: string) => pathname?.startsWith(href);
