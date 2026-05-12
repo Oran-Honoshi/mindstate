@@ -263,7 +263,7 @@ export default function MemoryGame() {
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
               xpState.startTime=xpState.startTime-60000;
-            }}}
+            }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
@@ -271,7 +271,7 @@ export default function MemoryGame() {
               xpState.startTime=xpState.startTime-30000;
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
-            }}}
+            }}
             disabled={completed}
             xpCost={50}/>
         </div>
