@@ -10,7 +10,7 @@ import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { useAuthStore } from "@/store/authStore";
 import {
   DAILY_GAMES, getTodaysFeaturedGame, getDailyDate,
-  isDailyCompleted, formatTimeUntilReset, getDailyStageNumber,
+  isDailyCompleted, formatTimeUntilReset, getDailyStageNumber, getDailyStageInfo,
   type GameSlug,
 } from "@/lib/games/dailyChallenge";
 import { getStreak } from "@/lib/supabase/streaks";
@@ -103,6 +103,17 @@ export default function DailyPage() {
               <Flame size={13} color="#F59E0B" fill="#F59E0B"/>
               <span style={{ fontSize:12, fontWeight:700, color:"#B45309" }}>{streak} day streak</span>
             </div>
+            {/* Difficulty rotation legend */}
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              {[{d:"Mon/Thu",label:"Easy",color:"#15803D",bg:"rgba(34,197,94,0.1)"},
+                {d:"Tue/Fri",label:"Medium",color:"#B45309",bg:"rgba(245,158,11,0.1)"},
+                {d:"Wed/Sat/Sun",label:"Hard",color:"#DC2626",bg:"rgba(239,68,68,0.1)"}].map(t=>(
+                <span key={t.d} style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:8,
+                  background:t.bg,color:t.color}}>
+                  {t.d}: {t.label}
+                </span>
+              ))}
+            </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <Clock size={12} color="var(--text4)"/>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>Resets in {countdown}</span>
@@ -155,9 +166,18 @@ export default function DailyPage() {
                   <h2 style={{ fontSize:32, fontWeight:700, color:"white", fontFamily:"Georgia,serif", marginBottom:6 }}>
                     {GAME_NAMES[todayFeatured]}
                   </h2>
-                  <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", marginBottom:20 }}>
-                    Stage {getDailyStageNumber(todayFeatured)} · Same for all players today
-                  </p>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
+                    <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)" }}>
+                      Stage {getDailyStageInfo(todayFeatured).stage}
+                    </p>
+                    <span style={{ fontSize:11, fontWeight:700, padding:"2px 8px", borderRadius:8,
+                      background:"rgba(255,255,255,0.2)", color:"white" }}>
+                      {getDailyStageInfo(todayFeatured).difficulty.toUpperCase()}
+                    </span>
+                    <span style={{ fontSize:12, color:"rgba(255,255,255,0.6)" }}>
+                      · Same for all players today
+                    </span>
+                  </div>
                   <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"11px 22px", borderRadius:14, background:"white", color:gc.from, fontSize:14, fontWeight:700 }}>
                     {featuredCompleted ? "Play Again" : "Play Now"} <ChevronRight size={14}/>
                   </div>
@@ -215,7 +235,17 @@ export default function DailyPage() {
                         )}
                       </div>
                       <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:2 }}>{GAME_NAMES[game]}</p>
-                      <p style={{ fontSize:11, color:"var(--text4)" }}>Stage {getDailyStageNumber(game)}</p>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <p style={{ fontSize:11, color:"var(--text4)" }}>Stage {getDailyStageInfo(game).stage}</p>
+                <span style={{ fontSize:9, fontWeight:700, padding:"1px 6px", borderRadius:6,
+                  background:getDailyStageInfo(game).difficulty==="easy"?"rgba(34,197,94,0.1)":
+                             getDailyStageInfo(game).difficulty==="medium"?"rgba(245,158,11,0.1)":
+                             "rgba(239,68,68,0.1)",
+                  color:getDailyStageInfo(game).difficulty==="easy"?"#15803D":
+                        getDailyStageInfo(game).difficulty==="medium"?"#B45309":"#DC2626" }}>
+                  {getDailyStageInfo(game).difficulty.toUpperCase()}
+                </span>
+              </div>
                     </div>
                   </Link>
                 </motion.div>

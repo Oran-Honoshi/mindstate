@@ -1,4 +1,5 @@
 "use client";
+import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
 import { GameSnapshot } from "@/components/ui/GameSnapshots";
 // Game snapshot components imported inline below
 
@@ -675,6 +676,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── COMING SOON TEASER ── */}
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"0 48px"}}><ComingSoonTeaser compact/></div>
+
       {/* ── HOW IT WORKS ── */}
       <section style={{ background:"var(--bg2)", borderTop:"0.5px solid var(--border)", borderBottom:"0.5px solid var(--border)", padding:"72px 48px" }}>
         <div style={{ maxWidth:1000, margin:"0 auto" }}>
@@ -719,6 +723,9 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ── COMING SOON FULL ── */}
+      <ComingSoonTeaser/>
 
       {/* ── PRICING ── */}
       <section style={{ maxWidth:1000, margin:"0 auto", padding:"80px 48px" }}>

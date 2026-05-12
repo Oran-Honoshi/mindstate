@@ -1,4 +1,5 @@
 "use client";
+import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -224,6 +225,9 @@ export default function GamesPage() {
             <p style={{ fontSize:13 }}>Try a different search or category</p>
           </div>
         )}
+
+        {/* Coming soon */}
+        <ComingSoonTeaser compact/>
 
         {/* Pro CTA */}
         {!isPro && (

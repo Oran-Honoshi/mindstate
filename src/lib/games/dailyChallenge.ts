@@ -36,15 +36,37 @@ export function markDailyCompleted(game: string, userId: string): void {
   localStorage.setItem(key, "done");
 }
 
-export function getDailyStageNumber(game: string): number {
-  // Deterministic stage number from date — cycles through 1-100
+export type DailyDifficulty = "easy" | "medium" | "hard";
+
+// Returns a stage number AND difficulty that rotates through the week
+// Mon/Thu = Easy (1–300), Tue/Fri = Medium (301–700), Wed/Sat/Sun = Hard (701–1000)
+export function getDailyStageInfo(game: string): { stage: number; difficulty: DailyDifficulty } {
   const dateStr = getDailyDate();
+  const dayOfWeek = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
+
+  // Difficulty rotation: Easy Mon/Thu, Medium Tue/Fri, Hard Wed/Sat/Sun
+  const difficulty: DailyDifficulty =
+    dayOfWeek === 1 || dayOfWeek === 4 ? "easy" :
+    dayOfWeek === 2 || dayOfWeek === 5 ? "medium" : "hard";
+
+  // Stage range per difficulty
+  const ranges = { easy:[1,300], medium:[301,700], hard:[701,1000] };
+  const [min, max] = ranges[difficulty];
+
+  // Deterministic stage within that range from date+game hash
   let hash = 0;
-  for (let i = 0; i < dateStr.length + game.length; i++) {
-    const char = i < dateStr.length ? dateStr.charCodeAt(i) : game.charCodeAt(i - dateStr.length);
-    hash = (Math.imul(31, hash) + char) | 0;
+  const key = dateStr + game;
+  for (let i = 0; i < key.length; i++) {
+    hash = (Math.imul(31, hash) + key.charCodeAt(i)) | 0;
   }
-  return (Math.abs(hash) % 100) + 1;
+  const stage = min + (Math.abs(hash) % (max - min + 1));
+
+  return { stage, difficulty };
+}
+
+// Keep backward compat
+export function getDailyStageNumber(game: string): number {
+  return getDailyStageInfo(game).stage;
 }
 
 // Get today's featured game (rotates daily)
