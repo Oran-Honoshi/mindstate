@@ -6,6 +6,7 @@ import { Search, Zap, Star, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { GameIcon } from "@/components/icons/GameIcons";
+import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { useAuthStore } from "@/store/authStore";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 
@@ -185,8 +186,8 @@ export default function GamesPage() {
                   onMouseLeave={e => { const el=e.currentTarget as HTMLElement; el.style.transform="translateY(0)"; el.style.boxShadow="0 2px 8px rgba(0,0,0,0.04)"; el.style.borderColor="rgba(0,0,0,0.07)"; }}>
 
                   {/* Icon area */}
-                  <div style={{ height:90, background:"rgba(79,110,247,0.04)", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                    <GameIcon slug={game.slug} size={44}/>
+                  <div style={{ height:100, background:"rgba(79,110,247,0.04)", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+                    <GameSnapshot slug={game.slug}/>
                     <div style={{ position:"absolute", top:8, right:8, display:"flex", gap:4 }}>
                       {game.free && (
                         <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:8, background:"rgba(79,110,247,0.1)", color:"#4F6EF7" }}>

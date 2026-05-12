@@ -1,4 +1,5 @@
 "use client";
+import { GameSnapshot } from "@/components/ui/GameSnapshots";
 // Game snapshot components imported inline below
 
 import { useState, useEffect } from "react";
@@ -362,7 +363,7 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
           }}>
             {game.preview
               ? <div style={{transform:"scale(0.85)",transformOrigin:"center"}}>{PREVIEWS[game.slug]}</div>
-              : <LandingSnapshot slug={game.slug}/>
+              : <GameSnapshot slug={game.slug}/>
             }
 
             {/* Hover overlay — "Play Stage 1" */}
