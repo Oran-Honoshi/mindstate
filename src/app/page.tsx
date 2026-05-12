@@ -321,14 +321,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
 }
 
 
-const PREVIEWS: Record<string, React.ReactNode> = {
-  tango:       <MiniTango/>,
-  memory:      <MiniMemory/>,
-  queens:      <MiniQueens/>,
-  sudoku:      <MiniSudoku/>,
-  zip:         <MiniZip/>,
-  minesweeper: <MiniMinesweeper/>,
-};
+
 // ── Game Card ─────────────────────────────────────────────────────────────────
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
@@ -361,10 +354,7 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
             position:"relative", transition:"background 0.25s",
             overflow:"hidden",
           }}>
-            {game.preview
-              ? <div style={{transform:"scale(0.85)",transformOrigin:"center"}}>{PREVIEWS[game.slug]}</div>
-              : <GameSnapshot slug={game.slug}/>
-            }
+            <GameSnapshot slug={game.slug}/>
 
             {/* Hover overlay — "Play Stage 1" */}
             <AnimatePresence>

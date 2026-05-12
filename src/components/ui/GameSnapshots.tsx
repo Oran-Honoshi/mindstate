@@ -344,6 +344,106 @@ export function GameSnapshot({ slug }: { slug: string }) {
         )))}
       </svg>
     ),
+      "tango": (
+      <svg width={90} height={90} viewBox="0 0 90 90">
+        <rect width={90} height={90} fill="rgba(79,110,247,0.04)" rx={10}/>
+        {/* 4x4 grid */}
+        {[[1,0,1,0],[0,1,0,1],[1,0,1,0],[0,1,0,1]].map((row,r)=>row.map((isSun,c)=>(
+          <g key={`${r}-${c}`}>
+            <rect x={c*20+6} y={r*20+6} width={18} height={18} rx={5}
+              fill="white" stroke="rgba(0,0,0,0.08)" strokeWidth={1}/>
+            {isSun
+              ? <circle cx={c*20+15} cy={r*20+15} r={5} fill="#F59E0B"/>
+              : <path d={`M${c*20+15},${r*20+10} a5,5 0 0,0 0,10`} fill="#6366F1"/>
+            }
+          </g>
+        )))}
+        {/* Constraints */}
+        <circle cx={26} cy={15} r={4} fill="white" stroke="#4F6EF7" strokeWidth={1}/>
+        <text x={26} y={18} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"#4F6EF7"}}>=</text>
+        <circle cx={46} cy={35} r={4} fill="white" stroke="#EF4444" strokeWidth={1}/>
+        <text x={46} y={38} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"#EF4444"}}>x</text>
+      </svg>
+    ),
+    "memory": (
+      <svg width={90} height={90} viewBox="0 0 90 90">
+        <rect width={90} height={90} fill="rgba(79,110,247,0.04)" rx={10}/>
+        {/* 4x3 card grid */}
+        {[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>{
+          const r=Math.floor(i/4), c=i%4;
+          const revealed=[0,4,7,11].includes(i);
+          return(
+            <g key={i}>
+              <rect x={c*20+6} y={r*22+8} width={17} height={19} rx={4}
+                fill={revealed?"white":"linear-gradient(135deg,#4F6EF7,#9C6BE8)"}
+                stroke={revealed?"#E2E8F0":"none"} strokeWidth={1}/>
+              {!revealed&&<rect x={c*20+6} y={r*22+8} width={17} height={19} rx={4} fill="#4F6EF7" opacity={0.8}/>}
+              {revealed&&<circle cx={c*20+14.5} cy={r*22+17.5} r={5}
+                fill={[0,4].includes(i)?"#EF4444":"#3B82F6"} opacity={0.8}/>}
+            </g>
+          );
+        })}
+      </svg>
+    ),
+    "queens": (
+      <svg width={90} height={90} viewBox="0 0 90 90">
+        <rect width={90} height={90} fill="rgba(79,110,247,0.04)" rx={10}/>
+        {/* 4x4 colored regions */}
+        {[[0,0,1,1],[0,0,1,1],[2,2,3,3],[2,2,3,3]].map((row,r)=>row.map((rid,c)=>{
+          const colors=["#DBEAFE","#FED7AA","#BBF7D0","#E9D5FF"];
+          const hasQueen=(r===0&&c===1)||(r===1&&c===3)||(r===2&&c===0)||(r===3&&c===2);
+          return(
+            <g key={`${r}-${c}`}>
+              <rect x={c*20+6} y={r*20+6} width={19} height={19} fill={colors[rid]} stroke="rgba(0,0,0,0.1)" strokeWidth={0.5}/>
+              {hasQueen&&<text x={c*20+15.5} y={r*20+19} textAnchor="middle"
+                style={{fontSize:11,fill:"#1C1917"}}>♛</text>}
+            </g>
+          );
+        }))}
+      </svg>
+    ),
+    "sudoku": (
+      <svg width={90} height={90} viewBox="0 0 90 90">
+        <rect width={90} height={90} fill="rgba(220,38,38,0.04)" rx={10}/>
+        {/* 4x4 mini sudoku */}
+        {[[5,3,0,6],[6,0,2,0],[0,9,0,3],[8,0,9,7]].map((row,r)=>row.map((val,c)=>(
+          <g key={`${r}-${c}`}>
+            <rect x={c*19+8} y={r*19+8} width={17} height={17}
+              fill={val>0?"#F8F7F5":"white"}
+              stroke={c===1&&r<2||c===1&&r>=2?"#374151":"#E2E8F0"}
+              strokeWidth={c===1||r===1?1.5:0.5}/>
+            {val>0&&<text x={c*19+16.5} y={r*19+19} textAnchor="middle"
+              style={{fontSize:9,fontWeight:700,fill:"#374151"}}>{val}</text>}
+          </g>
+        )))}
+        {/* Box borders */}
+        <rect x={8} y={8} width={36} height={36} fill="none" stroke="#374151" strokeWidth={1.5}/>
+        <rect x={46} y={8} width={36} height={36} fill="none" stroke="#374151" strokeWidth={1.5}/>
+        <rect x={8} y={46} width={36} height={36} fill="none" stroke="#374151" strokeWidth={1.5}/>
+        <rect x={46} y={46} width={36} height={36} fill="none" stroke="#374151" strokeWidth={1.5}/>
+      </svg>
+    ),
+    "zip": (
+      <svg width={90} height={90} viewBox="0 0 90 90">
+        <rect width={90} height={90} fill="rgba(13,148,136,0.04)" rx={10}/>
+        {/* Path lines */}
+        <polyline points="15,15 15,40 40,40 40,15 65,15 65,40 65,65 40,65 15,65 15,40"
+          fill="none" stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round"
+          strokeLinejoin="round" opacity="0.5"/>
+        {/* Waypoint numbers */}
+        {[[15,15,1],[65,15,2],[65,65,3],[15,65,4]].map(([x,y,n],i)=>(
+          <g key={i}>
+            <circle cx={x} cy={y} r={10} fill="white" stroke="#4F6EF7" strokeWidth={2}/>
+            <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
+              style={{fontSize:10,fontWeight:700,fill:"#4F6EF7"}}>{n}</text>
+          </g>
+        ))}
+        {/* Grid dots */}
+        {[[40,40],[40,15],[40,65],[15,40],[65,40]].map(([x,y],i)=>(
+          <circle key={i} cx={x} cy={y} r={4} fill="rgba(79,110,247,0.3)"/>
+        ))}
+      </svg>
+    ),
   };
 
   const snap = snaps[slug];
