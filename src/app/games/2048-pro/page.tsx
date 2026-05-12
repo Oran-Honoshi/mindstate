@@ -113,6 +113,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 export default function TwentyFortyEightProPage(){
   const{user}=useAuthStore();
+  const[completed,setCompleted]=useState(false);
   const[stage,setStage]=useState(1);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
