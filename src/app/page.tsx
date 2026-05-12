@@ -776,6 +776,43 @@ export default function LandingPage() {
         </div>
       </section>
 
+      
+      {/* ── FAQ ── */}
+      <div id="faq" style={{scrollMarginTop:"70px"}}/>
+      <section style={{ maxWidth:720, margin:"0 auto", padding:"80px 48px" }}>
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em",
+            textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>
+            FAQ
+          </p>
+          <h2 style={{ fontSize:36, fontWeight:700, color:"var(--text1)",
+            fontFamily:"Georgia,serif", lineHeight:1.15 }}>
+            Frequently Asked Questions
+          </h2>
+        </div>
+
+        {[
+          { q:"Is MindState free to use?",
+            a:"Yes — free users get 5 plays per day across all 20 games. Daily challenges are always free and never count against your plays. Subscribe for unlimited access." },
+          { q:"What does Pro include?",
+            a:"Unlimited plays across all 20 games, all 1,000 stages per game, family leaderboards for up to 7 members, and early access to new games and stages 30 days before free users." },
+          { q:"How much does Pro cost?",
+            a:"Individual Pro is $2/month. Family plans start at $5/month for 3 members and $10/month for 7 members. Less than a cup of coffee." },
+          { q:"Can I cancel anytime?",
+            a:"Yes. Cancel from your profile settings at any time. You keep access until the end of your billing period. No questions asked." },
+          { q:"What are the 20 games?",
+            a:"Tango, Memory, Queens, Sudoku, Zip, Minesweeper, Flow, Nonogram, Bridges, Pattern Match, 2048 Pro, Kakuro, Gravity Sort, Hex Merge, Logic Path, Light Up, Patches, Word Sling, Hearts, and Solitaire." },
+          { q:"Do I need an account to play?",
+            a:"No — you can play without an account. Creating a free account saves your progress, streaks, and scores to the leaderboard." },
+          { q:"Does it work offline?",
+            a:"Yes. MindState is a Progressive Web App. Install it to your home screen and play without an internet connection." },
+          { q:"Are new games coming?",
+            a:"Yes — 6 new games are in development including Chess Puzzles, Cryptogram, and Calcudoku. Pro subscribers get early access the moment they ship." },
+        ].map(({ q, a }, i) => (
+          <FaqItem key={i} q={q} a={a}/>
+        ))}
+      </section>
+
       {/* ── FOOTER ── */}
       <footer style={{ borderTop:"0.5px solid var(--border)", background:"var(--bg2)", padding:"32px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:16 }}>
