@@ -109,12 +109,12 @@ export default function PricingPage() {
           <h2 style={{fontSize:18,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:20,textAlign:"center"}}>All plans include</h2>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
             {[
-              { icon:"🎮", title:"20 logic games", desc:"Tango, Queens, Memory, Sudoku, and 16 more" },
-              { icon:"📅", title:"Daily challenges", desc:"One free puzzle per game every day" },
+              { icon:"", title:"20 logic games", desc:"Tango, Queens, Memory, Sudoku, and 16 more" },
+              { icon:"", title:"Daily challenges", desc:"One free puzzle per game every day" },
               { icon:"", title:"XP & leaderboards", desc:"Earn XP, climb global and family rankings" },
               { icon:"🌍", title:"Hebrew RTL support", desc:"Full right-to-left layout for Hebrew speakers" },
-              { icon:"🔇", title:"Silent mode", desc:"Disable sounds and haptics globally" },
-              { icon:"📱", title:"PWA support", desc:"Install on any device, works offline" },
+              { icon:"", title:"Silent mode", desc:"Disable sounds and haptics globally" },
+              { icon:"", title:"PWA support", desc:"Install on any device, works offline" },
             ].map((item,i)=>(
               <div key={i} style={{display:"flex",gap:12,padding:"12px 0"}}>
                 <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
