@@ -39,8 +39,8 @@ function shuffleCards(cards:Card[],seed:number):Card[]{
 }
 
 function cardPoints(card:Card):number{
-  if(card.suit==="")return 1;
-  if(card.suit===""&&card.label==="Q")return 13;
+  if(card.suit==="♥")return 1;
+  if(card.suit==="♠"&&card.label==="Q")return 13;
   return 0;
 }
 
@@ -194,7 +194,7 @@ export default function HeartsPage(){
         <div style={{display:"flex",gap:-8,justifyContent:"center"}}>
           {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(
             <div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}>
-              <CardUI card={{suit:"",value:0,label:""}} faceDown/>
+              <CardUI card={{suit:"♠",value:0,label:""}} faceDown/>
             </div>
           ))}
           {cpuHand.length>7&&<span style={{color:"rgba(255,255,255,0.5)",fontSize:12,alignSelf:"center",marginLeft:8}}>+{cpuHand.length-7}</span>}

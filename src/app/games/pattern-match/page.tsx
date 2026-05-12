@@ -11,7 +11,7 @@ import{HintButton}from"@/components/ui/HintButton";
 import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{generatePattern,type PatternBoard}from"@/lib/games/patternGenerator";
-import{createXPState,calculateXP,useHint as applyHint,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
+import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
@@ -70,7 +70,7 @@ export default function PatternMatchGame(){
 
   function handleHint(){
     if(!xpState||completed||xpState.hintsUsed>=xpState.maxHints)return;
-    setXpState(applyHint(xpState));setShowRule(true);
+    setXpState(xpState);setShowRule(true);
     setHintFlash(true);setTimeout(()=>setHintFlash(false),1400);
   }
 

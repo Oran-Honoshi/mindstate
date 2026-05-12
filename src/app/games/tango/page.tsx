@@ -168,7 +168,7 @@ export default function TangoGame() {
     setXpState(applyHint(xpState));
     checkRowColErrors(ng, board.size);
     setHintFlash(true); setTimeout(()=>setHintFlash(false), 1400);
-    playHint();
+    playError();
   }
 
   if (!board || !xpState) return (
