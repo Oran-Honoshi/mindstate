@@ -59,6 +59,8 @@ export default function QueensGame(){
   const[finalXP,setFinalXP]=useState(0);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
+  const[feedbackCells,setFeedbackCells]=useState<Set<string>>(new Set());
+  const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
   const[errors,setErrors]=useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const pausedRef=useRef(false);
@@ -116,17 +118,18 @@ export default function QueensGame(){
 
   function handleHint(){
     if(!board||hintsUsed>=3||!xpState)return;
-    // Place one correct queen
-    const sol=board.solution;
+    const solution=solveQueens(board.size,board.regions);
+    if(!solution)return;
     const ng=grid.map(row=>[...row]);
-    for(let r=0;r<board.size;r++){
-      for(let c=0;c<board.size;c++){
-        if(sol[r][c]===2&&ng[r][c]!==2){
-          ng[r][c]=2;
-          setGrid(ng);setHintsUsed(h=>h+1);
-          xpState.startTime=xpState.startTime-60000;
-          playClick();return;
-        }
+    // Place the first unplaced correct queen
+    for(const[sr,sc] of solution){
+      if(ng[sr][sc]!==2){
+        ng[sr][sc]=2;
+        setGrid(ng);
+        setHintsUsed(h=>h+1);
+        setXpState(x=>x?{...x,startTime:x.startTime-90000}:x);
+        playError();
+        return;
       }
     }
   }
@@ -287,3 +290,24 @@ export default function QueensGame(){
 </div>
   );
 }
+
+  function handleCheck(){
+    if(!board||!xpState)return;
+    const solution=solveQueens(board.size,board.regions);
+    if(!solution)return;
+    const solSet=new Set(solution.map(([r,c])=>`${r},${c}`));
+    // Highlight correct queens green, wrong ones red for 2s
+    const correct=new Set<string>();
+    const wrong=new Set<string>();
+    grid.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v===2){
+        if(solSet.has(`${r},${c}`)) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(x=>x?{...x,startTime:x.startTime-60000}:x);
+    setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
+  }
