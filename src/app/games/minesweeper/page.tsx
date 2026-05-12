@@ -14,9 +14,9 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
-import { markDailyCompleted, getDailySeed } from "@/lib/games/dailyChallenge";
-import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
-import { TokenHUD } from "@/components/ui/TokenGate";
+import { consumeToken } from "@/lib/games/tokenEngine";
+import{GameInstructions}from"@/components/ui/GameInstructions";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
 
 function getDifficulty(stage: number): Difficulty {
   if (stage <= 300) return "easy";

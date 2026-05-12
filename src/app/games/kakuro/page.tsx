@@ -12,7 +12,6 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
-import { markDailyCompleted, getDailySeed } from "@/lib/games/dailyChallenge";
 import { consumeToken } from "@/lib/games/tokenEngine";
 
 function getDifficulty(s: number): Difficulty { return s <= 300 ? "easy" : s <= 700 ? "medium" : "hard"; }

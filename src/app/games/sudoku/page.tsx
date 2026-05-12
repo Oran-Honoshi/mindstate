@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import {
   createXPState, calculateXP, finalizeXP,
-  formatElapsed, xpColor, type XPState, type Difficulty,
+  formatElapsed, type XPState, type Difficulty,
 } from "@/lib/games/xpEngine";
 import { buildSeed } from "@/lib/games/tangoGenerator";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -15,9 +15,8 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
-import { markDailyCompleted, getDailySeed } from "@/lib/games/dailyChallenge";
-import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
-import { TokenHUD } from "@/components/ui/TokenGate";
+import { consumeToken } from "@/lib/games/tokenEngine";
+import{GameInstructions}from"@/components/ui/GameInstructions";
 
 type SudokuCell = number | null;
 type SudokuBoard = SudokuCell[][];

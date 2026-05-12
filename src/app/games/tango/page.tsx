@@ -10,19 +10,17 @@ import {
   type Cell, type TangoBoard, type CellStatus,
 } from "@/lib/games/tangoGenerator";
 import {
-  createXPState, calculateXP, useHint as applyHint,
-  finalizeXP, formatElapsed, xpColor,
+  createXPState, calculateXP, finalizeXP, formatElapsed,
   type XPState, type Difficulty,
 } from "@/lib/games/xpEngine";
-import { playClick, playSuccess, playHint } from "@/lib/audio/soundEngine";
+import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
-import { markDailyCompleted, getDailySeed } from "@/lib/games/dailyChallenge";
-import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
-import { TokenHUD } from "@/components/ui/TokenGate";
+import { consumeToken } from "@/lib/games/tokenEngine";
+import{GameInstructions}from"@/components/ui/GameInstructions";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
