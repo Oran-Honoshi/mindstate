@@ -16,16 +16,25 @@ const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
 
 export function Navbar() {
   const pathname = usePathname();
+  const isLanding = pathname === "/";
+
+  function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) {
+    if (!isLanding) return;
+    e.preventDefault();
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  const pathname = usePathname();
   const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
   const { user, profile, signOut } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const navLinks = [
-    { href:"/games",       label:"Games",       icon:Gamepad2  },
-    { href:"/daily",       label:"Daily",       icon:Star      },
-    { href:"/leaderboard", label:"Leaderboard", icon:BarChart2 },
-    { href:"/family",      label:"Family",      icon:Users     },
+    { href:"/games", section:"games",       label:"Games",       icon:Gamepad2  },
+    { href:"/daily", section:"how-it-works",       label:"Daily",       icon:Star      },
+    { href:"/leaderboard", section:"coming-soon", label:"Leaderboard", icon:BarChart2 },
+    { href:"/family", section:"faq",      label:"Family",      icon:Users     },
   ];
 
   const isActive = (href: string) => pathname?.startsWith(href);
@@ -56,13 +65,16 @@ export function Navbar() {
         {/* Desktop center nav */}
         <div className="nav-links-desktop">
           {navLinks.map(link => (
-            <Link key={link.href} href={link.href} style={{
-              display:"flex", alignItems:"center", gap:6,
-              padding:"7px 13px", borderRadius:11, textDecoration:"none",
-              fontSize:13, fontWeight:600, transition:"all 0.15s",
-              background: isActive(link.href) ? "rgba(79,110,247,0.08)" : "transparent",
-              color: isActive(link.href) ? "#4F6EF7" : "#64748B",
-            }}>
+            <Link key={link.href}
+              href={isLanding ? (link.section ? "#"+link.section : link.href) : link.href}
+              onClick={(e:any) => link.section && handleNavClick(e, link.section)}
+              style={{
+                display:"flex", alignItems:"center", gap:6,
+                padding:"7px 13px", borderRadius:11, textDecoration:"none",
+                fontSize:13, fontWeight:600, transition:"all 0.15s",
+                background: !isLanding && isActive(link.href) ? "rgba(79,110,247,0.08)" : "transparent",
+                color: !isLanding && isActive(link.href) ? "#4F6EF7" : "#64748B",
+              }}>
               <link.icon size={14}/>
               {link.label}
             </Link>
@@ -71,16 +83,31 @@ export function Navbar() {
 
         {/* Right */}
         <div style={{ display:"flex", alignItems:"center", gap:3 }}>
-          <button onClick={toggleSilentMode}
+          {!isLanding && <button onClick={toggleSilentMode}
             style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
             {isSilentMode ? <VolumeX size={15}/> : <Volume2 size={15}/>}
-          </button>
+          </button>}
           <button onClick={toggleTheme}
             style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
             {theme === "dark" ? <Sun size={15}/> : <Moon size={15}/>}
           </button>
 
-          {user ? (
+          {isLanding ? (
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <Link href="/auth/signin"
+                style={{ fontSize:13, fontWeight:600, color:"var(--text3)",
+                  padding:"7px 13px", borderRadius:10, textDecoration:"none",
+                  border:"0.5px solid var(--border)", background:"var(--surface)" }}>
+                Sign in
+              </Link>
+              <Link href="/auth/signup"
+                style={{ fontSize:13, fontWeight:700, color:"white",
+                  padding:"7px 14px", borderRadius:11, background:ACCENT,
+                  textDecoration:"none", boxShadow:"0 3px 8px rgba(79,110,247,0.25)" }}>
+                Start Free
+              </Link>
+            </div>
+          ) : user ? (
             <div style={{ position:"relative", marginLeft:4 }}>
               <button onClick={() => setProfileOpen(o=>!o)} style={{
                 display:"flex", alignItems:"center", gap:6,

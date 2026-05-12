@@ -656,6 +656,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <div id="games" style={{scrollMarginTop:"70px"}}/>
       {/* ── GAMES COLLECTION ── */}
       <section style={{ maxWidth:1200, margin:"0 auto", padding:"0 48px 80px" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ marginBottom:32 }}>
@@ -679,6 +680,7 @@ export default function LandingPage() {
       {/* ── COMING SOON TEASER ── */}
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 48px"}}><ComingSoonTeaser compact/></div>
 
+      <div id="how-it-works" style={{scrollMarginTop:"70px"}}/>
       {/* ── HOW IT WORKS ── */}
       <section style={{ background:"var(--bg2)", borderTop:"0.5px solid var(--border)", borderBottom:"0.5px solid var(--border)", padding:"72px 48px" }}>
         <div style={{ maxWidth:1000, margin:"0 auto" }}>
@@ -724,9 +726,11 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <div id="coming-soon" style={{scrollMarginTop:"70px"}}/>
       {/* ── COMING SOON FULL ── */}
       <ComingSoonTeaser/>
 
+      <div id="pricing" style={{scrollMarginTop:"70px"}}/>
       {/* ── PRICING ── */}
       <section style={{ maxWidth:1000, margin:"0 auto", padding:"80px 48px" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
