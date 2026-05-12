@@ -100,7 +100,19 @@ export default function QueensGame(){
     setErrors(errs);
     if(errs.size>0)playError();
 
-    const vq=validateQueens(placedMap2,board.solution);
+    // Win = N queens placed, no errors, one per row/col/region
+    const queensPlaced=ng.flat().filter(v=>v===2).length;
+    const rowSet=new Set<number>(),colSet=new Set<number>(),regSet=new Set<number>();
+    ng.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v===2){rowSet.add(r);colSet.add(c);regSet.add(board.regions[r][c]);}
+    }));
+    const vq={correct:
+      queensPlaced===board.size &&
+      errs.size===0 &&
+      rowSet.size===board.size &&
+      colSet.size===board.size &&
+      regSet.size===board.size
+    };
     if(vq.correct&&xpState){
       const earned=Math.max(1,finalizeXP(xpState)-hintsUsed*100);
       setFinalXP(earned);setCompleted(true);
