@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Volume2, VolumeX, Sun, Moon, Menu, X,
   User, Trophy, Settings, LogOut, ChevronDown,
-  Gamepad2, BarChart2, Users, Star, Flame,
-} from "lucide-react";
+  Gamepad2, BarChart2, Users, Star, Flame,, Tag} from "lucide-react";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -66,8 +65,14 @@ export function Navbar() {
         <div className="nav-links-desktop">
           {navLinks.map(link => (
             <Link key={link.href}
-              href={isLanding ? (link.section ? "#"+link.section : link.href) : link.href}
-              onClick={(e:any) => link.section && handleNavClick(e, link.section)}
+              href={isLanding ? "#" : link.href}
+              onClick={(e:any) => {
+                if(isLanding && link.section) {
+                  e.preventDefault();
+                  const el = document.getElementById(link.section);
+                  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+                }
+              }}
               style={{
                 display:"flex", alignItems:"center", gap:6,
                 padding:"7px 13px", borderRadius:11, textDecoration:"none",
