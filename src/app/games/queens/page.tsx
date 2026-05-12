@@ -94,18 +94,14 @@ export default function QueensGame(){
     // Check for errors (queens touching)
     const queens:[number,number][]=[];
     ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)queens.push([ri,ci]);}));
-    const errs=new Set<string>();
-    for(let i=0;i<queens.length;i++){
-      for(let j=i+1;j<queens.length;j++){
-        const[r1,c1]=queens[i],[r2,c2]=queens[j];
-        if(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1){
-          errs.add(`${r1},${c1}`);errs.add(`${r2},${c2}`);
-        }
-      }
-    }
+    const placedMap2=new Map<string,boolean>();
+    ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)placedMap2.set(`${ri},${ci}`,true);}));
+    const {errors:errs}=validateQueens(placedMap2,board.solution);
     setErrors(errs);
+    if(errs.size>0)playError();
 
-    if(validateQueens(board,ng)&&xpState){
+    const vq=validateQueens(placedMap2,board.solution);
+    if(vq.correct&&xpState){
       const earned=Math.max(1,finalizeXP(xpState)-hintsUsed*100);
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
