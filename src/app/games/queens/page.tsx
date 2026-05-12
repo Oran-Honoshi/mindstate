@@ -17,7 +17,7 @@ import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
-import{generateQueensBoard,validateQueens,type QueensBoard}from"@/lib/games/queensGenerator";
+import{generateQueensBoard,validateQueens,solveQueens,type QueensBoard}from"@/lib/games/queensGenerator";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 
@@ -121,13 +121,16 @@ export default function QueensGame(){
     const solution=solveQueens(board.size,board.regions);
     if(!solution)return;
     const ng=grid.map(row=>[...row]);
-    // Place the first unplaced correct queen
+    // Place the first row that doesn't have a correct queen yet
     for(const[sr,sc] of solution){
       if(ng[sr][sc]!==2){
+        // Clear the whole row first (remove wrong placements)
+        for(let c=0;c<board.size;c++) ng[sr][c]=0;
         ng[sr][sc]=2;
         setGrid(ng);
         setHintsUsed(h=>h+1);
-        setXpState(x=>x?{...x,startTime:x.startTime-90000}:x);
+        // Deduct XP by pushing startTime back 3 minutes
+        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(3*60*1000)}:prev);
         playError();
         return;
       }
@@ -308,6 +311,7 @@ export default function QueensGame(){
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(x=>x?{...x,startTime:x.startTime-60000}:x);
+    // Deduct XP: push startTime back 2 minutes
+    setXpState(prev=>prev?{...prev,startTime:prev.startTime-(2*60*1000)}:prev);
     setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
   }
