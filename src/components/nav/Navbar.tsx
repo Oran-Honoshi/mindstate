@@ -24,7 +24,6 @@ export function Navbar() {
     const el = document.getElementById(sectionId);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-  const pathname = usePathname();
   const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
   const { user, profile, signOut } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
