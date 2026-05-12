@@ -192,7 +192,7 @@ export default function QueensGame(){
                     style={{
                       width:cellSize,height:cellSize,
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      background:hasError?"rgba(239,68,68,0.2)":pal.fill,
+                      background:showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":hasError?"rgba(239,68,68,0.2)":pal.fill,
                       cursor:"pointer",outline:"none",
                       borderRight:rightBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
                       borderBottom:bottomBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
