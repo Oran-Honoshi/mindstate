@@ -141,6 +141,15 @@ export default function HeartsPage(){
         // Game over
         setTimeout(()=>{
           setPhase("done");
+          if(playerScore<=cpuScore&&xpState){
+            const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
+            if(timerRef.current)clearInterval(timerRef.current);
+            playSuccess();setTimeout(()=>triggerConfetti(),80);
+            if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+          } else if(xpState){
+            setCompleted(true);
+            if(timerRef.current)clearInterval(timerRef.current);
+          }
           if(playerWins||playerScore<cpuScore){
             // Player wins if fewer points
           }
