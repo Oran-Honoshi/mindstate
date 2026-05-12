@@ -16,7 +16,7 @@ import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
-import{generateQueensBoard,checkQueens,type QueensBoard}from"@/lib/games/queensGenerator";
+import{generateQueensBoard,validateQueens,type QueensBoard}from"@/lib/games/queensGenerator";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 
@@ -100,7 +100,7 @@ export default function QueensGame(){
     }
     setErrors(errs);
 
-    if(checkQueens(board,ng)&&xpState){
+    if(validateQueens(board,ng)&&xpState){
       const earned=Math.max(1,finalizeXP(xpState)-hintsUsed*100);
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);

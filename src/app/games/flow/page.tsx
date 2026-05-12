@@ -249,22 +249,22 @@ export default function FlowGame() {
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <HintButton
-            hintsLeft={{3-hintsUsed}}
+            hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={{()=>{
+            onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
               xpState.startTime=xpState.startTime-60000;
             }}}
-            disabled={{completed}}/>
+            disabled={completed}/>
           <CheckProgressButton
-            onCheck={{()=>{
+            onCheck={()=>{
               if(!xpState||completed)return;
               xpState.startTime=xpState.startTime-30000;
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}}
-            disabled={{completed}}
+            disabled={completed}
             xpCost={50}/>
         </div>
 
