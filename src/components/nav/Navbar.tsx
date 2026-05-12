@@ -63,26 +63,23 @@ export function Navbar() {
 
         {/* Desktop center nav */}
         <div className="nav-links-desktop">
-          {navLinks.map(link => (
-            <Link key={link.href}
-              href={isLanding ? "#" : link.href}
-              onClick={(e:any) => {
-                if(isLanding && link.section) {
-                  e.preventDefault();
-                  const el = document.getElementById(link.section);
-                  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
-                }
+          {navLinks.map(link => isLanding ? (
+            <a key={link.href}
+              href={"#" + (link.section || "")}
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById(link.section || "");
+                if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
               }}
               style={{
                 display:"flex", alignItems:"center", gap:6,
                 padding:"7px 13px", borderRadius:11, textDecoration:"none",
-                fontSize:13, fontWeight:600, transition:"all 0.15s",
-                background: !isLanding && isActive(link.href) ? "rgba(79,110,247,0.08)" : "transparent",
-                color: !isLanding && isActive(link.href) ? "#4F6EF7" : "#64748B",
+                fontSize:13, fontWeight:600, cursor:"pointer",
+                color:"#64748B",
               }}>
               <link.icon size={14}/>
               {link.label}
-            </Link>
+            </a>
           ))}
         </div>
 
