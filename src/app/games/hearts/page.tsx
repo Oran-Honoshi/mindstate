@@ -5,6 +5,11 @@ import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
+import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import{HintButton}from"@/components/ui/HintButton";
+import{GameInstructions}from"@/components/ui/GameInstructions";
+
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
@@ -226,6 +231,29 @@ export default function HeartsPage(){
             Play {hand[selected].label}{hand[selected].suit}
           </button>
         )}
+
+
+        {/* Controls */}
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton
+            hintsLeft={{3-hintsUsed}}
+            xpCost={100}
+            onUseHint={{()=>{
+              if(!xpState||hintsUsed>=3)return;
+              setHintsUsed(h=>h+1);
+              xpState.startTime=xpState.startTime-60000;
+            }}}
+            disabled={{completed}}/>
+          <CheckProgressButton
+            onCheck={{()=>{
+              if(!xpState||completed)return;
+              xpState.startTime=xpState.startTime-30000;
+              setShowFeedback(true);
+              setTimeout(()=>setShowFeedback(false),2000);
+            }}}
+            disabled={{completed}}
+            xpCost={50}/>
+        </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>← Prev</button>

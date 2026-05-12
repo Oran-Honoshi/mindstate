@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Delete } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
+import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import{HintButton}from"@/components/ui/HintButton";
+
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import {
   createXPState, calculateXP, finalizeXP,
@@ -116,6 +120,10 @@ export default function SudokuGame() {
   const [xpState, setXpState] = useState<XPState|null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
+  const [flashSections, setFlashSections] = useState<Set<string>>(new Set());
+  const[hintsUsed,setHintsUsed]=useState(0);
+  const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
@@ -127,7 +135,7 @@ export default function SudokuGame() {
     setPuzzleData(data);
     setPlayerBoard(data.puzzle.map(r => [...r]));
     setSelected(null); setErrors(new Set());
-    setXpState(xp); setCompleted(false); setFinalXP(0); setElapsed("00:00");
+    setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setShowFeedback(false); setElapsed("00:00");
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
   }, []);
@@ -254,6 +262,29 @@ export default function SudokuGame() {
         </div>
 
         {/* Stage nav */}
+
+        {/* Controls */}
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton
+            hintsLeft={{3-hintsUsed}}
+            xpCost={100}
+            onUseHint={{()=>{
+              if(!xpState||hintsUsed>=3)return;
+              setHintsUsed(h=>h+1);
+              xpState.startTime=xpState.startTime-60000;
+            }}}
+            disabled={{completed}}/>
+          <CheckProgressButton
+            onCheck={{()=>{
+              if(!xpState||completed)return;
+              xpState.startTime=xpState.startTime-30000;
+              setShowFeedback(true);
+              setTimeout(()=>setShowFeedback(false),2000);
+            }}}
+            disabled={{completed}}
+            xpCost={50}/>
+        </div>
+
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
@@ -267,30 +298,22 @@ export default function SudokuGame() {
         </div>
       </main>
 
-      <AnimatePresence>
-        {completed && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(12px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100, padding:24 }}>
-            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{ background:"var(--surface)", borderRadius:28, padding:36, maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
-              <CheckCircle size={48} color="#22C55E" style={{ margin:"0 auto 16px" }}/>
-              <h2 style={{ fontSize:26, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:4 }}>Stage {stage} Complete</h2>
-              <p style={{ fontSize:13, color:"var(--text4)", marginBottom:24 }}>{elapsed} · {diff}</p>
-              <div style={{ background:"var(--bg2)", borderRadius:16, padding:20, marginBottom:24 }}>
-                <p style={{ fontSize:11, color:"var(--text4)", fontWeight:600, marginBottom:4 }}>XP EARNED</p>
-                <p style={{ fontSize:48, fontWeight:700, color:"#4F6EF7", fontFamily:"Georgia,serif" }}>{finalXP}</p>
-              </div>
-              <div style={{ display:"flex", gap:10 }}>
-                <button onClick={() => loadStage(stage)} style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid var(--border2)", background:"var(--surface)", fontSize:13, fontWeight:600, color:"var(--text2)", cursor:"pointer" }}>Retry</button>
-                <button onClick={() => { setCompleted(false); setStage(s=>s+1); }}
-                  style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                  Next Stage <ChevronRight size={14}/>
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      
+      <CompletionPopup
+        open={completed}
+        stage={stage}
+        difficulty={getDifficulty(stage)}
+        xpEarned={finalXP}
+        maxXP={xpState?.maxXP??1000}
+        elapsed={elapsed}
+        onRetry={()=>loadStage(stage)}
+        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{
+          const text=`MindState · Sudoku Stage ${stage} · ${finalXP} XP · ${elapsed}`;
+          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
+          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
+        }}/>
+
     </div>
   );
 }

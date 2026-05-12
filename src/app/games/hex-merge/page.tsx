@@ -5,6 +5,8 @@ import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
+import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
+
 import{generateHex,mergeCells,hexToPixel,checkHexWin,HEX_DIRS,type HexBoard}from"@/lib/games/hexMergeGenerator";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
@@ -46,6 +48,8 @@ export default function HexMergePage(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[hintsUsed,setHintsUsed]=useState(0);
+  const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
   const[bestTile,setBestTile]=useState(0);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
@@ -58,7 +62,7 @@ export default function HexMergePage(){
     const b=generateHex(`hex-${d}-${s}`,d);
     const xp=createXPState(d);
     setBoard(b);setCells(new Map(b.cells));setSelected(null);
-    setXpState(xp);setCompleted(false);setFinalXP(0);setElapsed("00:00");setBestTile(0);
+    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");setBestTile(0);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user)consumeToken(user.id);
@@ -159,27 +163,51 @@ export default function HexMergePage(){
           })}
         </svg>
 
+
+        {/* Controls */}
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton
+            hintsLeft={{3-hintsUsed}}
+            xpCost={100}
+            onUseHint={{()=>{
+              if(!xpState||hintsUsed>=3)return;
+              setHintsUsed(h=>h+1);
+              xpState.startTime=xpState.startTime-60000;
+            }}}
+            disabled={{completed}}/>
+          <CheckProgressButton
+            onCheck={{()=>{
+              if(!xpState||completed)return;
+              xpState.startTime=xpState.startTime-30000;
+              setShowFeedback(true);
+              setTimeout(()=>setShowFeedback(false),2000);
+            }}}
+            disabled={{completed}}
+            xpCost={50}/>
+        </div>
+
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
-      <AnimatePresence>
-        {completed&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-            <Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>
-            <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete</h2>
-            <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} · Best tile: {bestTile}</p>
-            <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div>
-            <button onClick={()=>shareResult(stage,finalXP,bestTile)} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button>
-            <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
-              <button onClick={()=>{setCompleted(false);setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
-            </div>
-          </motion.div>
-        </motion.div>)}
-      </AnimatePresence>
+      
+      <CompletionPopup
+        open={completed}
+        stage={stage}
+        difficulty={getDifficulty(stage)}
+        xpEarned={finalXP}
+        maxXP={xpState?.maxXP??1000}
+        elapsed={elapsed}
+        onRetry={()=>loadStage(stage)}
+        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{
+          const text=`MindState · Hex Merge Stage ${stage} · ${finalXP} XP · ${elapsed}`;
+          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
+          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
+        }}/>
+
     </div>
   );
 }

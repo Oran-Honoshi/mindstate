@@ -5,6 +5,8 @@ import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
+import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
+
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
@@ -244,6 +246,29 @@ export default function TwentyFortyEightProPage(){
               {btn.label}
             </button>
           ))}
+        </div>
+
+
+        {/* Controls */}
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton
+            hintsLeft={{3-hintsUsed}}
+            xpCost={100}
+            onUseHint={{()=>{
+              if(!xpState||hintsUsed>=3)return;
+              setHintsUsed(h=>h+1);
+              xpState.startTime=xpState.startTime-60000;
+            }}}
+            disabled={{completed}}/>
+          <CheckProgressButton
+            onCheck={{()=>{
+              if(!xpState||completed)return;
+              xpState.startTime=xpState.startTime-30000;
+              setShowFeedback(true);
+              setTimeout(()=>setShowFeedback(false),2000);
+            }}}
+            disabled={{completed}}
+            xpCost={50}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
