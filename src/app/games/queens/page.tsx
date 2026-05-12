@@ -5,9 +5,10 @@ import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
 import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
+
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";

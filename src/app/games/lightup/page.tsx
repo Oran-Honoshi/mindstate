@@ -5,6 +5,9 @@ import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
+import{GameInstructions}from"@/components/ui/GameInstructions";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import{HintButton}from"@/components/ui/HintButton";
 import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{generateLightUp,computeLighting,checkLightUp,type LightBoard,type LightCell}from"@/lib/games/lightUpGenerator";
@@ -14,9 +17,6 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-import{GameInstructions}from"@/components/ui/GameInstructions";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
-import{HintButton}from"@/components/ui/HintButton";
 import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}

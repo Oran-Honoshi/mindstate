@@ -5,11 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
-import{HintButton}from"@/components/ui/HintButton";
-
-import { GameInstructions } from "@/components/ui/GameInstructions";
 import { generateBridges, checkBridges, type BridgesBoard, type Bridge } from "@/lib/games/bridgesGenerator";
 import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";

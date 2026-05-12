@@ -14,11 +14,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
-import{HintButton}from"@/components/ui/HintButton";
-
-import { GameInstructions } from "@/components/ui/GameInstructions";
 import {
   createXPState, calculateXP, finalizeXP,
   formatElapsed, xpColor, type XPState, type Difficulty

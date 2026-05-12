@@ -5,10 +5,10 @@ import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy,RefreshCw}from"lucide-react";
 import Link from"next/link";
 import{Navbar}from"@/components/nav/Navbar";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
+import{GameInstructions}from"@/components/ui/GameInstructions";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-import{GameInstructions}from"@/components/ui/GameInstructions";
+import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
