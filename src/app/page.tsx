@@ -319,6 +319,15 @@ function LandingSnapshot({ slug }: { slug: string }) {
   return <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{snap}</div>;
 }
 
+
+const PREVIEWS: Record<string, React.ReactNode> = {
+  tango:       <MiniTango/>,
+  memory:      <MiniMemory/>,
+  queens:      <MiniQueens/>,
+  sudoku:      <MiniSudoku/>,
+  zip:         <MiniZip/>,
+  minesweeper: <MiniMinesweeper/>,
+};
 // ── Game Card ─────────────────────────────────────────────────────────────────
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
@@ -343,14 +352,18 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
           }}>
           {/* Icon area */}
           <div style={{
-            height:100,
+            height:110,
             background:hovered
-              ? "linear-gradient(135deg,rgba(79,110,247,0.1),rgba(156,107,232,0.12))"
-              : "rgba(79,110,247,0.04)",
+              ? "linear-gradient(135deg,rgba(79,110,247,0.07),rgba(156,107,232,0.09))"
+              : "rgba(79,110,247,0.03)",
             display:"flex", alignItems:"center", justifyContent:"center",
             position:"relative", transition:"background 0.25s",
+            overflow:"hidden",
           }}>
-            <GameIcon slug={game.slug} size={48}/>
+            {game.preview
+              ? <div style={{transform:"scale(0.85)",transformOrigin:"center"}}>{PREVIEWS[game.slug]}</div>
+              : <LandingSnapshot slug={game.slug}/>
+            }
 
             {/* Hover overlay — "Play Stage 1" */}
             <AnimatePresence>
