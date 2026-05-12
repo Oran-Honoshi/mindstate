@@ -1,4 +1,4 @@
-export const FREE_DAILY_TOKENS = 5;
+export const FREE_DAILY_TOKENS = 999; // TESTING MODE — unlimited for all users
 
 export interface TokenState {
   tokens: number;
