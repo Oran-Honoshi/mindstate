@@ -168,7 +168,7 @@ export default function PatternMatchGame(){
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
               xpState.startTime=xpState.startTime-60000;
-            }}}
+            }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
