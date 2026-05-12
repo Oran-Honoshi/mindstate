@@ -1,4 +1,5 @@
 "use client";
+import{FAQSchema,OrganizationSchema,WebAppSchema,HowToSchema}from"@/app/seo-schema";
 import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
 import { GameSnapshot } from "@/components/ui/GameSnapshots";
 // Game snapshot components imported inline below
@@ -490,6 +491,11 @@ export default function LandingPage() {
           )}
         </div>
       </nav>
+
+      <FAQSchema/>
+      <OrganizationSchema/>
+      <WebAppSchema/>
+      <HowToSchema/>
 
       {/* ── HERO ── */}
       <section className="hero-grid" style={{ maxWidth:1200, margin:"0 auto", padding:"100px 48px 80px", minHeight:"100vh" }}>

@@ -1,3 +1,4 @@
+import{FAQSchema,OrganizationSchema,WebAppSchema,HowToSchema}from"@/app/seo-schema";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -23,35 +24,63 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default:"MindState — Sharper Every Day.", template:"%s | MindState" },
-  description:"Explore 20 logic disciplines and 1,000+ hand-crafted stages. An elegant brain-training suite designed for the modern mind.",
-  keywords:["brain training","logic games","puzzle","mindstate","tango game","queens puzzle","focus","wellness","cognitive training","daily challenge"],
-  authors:[{ name:"MindState" }],
-  creator:"MindState",
+  title: {
+    default: "MindState — Sharper Every Day",
+    template: "%s | MindState"
+  },
+  description: "20 precision logic games for the modern mind. Tango, Queens, Sudoku, Nonogram and 16 more. 1,000 stages each. Free to start — $2/mo for unlimited.",
+  keywords: [
+    "brain training","logic games","puzzle games","mind games","cognitive training",
+    "sudoku","nonogram","tango game","queens puzzle","daily brain games",
+    "Lumosity alternative","Elevate alternative","Peak alternative","brain games app",
+    "משחקי לוגיקה","juegos de lógica","Denkspiele","jeux de logique","jogos de lógica"
+  ],
+  authors: [{ name:"MindState" }],
+  creator: "MindState",
   metadataBase: new URL("https://mindstate.vercel.app"),
-  openGraph:{
-    type:"website",
-    url:"https://mindstate.vercel.app",
-    siteName:"MindState",
-    title:"MindState — Sharper Every Day.",
-    description:"20 logic games. 1,000+ stages each. One elegant training suite.",
-    images:[{
-      url:"https://mindstate.vercel.app/og-image.svg",
-      width:512, height:512, alt:"MindState"
-    }],
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en": "https://mindstate.vercel.app",
+      "es": "https://mindstate.vercel.app?lang=es",
+      "de": "https://mindstate.vercel.app?lang=de",
+      "fr": "https://mindstate.vercel.app?lang=fr",
+      "pt": "https://mindstate.vercel.app?lang=pt",
+      "nl": "https://mindstate.vercel.app?lang=nl",
+      "he": "https://mindstate.vercel.app?lang=he",
+      "x-default": "https://mindstate.vercel.app",
+    }
   },
-  twitter:{
-    card:"summary",
-    title:"MindState — Sharper Every Day.",
-    images:["https://mindstate.vercel.app/og-image.svg"],
+  openGraph: {
+    title: "MindState — Sharper Every Day",
+    description: "20 precision logic games. 1,000 stages each. Free to start.",
+    url: "https://mindstate.vercel.app",
+    siteName: "MindState",
+    images: [{ url:"/og-image.png", width:1200, height:630, alt:"MindState brain training games" }],
+    locale: "en_US",
+    type: "website",
   },
-  robots:{ index:true, follow:true },
-  manifest:"/manifest.json",
-  appleWebApp:{
-    capable:true,
-    statusBarStyle:"default",
-    title:"MindState",
+  twitter: {
+    card: "summary_large_image",
+    title: "MindState — Sharper Every Day",
+    description: "20 precision logic games. 1,000 stages each. Free to start.",
+    images: ["/og-image.png"],
   },
+  robots: {
+    index: true, follow: true,
+    googleBot: { index:true, follow:true, "max-image-preview":"large", "max-snippet":-1 }
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    other: [
+      { rel:"icon", type:"image/png", sizes:"32x32", url:"/favicon-32x32.png" },
+      { rel:"icon", type:"image/png", sizes:"16x16", url:"/favicon-16x16.png" },
+    ]
+  },
+  manifest: "/manifest.json",
+  verification: {},
+  category: "games",
 };
 
 export const viewport: Viewport = {
