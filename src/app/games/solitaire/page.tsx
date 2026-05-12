@@ -20,14 +20,14 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 
-type Suit=""|""|""|"";
+type Suit="♥"|"♦"|"♣"|"♠";
 type Card={suit:Suit;value:number;label:string;faceUp:boolean};
 
 function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
 
 function makeDeck(seed:number):Card[]{
-  const suits:Suit[]=["","","",""];
+  const suits:Suit[]=["♥","♦","♣","♠"];
   const labels=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
   const deck=suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+1,label,faceUp:false})));
   const rng=mulberry32(seed);
@@ -35,7 +35,7 @@ function makeDeck(seed:number):Card[]{
   return deck;
 }
 
-function isRed(suit:Suit){return suit===""||suit==="";}
+function isRed(suit:Suit){return suit==="♥"||suit==="♦";}
 function canStack(card:Card,onto:Card|null):boolean{
   if(!onto)return card.value===13; // King on empty
   return isRed(card.suit)!==isRed(onto.suit)&&card.value===onto.value-1;
@@ -44,7 +44,7 @@ function canFoundation(card:Card,top:Card|null):boolean{
   if(!top)return card.value===1; // Ace
   return card.suit===top.suit&&card.value===top.value+1;
 }
-function cardColor(suit:Suit){return suit===""||suit===""?"#DC2626":"#1C1917";}
+function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
@@ -219,7 +219,7 @@ export default function SolitairePage(){
           {/* Foundations */}
           {foundations.map((pile,i)=>{
             const top=pile[pile.length-1];
-            const suits:Suit[]=["","","",""];
+            const suits:Suit[]=["♥","♦","♣","♠"];
             return(
               <div key={i} onClick={()=>handleFoundationClick(i)}
                 style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -281,6 +281,34 @@ export default function SolitairePage(){
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
 
-    </div>
+    
+      <AnimatePresence>
+        {completed&&(
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(14px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:24}}>
+            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} transition={{type:"spring",stiffness:380,damping:28}}
+              style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
+              <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+              <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage Complete!</h2>
+              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} · {getDifficulty(stage)}</p>
+              <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
+                <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4,letterSpacing:"0.1em",textTransform:"uppercase"}}>XP Earned</p>
+                <p style={{fontSize:52,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>loadStage(stage)}
+                  style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>
+                  Retry
+                </button>
+                <button onClick={()=>{setCompleted(false);setStage(s=>s+1);}}
+                  style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  Next Stage →
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+</div>
   );
 }
