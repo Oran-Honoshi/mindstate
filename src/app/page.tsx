@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import{FAQSchema,OrganizationSchema,WebAppSchema,HowToSchema}from"@/app/seo-schema";
 import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
 import { GameSnapshot } from "@/components/ui/GameSnapshots";
