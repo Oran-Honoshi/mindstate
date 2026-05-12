@@ -240,7 +240,7 @@ export default function PatchesGame(){
               xpState.startTime=xpState.startTime-30000;
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
-            }}}
+            }}
             disabled={completed}
             xpCost={50}/>
         </div>
