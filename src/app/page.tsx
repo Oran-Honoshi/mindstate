@@ -264,10 +264,10 @@ function LandingSnapshot({ slug }: { slug: string }) {
     "lightup": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(202,138,4,0.04)" rx={8}/>
-        {[[0,0,"B1"],[0,1,"💡"],[0,2,"lit"],[1,0,"💡"],[1,1,"B"],[1,2,"💡"],[2,0,"lit"],[2,1,"💡"],[2,2,"B0"]].map((item,i)=>{
+        {[[0,0,"B1"],[0,1,"●"],[0,2,"lit"],[1,0,"●"],[1,1,"B"],[1,2,"●"],[2,0,"lit"],[2,1,"●"],[2,2,"B0"]].map((item,i)=>{
           const r=Math.floor(i/3),c=i%3,type=item[2] as string;
           const isBlack=type.startsWith("B");
-          return<g key={i}><rect x={c*24+8} y={r*24+8} width={22} height={22} fill={isBlack?"#374151":type==="💡"?"#FFFBEB":"#FFFDE7"} stroke="#E2E8F0" strokeWidth={0.5}/>{type==="💡"&&<text x={c*24+19} y={r*24+21} textAnchor="middle" style={{fontSize:13}}>💡</text>}{isBlack&&type.length>1&&<text x={c*24+19} y={r*24+21} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{type.slice(1)}</text>}</g>;
+          return<g key={i}><rect x={c*24+8} y={r*24+8} width={22} height={22} fill={isBlack?"#374151":type==="●"?"#FFFBEB":"#FFFDE7"} stroke="#E2E8F0" strokeWidth={0.5}/>{type==="●"&&<text x={c*24+19} y={r*24+21} textAnchor="middle" style={{fontSize:13}}>●</text>}{isBlack&&type.length>1&&<text x={c*24+19} y={r*24+21} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{type.slice(1)}</text>}</g>;
         })}
       </svg>
     ),

@@ -111,7 +111,7 @@ export default function PricingPage() {
             {[
               { icon:"🎮", title:"20 logic games", desc:"Tango, Queens, Memory, Sudoku, and 16 more" },
               { icon:"📅", title:"Daily challenges", desc:"One free puzzle per game every day" },
-              { icon:"🏆", title:"XP & leaderboards", desc:"Earn XP, climb global and family rankings" },
+              { icon:"", title:"XP & leaderboards", desc:"Earn XP, climb global and family rankings" },
               { icon:"🌍", title:"Hebrew RTL support", desc:"Full right-to-left layout for Hebrew speakers" },
               { icon:"🔇", title:"Silent mode", desc:"Disable sounds and haptics globally" },
               { icon:"📱", title:"PWA support", desc:"Install on any device, works offline" },

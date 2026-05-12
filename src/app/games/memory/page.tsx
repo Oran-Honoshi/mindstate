@@ -136,7 +136,7 @@ function MemoryCard({ card, onClick, cellSize }: { card:Card; onClick:()=>void; 
 
 // Social share helper
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
-  const text = `🧠 I just completed ${game} Stage ${stage} on MindState with ${xp} XP in ${elapsed}! Can you beat it? 🎯`;
+  const text = ` I just completed ${game} Stage ${stage} on MindState with ${xp} XP in ${elapsed}! Can you beat it? `;
   const url = `https://mindstate.vercel.app/games/${game.toLowerCase()}`;
   if (navigator.share) {
     navigator.share({ title: "MindState", text, url }).catch(()=>{});

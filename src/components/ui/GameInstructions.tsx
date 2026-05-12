@@ -37,7 +37,7 @@ function QueensSnapshot({ solved }: { solved: boolean }) {
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,24px)"}}>
         {REGIONS.map((row,r)=>row.map((rid,c)=>(
           <div key={`${r}-${c}`} style={{width:24,height:24,background:COLORS[rid],border:"0.5px solid rgba(0,0,0,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>
-            {queens.some(([qr,qc])=>qr===r&&qc===c)&&"♛"}
+            {queens.some(([qr,qc])=>qr===r&&qc===c)&&""}
           </div>
         )))}
       </div>
@@ -119,9 +119,9 @@ function NonogramSnapshot({ solved }: { solved: boolean }) {
 
 function MinesweeperSnapshot({ solved }: { solved: boolean }) {
   const grid = [
-    [{val:"💣",rev:solved},{val:"1",rev:true},{val:"",rev:true}],
+    [{val:"✕",rev:solved},{val:"1",rev:true},{val:"",rev:true}],
     [{val:"1",rev:true},{val:"2",rev:true},{val:"1",rev:true}],
-    [{val:"",rev:true},{val:"1",rev:true},{val:"💣",rev:solved}],
+    [{val:"",rev:true},{val:"1",rev:true},{val:"✕",rev:solved}],
   ];
   const NC:Record<string,string>={"1":"#2563EB","2":"#16A34A"};
   return(
@@ -334,7 +334,7 @@ function LightUpSnapshot({ solved }: { solved: boolean }) {
         {grid.map((row,r)=>row.map((cell,c)=>(
           <div key={`${r}-${c}`} style={{width:26,height:26,background:cell.t==="black"?"#374151":cell.bulb?"#FFFBEB":"white",border:"0.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:cell.t==="black"?"white":"inherit"}}>
             {cell.t==="black"&&cell.clue!=null?cell.clue:""}
-            {cell.t==="white"&&cell.bulb?"💡":""}
+            {cell.t==="white"&&cell.bulb?"●":""}
           </div>
         )))}
       </div>
@@ -457,8 +457,8 @@ const INSTRUCTIONS: Record<string, {
   },
   queens: {
     title:"How to Play Queens",
-    goal:"Place exactly one queen (♛) in each row, column, and color region.",
-    rules:["Tap once → ✕ mark (excluded cell)","Tap twice → ♛ queen","Tap three times → clear","Queens cannot touch each other — not even diagonally","One queen per row, column, and color region"],
+    goal:"Place exactly one queen () in each row, column, and color region.",
+    rules:["Tap once → ✕ mark (excluded cell)","Tap twice →  queen","Tap three times → clear","Queens cannot touch each other — not even diagonally","One queen per row, column, and color region"],
     dos:["Use ✕ marks to eliminate impossible cells","Find regions with only one possible position first","Check both rows AND columns when placing"],
     donts:["Don't place queens diagonally adjacent to each other","Don't forget the color region constraint"],
     hint:"Small regions with few cells are the easiest to solve first.",
@@ -562,7 +562,7 @@ const INSTRUCTIONS: Record<string, {
   lightup: {
     title:"How to Play Light Up",
     goal:"Place light bulbs to illuminate every white cell without any bulb shining on another.",
-    rules:["Click a white cell to place a 💡 bulb","Bulbs shine horizontally and vertically until blocked by a black cell","Two bulbs must never shine on each other","Black cells with numbers require exactly that many adjacent bulbs","Every white cell must be illuminated"],
+    rules:["Click a white cell to place a ● bulb","Bulbs shine horizontally and vertically until blocked by a black cell","Two bulbs must never shine on each other","Black cells with numbers require exactly that many adjacent bulbs","Every white cell must be illuminated"],
     dos:["Start with numbered black cells — they constrain bulb placement","A '0' black cell means no adjacent bulbs allowed","A '4' black cell needs a bulb on all four sides"],
     donts:["Don't place two bulbs in each other's line of sight","Don't leave any white cell dark"],
     hint:"Black cells numbered '0' eliminate all adjacent cells — cross them out mentally.",

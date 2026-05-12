@@ -118,7 +118,7 @@ export function RatingModal() {
           {step === "feedback" && (
             <>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif", marginBottom: 6 }}>
-                {rating >= 4 ? "Glad you're enjoying it! 🎉" : "Sorry to hear that"}
+                {rating >= 4 ? "Glad you're enjoying it! " : "Sorry to hear that"}
               </h2>
               <p style={{ fontSize: 13, color: "#64748B", marginBottom: 14 }}>
                 {rating >= 4

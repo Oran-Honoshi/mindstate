@@ -18,7 +18,7 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 
 function getDifficulty(s: number): Difficulty { return s <= 300 ? "easy" : s <= 700 ? "medium" : "hard"; }
 function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = `➕ MindState · Kakuro Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text = ` MindState · Kakuro Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindstate.vercel.app";
   if (navigator.share) navigator.share({ title: "MindState", text, url }).catch(() => {});
   else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + " " + url), "_blank");

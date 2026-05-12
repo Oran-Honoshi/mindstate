@@ -239,7 +239,7 @@ export default function DailyPage() {
             </div>
             <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
               {streak % 7 === 0 && streak > 0
-                ? "🎉 Perfect week! +10 bonus plays awarded!"
+                ? " Perfect week! +10 bonus plays awarded!"
                 : `${7 - (streak % 7)} more days for +10 bonus plays`}
             </p>
           </div>

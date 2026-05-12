@@ -19,7 +19,7 @@ import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 function shareResult(stage:number,xp:number,elapsed:string){
-  const text=`🧩 MindState · Patches Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text=` MindState · Patches Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url="https://mindstate.vercel.app";
   if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});
   else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");
@@ -210,7 +210,7 @@ export default function PatchesGame(){
             {board.pieces.map(piece=>{
               if(placedPieces.has(piece.id))return(
                 <div key={piece.id} style={{padding:8,borderRadius:14,border:"2px solid #E2E8F0",background:"var(--bg2)",opacity:0.4}}>
-                  <div style={{width:24,height:24,borderRadius:6,background:piece.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white"}}>✓</div>
+                  <div style={{width:24,height:24,borderRadius:6,background:piece.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white"}}></div>
                 </div>
               );
               return<PiecePreview key={piece.id} piece={piece} cellSize={14} selected={selectedPiece===piece.id} onClick={()=>setSelectedPiece(selectedPiece===piece.id?null:piece.id)}/>;

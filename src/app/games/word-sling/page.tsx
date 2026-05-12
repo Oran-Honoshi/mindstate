@@ -19,7 +19,7 @@ import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 function shareResult(stage:number,score:number,words:number){
-  const text=`📝 MindState · Word Sling Stage ${stage} · ${score} pts · ${words} words found`;
+  const text=` MindState · Word Sling Stage ${stage} · ${score} pts · ${words} words found`;
   const url="https://mindstate.vercel.app";
   if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});
   else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");
@@ -208,7 +208,7 @@ export default function WordSlingPage(){
       <AnimatePresence>
         {completed&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
           <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-            <div style={{fontSize:48,marginBottom:16}}>📝</div>
+            <div style={{fontSize:48,marginBottom:16}}></div>
             <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete</h2>
             <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{found.length} words · {totalScore} pts · {elapsed}</p>
             <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div>

@@ -28,7 +28,7 @@ function getDifficulty(stage: number): Difficulty {
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = `🧠 MindState · Queens Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text = ` MindState · Queens Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindstate.vercel.app";
   if (navigator.share) {
     navigator.share({ title: "MindState", text, url }).catch(() => {});
@@ -210,7 +210,7 @@ export default function QueensGame() {
               </span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:12,color:"var(--text4)"}}>♛ {queensPlaced}/{board.size}</span>
+              <span style={{fontSize:12,color:"var(--text4)"}}> {queensPlaced}/{board.size}</span>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}>
                 <RotateCcw size={13}/>
@@ -221,7 +221,7 @@ export default function QueensGame() {
         </div>
 
         <div style={{fontSize:12,color:"var(--text4)",textAlign:"center"}}>
-          Tap once → ✕ mark · Tap twice → ♛ queen · Tap thrice → clear
+          Tap once →  mark · Tap twice →  queen · Tap thrice → clear
           <br/>One queen per row, column & color region. Queens cannot touch.
         </div>
 
@@ -253,7 +253,7 @@ export default function QueensGame() {
                     transition:"background 0.15s",
                   }}>
                   {val===1&&(
-                    <span style={{fontSize:Math.round(cellSize*0.38),color:isError?"#EF4444":"#64748B",fontWeight:700,lineHeight:1}}>✕</span>
+                    <span style={{fontSize:Math.round(cellSize*0.38),color:isError?"#EF4444":"#64748B",fontWeight:700,lineHeight:1}}></span>
                   )}
                   {val===2&&(
                     <motion.span
@@ -261,7 +261,7 @@ export default function QueensGame() {
                       animate={{scale:1,rotate:0}}
                       transition={{type:"spring",stiffness:500,damping:25}}
                       style={{fontSize:Math.round(cellSize*0.5),color:isError?"#EF4444":pal.queen,lineHeight:1,filter:`drop-shadow(0 2px 4px ${pal.border}80)`}}>
-                      ♛
+                      
                     </motion.span>
                   )}
                 </motion.button>

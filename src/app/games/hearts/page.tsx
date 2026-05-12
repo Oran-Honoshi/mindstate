@@ -14,11 +14,11 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 
-type Suit="♥"|"♦"|"♣"|"♠";
+type Suit=""|""|""|"";
 type Card={suit:Suit;value:number;label:string};
 
 function makeDecks():Card[]{
-  const suits:Suit[]=["♥","♦","♣","♠"];
+  const suits:Suit[]=["","","",""];
   const labels=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
   return suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+2,label})));
 }
@@ -34,13 +34,13 @@ function shuffleCards(cards:Card[],seed:number):Card[]{
 }
 
 function cardPoints(card:Card):number{
-  if(card.suit==="♥")return 1;
-  if(card.suit==="♠"&&card.label==="Q")return 13;
+  if(card.suit==="")return 1;
+  if(card.suit===""&&card.label==="Q")return 13;
   return 0;
 }
 
 function cardColor(suit:Suit):string{
-  return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";
+  return suit===""||suit===""?"#DC2626":"#1C1917";
 }
 
 function XPBar({xpState}:{xpState:XPState}){
@@ -121,10 +121,10 @@ export default function HeartsPage(){
 
       if(playerWins){
         setPlayerScore(s=>s+trickPts);
-        setMessage(trickPts>0?`You took ${trickPts} point${trickPts>1?"s":""}! 😬`:"You won the trick — no points.");
+        setMessage(trickPts>0?`You took ${trickPts} point${trickPts>1?"s":""}! `:"You won the trick — no points.");
       } else {
         setCpuScore(s=>s+trickPts);
-        setMessage(trickPts>0?`CPU took ${trickPts} point${trickPts>1?"s":""}! 😌`:"CPU won the trick.");
+        setMessage(trickPts>0?`CPU took ${trickPts} point${trickPts>1?"s":""}! `:"CPU won the trick.");
       }
 
       setHand(newHand);setCpuHand(newCpuHand);
@@ -189,7 +189,7 @@ export default function HeartsPage(){
         <div style={{display:"flex",gap:-8,justifyContent:"center"}}>
           {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(
             <div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}>
-              <CardUI card={{suit:"♠",value:0,label:""}} faceDown/>
+              <CardUI card={{suit:"",value:0,label:""}} faceDown/>
             </div>
           ))}
           {cpuHand.length>7&&<span style={{color:"rgba(255,255,255,0.5)",fontSize:12,alignSelf:"center",marginLeft:8}}>+{cpuHand.length-7}</span>}
@@ -237,10 +237,10 @@ export default function HeartsPage(){
       <AnimatePresence>
         {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
           <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
-            <div style={{fontSize:48,marginBottom:16}}>{won?"🏆":"😔"}</div>
+            <div style={{fontSize:48,marginBottom:16}}>{won?"":""}</div>
             <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
             <p style={{fontSize:13,color:"var(--text3)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
-            {won&&<><div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div><button onClick={()=>{const text=`♥ MindState · Hearts Stage ${stage} · ${playerScore} pts (CPU: ${cpuScore})`;if(navigator.share){navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});}else{window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button></>}
+            {won&&<><div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div><button onClick={()=>{const text=` MindState · Hearts Stage ${stage} · ${playerScore} pts (CPU: ${cpuScore})`;if(navigator.share){navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});}else{window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}} style={{width:"100%",marginBottom:12,padding:"11px",borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Share2 size={14}/> Share Result</button></>}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
               <button onClick={()=>{setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>

@@ -26,7 +26,7 @@ function getDifficulty(stage: number): Difficulty {
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = `🧠 MindState · Minesweeper Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text = ` MindState · Minesweeper Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindstate.vercel.app";
   if (navigator.share) {
     navigator.share({ title: "MindState", text, url }).catch(() => {});
@@ -324,7 +324,7 @@ export default function MinesweeperGame() {
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
               style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              <div style={{fontSize:48,marginBottom:16}}>💣</div>
+              <div style={{fontSize:48,marginBottom:16}}></div>
               <h2 style={{fontSize:24,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:6}}>Mine Hit</h2>
               <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Better luck next time.</p>
               <div style={{display:"flex",gap:10}}>

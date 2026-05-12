@@ -26,7 +26,7 @@ import { consumeToken, getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games
 import { TokenHUD } from "@/components/ui/TokenGate";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
-  const text = `🧠 MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindstate.vercel.app";
   if (navigator.share) {
     navigator.share({ title:"MindState", text, url }).catch(()=>{});

@@ -57,7 +57,7 @@ function CelebrationToast({ record, onDismiss }: { record: RecordBreak; onDismis
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#1C1917", marginBottom: 2 }}>
-          Record broken! 🎉
+          Record broken! 
         </p>
         <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>
           <strong style={{ color: "#4F6EF7" }}>{record.username}</strong> scored{" "}

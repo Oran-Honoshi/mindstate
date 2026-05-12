@@ -24,12 +24,12 @@ const GAME_NAMES: Record<string,string> = {
 };
 
 const ACHIEVEMENTS = [
-  { id:"first_win",    icon:"🏆", name:"First Victory",      desc:"Complete your first stage",          check:(s:Score[])=>s.length>=1 },
+  { id:"first_win",    icon:"", name:"First Victory",      desc:"Complete your first stage",          check:(s:Score[])=>s.length>=1 },
   { id:"ten_stages",   icon:"🎯", name:"Ten Stages",         desc:"Complete 10 stages",                 check:(s:Score[])=>s.length>=10 },
   { id:"five_games",   icon:"🎮", name:"Multidisciplinary",  desc:"Play 5 different games",             check:(s:Score[])=>new Set(s.map(x=>x.game_slug)).size>=5 },
   { id:"all_games",    icon:"🌟", name:"Completionist",      desc:"Play all 20 games",                  check:(s:Score[])=>new Set(s.map(x=>x.game_slug)).size>=20 },
   { id:"perfect_xp",  icon:"💎", name:"Perfect Score",      desc:"Earn 1000 XP on any stage",         check:(s:Score[])=>s.some(x=>x.xp_earned>=1000) },
-  { id:"speed_demon",  icon:"⚡", name:"Speed Demon",        desc:"Complete a stage in under 30s",      check:(s:Score[])=>s.some(x=>x.time_taken<=30) },
+  { id:"speed_demon",  icon:"", name:"Speed Demon",        desc:"Complete a stage in under 30s",      check:(s:Score[])=>s.some(x=>x.time_taken<=30) },
   { id:"hundred",      icon:"💯", name:"Century Club",       desc:"Complete 100 stages total",          check:(s:Score[])=>s.length>=100 },
   { id:"top_scorer",   icon:"🥇", name:"High Achiever",     desc:"Accumulate 10,000 total XP",         check:(s:Score[])=>s.reduce((t,x)=>t+x.xp_earned,0)>=10000 },
 ];
@@ -131,7 +131,7 @@ export default function ProfilePage() {
               <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10,
                 background: isPro ? "#EEF2FF" : "#F1F5F9",
                 color: isPro ? "#4F6EF7" : "var(--text4)" }}>
-                {isPro ? "⚡ Pro Subscriber" : "Free Plan"}
+                {isPro ? " Pro Subscriber" : "Free Plan"}
               </span>
               {!isPro && (
                 <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10, background:"rgba(79,110,247,0.08)", color:"#4F6EF7" }}>
@@ -185,7 +185,7 @@ export default function ProfilePage() {
           </div>
           <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
             {currentStreak%7===0&&currentStreak>0
-              ? "🎉 7-day streak! +10 bonus plays awarded!"
+              ? " 7-day streak! +10 bonus plays awarded!"
               : `${7-(currentStreak%7||7)} more days for +10 bonus plays`}
           </p>
         </motion.div>

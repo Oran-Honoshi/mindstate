@@ -20,7 +20,7 @@ function getDifficulty(stage: number): Difficulty {
   return stage<=300?"easy":stage<=700?"medium":"hard";
 }
 function shareResult(stage:number,xp:number,elapsed:string){
-  const text=`🖼️ MindState · Nonogram Stage ${stage} · ${xp} XP · ${elapsed}`;
+  const text=` MindState · Nonogram Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url="https://mindstate.vercel.app";
   if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});
   else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");
@@ -109,7 +109,7 @@ export default function NonogramGame() {
               style={{padding:"7px 16px",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
                 background:mode===m?"white":"transparent",color:mode===m?"#1C1917":"#94A3B8",
                 boxShadow:mode===m?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
-              {m==="fill"?"■ Fill":"✕ Cross"}
+              {m==="fill"?"■ Fill":" Cross"}
             </button>
           ))}
         </div>
@@ -144,7 +144,7 @@ export default function NonogramGame() {
                       background:val===true?"#1C1917":val===false?"#F8F7F5":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
                       cursor:"pointer",outline:"none",fontSize:cellSize*0.4,color:"var(--text4)",fontWeight:700}}>
-                    {val===false&&"✕"}
+                    {val===false&&""}
                   </motion.button>
                 );
               })}

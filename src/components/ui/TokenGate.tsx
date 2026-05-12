@@ -119,7 +119,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
             <>
               {/* No tokens left */}
               <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🪫</div>
+                <div style={{ fontSize: 48, marginBottom: 12 }}></div>
                 <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif", marginBottom: 6 }}>
                   No plays left today
                 </h2>

@@ -189,14 +189,14 @@ export function GameIcon({ slug, size=40 }: { slug:string; size?:number }) {
     case "sudoku":        return <SudokuGameIcon size={size}/>;
     case "zip":           return <ZipGameIcon size={size}/>;
     case "minesweeper":   return <MinesweeperGameIcon size={size}/>;
-    case "patches":       return <GenericGameIcon size={size} emoji="🧩" gradFrom="#FDE68A" gradTo="#F59E0B"/>;
+    case "patches":       return <GenericGameIcon size={size} emoji="" gradFrom="#FDE68A" gradTo="#F59E0B"/>;
     case "hearts":        return <GenericGameIcon size={size} emoji="♥" gradFrom="#FCA5A5" gradTo="#DC2626"/>;
     case "solitaire":     return <GenericGameIcon size={size} emoji="♠" gradFrom="#94A3B8" gradTo="#1E293B"/>;
-    case "word-sling":    return <GenericGameIcon size={size} emoji="📝" gradFrom="#86EFAC" gradTo="#16A34A"/>;
+    case "word-sling":    return <GenericGameIcon size={size} emoji="" gradFrom="#86EFAC" gradTo="#16A34A"/>;
     case "2048-pro":      return <GenericGameIcon size={size} emoji="∑" gradFrom="#6EE7B7" gradTo="#059669"/>;
     case "logic-path":    return <GenericGameIcon size={size} emoji="⌀" gradFrom="#93C5FD" gradTo="#2563EB"/>;
     case "pattern-match": return <GenericGameIcon size={size} emoji="◧" gradFrom="#C4B5FD" gradTo="#7C3AED"/>;
-    case "hex-merge":     return <GenericGameIcon size={size} emoji="⬡" gradFrom="#5EEAD4" gradTo="#0D9488"/>;
+    case "hex-merge":     return <GenericGameIcon size={size} emoji="" gradFrom="#5EEAD4" gradTo="#0D9488"/>;
     case "gravity-sort":  return <GenericGameIcon size={size} emoji="↓" gradFrom="#FCA5A5" gradTo="#C4785A"/>;
     case "bridges":       return <GenericGameIcon size={size} emoji="〓" gradFrom="#FDE68A" gradTo="#D97706"/>;
     case "kakuro":        return <GenericGameIcon size={size} emoji="✛" gradFrom="#A5B4FC" gradTo="#4338CA"/>;

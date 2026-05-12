@@ -213,7 +213,7 @@ export default function LogicPathPage() {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
             <div style={{ width:16, height:16, borderRadius:4, background:"rgba(34,197,94,0.1)", border:"1.5px solid #22C55E" }}/>
-            Correct ✓
+            Correct 
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
             <Lock size={11}/>
@@ -275,7 +275,7 @@ export default function LogicPathPage() {
           <button
             onClick={() => setShowFeedback(f => !f)}
             style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--border2)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--text3)", cursor:"pointer" }}>
-            {showFeedback ? "✓ Feedback On" : "Check Progress"}
+            {showFeedback ? " Feedback On" : "Check Progress"}
           </button>
         </div>
 
@@ -303,7 +303,7 @@ export default function LogicPathPage() {
         onRetry={() => loadStage(stage)}
         onNext={() => { setCompleted(false); setStage(s => s+1); }}
         onShare={() => {
-          const text = `🔀 MindState · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`;
+          const text = ` MindState · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`;
           if (navigator.share) navigator.share({ title:"MindState", text, url:"https://mindstate.vercel.app" }).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>

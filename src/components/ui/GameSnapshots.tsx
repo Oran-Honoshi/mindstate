@@ -165,7 +165,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
             rx={4} fill={color} opacity={0.85}/>
         )))}
         {/* Arrow down */}
-        <text x={45} y={86} textAnchor="middle" style={{fontSize:14,fill:"#94A3B8"}}>↓</text>
+        <text x={45} y={86} textAnchor="middle" style={{fontSize:12,fill:"#94A3B8"}}>↓</text>
       </svg>
     ),
     "hex-merge": (
@@ -227,7 +227,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
             <rect x={c*20+5} y={r*20+5} width={19} height={19}
               fill={hasLight?"#FFFBEB":"rgba(55,65,81,0.08)"} rx={3}/>
             {hasLight&&<text x={c*20+14.5} y={r*20+19} textAnchor="middle"
-              style={{fontSize:13}}>💡</text>}
+              style={{fontSize:13}}>●</text>}
           </g>
         )))}
         {/* Black cells */}
@@ -329,17 +329,17 @@ export function GameSnapshot({ slug }: { slug: string }) {
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(153,27,27,0.04)" rx={10}/>
         {[
-          [null,"1","1",null],[null,"1","💣",null],
-          ["1","2","2","1"],["💣","1",null,null],
+          [null,"1","1",null],[null,"1","✕",null],
+          ["1","2","2","1"],["✕","1",null,null],
         ].map((row,r)=>row.map((cell,c)=>(
           <g key={`${r}-${c}`}>
             <rect x={c*21+5} y={r*21+5} width={19} height={19}
-              fill={cell===null?"#D1D5DB":cell==="💣"?"#FEE2E2":"#F3F4F6"} rx={3}/>
-            {cell&&cell!=="💣"&&<text x={c*21+14.5} y={r*21+18} textAnchor="middle"
+              fill={cell===null?"#D1D5DB":cell==="✕"?"#FEE2E2":"#F3F4F6"} rx={3}/>
+            {cell&&cell!=="✕"&&<text x={c*21+14.5} y={r*21+18} textAnchor="middle"
               style={{fontSize:10,fontWeight:700,
                 fill:cell==="1"?"#2563EB":cell==="2"?"#16A34A":"#DC2626"}}>{cell}</text>}
-            {cell==="💣"&&<text x={c*21+14.5} y={r*21+18} textAnchor="middle"
-              style={{fontSize:12}}>💣</text>}
+            {cell==="✕"&&<text x={c*21+14.5} y={r*21+18} textAnchor="middle"
+              style={{fontSize:12}}>✕</text>}
           </g>
         )))}
       </svg>

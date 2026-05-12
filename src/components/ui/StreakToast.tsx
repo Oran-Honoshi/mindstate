@@ -38,7 +38,7 @@ export function StreakToast({ streak, bonusAwarded, onDismiss }: StreakToastProp
       </div>
       <div style={{ flex:1 }}>
         <p style={{ fontSize:14, fontWeight:700, color:"#1C1917", marginBottom:2 }}>
-          {bonusAwarded ? "🎉 7-Day Streak! Bonus earned!" : `${streak}-Day Streak! 🔥`}
+          {bonusAwarded ? " 7-Day Streak! Bonus earned!" : `${streak}-Day Streak! `}
         </p>
         <p style={{ fontSize:12, color:"#64748B" }}>
           {bonusAwarded

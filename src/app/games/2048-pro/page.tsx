@@ -17,7 +17,7 @@ import{HintButton}from"@/components/ui/HintButton";
 import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
-function shareResult(stage:number,score:number,best:number){const text=`🔢 MindState · 2048 Pro Stage ${stage} · Score: ${score} · Best tile: ${best}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
+function shareResult(stage:number,score:number,best:number){const text=` MindState · 2048 Pro Stage ${stage} · Score: ${score} · Best tile: ${best}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 
 type Grid=number[][];
 
@@ -261,7 +261,7 @@ export default function TwentyFortyEightProPage(){
               style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
               {gameState==="won"
                 ?<Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>
-                :<div style={{fontSize:48,marginBottom:16}}>😔</div>}
+                :<div style={{fontSize:48,marginBottom:16}}></div>}
               <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>
                 {gameState==="won"?`${target} Reached!`:"Game Over"}
               </h2>
