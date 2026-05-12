@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { HintButton } from "@/components/ui/HintButton";
+import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import {
   generateLogicPath, rotatePipe, checkLogicPath, isCellCorrect,
