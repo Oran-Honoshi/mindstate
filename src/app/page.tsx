@@ -427,76 +427,60 @@ export default function LandingPage() {
     <div style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text1)" }}>
 
       {/* ── NAV ── */}
-      <nav className="ms-nav" style={{
-        position:"fixed", top:0, left:0, right:0, zIndex:50,
-        padding:"0 48px", height:64,
+      <nav style={{
+        position:"fixed", top:0, left:0, right:0, zIndex:100,
         display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"0 40px", height:60,
+        background:"rgba(253,252,251,0.92)", backdropFilter:"blur(20px)",
+        borderBottom:"0.5px solid var(--border)",
       }}>
         {/* Logo */}
-        <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-          <img src="/icons/icon-192.png" alt="MindState" style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover" }}/>
-          <span style={{ fontWeight:700, fontSize:18, color:"var(--text1)", fontFamily:"Georgia,serif" }}>MindState</span>
-        </Link>
+        <a href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
+          <img src="/icons/icon-192.png" alt="MindState"
+            style={{ width:32, height:32, borderRadius:"22.5%", objectFit:"cover" }}/>
+          <span style={{ fontWeight:700, fontSize:17, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
+            MindState
+          </span>
+        </a>
 
-        {/* Center nav */}
-        <div className="nav-links-desktop" style={{ gap:4 }}>
-          {[["Games","/games"],["Leaderboard","/leaderboard"],["Family","/family"],["Pricing","/pricing"]].map(([l,h])=>(
-            <Link key={l} href={h} style={{ fontSize:14, color:"var(--text3)", padding:"7px 14px", borderRadius:10, textDecoration:"none", fontWeight:500, transition:"color 0.15s" }}
-              onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text1)"}
-              onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--text3)"}>
-              {l}
-            </Link>
+        {/* Scroll links */}
+        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+          {[
+            ["Games",        "games"],
+            ["How it works", "how-it-works"],
+            ["Coming soon",  "coming-soon"],
+            ["Pricing",      "pricing"],
+            ["FAQ",          "faq"],
+          ].map(([label, id]) => (
+            <a key={id} href={"#"+id}
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+              }}
+              style={{ fontSize:13, fontWeight:500, color:"var(--text3)",
+                padding:"7px 12px", borderRadius:10, textDecoration:"none",
+                cursor:"pointer" }}>
+              {label}
+            </a>
           ))}
         </div>
 
-        {/* Right controls */}
-        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          {/* Token counter for logged-in free users */}
-          {user && !isPro && (
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:20, background:"var(--bg2)", border:"0.5px solid var(--border)" }}>
-              <Zap size={13} color={tokens>0?"#4F6EF7":"#EF4444"} fill={tokens>0?"#4F6EF7":"#EF4444"}/>
-              <span style={{ fontSize:12, fontWeight:700, color:tokens>0?"#4F6EF7":"#EF4444" }}>{tokens}</span>
-              <span style={{ fontSize:11, color:"var(--text4)" }}>/ {FREE_DAILY_TOKENS}</span>
-            </div>
-          )}
-          {user && isPro && (
-            <div style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:20, background:"rgba(79,110,247,0.1)", border:"0.5px solid rgba(79,110,247,0.2)" }}>
-              <Infinity size={12} color="#4F6EF7"/>
-              <span style={{ fontSize:11, fontWeight:700, color:"#4F6EF7" }}>Pro</span>
-            </div>
-          )}
-
-          <button onClick={toggleSilentMode} style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-            {isSilentMode?<VolumeX size={16}/>:<Volume2 size={16}/>}
-          </button>
-          <button onClick={toggleTheme} style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-            {theme==="dark"?<Sun size={16}/>:<Moon size={16}/>}
-          </button>
-
-          {user ? (
-            <Link href="/profile" style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 10px 6px 6px", borderRadius:14, border:"0.5px solid var(--border)", background:"var(--surface)", textDecoration:"none", cursor:"pointer" }}>
-              <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"white" }}>
-                {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
-              </div>
-              <span className="hide-mobile" style={{ fontSize:12, fontWeight:600, color:"var(--text2)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                {profile?.username ?? "Profile"}
-              </span>
-            </Link>
-          ) : (
-            <div style={{ display:"flex", gap:6 }}>
-              <Link href="/auth/signin" style={{ fontSize:13, color:"var(--text3)", padding:"7px 12px", borderRadius:10, textDecoration:"none" }}>Sign in</Link>
-              <Link href="/auth/signup" style={{ fontSize:13, fontWeight:700, color:"white", padding:"8px 18px", borderRadius:12, background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", textDecoration:"none", boxShadow:"0 3px 10px rgba(79,110,247,0.3)" }}>
-                Start Playing
-              </Link>
-            </div>
-          )}
+        {/* CTAs */}
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <a href="/auth/signin"
+            style={{ fontSize:13, fontWeight:600, color:"var(--text2)",
+              padding:"7px 14px", borderRadius:10, textDecoration:"none",
+              border:"0.5px solid var(--border)", background:"var(--surface)" }}>
+            Sign in
+          </a>
+          <a href="/auth/signup"
+            style={{ fontSize:13, fontWeight:700, color:"white",
+              padding:"7px 16px", borderRadius:10, textDecoration:"none",
+              background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)" }}>
+            Start Playing
+          </a>
         </div>
       </nav>
-
-      <FAQSchema/>
-      <OrganizationSchema/>
-      <WebAppSchema/>
-      <HowToSchema/>
 
       {/* ── HERO ── */}
       <section className="hero-grid" style={{ maxWidth:1200, margin:"0 auto", padding:"100px 48px 80px", minHeight:"100vh" }}>
