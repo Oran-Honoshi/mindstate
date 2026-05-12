@@ -1,7 +1,6 @@
 export type QueensBoard = {
   size: number;
   regions: number[][];
-  solution: [number, number][];
   seed: string;
   difficulty: "easy" | "medium" | "hard";
 };
@@ -14,14 +13,11 @@ function mulberry32(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-function seedToNumber(seed: string): number {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++)
-    hash = (Math.imul(31, hash) + seed.charCodeAt(i)) | 0;
-  return Math.abs(hash);
+function seedToNumber(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
 }
-
 function shuffle<T>(arr: T[], rng: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -31,28 +27,62 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
   return a;
 }
 
-function solveQueens(size: number, rng: () => number): [number, number][] | null {
-  const cols = new Set<number>();
-  const result: [number, number][] = [];
-  function backtrack(row: number): boolean {
-    if (row === size) return true;
-    for (const col of shuffle(Array.from({ length: size }, (_, i) => i), rng)) {
-      if (cols.has(col)) continue;
-      let valid = true;
-      for (const [qr, qc] of result) {
-        if (Math.abs(qr - row) <= 1 && Math.abs(qc - col) <= 1) { valid = false; break; }
+// Count valid queen placements — must equal exactly 1
+function countQueenSolutions(size: number, regions: number[][]): number {
+  let count = 0;
+  const usedCols = new Set<number>();
+  const usedRegions = new Set<number>();
+
+  function bt(row: number, placed: [number,number][]): void {
+    if (count > 1) return; // stop early
+    if (row === size) { count++; return; }
+    for (let col = 0; col < size; col++) {
+      if (usedCols.has(col)) continue;
+      const reg = regions[row][col];
+      if (usedRegions.has(reg)) continue;
+      // Check no adjacency with any placed queen
+      let ok = true;
+      for (const [qr, qc] of placed) {
+        if (Math.abs(qr - row) <= 1 && Math.abs(qc - col) <= 1) { ok = false; break; }
       }
-      if (!valid) continue;
-      cols.add(col); result.push([row, col]);
-      if (backtrack(row + 1)) return true;
-      cols.delete(col); result.pop();
+      if (!ok) continue;
+      usedCols.add(col); usedRegions.add(reg);
+      bt(row + 1, [...placed, [row, col]]);
+      usedCols.delete(col); usedRegions.delete(reg);
+      if (count > 1) return;
+    }
+  }
+  bt(0, []);
+  return count;
+}
+
+// Find the unique solution
+export function solveQueens(size: number, regions: number[][]): [number,number][] | null {
+  const usedCols = new Set<number>();
+  const usedRegions = new Set<number>();
+  const result: [number,number][] = [];
+
+  function bt(row: number): boolean {
+    if (row === size) return true;
+    for (let col = 0; col < size; col++) {
+      if (usedCols.has(col)) continue;
+      const reg = regions[row][col];
+      if (usedRegions.has(reg)) continue;
+      let ok = true;
+      for (const [qr, qc] of result) {
+        if (Math.abs(qr - row) <= 1 && Math.abs(qc - col) <= 1) { ok = false; break; }
+      }
+      if (!ok) continue;
+      usedCols.add(col); usedRegions.add(reg); result.push([row, col]);
+      if (bt(row + 1)) return true;
+      usedCols.delete(col); usedRegions.delete(reg); result.pop();
     }
     return false;
   }
-  return backtrack(0) ? result : null;
+  return bt(0) ? [...result] : null;
 }
 
-function generateRegions(size: number, queens: [number, number][], rng: () => number): number[][] {
+function generateRegions(size: number, queens: [number,number][], rng: () => number): number[][] {
   const regions = Array.from({ length: size }, () => Array(size).fill(-1));
   queens.forEach(([r, c], i) => { regions[r][c] = i; });
   const queue: [number, number, number][] = queens.map(([r, c], i) => [r, c, i]);
@@ -71,31 +101,67 @@ function generateRegions(size: number, queens: [number, number][], rng: () => nu
   return regions;
 }
 
-const SIZES = { easy: 6, medium: 8, hard: 10 };
-
-export function generateQueensBoard(seed: string, difficulty: "easy" | "medium" | "hard"): QueensBoard {
-  const size = SIZES[difficulty];
-  const rng = mulberry32(seedToNumber(seed));
-  let queens: [number, number][] | null = null;
-  let attempts = 0;
-  while (!queens && attempts < 100) { queens = solveQueens(size, rng); attempts++; }
-  if (!queens) queens = Array.from({ length: size }, (_, i) => [i, i] as [number, number]);
-  const regions = generateRegions(size, queens, rng);
-  return { size, regions, solution: queens, seed, difficulty };
+function placeQueensForRegions(size: number, rng: () => number): [number,number][] | null {
+  const cols = new Set<number>();
+  const result: [number,number][] = [];
+  function bt(row: number): boolean {
+    if (row === size) return true;
+    for (const col of shuffle(Array.from({length:size},(_,i)=>i), rng)) {
+      if (cols.has(col)) continue;
+      let ok = true;
+      for (const [qr,qc] of result) {
+        if (Math.abs(qr-row)<=1 && Math.abs(qc-col)<=1) { ok=false; break; }
+      }
+      if (!ok) continue;
+      cols.add(col); result.push([row,col]);
+      if (bt(row+1)) return true;
+      cols.delete(col); result.pop();
+    }
+    return false;
+  }
+  return bt(0) ? [...result] : null;
 }
 
-export function validateQueens(placed: Map<string, boolean>, solution: [number, number][]): { correct: boolean; errors: Set<string> } {
-  const errors = new Set<string>();
-  const queenCells = Array.from(placed.entries()).filter(([, v]) => v).map(([k]) => k.split(",").map(Number) as [number, number]);
-  for (let i = 0; i < queenCells.length; i++) {
-    for (let j = i + 1; j < queenCells.length; j++) {
-      const [r1,c1] = queenCells[i], [r2,c2] = queenCells[j];
-      if (r1===r2 || c1===c2 || (Math.abs(r1-r2)===1 && Math.abs(c1-c2)===1)) {
-        errors.add(`${r1},${c1}`); errors.add(`${r2},${c2}`);
-      }
+const SIZES = { easy: 6, medium: 8, hard: 10 };
+
+export function generateQueensBoard(seed: string, difficulty: "easy"|"medium"|"hard"): QueensBoard {
+  const size = SIZES[difficulty];
+  const rng = mulberry32(seedToNumber(seed));
+
+  // Try many region configurations until we find one with exactly 1 solution
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const queens = placeQueensForRegions(size, rng);
+    if (!queens) continue;
+    const regions = generateRegions(size, queens, rng);
+    const solutions = countQueenSolutions(size, regions);
+    if (solutions === 1) {
+      return { size, regions, seed, difficulty };
     }
   }
-  const correct = queenCells.length===solution.length &&
-    solution.every(([r,c])=>placed.get(`${r},${c}`)===true) && errors.size===0;
-  return { correct, errors };
+
+  // Fallback: return last generated board (shouldn't happen in practice)
+  const queens = placeQueensForRegions(size, rng) ?? Array.from({length:size},(_,i)=>[i,i] as [number,number]);
+  const regions = generateRegions(size, queens, rng);
+  return { size, regions, seed, difficulty };
+}
+
+// Validate: check all queen constraints (used by game page)
+export function validateQueens(board: QueensBoard, grid: number[][]): boolean {
+  const size = board.size;
+  const queens: [number,number][] = [];
+  grid.forEach((row,r) => row.forEach((v,c) => { if(v===2) queens.push([r,c]); }));
+  if (queens.length !== size) return false;
+
+  const rows = new Set(queens.map(([r])=>r));
+  const cols = new Set(queens.map(([,c])=>c));
+  const regs = new Set(queens.map(([r,c])=>board.regions[r][c]));
+  if (rows.size!==size || cols.size!==size || regs.size!==size) return false;
+
+  for (let i=0; i<queens.length; i++) {
+    for (let j=i+1; j<queens.length; j++) {
+      const [r1,c1]=queens[i],[r2,c2]=queens[j];
+      if (Math.abs(r1-r2)<=1 && Math.abs(c1-c2)<=1) return false;
+    }
+  }
+  return true;
 }

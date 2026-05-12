@@ -94,26 +94,18 @@ export default function QueensGame(){
     // Check for errors (queens touching)
     const queens:[number,number][]=[];
     ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)queens.push([ri,ci]);}));
-    const placedMap2=new Map<string,boolean>();
-    ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)placedMap2.set(`${ri},${ci}`,true);}));
-    const {errors:errs}=validateQueens(placedMap2,board.solution);
+    // Highlight touching queens as errors
+    const errs=new Set<string>();
+    const qlist:[number,number][]=[];
+    ng.forEach((row,r)=>row.forEach((v,c)=>{if(v===2)qlist.push([r,c]);}));
+    for(let i=0;i<qlist.length;i++)for(let j=i+1;j<qlist.length;j++){
+      const[r1,c1]=qlist[i],[r2,c2]=qlist[j];
+      if(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1){errs.add(`${r1},${c1}`);errs.add(`${r2},${c2}`);}
+    }
     setErrors(errs);
     if(errs.size>0)playError();
 
-    // Win = N queens placed, no errors, one per row/col/region
-    const queensPlaced=ng.flat().filter(v=>v===2).length;
-    const rowSet=new Set<number>(),colSet=new Set<number>(),regSet=new Set<number>();
-    ng.forEach((row,r)=>row.forEach((v,c)=>{
-      if(v===2){rowSet.add(r);colSet.add(c);regSet.add(board.regions[r][c]);}
-    }));
-    const vq={correct:
-      queensPlaced===board.size &&
-      errs.size===0 &&
-      rowSet.size===board.size &&
-      colSet.size===board.size &&
-      regSet.size===board.size
-    };
-    if(vq.correct&&xpState){
+    if(validateQueens(board,ng)&&xpState){
       const earned=Math.max(1,finalizeXP(xpState)-hintsUsed*100);
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
