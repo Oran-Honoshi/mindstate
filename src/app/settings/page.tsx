@@ -1,10 +1,13 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Volume2, VolumeX, Sun, Moon, Globe, CreditCard, Shield, Bell, Trash2, Check, ChevronRight, Zap, Infinity as InfinityIcon } from "lucide-react";
 import { Navbar } from "@/components/nav/Navbar";
 import { useSettingsStore } from "@/store/settingsStore";
+import { SUPPORTED_LANGUAGES } from "@/lib/i18n/config";
+import type { Language } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -53,6 +56,7 @@ function Row({ label, desc, children }: { label:string; desc?:string; children:R
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { isSilentMode, toggleSilentMode, theme, toggleTheme, language, setLanguage } = useSettingsStore();
   const { user, profile, signOut } = useAuthStore();
   const [username, setUsername] = useState(profile?.username ?? "");
@@ -119,15 +123,15 @@ export default function SettingsPage() {
           <Row label="Dark Mode" desc="Switch between light and dark theme">
             <Toggle value={theme==="dark"} onChange={toggleTheme}/>
           </Row>
-          <Row label="Language" desc="Interface language and text direction">
-            <div style={{ display:"flex", gap:6 }}>
-              {(["en","he"] as const).map(lang=>(
-                <button key={lang} onClick={()=>setLanguage(lang)}
-                  style={{ padding:"6px 14px", borderRadius:10, border:"0.5px solid", fontSize:12, fontWeight:600, cursor:"pointer", transition:"all 0.15s",
-                    background:language===lang?ACCENT:"var(--bg2)",
-                    color:language===lang?"white":"var(--text3)",
-                    borderColor:language===lang?"transparent":"var(--border2)" }}>
-                  {lang==="en"?"English":"עברית"}
+          <Row label={t("settings_lang")} desc="Interface language · Direction auto-switches for RTL">
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6, maxWidth:320, justifyContent:"flex-end" }}>
+              {SUPPORTED_LANGUAGES.map(lang=>(
+                <button key={lang.code} onClick={()=>setLanguage(lang.code as Language)}
+                  style={{ padding:"5px 10px", borderRadius:10, border:"0.5px solid", fontSize:12, fontWeight:600, cursor:"pointer", transition:"all 0.15s",
+                    background:language===lang.code?ACCENT:"var(--bg2)",
+                    color:language===lang.code?"white":"var(--text3)",
+                    borderColor:language===lang.code?"transparent":"var(--border2)" }}>
+                  {lang.flag} {lang.label}
                 </button>
               ))}
             </div>

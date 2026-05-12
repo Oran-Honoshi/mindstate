@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Language = "en" | "he";
-type Theme = "light" | "dark";
+export type Language = "en" | "es" | "de" | "fr" | "pt" | "nl" | "he";
+export type Theme = "light" | "dark";
 
 interface SettingsState {
   isSilentMode: boolean;
@@ -23,7 +23,6 @@ export const useSettingsStore = create<SettingsState>()(
       toggleTheme: () => {
         const next = get().theme === "light" ? "dark" : "light";
         set({ theme: next });
-        // Immediately apply to DOM
         if (typeof document !== "undefined") {
           document.documentElement.classList.toggle("dark", next === "dark");
           document.documentElement.style.colorScheme = next;
@@ -32,9 +31,14 @@ export const useSettingsStore = create<SettingsState>()(
       setLanguage: (language) => {
         set({ language });
         if (typeof document !== "undefined") {
-          document.documentElement.dir = language === "he" ? "rtl" : "ltr";
+          const dir = language === "he" ? "rtl" : "ltr";
+          document.documentElement.dir = dir;
           document.documentElement.lang = language;
         }
+        // Update i18n
+        import("@/lib/i18n/config").then(({ default: i18n }) => {
+          i18n.changeLanguage(language);
+        });
       },
     }),
     { name: "mindstate-settings" }
