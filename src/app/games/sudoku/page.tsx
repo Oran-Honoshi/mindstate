@@ -158,7 +158,12 @@ function SudokuGameInner() {
     if (errs.size > 0) { setErrors(errs); playError(); } else { setErrors(new Set()); }
     const allCorrect = nb.every((row, ri) => row.every((v, ci) => puzzleData.puzzle[ri][ci] !== null || v === puzzleData.solution[ri][ci]));
     const allFilled = nb.every(row => row.every(v => v !== null));
-    if (allCorrect && allFilled && xpState) {
+    const userFilledCount = nb.flat().filter((v, i) => {
+      const r = Math.floor(i / nb[0].length), c = i % nb[0].length;
+      return puzzleData.puzzle[r][c] === null && v !== null;
+    }).length;
+    const emptyCount = puzzleData.puzzle.flat().filter(v => v === null).length;
+    if (allCorrect && allFilled && userFilledCount >= emptyCount && xpState) {
       const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);

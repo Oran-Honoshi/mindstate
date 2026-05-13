@@ -78,6 +78,8 @@ function TangoGameInner() {
   const [finalXP, setFinalXP] = useState(0);
   const [hintFlash, setHintFlash] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
+  const [errorReason, setErrorReason] = useState<string>("");
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const [squish, setSquish] = useState<string|null>(null);
@@ -109,11 +111,7 @@ function TangoGameInner() {
   }, [stage, loadStage]);
 
   // Only show errors when a row/col is completely filled AND wrong
-    // Track individual error cells (not just rows/cols)
-  const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
-  const [errorReason, setErrorReason] = useState<string>("");
-
-  function checkRowColErrors(grid: Cell[][], size: number) {
+    function checkRowColErrors(grid: Cell[][], size: number) {
     const newErrorRows = new Set<number>();
     const newErrorCols = new Set<number>();
     const newErrorCells = new Set<string>();
