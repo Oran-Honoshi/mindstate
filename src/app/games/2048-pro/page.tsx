@@ -139,7 +139,6 @@ function TwentyFortyEightProPageInner(){
     const xp=createXPState(d);
     const g=initGrid(s*997);
     setGrid(g);setScore(0);setBestTile(2);setGameState("playing");
-        }
     setXpState(xp);setFinalXP(0);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
