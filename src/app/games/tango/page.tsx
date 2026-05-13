@@ -106,32 +106,66 @@ export default function TangoGame() {
   }, [stage, loadStage]);
 
   // Only show errors when a row/col is completely filled AND wrong
+    // Track individual error cells (not just rows/cols)
+  const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
+  const [errorReason, setErrorReason] = useState<string>("");
+
   function checkRowColErrors(grid: Cell[][], size: number) {
     const newErrorRows = new Set<number>();
     const newErrorCols = new Set<number>();
+    const newErrorCells = new Set<string>();
+    let reason = "";
+
     for (let r = 0; r < size; r++) {
       const row = grid[r];
-      // Only check FULLY filled rows
       if (!row.every(c => c !== null)) continue;
       const suns = row.filter(c => c === "S").length;
       const moons = row.filter(c => c === "M").length;
-      const hasTriple = row.some((c,i) => i <= size-3 && c !== null && c === row[i+1] && c === row[i+2]);
-      if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorRows.add(r);
+      // Check triple
+      for (let c = 0; c <= size - 3; c++) {
+        if (row[c] !== null && row[c] === row[c+1] && row[c] === row[c+2]) {
+          newErrorCells.add(`${r},${c}`);
+          newErrorCells.add(`${r},${c+1}`);
+          newErrorCells.add(`${r},${c+2}`);
+          reason = `3 ${row[c] === "S" ? "Suns" : "Moons"} in a row`;
+          playError();
+        }
+      }
+      if (suns !== size/2 || moons !== size/2) {
+        newErrorRows.add(r);
+        if (!reason) reason = "Unequal Suns and Moons in row";
+      }
     }
     for (let c = 0; c < size; c++) {
       const col = grid.map(r => r[c]);
-      // Only check FULLY filled cols
       if (!col.every(v => v !== null)) continue;
       const suns = col.filter(v => v === "S").length;
       const moons = col.filter(v => v === "M").length;
-      const hasTriple = col.some((v,i) => i <= size-3 && v !== null && v === col[i+1] && v === col[i+2]);
-      if (suns !== size/2 || moons !== size/2 || hasTriple) newErrorCols.add(c);
+      // Check triple
+      for (let r = 0; r <= size - 3; r++) {
+        if (col[r] !== null && col[r] === col[r+1] && col[r] === col[r+2]) {
+          newErrorCells.add(`${r},${c}`);
+          newErrorCells.add(`${r+1},${c}`);
+          newErrorCells.add(`${r+2},${c}`);
+          reason = `3 ${col[r] === "S" ? "Suns" : "Moons"} in a column`;
+          playError();
+        }
+      }
+      if (suns !== size/2 || moons !== size/2) {
+        newErrorCols.add(c);
+        if (!reason) reason = "Unequal Suns and Moons in column";
+      }
     }
     setErrorRows(newErrorRows);
     setErrorCols(newErrorCols);
+    setErrorCells(newErrorCells);
+    setErrorReason(reason);
+    if (newErrorCells.size > 0) {
+      setTimeout(() => { setErrorCells(new Set()); setErrorReason(""); }, 3000);
+    }
   }
 
-  function handleCellClick(r: number, c: number) {
+function handleCellClick(r: number, c: number) {
     if (!board || completed) return;
     const given = board.puzzle[r][c];
     if (given !== null) return;

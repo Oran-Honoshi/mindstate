@@ -43,6 +43,175 @@ const PLANS = [
   { name:"Family · 7", price:"$10", period:"/mo", features:["7 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:false },
 ];
 
+
+// ── HERO CAROUSEL ─────────────────────────────────────────────────────────
+const CAROUSEL_GAMES = [
+  { key:"tango",  label:"Tango",  href:"/games/tango",  desc:"Balance rows & columns" },
+  { key:"memory", label:"Memory", href:"/games/memory", desc:"Flip cards, find pairs"  },
+  { key:"queens", label:"Queens", href:"/games/queens", desc:"One queen per region"    },
+];
+
+function MiniMemoryHero() {
+  const ICONS = ["🌿","🔥","💧","⭐","🌙","☀️","❄️","💎"];
+  const [cards] = useState(()=>{
+    const pairs=[...ICONS];
+    const arr=[...pairs,...pairs];
+    let s=777;
+    for(let i=arr.length-1;i>0;i--){s=(s*1664525+1013904223)&0xffffffff;const j=Math.abs(s)%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}
+    return arr.map((v,i)=>({id:i,value:v,flipped:false,matched:false}));
+  });
+  const [state,setState]=useState(cards);
+  const [sel,setSel]=useState<number[]>([]);
+  const CELL=44;
+  function flip(id:number){
+    const card=state.find(c=>c.id===id);
+    if(!card||card.flipped||card.matched||sel.length===2)return;
+    const ns=state.map(c=>c.id===id?{...c,flipped:true}:c);
+    const nsel=[...sel,id];
+    setState(ns);setSel(nsel);
+    if(nsel.length===2){
+      const [a,b]=nsel.map(sid=>ns.find(c=>c.id===sid)!);
+      if(a.value===b.value){
+        setState(prev=>prev.map(c=>c.id===a.id||c.id===b.id?{...c,matched:true}:c));
+        setSel([]);playSuccess();
+      } else {
+        setTimeout(()=>{setState(prev=>prev.map(c=>c.id===a.id||c.id===b.id?{...c,flipped:false}:c));setSel([]);},700);
+      }
+    }
+  }
+  const matched=state.filter(c=>c.matched).length/2;
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>All pairs found! ✓</motion.div>}
+      <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`,gap:6}}>
+        {state.map(card=>(
+          <motion.button key={card.id} onClick={()=>flip(card.id)} whileTap={{scale:0.88}}
+            style={{width:CELL,height:CELL,borderRadius:10,border:"1.5px solid",outline:"none",
+              cursor:card.matched?"default":"pointer",
+              background:card.flipped||card.matched?"var(--surface)":"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              borderColor:card.matched?"#86EFAC":card.flipped?"#DDD6F8":"transparent",
+              fontSize:card.flipped||card.matched?22:0,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:card.matched?"0 0 0 2px #86EFAC":"none"}}>
+            {(card.flipped||card.matched)&&card.value}
+          </motion.button>
+        ))}
+      </div>
+      <p style={{fontSize:10,color:"var(--text4)"}}>{matched}/8 pairs found · tap to flip</p>
+    </div>
+  );
+}
+
+const REGION_PALETTE_MINI=[
+  {fill:"#DBEAFE",border:"#1D4ED8",queen:"#1E3A8A"},
+  {fill:"#FED7AA",border:"#C2410C",queen:"#7C2D12"},
+  {fill:"#BBF7D0",border:"#15803D",queen:"#14532D"},
+  {fill:"#E9D5FF",border:"#7C3AED",queen:"#4C1D95"},
+  {fill:"#FECDD3",border:"#BE123C",queen:"#881337"},
+  {fill:"#FDE68A",border:"#B45309",queen:"#78350F"},
+];
+
+function MiniQueensHero() {
+  const SIZE=6;
+  const REGIONS=[
+    [0,0,1,1,2,2],[0,0,1,1,2,2],[3,3,1,4,4,2],
+    [3,3,5,4,4,2],[3,5,5,5,4,2],[3,5,5,5,5,2],
+  ];
+  const [grid,setGrid]=useState<number[][]>(()=>Array.from({length:SIZE},()=>new Array(SIZE).fill(0)));
+  const CELL=40;
+  function checkWon(g:number[][]){
+    const queens:[number,number][]=[];
+    g.forEach((row,r)=>row.forEach((v,c)=>{if(v===2)queens.push([r,c]);}));
+    if(queens.length!==SIZE)return false;
+    const rows=new Set(queens.map(([r])=>r));
+    const cols=new Set(queens.map(([,c])=>c));
+    const regions=new Set(queens.map(([r,c])=>REGIONS[r][c]));
+    if(rows.size!==SIZE||cols.size!==SIZE||regions.size!==SIZE)return false;
+    for(let i=0;i<queens.length;i++)for(let j=i+1;j<queens.length;j++){
+      const[r1,c1]=queens[i],[r2,c2]=queens[j];
+      if(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1)return false;
+    }
+    return true;
+  }
+  function toggle(r:number,c:number){
+    const cur=grid[r][c];
+    const next=cur===0?1:cur===1?2:0;
+    const ng=grid.map((row,ri)=>row.map((v,ci)=>ri===r&&ci===c?next:v));
+    setGrid(ng);
+    if(checkWon(ng)){playSuccess();setTimeout(()=>triggerConfetti(),80);}
+  }
+  const won=checkWon(grid);
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Solved! ✓</motion.div>}
+      <div style={{border:"2px solid #374151",borderRadius:10,overflow:"hidden"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
+          {REGIONS.map((row,r)=>row.map((rid,c)=>{
+            const val=grid[r][c];
+            const pal=REGION_PALETTE_MINI[rid%REGION_PALETTE_MINI.length];
+            const rd=c<SIZE-1&&REGIONS[r][c+1]!==rid;
+            const bd=r<SIZE-1&&REGIONS[r+1][c]!==rid;
+            return(
+              <button key={`${r}-${c}`} onClick={()=>toggle(r,c)}
+                style={{width:CELL,height:CELL,display:"flex",alignItems:"center",justifyContent:"center",
+                  background:pal.fill,cursor:"pointer",outline:"none",
+                  borderRight:rd?`2.5px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
+                  borderBottom:bd?`2.5px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
+                  borderTop:"none",borderLeft:"none",fontSize:CELL*0.45}}>
+                {val===1&&<span style={{color:"#64748B",fontWeight:700}}>✕</span>}
+                {val===2&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{color:pal.queen}}>♛</motion.span>}
+              </button>
+            );
+          }))}
+        </div>
+      </div>
+      <p style={{fontSize:10,color:"var(--text4)"}}>tap once=✕ twice=♛ · one queen per region</p>
+    </div>
+  );
+}
+
+function HeroCarousel() {
+  const [active, setActive] = useState(0);
+  const game = CAROUSEL_GAMES[active];
+  
+  return (
+    <div style={{width:"100%"}}>
+      {/* Tab switcher */}
+      <div style={{display:"flex",gap:6,marginBottom:14,justifyContent:"center"}}>
+        {CAROUSEL_GAMES.map((g,i)=>(
+          <button key={g.key} onClick={()=>setActive(i)}
+            style={{padding:"5px 14px",borderRadius:20,border:"1.5px solid",fontSize:11,fontWeight:700,
+              cursor:"pointer",outline:"none",transition:"all 0.15s",
+              background:active===i?"linear-gradient(135deg,#4F6EF7,#9C6BE8)":"var(--surface)",
+              color:active===i?"white":"var(--text3)",
+              borderColor:active===i?"transparent":"var(--border2)"}}>
+            {g.label}
+          </button>
+        ))}
+      </div>
+      
+      {/* Game */}
+      <AnimatePresence mode="wait">
+        <motion.div key={active}
+          initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-20}}
+          transition={{duration:0.2}}>
+          {active===0 && <TangoDemo cellSize={42}/>}
+          {active===1 && <MiniMemoryHero/>}
+          {active===2 && <MiniQueensHero/>}
+        </motion.div>
+      </AnimatePresence>
+      
+      {/* Footer */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
+        <span style={{fontSize:10,color:"var(--text4)"}}>{game.desc}</span>
+        <Link href={game.href} style={{fontSize:11,fontWeight:600,color:"#4F6EF7",display:"flex",alignItems:"center",gap:3,textDecoration:"none"}}>
+          Full game <ArrowRight size={10}/>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 // ── Tango Demo ────────────────────────────────────────────────────────────────
 function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
   const [board] = useState<TangoBoard>(() => generateTangoBoard("hero-hard-77","hard"));
@@ -554,13 +723,7 @@ export default function LandingPage() {
                   <span style={{ fontSize:11, fontWeight:600, color:"var(--text4)", fontFamily:"monospace" }}>9:41</span>
                   <div style={{ display:"flex", gap:3 }}>{[0,1,2].map(i=><div key={i} style={{ width:4, height:4, borderRadius:"50%", background:"var(--border2)" }}/>)}</div>
                 </div>
-                <div style={{ padding:"16px 18px 18px" }}><TangoDemo cellSize={46}/></div>
-                <div style={{ padding:"0 18px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, color:"var(--text4)" }}>No account needed</span>
-                  <Link href="/games/tango" style={{ fontSize:12, fontWeight:600, color:"#4F6EF7", display:"flex", alignItems:"center", gap:3, textDecoration:"none" }}>
-                    Full game <ArrowRight size={11}/>
-                  </Link>
-                </div>
+                <HeroCarousel/>
               </div>
             </div>
             <div style={{ position:"absolute", bottom:-12, left:"15%", right:"15%", height:20, background:"rgba(79,110,247,0.2)", filter:"blur(18px)", borderRadius:"50%" }}/>
