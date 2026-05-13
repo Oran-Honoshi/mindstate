@@ -16,6 +16,8 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { HintButton } from "@/components/ui/HintButton";
+import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 

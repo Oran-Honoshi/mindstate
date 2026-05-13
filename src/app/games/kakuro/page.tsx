@@ -13,6 +13,9 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { HintButton } from "@/components/ui/HintButton";
+import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 
 function getDifficulty(s: number): Difficulty { return s <= 300 ? "easy" : s <= 700 ? "medium" : "hard"; }
 function shareResult(stage: number, xp: number, elapsed: string) {

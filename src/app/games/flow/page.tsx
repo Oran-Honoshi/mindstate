@@ -14,6 +14,9 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { HintButton } from "@/components/ui/HintButton";
+import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
+import { GameInstructions } from "@/components/ui/GameInstructions";
 
 function getDifficulty(stage: number): Difficulty {
   return stage <= 300 ? "easy" : stage <= 700 ? "medium" : "hard";
