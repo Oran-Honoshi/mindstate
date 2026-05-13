@@ -2,13 +2,11 @@
 
 import React from "react";
 
+interface Props { children: React.ReactNode; game?: string; }
 interface State { hasError: boolean; error: string; stack: string; }
 
-export class ErrorBoundary extends React.Component
-  { children: React.ReactNode; game?: string },
-  State
-> {
-  constructor(props: any) {
+export class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: "", stack: "" };
   }
@@ -29,13 +27,13 @@ export class ErrorBoundary extends React.Component
               Runtime Error{this.props.game ? ` in ${this.props.game}` : ""}
             </h2>
             <div style={{ background:"#1A1A2E", borderRadius:12, padding:16,
-              marginBottom:12, border:"1px solid #EF444440" }}>
+              marginBottom:12, border:"1px solid rgba(239,68,68,0.25)" }}>
               <p style={{ color:"#FCA5A5", fontSize:13, fontWeight:600, marginBottom:8 }}>
                 {this.state.error}
               </p>
               <pre style={{ color:"#94A3B8", fontSize:11, whiteSpace:"pre-wrap",
                 wordBreak:"break-all", maxHeight:300, overflow:"auto", lineHeight:1.6 }}>
-                {this.state.stack.split("\n").slice(0,12).join("\n")}
+                {this.state.stack.split("\n").slice(0, 12).join("\n")}
               </pre>
             </div>
             <div style={{ display:"flex", gap:10 }}>
@@ -45,18 +43,16 @@ export class ErrorBoundary extends React.Component
                 Retry
               </button>
               <button onClick={() => window.history.back()}
-                style={{ padding:"8px 18px", borderRadius:10,
-                  border:"1px solid #374151", background:"transparent",
-                  color:"#94A3B8", cursor:"pointer", fontSize:13 }}>
+                style={{ padding:"8px 18px", borderRadius:10, border:"1px solid #374151",
+                  background:"transparent", color:"#94A3B8", cursor:"pointer", fontSize:13 }}>
                 Back
               </button>
               <button onClick={() => {
-                  navigator.clipboard?.writeText(this.state.error + "\n\n" + this.state.stack);
-                  alert("Copied to clipboard");
-                }}
-                style={{ padding:"8px 18px", borderRadius:10,
-                  border:"1px solid #374151", background:"transparent",
-                  color:"#94A3B8", cursor:"pointer", fontSize:13 }}>
+                navigator.clipboard?.writeText(this.state.error + "\n\n" + this.state.stack);
+                alert("Copied!");
+              }}
+                style={{ padding:"8px 18px", borderRadius:10, border:"1px solid #374151",
+                  background:"transparent", color:"#94A3B8", cursor:"pointer", fontSize:13 }}>
                 Copy Error
               </button>
             </div>
