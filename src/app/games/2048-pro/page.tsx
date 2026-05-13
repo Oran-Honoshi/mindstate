@@ -139,16 +139,7 @@ function TwentyFortyEightProPageInner(){
     const xp=createXPState(d);
     const g=initGrid(s*997);
     setGrid(g);setScore(0);setBestTile(2);setGameState("playing");
-    // Win check: reached target tile
-    const flat=(newBoard||[]).flat();
-    const maxTile=Math.max(...flat.map((v:number)=>v||0));
-    const target=getDifficulty(stage)==="easy"?512:getDifficulty(stage)==="medium"?1024:2048;
-    if(maxTile>=target&&xpState&&!completed){
-      const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
-      if(timerRef.current)clearInterval(timerRef.current);
-      playSuccess();setTimeout(()=>triggerConfetti(),80);
-      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"2048-pro",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
-    }
+        }
     setXpState(xp);setFinalXP(0);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
