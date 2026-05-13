@@ -211,7 +211,7 @@ function handleCheck() {
                   animate={hasError ? { x:[-2,2,-2,2,0] } : {}}
                   transition={{ duration:0.25 }}
                   style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center", fontSize:Math.round(cellSize*0.45), fontWeight:700, cursor:"pointer", outline:"none",
-                    background: isSelected ? "#EEF2FF" : hasError ? "#FEF2F2" : "white",
+                    background: showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--surface)",
                     color: hasError ? "#EF4444" : val ? "#4F6EF7" : "#CBD5E1",
                     borderRight:"0.5px solid #E2E8F0", borderBottom:"0.5px solid #E2E8F0", borderTop:"none", borderLeft:"none",
                     boxShadow: isSelected ? "inset 0 0 0 2px #4F6EF7" : "none" }}>

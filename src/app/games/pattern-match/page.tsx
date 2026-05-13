@@ -38,6 +38,7 @@ export default function PatternMatchGame(){
   const[finalXP,setFinalXP]=useState(0);
   const[hintFlash,setHintFlash]=useState(false);
   const[showRule,setShowRule]=useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage=useCallback((s:number)=>{

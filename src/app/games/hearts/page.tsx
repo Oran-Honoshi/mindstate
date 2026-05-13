@@ -88,6 +88,7 @@ export default function HeartsPage(){
   const[elapsed,setElapsed]=useState("00:00");
   const[finalXP,setFinalXP]=useState(0);
   const[message,setMessage]=useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage=useCallback((s:number)=>{

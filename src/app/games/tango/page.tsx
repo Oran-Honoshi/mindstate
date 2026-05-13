@@ -74,6 +74,7 @@ export default function TangoGame() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintFlash, setHintFlash] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const [squish, setSquish] = useState<string|null>(null);
