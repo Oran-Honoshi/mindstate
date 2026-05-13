@@ -45,9 +45,10 @@ export function getDailyStageInfo(game: string): { stage: number; difficulty: Da
   const dayOfWeek = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
 
   // Difficulty rotation: Easy Mon/Thu, Medium Tue/Fri, Hard Wed/Sat/Sun
+  // Daily challenges are always Medium or Hard — never Easy
+  // Medium: Mon/Wed/Fri, Hard: Tue/Thu/Sat/Sun
   const difficulty: DailyDifficulty =
-    dayOfWeek === 1 || dayOfWeek === 4 ? "easy" :
-    dayOfWeek === 2 || dayOfWeek === 5 ? "medium" : "hard";
+    dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5 ? "medium" : "hard";
 
   // Stage range per difficulty
   const ranges = { easy:[1,300], medium:[301,700], hard:[701,1000] };
