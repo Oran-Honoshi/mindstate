@@ -3,6 +3,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
@@ -47,7 +48,7 @@ function XPBar({xpState}:{xpState:XPState}){
   );
 }
 
-export default function QueensGame(){
+function QueensGameInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<QueensBoard|null>(null);
@@ -315,3 +316,11 @@ export default function QueensGame(){
     setXpState(prev=>prev?{...prev,startTime:prev.startTime-(2*60*1000)}:prev);
     setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
   }
+
+export default function QueensGame() {
+  return (
+    <ErrorBoundary game="queens">
+      <QueensGameInner/>
+    </ErrorBoundary>
+  );
+}

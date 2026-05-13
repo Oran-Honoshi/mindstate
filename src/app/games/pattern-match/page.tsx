@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2,Lightbulb}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -26,7 +27,7 @@ function shareResult(stage:number,xp:number,elapsed:string){const text=` MindSta
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));
   const[hintsUsed,setHintsUsed]=useState(0);useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
-export default function PatternMatchGame(){
+function PatternMatchGameInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<PatternBoard|null>(null);
@@ -254,5 +255,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function PatternMatchGame() {
+  return (
+    <ErrorBoundary game="pattern-match">
+      <PatternMatchGameInner/>
+    </ErrorBoundary>
   );
 }

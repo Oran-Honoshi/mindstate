@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lightbulb, Share2, RotateCcw, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -65,7 +66,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function TangoGame() {
+function TangoGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<TangoBoard | null>(null);
@@ -466,5 +467,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function TangoGame() {
+  return (
+    <ErrorBoundary game="tango">
+      <TangoGameInner/>
+    </ErrorBoundary>
   );
 }

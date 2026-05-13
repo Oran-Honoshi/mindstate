@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, ChevronRight, Share2, Lock } from "lucide-react";
 import Link from "next/link";
@@ -79,7 +80,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function LogicPathPage() {
+function LogicPathPageInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<LogicBoard | null>(null);
@@ -368,5 +369,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function LogicPathPage() {
+  return (
+    <ErrorBoundary game="logic-path">
+      <LogicPathPageInner/>
+    </ErrorBoundary>
   );
 }

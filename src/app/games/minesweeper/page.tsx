@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Flag, Bomb } from "lucide-react";
 import Link from "next/link";
@@ -137,7 +138,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function MinesweeperGame() {
+function MinesweeperGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<Board|null>(null);
@@ -425,5 +426,13 @@ export default function MinesweeperGame() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function MinesweeperGame() {
+  return (
+    <ErrorBoundary game="minesweeper">
+      <MinesweeperGameInner/>
+    </ErrorBoundary>
   );
 }

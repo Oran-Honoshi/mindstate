@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -113,7 +114,7 @@ function XPBar({xpState}:{xpState:XPState}){
   return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
 }
 
-export default function TwentyFortyEightProPage(){
+function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
   const[completed,setCompleted]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
@@ -365,5 +366,13 @@ export default function TwentyFortyEightProPage(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function TwentyFortyEightProPage() {
+  return (
+    <ErrorBoundary game="2048-pro">
+      <TwentyFortyEightProPageInner/>
+    </ErrorBoundary>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Delete } from "lucide-react";
 import Link from "next/link";
@@ -107,7 +108,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function SudokuGame() {
+function SudokuGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [puzzleData, setPuzzleData] = useState<ReturnType<typeof generateSudoku> | null>(null);
@@ -383,5 +384,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function SudokuGame() {
+  return (
+    <ErrorBoundary game="sudoku">
+      <SudokuGameInner/>
+    </ErrorBoundary>
   );
 }

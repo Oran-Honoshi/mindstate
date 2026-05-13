@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, ChevronRight, Share2,
          Leaf, Flame, Droplets, Star, Moon, Sun, Cloud, Zap,
@@ -102,7 +103,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function MemoryGame() {
+function MemoryGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [cards, setCards] = useState<Card[]>([]);
@@ -354,5 +355,13 @@ export default function MemoryGame() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function MemoryGame() {
+  return (
+    <ErrorBoundary game="memory">
+      <MemoryGameInner/>
+    </ErrorBoundary>
   );
 }

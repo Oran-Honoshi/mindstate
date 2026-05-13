@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Delete,Check,X}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -36,7 +37,7 @@ function XPBar({xpState}:{xpState:XPState}){
   return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
 }
 
-export default function WordSlingPage(){
+function WordSlingPageInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<WordBoard|null>(null);
@@ -288,5 +289,13 @@ export default function WordSlingPage(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function WordSlingPage() {
+  return (
+    <ErrorBoundary game="word-sling">
+      <WordSlingPageInner/>
+    </ErrorBoundary>
   );
 }

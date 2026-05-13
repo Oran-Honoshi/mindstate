@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
@@ -47,7 +48,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 type PathState = { color: Color; cells: string[] };
 
-export default function FlowGame() {
+function FlowGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<FlowBoard | null>(null);
@@ -358,5 +359,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function FlowGame() {
+  return (
+    <ErrorBoundary game="flow">
+      <FlowGameInner/>
+    </ErrorBoundary>
   );
 }

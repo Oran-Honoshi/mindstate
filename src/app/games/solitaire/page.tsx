@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy,RefreshCw}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -70,7 +71,7 @@ function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?
   );
 }
 
-export default function SolitairePage(){
+function SolitairePageInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[tableau,setTableau]=useState<Card[][]>([]);
@@ -311,5 +312,13 @@ export default function SolitairePage(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function SolitairePage() {
+  return (
+    <ErrorBoundary game="solitaire">
+      <SolitairePageInner/>
+    </ErrorBoundary>
   );
 }

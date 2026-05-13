@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Delete } from "lucide-react";
 import Link from "next/link";
@@ -40,7 +41,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function KakuroGame() {
+function KakuroGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<KakuroBoard | null>(null);
@@ -314,5 +315,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function KakuroGame() {
+  return (
+    <ErrorBoundary game="kakuro">
+      <KakuroGameInner/>
+    </ErrorBoundary>
   );
 }

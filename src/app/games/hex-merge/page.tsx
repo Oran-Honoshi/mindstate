@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -41,7 +42,7 @@ const TILE_COLORS:Record<number,{bg:string;text:string}>={
 };
 function tileColor(v:number):{bg:string;text:string}{return TILE_COLORS[v]??{bg:"#374151",text:"white"};}
 
-export default function HexMergePage(){
+function HexMergePageInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<HexBoard|null>(null);
@@ -248,5 +249,13 @@ export default function HexMergePage(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function HexMergePage() {
+  return (
+    <ErrorBoundary game="hex-merge">
+      <HexMergePageInner/>
+    </ErrorBoundary>
   );
 }

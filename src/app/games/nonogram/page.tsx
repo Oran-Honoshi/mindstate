@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
@@ -33,7 +34,7 @@ function XPBar({xpState}:{xpState:XPState}){
   return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
 }
 
-export default function NonogramGame() {
+function NonogramGameInner() {
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<NonogramBoard|null>(null);
@@ -236,5 +237,13 @@ export default function NonogramGame() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function NonogramGame() {
+  return (
+    <ErrorBoundary game="nonogram">
+      <NonogramGameInner/>
+    </ErrorBoundary>
   );
 }

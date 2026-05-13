@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -75,7 +76,7 @@ function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;on
   );
 }
 
-export default function HeartsPage(){
+function HeartsPageInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[hand,setHand]=useState<Card[]>([]);
@@ -318,5 +319,13 @@ export default function HeartsPage(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function HeartsPage() {
+  return (
+    <ErrorBoundary game="hearts">
+      <HeartsPageInner/>
+    </ErrorBoundary>
   );
 }

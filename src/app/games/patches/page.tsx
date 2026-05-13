@@ -4,6 +4,7 @@ import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2,RefreshCw}from"lucide-react";
 import Link from"next/link";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
@@ -57,7 +58,7 @@ function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:nu
   );
 }
 
-export default function PatchesGame(){
+function PatchesGameInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
   const[board,setBoard]=useState<PatchesBoard|null>(null);
@@ -308,5 +309,13 @@ export default function PatchesGame(){
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function PatchesGame() {
+  return (
+    <ErrorBoundary game="patches">
+      <PatchesGameInner/>
+    </ErrorBoundary>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
 import Link from "next/link";
@@ -137,7 +138,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
   );
 }
 
-export default function ZipGame() {
+function ZipGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<ZipBoard | null>(null);
@@ -520,5 +521,13 @@ function handleCheck() {
         )}
       </AnimatePresence>
 </div>
+  );
+}
+
+export default function ZipGame() {
+  return (
+    <ErrorBoundary game="zip">
+      <ZipGameInner/>
+    </ErrorBoundary>
   );
 }
