@@ -11,7 +11,6 @@ import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{generatePatches,checkPatches,type PatchesBoard,type Piece}from"@/lib/games/patchesGenerator";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
@@ -238,19 +237,10 @@ function PatchesGameInner(){
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
             }}
             disabled={completed}/>
-          <CheckProgressButton
-            onCheck={()=>{
-              if(!xpState||completed)return;
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
-              setShowFeedback(true);
-              setTimeout(()=>setShowFeedback(false),2000);
-            }}
-            disabled={completed}
-            xpCost={50}/>
-        </div>
+          </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>

@@ -17,7 +17,6 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
-import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
@@ -319,19 +318,10 @@ function MinesweeperGameInner() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
             }}
             disabled={completed}/>
-          <CheckProgressButton
-            onCheck={()=>{
-              if(!xpState||completed)return;
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
-              setShowFeedback(true);
-              setTimeout(()=>setShowFeedback(false),2000);
-            }}
-            disabled={completed}
-            xpCost={50}/>
-        </div>
+          </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}

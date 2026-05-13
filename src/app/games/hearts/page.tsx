@@ -11,7 +11,6 @@ import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
@@ -255,19 +254,10 @@ function HeartsPageInner(){
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
             }}
             disabled={completed}/>
-          <CheckProgressButton
-            onCheck={()=>{
-              if(!xpState||completed)return;
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
-              setShowFeedback(true);
-              setTimeout(()=>setShowFeedback(false),2000);
-            }}
-            disabled={completed}
-            xpCost={50}/>
-        </div>
+          </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>← Prev</button>

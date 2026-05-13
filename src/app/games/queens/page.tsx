@@ -9,7 +9,6 @@ import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-import{CheckProgressButton}from"@/components/ui/CheckProgressButton";
 
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
@@ -131,7 +130,7 @@ function QueensGameInner(){
         setGrid(ng);
         setHintsUsed(h=>h+1);
         // Deduct XP by pushing startTime back 3 minutes
-        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(90*1000)}:prev);
+        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(30*1000)}:prev);
         playError();
         return;
       }
@@ -245,11 +244,7 @@ function QueensGameInner(){
             xpCost={100}
             onUseHint={handleHint}
             disabled={completed}/>
-          <CheckProgressButton
-            onCheck={handleCheck}
-            disabled={completed}
-            xpCost={50}/>
-        </div>
+          </div>
 
         {/* Stage nav */}
         <div style={{display:"flex",alignItems:"center",gap:12}}>

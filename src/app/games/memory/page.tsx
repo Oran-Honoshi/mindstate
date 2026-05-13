@@ -10,7 +10,6 @@ import { ArrowLeft, RotateCcw, ChevronRight, Share2,
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { HintButton } from "@/components/ui/HintButton";
-import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -188,7 +187,7 @@ function MemoryGameInner() {
     // Briefly reveal all unmatched cards
     setCards(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (90*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
     playError();
     setTimeout(() => {
       setCards(prev => prev.map(c => c.matched ? c : (selected.includes(c.id) ? c : {...c, flipped: false})));
@@ -255,8 +254,7 @@ function MemoryGameInner() {
         {/* Hint + Check */}
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed}/>
-          <CheckProgressButton onCheck={handleCheck} disabled={completed} xpCost={50}/>
-        </div>
+          </div>
 
         {/* Progress feedback toast */}
         {showFeedback && (
