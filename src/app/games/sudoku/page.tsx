@@ -121,6 +121,8 @@ export default function SudokuGame() {
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
+  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage = useCallback((s: number) => {
@@ -173,6 +175,41 @@ export default function SudokuGame() {
   const cellSize = Math.floor(maxW / puzzleData.size);
   const nums = Array.from({ length: puzzleData.size }, (_, i) => i + 1);
 
+
+function handleHint() {
+    if (!xpState || completed || hintsUsed >= 3) return;
+    // Find first empty cell and fill from solution
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (board[r][c] === null && GIVEN[r][c] === null) {
+          const nb = board.map(row => [...row]);
+          nb[r][c] = SOLUTION[r][c];
+          setBoard(nb);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+  }
+
+function handleCheck() {
+    if (!xpState || completed) return;
+    const correct = new Set<string>();
+    const wrong = new Set<string>();
+    board.forEach((row, r) => row.forEach((val, c) => {
+      if (val !== null && GIVEN[r][c] === null) {
+        if (val === SOLUTION[r][c]) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
+  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>

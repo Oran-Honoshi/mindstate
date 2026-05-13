@@ -74,6 +74,8 @@ export default function TangoGame() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintFlash, setHintFlash] = useState(false);
+  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const [squish, setSquish] = useState<string|null>(null);
   // Row/col error highlighting — only shown when row/col is full but wrong
   const [errorRows, setErrorRows] = useState<Set<number>>(new Set());
@@ -158,21 +160,24 @@ export default function TangoGame() {
     }
   }
 
-  function handleHint() {
-    if (!board || !xpState || completed || xpState.hintsUsed >= xpState.maxHints) return;
-    const empty: [number,number][] = [];
-    playerGrid.forEach((row,r)=>row.forEach((cell,c)=>{
-      if(cell===null && board.puzzle[r][c]===null) empty.push([r,c]);
-    }));
-    if (!empty.length) return;
-    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
-    const ng = playerGrid.map((row,ri)=>row.map((cell,ci)=>ri===r&&ci===c?board.solution[r][c]:cell));
-    setPlayerGrid(ng);
-    setXpState(applyHint(xpState));
-    checkRowColErrors(ng, board.size);
-    setHintFlash(true); setTimeout(()=>setHintFlash(false), 1400);
-    playError();
+function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3) return;
+    // Find first empty cell and fill it from solution
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (playerGrid[r][c] === null) {
+          const ng = playerGrid.map(row => [...row]);
+          ng[r][c] = board.solution[r][c];
+          setPlayerGrid(ng);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          playError();
+          return;
+        }
+      }
+    }
   }
+
 
   if (!board || !xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -190,6 +195,23 @@ export default function TangoGame() {
   const cm = new Map<string,"same"|"diff">();
   board.constraints.forEach(c=>cm.set(`${c.row1}-${c.col1}-${c.row2}-${c.col2}`,c.type));
 
+
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    const correct = new Set<string>();
+    const wrong = new Set<string>();
+    playerGrid.forEach((row, r) => row.forEach((val, c) => {
+      if (val !== null) {
+        if (val === board.solution[r][c]) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
+  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>

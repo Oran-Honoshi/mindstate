@@ -91,6 +91,8 @@ export default function LogicPathPage() {
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const pausedRef = useRef(false);
 
@@ -159,6 +161,25 @@ export default function LogicPathPage() {
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
     }
+  }
+
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    const correct = new Set<string>();
+    const wrong = new Set<string>();
+    grid.forEach((row, r) => row.forEach((cell, c) => {
+      if (!cell.locked) {
+        const solCell = board.solution[r][c];
+        const matches = cell.connections.every((v, i) => v === solCell.connections[i]);
+        if (matches) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
 
   if (!board || !xpState) return (

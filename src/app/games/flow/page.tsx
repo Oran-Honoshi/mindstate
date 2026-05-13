@@ -58,6 +58,7 @@ export default function FlowGame() {
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
+  const [feedbackPaths, setFeedbackPaths] = useState<Map<string,string>>(new Map());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage = useCallback((s: number) => {
@@ -175,6 +176,34 @@ export default function FlowGame() {
   const connected = paths.size;
   const total = board.colors.length;
 
+
+function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3) return;
+    // Add one correct segment from solution for each incomplete path
+    if (!board.solution) return;
+    const newPaths = new Map(paths);
+    for (const [color, solutionPath] of board.solution) {
+      if (!newPaths.has(color) || (newPaths.get(color)?.length ?? 0) < solutionPath.length) {
+        const current = newPaths.get(color) ?? [];
+        const next = solutionPath[current.length];
+        if (next) {
+          newPaths.set(color, [...current, next]);
+          setPaths(newPaths);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+  }
+
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    setShowFeedback(true);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => setShowFeedback(false), 2000);
+  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>

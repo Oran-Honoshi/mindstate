@@ -44,6 +44,8 @@ export default function NonogramGame() {
   const[finalXP,setFinalXP]=useState(0);
   const[mode,setMode]=useState<"fill"|"cross">("fill");
   const[dragging,setDragging]=useState(false);
+  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage=useCallback((s:number)=>{

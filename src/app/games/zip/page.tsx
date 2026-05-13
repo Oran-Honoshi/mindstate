@@ -265,6 +265,38 @@ export default function ZipGame() {
   cellSizeRef.current = cellSize;
   const totalCells = board.size * board.size;
 
+
+function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3) return;
+    // Add the next correct cell to the path
+    const nextIdx = userPath.length;
+    if (nextIdx < board.path.length) {
+      const nextCell = board.path[nextIdx];
+      setUserPath(prev => [...prev, nextCell]);
+      setHintsUsed(h => h + 1);
+      setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+      playError();
+    }
+  }
+
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    // Show how many cells are on the correct path so far
+    let correctCount = 0;
+    for (let i = 0; i < userPath.length; i++) {
+      if (i < board.path.length &&
+          userPath[i][0] === board.path[i][0] &&
+          userPath[i][1] === board.path[i][1]) {
+        correctCount++;
+      } else break;
+    }
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    // Visual: trim path to correct portion + flash
+    if (correctCount < userPath.length) {
+      setUserPath(userPath.slice(0, correctCount));
+    }
+    playError();
+  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>

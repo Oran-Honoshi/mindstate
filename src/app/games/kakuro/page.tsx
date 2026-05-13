@@ -51,6 +51,9 @@ export default function KakuroGame() {
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
+  const [solution, setSolution] = useState<(number|null)[][]>([]);
+  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage = useCallback((s: number) => {
@@ -119,6 +122,41 @@ export default function KakuroGame() {
   const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 420) : 360;
   const cellSize = Math.floor(maxW / board.size);
 
+
+function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3) return;
+    // Find first empty white cell and fill from solution
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (board.grid[r][c]?.type === 'white' && !userGrid[r][c] && solution[r]?.[c]) {
+          const ng = userGrid.map(row => [...row]);
+          ng[r][c] = solution[r][c];
+          setUserGrid(ng);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+  }
+
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    const correct = new Set<string>();
+    const wrong = new Set<string>();
+    userGrid.forEach((row, r) => row.forEach((val, c) => {
+      if (val !== null && board.grid[r][c]?.type === 'white') {
+        if (val === solution[r]?.[c]) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
+  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>

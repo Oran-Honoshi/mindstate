@@ -105,6 +105,28 @@ function MemoryCard({ card, onClick, cellSize }: { card:Card; onClick:()=>void; 
   const cfg = CARD_ICONS[card.iconIdx % CARD_ICONS.length];
   const IconComp = cfg.icon;
   const iconSize = Math.round(cellSize * 0.42);
+
+function handleHint() {
+    if (!xpState || completed || hintsUsed >= 3) return;
+    // Flip all unmatched cards briefly to show positions
+    setState(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+    playError();
+    setTimeout(() => {
+      setState(prev => prev.map(c => c.matched ? c : {...c, flipped: false}));
+    }, 1200);
+  }
+
+function handleCheck() {
+    if (!xpState || completed) return;
+    // Show all unmatched cards for 1.5s
+    setState(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setTimeout(() => {
+      setState(prev => prev.map(c => c.matched ? c : {...c, flipped: false}));
+    }, 1500);
+  }
   return (
     <motion.button onClick={onClick} whileTap={{scale:0.92}}
       style={{width:cellSize,height:cellSize,background:"transparent",border:"none",padding:0,cursor:card.matched?"default":"pointer",perspective:800}}>

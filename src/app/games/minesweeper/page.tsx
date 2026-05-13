@@ -145,6 +145,7 @@ export default function MinesweeperGame() {
   const [finalXP, setFinalXP] = useState(0);
   const [firstClick, setFirstClick] = useState(true);
   const [flagCount, setFlagCount] = useState(0);
+  const [showMines, setShowMines] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage = useCallback((s: number) => {

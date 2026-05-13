@@ -30,6 +30,7 @@ export default function BridgesGame(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
+  const [feedbackBridges, setFeedbackBridges] = useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage=useCallback((s:number)=>{

@@ -80,6 +80,14 @@ export default function PatternMatchGame(){
     setHintFlash(true);setTimeout(()=>setHintFlash(false),1400);
   }
 
+function handleCheck() {
+    if (!board || !xpState || completed) return;
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    playError();
+    setShowRule(true);
+    setTimeout(() => setShowRule(false), 3000);
+  }
+
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating puzzle...</p></div>);
 
   const diff=getDifficulty(stage);

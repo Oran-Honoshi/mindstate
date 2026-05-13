@@ -37,6 +37,7 @@ export default function LightUpPage(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
+  const [solutionGrid, setSolutionGrid] = useState<string[][]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   const loadStage=useCallback((s:number)=>{
