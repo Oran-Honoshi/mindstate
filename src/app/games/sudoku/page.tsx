@@ -185,16 +185,15 @@ function SudokuGameInner() {
 
 
 function handleHint() {
-    if (!xpState || completed || hintsUsed >= 3) return;
-    // Find first empty cell and fill from solution
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
-        if (board[r][c] === null && GIVEN[r][c] === null) {
-          const nb = board.map(row => [...row]);
-          nb[r][c] = SOLUTION[r][c];
-          setBoard(nb);
+    if (!puzzleData || !xpState || completed || hintsUsed >= 3) return;
+    for (let r = 0; r < puzzleData.size; r++) {
+      for (let c = 0; c < puzzleData.size; c++) {
+        if (puzzleData.puzzle[r][c] === null && playerBoard[r][c] === null) {
+          const nb = playerBoard.map(row => [...row]);
+          nb[r][c] = puzzleData.solution[r][c];
+          setPlayerBoard(nb);
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (90*1000)} : prev);
           playError();
           return;
         }
@@ -203,19 +202,19 @@ function handleHint() {
   }
 
 function handleCheck() {
-    if (!xpState || completed) return;
+    if (!puzzleData || !xpState || completed) return;
     const correct = new Set<string>();
     const wrong = new Set<string>();
-    board.forEach((row, r) => row.forEach((val, c) => {
-      if (val !== null && GIVEN[r][c] === null) {
-        if (val === SOLUTION[r][c]) correct.add(`${r},${c}`);
+    playerBoard.forEach((row, r) => row.forEach((val, c) => {
+      if (val !== null && puzzleData.puzzle[r][c] === null) {
+        if (val === puzzleData.solution[r][c]) correct.add(`${r},${c}`);
         else wrong.add(`${r},${c}`);
       }
     }));
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
     setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
   return (
@@ -267,10 +266,12 @@ function handleCheck() {
                     display:"flex", alignItems:"center", justifyContent:"center",
                     fontSize: puzzleData.size===6 ? 18 : 14,
                     fontWeight:700, outline:"none", cursor:isGiven?"default":"pointer",
-                    background: isSelected ? "#EEF2FF"
+                    background: showFeedback&&feedbackCells.has(`${r}-${c}`) ? "#DCFCE7"
+                      : showFeedback&&wrongCells.has(`${r}-${c}`) ? "#FEF2F2"
+                      : isSelected ? "#EEF2FF"
                       : isError ? "#FEF2F2"
                       : sameVal ? "#F5F7FF"
-                      : isGiven ? "#F8F7F5" : "white",
+                      : isGiven ? "var(--bg2)" : "var(--surface)",
                     color: isGiven ? "#1C1917"
                       : isError ? "#EF4444"
                       : value ? "#4F6EF7" : "#CBD5E1",
@@ -312,13 +313,13 @@ function handleCheck() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              xpState.startTime=xpState.startTime-60000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
             }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
               if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}

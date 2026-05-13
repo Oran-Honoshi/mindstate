@@ -319,13 +319,13 @@ function MinesweeperGameInner() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              xpState.startTime=xpState.startTime-60000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
             }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
               if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}

@@ -25,6 +25,7 @@ import { HintButton } from "@/components/ui/HintButton";
 import { CheckProgressButton } from "@/components/ui/CheckProgressButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
+import{CompletionPopup}from"@/components/ui/CompletionPopup";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
@@ -45,7 +46,6 @@ function getDifficulty(stage: number): Difficulty {
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
-  const[hintsUsed,setHintsUsed]=useState(0);
   useEffect(() => {
     const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
     return () => clearInterval(iv);
@@ -76,6 +76,7 @@ function TangoGameInner() {
   const [completed, setCompleted] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const [hintFlash, setHintFlash] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
@@ -99,6 +100,7 @@ function TangoGameInner() {
     setCompleted(false);
     setFinalXP(0);
     setElapsed("00:00");
+    setHintsUsed(0);
     setErrorRows(new Set());
     setErrorCols(new Set());
     if (timerRef.current) clearInterval(timerRef.current);
@@ -206,7 +208,7 @@ function handleHint() {
           ng[r][c] = board.solution[r][c];
           setPlayerGrid(ng);
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (90*1000)} : prev);
           playError();
           return;
         }
@@ -245,7 +247,7 @@ function handleCheck() {
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
     setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
   return (
@@ -387,13 +389,13 @@ function handleCheck() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              xpState.startTime=xpState.startTime-60000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
             }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
               if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}

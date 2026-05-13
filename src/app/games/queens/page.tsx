@@ -131,11 +131,31 @@ function QueensGameInner(){
         setGrid(ng);
         setHintsUsed(h=>h+1);
         // Deduct XP by pushing startTime back 3 minutes
-        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(3*60*1000)}:prev);
+        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(90*1000)}:prev);
         playError();
         return;
       }
     }
+  }
+
+  function handleCheck(){
+    if(!board||!xpState)return;
+    const solution=solveQueens(board.size,board.regions);
+    if(!solution)return;
+    const solSet=new Set(solution.map(([r,c])=>`${r},${c}`));
+    const correct=new Set<string>();
+    const wrong=new Set<string>();
+    grid.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v===2){
+        if(solSet.has(`${r},${c}`)) correct.add(`${r},${c}`);
+        else wrong.add(`${r},${c}`);
+      }
+    }));
+    setFeedbackCells(correct);
+    setWrongCells(wrong);
+    setShowFeedback(true);
+    setXpState(prev=>prev?{...prev,startTime:prev.startTime-(45*1000)}:prev);
+    setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
   }
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
@@ -226,12 +246,7 @@ function QueensGameInner(){
             onUseHint={handleHint}
             disabled={completed}/>
           <CheckProgressButton
-            onCheck={()=>{
-              if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
-              setShowFeedback(true);
-              setTimeout(()=>setShowFeedback(false),2000);
-            }}
+            onCheck={handleCheck}
             disabled={completed}
             xpCost={50}/>
         </div>
@@ -267,27 +282,7 @@ function QueensGameInner(){
   );
 }
 
-  function handleCheck(){
-    if(!board||!xpState)return;
-    const solution=solveQueens(board.size,board.regions);
-    if(!solution)return;
-    const solSet=new Set(solution.map(([r,c])=>`${r},${c}`));
-    // Highlight correct queens green, wrong ones red for 2s
-    const correct=new Set<string>();
-    const wrong=new Set<string>();
-    grid.forEach((row,r)=>row.forEach((v,c)=>{
-      if(v===2){
-        if(solSet.has(`${r},${c}`)) correct.add(`${r},${c}`);
-        else wrong.add(`${r},${c}`);
-      }
-    }));
-    setFeedbackCells(correct);
-    setWrongCells(wrong);
-    setShowFeedback(true);
-    // Deduct XP: push startTime back 2 minutes
-    setXpState(prev=>prev?{...prev,startTime:prev.startTime-(2*60*1000)}:prev);
-    setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
-  }
+
 
 export default function QueensGame() {
   return (

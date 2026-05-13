@@ -194,7 +194,7 @@ function handleHint() {
           newPaths.set(color, [...current, next]);
           setPaths(newPaths);
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (90*1000)} : prev);
           playError();
           return;
         }
@@ -205,7 +205,7 @@ function handleHint() {
 function handleCheck() {
     if (!board || !xpState || completed) return;
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
     setTimeout(() => setShowFeedback(false), 2000);
   }
   return (
@@ -291,13 +291,13 @@ function handleCheck() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              xpState.startTime=xpState.startTime-60000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
             }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
               if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}

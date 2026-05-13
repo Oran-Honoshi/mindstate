@@ -179,7 +179,7 @@ function handleCheck() {
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
     setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
 

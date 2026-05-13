@@ -278,7 +278,7 @@ function handleHint() {
       const nextCell = board.path[nextIdx];
       setUserPath(prev => [...prev, nextCell]);
       setHintsUsed(h => h + 1);
-      setXpState(prev => prev ? {...prev, startTime: prev.startTime - (3*60*1000)} : prev);
+      setXpState(prev => prev ? {...prev, startTime: prev.startTime - (90*1000)} : prev);
       playError();
     }
   }
@@ -294,7 +294,7 @@ function handleCheck() {
         correctCount++;
       } else break;
     }
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (2*60*1000)} : prev);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
     // Visual: trim path to correct portion + flash
     if (correctCount < userPath.length) {
       setUserPath(userPath.slice(0, correctCount));
@@ -449,13 +449,13 @@ function handleCheck() {
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              xpState.startTime=xpState.startTime-60000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-90000}:prev);
             }}
             disabled={completed}/>
           <CheckProgressButton
             onCheck={()=>{
               if(!xpState||completed)return;
-              xpState.startTime=xpState.startTime-30000;
+              setXpState(prev=>prev?{...prev,startTime:prev.startTime-45000}:prev);
               setShowFeedback(true);
               setTimeout(()=>setShowFeedback(false),2000);
             }}
