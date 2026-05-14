@@ -139,6 +139,8 @@ function XPBar({ xpState }: { xpState: XPState }) {
 function MinesweeperGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(1);
+  const [completed, setCompleted] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const [board, setBoard] = useState<Board|null>(null);
   const [gameOver, setGameOver] = useState<"win"|"lose"|null>(null);
   const [xpState, setXpState] = useState<XPState|null>(null);

@@ -77,6 +77,8 @@ function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;on
 function HeartsPageInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
+  const [completed, setCompleted] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const[hand,setHand]=useState<Card[]>([]);
   const[cpuHand,setCpuHand]=useState<Card[]>([]);
   const[trick,setTrick]=useState<{player:Card|null;cpu:Card|null}>({player:null,cpu:null});

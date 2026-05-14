@@ -23,7 +23,7 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 function shareResult(stage:number,xp:number,elapsed:string){const text=` MindState · Pattern Match Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  const[hintsUsed,setHintsUsed]=useState(0);useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
+  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
@@ -45,7 +45,7 @@ function PatternMatchGameInner(){
     const diff=getDifficulty(s);
     const b=generatePattern(`pattern-${diff}-${s}`,diff);
     const xp=createXPState(diff);
-    setBoard(b);setSelected(null);setCorrect(null);setShowRule(false);
+    setBoard(b);setSelected(null);setCorrect(null);setShowRule(false);setHintsUsed(0);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
@@ -76,9 +76,13 @@ function PatternMatchGameInner(){
   }
 
   function handleHint(){
-    if(!xpState||completed||xpState.hintsUsed>=xpState.maxHints)return;
-    setXpState(xpState);setShowRule(true);
-    setHintFlash(true);setTimeout(()=>setHintFlash(false),1400);
+    if(!xpState||completed||hintsUsed>=3)return;
+    setShowRule(true);
+    setHintFlash(true);
+    setHintsUsed(h => h+1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime-30000} : prev);
+    setTimeout(()=>setHintFlash(false),1400);
+    setTimeout(()=>setShowRule(false),4000);
   }
 
 function handleCheck() {
