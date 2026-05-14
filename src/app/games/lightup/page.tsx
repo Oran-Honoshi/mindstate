@@ -19,7 +19,6 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
 function shareResult(stage:number,xp:number,elapsed:string){const text=`● MindState · Light Up Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
@@ -76,6 +75,31 @@ function LightUpPageInner(){
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
   }
 
+
+  function handleHint() {
+    if (!board || !xpState || hintsUsed >= 3) return;
+    // Place one correct bulb from solution
+    // Solve by trying each white cell
+    const size = board.size;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cell = grid[r][c];
+        if (cell.type !== "white") continue;
+        // Try placing bulb here
+        const ng = grid.map(row => [...row]);
+        ng[r][c] = {type:"bulb"};
+        const lt = computeLighting(ng);
+        if (lt.conflicts.size === 0 && lt.blackErrors.size === 0) {
+          setGrid(ng);
+          setLighting(lt);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+  }
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
 
   const diff=getDifficulty(stage);
@@ -148,11 +172,7 @@ function LightUpPageInner(){
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -173,7 +193,6 @@ function LightUpPageInner(){
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

@@ -52,7 +52,6 @@ function cardColor(suit:Suit):string{
 
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  const[hintsUsed,setHintsUsed]=useState(0);
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
   const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
   return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
@@ -167,6 +166,18 @@ function HeartsPageInner(){
     },1200);
   }
 
+
+  function handleHint() {
+    if (!xpState || hintsUsed >= 3 || phase !== "play") return;
+    // Suggest the safest card (lowest point value)
+    const safe = hand.filter(c => c.suit !== "♥" && !(c.suit === "♠" && c.label === "Q"));
+    const suggested = (safe.length > 0 ? safe : hand).reduce((a,b) => a.value < b.value ? a : b);
+    const idx = hand.findIndex(c => c.suit === suggested.suit && c.label === suggested.label);
+    setSelected(idx);
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    playError();
+  }
   if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Dealing cards...</p></div>);
 
   const diff=getDifficulty(stage);
@@ -251,11 +262,7 @@ function HeartsPageInner(){
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 

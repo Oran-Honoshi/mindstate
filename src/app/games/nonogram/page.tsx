@@ -81,6 +81,36 @@ function NonogramGameInner() {
     }
   }
 
+
+  function handleHint() {
+    if (!board || !xpState || hintsUsed >= 3) return;
+    // Reveal one complete row that has no cells filled
+    for (let r = 0; r < board.size; r++) {
+      if (grid[r].every(v => v === null)) {
+        const ng = grid.map(row => [...row]);
+        ng[r] = board.solution[r].map(v => v);
+        setGrid(ng);
+        setHintsUsed(h => h + 1);
+        setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+        playError();
+        return;
+      }
+    }
+    // Else reveal one empty cell
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (grid[r][c] === null) {
+          const ng = grid.map(row => [...row]);
+          ng[r][c] = board.solution[r][c];
+          setGrid(ng);
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+  }
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating puzzle...</p></div>);
 
   const diff=getDifficulty(stage);
@@ -118,7 +148,7 @@ function NonogramGameInner() {
               style={{padding:"7px 16px",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
                 background:mode===m?"white":"transparent",color:mode===m?"#1C1917":"#94A3B8",
                 boxShadow:mode===m?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
-              {m==="fill"?"■ Fill":" Cross"}
+              {m==="fill"?"■ Fill":"✕ Cross"}
             </button>
           ))}
         </div>
@@ -153,7 +183,7 @@ function NonogramGameInner() {
                       background:val===true?"#1C1917":val===false?"#F8F7F5":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
                       cursor:"pointer",outline:"none",fontSize:cellSize*0.4,color:"var(--text4)",fontWeight:700}}>
-                    {val===false&&""}
+                    {val===false&&<span style={{fontSize:cellSize*0.5,color:"#EF4444",fontWeight:700}}>✕</span>}
                   </motion.button>
                 );
               })}
@@ -167,11 +197,7 @@ function NonogramGameInner() {
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -188,7 +214,6 @@ function NonogramGameInner() {
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

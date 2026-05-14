@@ -143,42 +143,148 @@ function SolitairePageInner(){
     playClick();
   }
 
-  function handleTableauClick(col:number,idx:number){
-    const pile=tableau[col];
-    const card=pile[idx];
-    if(!card||!card.faceUp){
-      if(idx===pile.length-1&&!card.faceUp){
-        // Flip card
-        const nt=tableau.map(p=>[...p]);
-        nt[col][idx]={...nt[col][idx],faceUp:true};
-        setTableau(nt);setMoves(m=>m+1);playClick();
+  function tryMoveToFoundation(card: Card, sourceType: "waste"|"tableau", sourceCol: number, sourceIdx: number): boolean {
+    for (let fi = 0; fi < 4; fi++) {
+      const top = foundations[fi][foundations[fi].length-1] ?? null;
+      if (canFoundation(card, top)) {
+        const nf = foundations.map((p,i) => i===fi ? [...p, card] : p);
+        if (sourceType === "waste") setWaste(w => w.slice(0,-1));
+        else setTableau(t => {
+          const nt = t.map(p => [...p]);
+          nt[sourceCol] = nt[sourceCol].slice(0, sourceIdx);
+          if (nt[sourceCol].length > 0) nt[sourceCol][nt[sourceCol].length-1].faceUp = true;
+          return nt;
+        });
+        setFoundations(nf);
+        setSelected(null);
+        setMoves(m => m+1);
+        playSuccess();
+        if (checkWin(nf) && xpState) {
+          const earned = finalizeXP(xpState);
+          setFinalXP(earned); setCompleted(true);
+          if (timerRef.current) clearInterval(timerRef.current);
+          setTimeout(() => triggerConfetti(), 80);
+          if (user) { updateStreak(user.id); saveScore({user_id:user.id, game_slug:"solitaire", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000)}); }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function handleTableauClick(col: number, idx: number) {
+    const pile = tableau[col];
+
+    // Click on empty pile — place king if selected
+    if (pile.length === 0) {
+      if (selected) {
+        const movingCards = selected.pile==="tableau" ? tableau[selected.col].slice(selected.idx)
+          : selected.pile==="waste" ? [waste[waste.length-1]] : [];
+        if (movingCards.length === 0) { setSelected(null); return; }
+        if (movingCards[0].value === 13) { // King
+          const nt = tableau.map(p => [...p]);
+          nt[col] = [...movingCards];
+          if (selected.pile==="tableau") {
+            nt[selected.col] = nt[selected.col].slice(0, selected.idx);
+            if (nt[selected.col].length > 0) nt[selected.col][nt[selected.col].length-1].faceUp = true;
+          } else if (selected.pile==="waste") setWaste(w => w.slice(0,-1));
+          setTableau(nt); setSelected(null); setMoves(m => m+1); playClick();
+        } else setSelected(null);
       }
       return;
     }
-    if(selected){
-      const onto=pile[pile.length-1];
-      const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];
-      if(movingCards.length===0){setSelected(null);return;}
-      const topMoving=movingCards[0];
-      if(canStack(topMoving,pile.length>0&&idx===pile.length-1?onto:null)||(!onto&&topMoving.value===13)){
-        const nt=tableau.map(p=>[...p]);
-        nt[col]=[...nt[col],...movingCards];
-        if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}
-        else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));
-        setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();
+
+    const card = pile[idx];
+    if (!card) return;
+
+    // Flip face-down card
+    if (!card.faceUp) {
+      if (idx === pile.length-1) {
+        const nt = tableau.map(p => [...p]);
+        nt[col][idx] = {...nt[col][idx], faceUp:true};
+        setTableau(nt); setMoves(m => m+1); playClick();
+      }
+      return;
+    }
+
+    // Double-click: auto-move to foundation
+    if (selected?.pile === "tableau" && selected.col === col && selected.idx === idx) {
+      if (idx === pile.length-1 && tryMoveToFoundation(card, "tableau", col, idx)) return;
+      setSelected(null);
+      return;
+    }
+
+    // Has a selection — try to stack
+    if (selected) {
+      const onto = pile[pile.length-1];
+      const movingCards = selected.pile==="tableau" ? tableau[selected.col].slice(selected.idx)
+        : selected.pile==="waste" ? [waste[waste.length-1]] : [];
+      if (movingCards.length === 0) { setSelected(null); return; }
+      const topMoving = movingCards[0];
+      if (canStack(topMoving, onto)) {
+        const nt = tableau.map(p => [...p]);
+        nt[col] = [...nt[col], ...movingCards];
+        if (selected.pile==="tableau") {
+          nt[selected.col] = nt[selected.col].slice(0, selected.idx);
+          if (nt[selected.col].length > 0) nt[selected.col][nt[selected.col].length-1].faceUp = true;
+        } else if (selected.pile==="waste") setWaste(w => w.slice(0,-1));
+        setTableau(nt); setSelected(null); setMoves(m => m+1); playClick();
         return;
       }
       setSelected(null);
     }
-    setSelected({pile:"tableau",col,idx});playClick();
+
+    setSelected({pile:"tableau", col, idx}); playClick();
   }
 
-  function handleWasteClick(){
-    if(waste.length===0)return;
-    if(selected?.pile==="waste"){setSelected(null);return;}
-    setSelected({pile:"waste",col:0,idx:waste.length-1});playClick();
+  function handleWasteClick() {
+    if (waste.length === 0) return;
+    const card = waste[waste.length-1];
+    // Double-click: auto-move to foundation
+    if (selected?.pile === "waste") {
+      if (tryMoveToFoundation(card, "waste", 0, waste.length-1)) return;
+      setSelected(null);
+      return;
+    }
+    setSelected({pile:"waste", col:0, idx:waste.length-1});
+    playClick();
   }
 
+
+  function handleHint() {
+    if (!xpState || completed || hintsUsed >= 3) return;
+    // Try waste → foundation
+    if (waste.length > 0) {
+      const card = waste[waste.length - 1];
+      for (let fi = 0; fi < 4; fi++) {
+        const top = foundations[fi][foundations[fi].length - 1] ?? null;
+        if (canFoundation(card, top)) {
+          setSelected({pile:"waste", col:0, idx:waste.length-1});
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          playError();
+          return;
+        }
+      }
+      // Try waste → tableau
+      for (let col = 0; col < tableau.length; col++) {
+        const pile = tableau[col];
+        const onto = pile.length > 0 ? pile[pile.length-1] : null;
+        if (canStack(card, onto)) {
+          setSelected({pile:"waste", col:0, idx:waste.length-1});
+          setHintsUsed(h => h + 1);
+          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          playError();
+          return;
+        }
+      }
+    }
+    // Draw if no moves
+    drawCard();
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    playError();
+  }
   if(!xpState)return(<div style={{minHeight:"100vh",background:"#0F4C2A",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"rgba(255,255,255,0.5)",fontSize:13}}>Dealing cards...</p></div>);
 
   const diff=getDifficulty(stage);
@@ -272,7 +378,6 @@ function SolitairePageInner(){
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

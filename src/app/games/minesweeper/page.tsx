@@ -122,7 +122,6 @@ const NUM_COLORS: Record<number,string> = {1:"#2563EB",2:"#16A34A",3:"#DC2626",4
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap,setSnap] = useState(()=>calculateXP(xpState));
-  const[hintsUsed,setHintsUsed]=useState(0);
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
   const pct=snap.percentRemaining;
   const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
@@ -237,6 +236,21 @@ function MinesweeperGameInner() {
   const cellSize = Math.max(Math.floor(maxW/board.cols), 28);
   const minesLeft = board.mines-flagCount;
 
+
+  function handleHint() {
+    if (!board || !xpState || hintsUsed >= 3 || gameOver) return;
+    // Reveal one safe hidden cell
+    const safeCells: [number,number][] = [];
+    board.cells.forEach((row, r) => row.forEach((cell, c) => {
+      if (!cell.isMine && cell.state === "hidden") safeCells.push([r,c]);
+    }));
+    if (safeCells.length === 0) return;
+    const [r, c] = safeCells[Math.floor(Math.random() * safeCells.length)];
+    handleClick(r, c);
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    playError();
+  }
   return(
     <div className="game-page">
       <Navbar/>
@@ -315,11 +329,7 @@ function MinesweeperGameInner() {
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
