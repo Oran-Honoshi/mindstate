@@ -20,7 +20,6 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
@@ -66,6 +65,18 @@ function WordSlingPageInner(){
   );
 
 
+
+  function handleHint() {
+    if (!board || !xpState || hintsUsed >= 3 || completed) return;
+    const unfound = board.solutions.filter(w => !found.includes(w));
+    if (unfound.length === 0) return;
+    const word = unfound[0];
+    setFeedback({text: `Hint: starts with "${word[0].toUpperCase()}"`, ok: true});
+    setTimeout(() => setFeedback(null), 3000);
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    playError();
+  }
   const loadStage=useCallback((s:number)=>{
     const diff=getDifficulty(s);
     const b=generateWordBoard(`words-${diff}-${s}`,diff);
@@ -227,11 +238,7 @@ function WordSlingPageInner(){
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -253,7 +260,6 @@ function WordSlingPageInner(){
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

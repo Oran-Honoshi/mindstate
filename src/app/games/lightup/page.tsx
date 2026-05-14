@@ -91,25 +91,19 @@ function LightUpPageInner(){
 
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3) return;
-    // Place one correct bulb from solution
-    // Solve by trying each white cell
-    const size = board.size;
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        const cell = grid[r][c];
-        if (cell.type !== "white") continue;
-        // Try placing bulb here
+    // Place next correct bulb from solution
+    for (const solKey of board.solution) {
+      const [sr, sc] = solKey.split(",").map(Number);
+      if (grid[sr][sc].type === "white") {
         const ng = grid.map(row => [...row]);
-        ng[r][c] = {type:"bulb"};
+        ng[sr][sc] = {type:"bulb"};
         const lt = computeLighting(ng);
-        if (lt.conflicts.size === 0 && lt.blackErrors.size === 0) {
-          setGrid(ng);
-          setLighting(lt);
-          setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
-          playError();
-          return;
-        }
+        setGrid(ng);
+        setLighting(lt);
+        setHintsUsed(h => h + 1);
+        setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+        playError();
+        return;
       }
     }
   }

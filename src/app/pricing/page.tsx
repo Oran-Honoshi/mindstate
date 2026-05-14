@@ -32,7 +32,7 @@ export default function PricingPage() {
   return (
     <div style={{minHeight:"100vh",background:"#FDFCFB",color:"#1C1917"}}>
       {/* Nav */}
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 40px",background:"rgba(253,252,251,0.9)",backdropFilter:"blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,0.07)",position:"sticky",top:0,zIndex:50}}>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",background:"rgba(253,252,251,0.9)",backdropFilter:"blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,0.07)",position:"sticky",top:0,zIndex:50}}>
         <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
           <div style={{width:28,height:28,borderRadius:"22.5%",background:ACCENT,display:"flex",alignItems:"center",justifyContent:"center"}}>
             <Brain size={13} color="white"/>
@@ -46,7 +46,7 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <main style={{maxWidth:960,margin:"0 auto",padding:"64px 40px"}}>
+      <main style={{maxWidth:960,margin:"0 auto",padding:"48px 20px"}}>
         {/* Header */}
         <div style={{textAlign:"center",marginBottom:56}}>
           <p style={{fontSize:11,fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",color:"#94A3B8",marginBottom:12}}>Pricing</p>
@@ -59,7 +59,7 @@ export default function PricingPage() {
         </div>
 
         {/* Plans */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginBottom:64,alignItems:"start"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:20,marginBottom:64,alignItems:"start"}}>
           {PLANS.map((plan,i)=>(
             <div key={i} style={{borderRadius:24,padding:28,position:"relative",
               background:plan.highlight?ACCENT:"white",
@@ -107,7 +107,7 @@ export default function PricingPage() {
         {/* All plans include */}
         <div style={{background:"white",borderRadius:24,border:"0.5px solid rgba(0,0,0,0.08)",padding:32,marginBottom:64,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <h2 style={{fontSize:18,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:20,textAlign:"center"}}>All plans include</h2>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:16}}>
             {[
               { icon:"", title:"20 logic games", desc:"Tango, Queens, Memory, Sudoku, and 16 more" },
               { icon:"", title:"Daily challenges", desc:"One free puzzle per game every day" },

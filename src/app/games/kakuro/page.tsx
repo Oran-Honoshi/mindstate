@@ -137,17 +137,34 @@ function KakuroGameInner() {
 
 function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
-    // Find first empty white cell and fill from solution
+    // Fill one empty cell with a valid number (1-9 that doesn't conflict)
     for (let r = 0; r < board.size; r++) {
       for (let c = 0; c < board.size; c++) {
-        if (board.grid[r][c]?.type === 'white' && !userGrid[r][c] && solution[r]?.[c]) {
+        if (board.grid[r][c]?.type === 'white' && !userGrid[r][c]) {
+          // Try numbers 1-9 and pick first that doesn't create a duplicate in its run
           const ng = userGrid.map(row => [...row]);
-          ng[r][c] = solution[r][c];
-          setUserGrid(ng);
-          setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
-          playError();
-          return;
+          for (let n = 1; n <= 9; n++) {
+            ng[r][c] = n;
+            // Check no duplicate in row run
+            let rowOk = true, colOk = true;
+            let runNums: number[] = [];
+            for (let cc = c-1; cc >= 0 && board.grid[r][cc]?.type === 'white'; cc--) runNums.push(ng[r][cc] ?? 0);
+            for (let cc = c+1; cc < board.size && board.grid[r][cc]?.type === 'white'; cc++) runNums.push(ng[r][cc] ?? 0);
+            if (runNums.filter(v=>v>0).includes(n)) rowOk = false;
+            runNums = [];
+            for (let rr = r-1; rr >= 0 && board.grid[rr][c]?.type === 'white'; rr--) runNums.push(ng[rr][c] ?? 0);
+            for (let rr = r+1; rr < board.size && board.grid[rr][c]?.type === 'white'; rr++) runNums.push(ng[rr][c] ?? 0);
+            if (runNums.filter(v=>v>0).includes(n)) colOk = false;
+            if (rowOk && colOk) {
+              setUserGrid(ng);
+              setHintsUsed(h => h + 1);
+              setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+              playError();
+              return;
+            }
+          }
+          // Fallback: just clear the cell
+          break;
         }
       }
     }
@@ -254,11 +271,7 @@ function handleCheck() {
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -275,7 +288,6 @@ function handleCheck() {
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
