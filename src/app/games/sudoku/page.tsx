@@ -162,6 +162,28 @@ function SudokuGameInner() {
       return puzzleData.puzzle[r][c] === null && v !== null;
     }).length;
     const emptyCount = puzzleData.puzzle.flat().filter(v => v === null).length;
+    // Flash completed box green
+    if (puzzleData && num !== null) {
+      const br2 = puzzleData.br, bc2 = puzzleData.bc;
+      const boxR = Math.floor(selected[0]/br2)*br2, boxC = Math.floor(selected[1]/bc2)*bc2;
+      const boxFull = (() => {
+        for (let ri=boxR;ri<boxR+br2;ri++)
+          for (let ci=boxC;ci<boxC+bc2;ci++)
+            if (nb[ri][ci] === null) return false;
+        return true;
+      })();
+      const boxCorrect = (() => {
+        for (let ri=boxR;ri<boxR+br2;ri++)
+          for (let ci=boxC;ci<boxC+bc2;ci++)
+            if (nb[ri][ci] !== puzzleData.solution[ri][ci]) return false;
+        return true;
+      })();
+      if (boxFull && boxCorrect) {
+        const key2 = `${Math.floor(selected[0]/br2)},${Math.floor(selected[1]/bc2)}`;
+        setFlashSections(prev => new Set([...prev, key2]));
+        setTimeout(() => setFlashSections(prev => { const ns=new Set(prev); ns.delete(key2); return ns; }), 800);
+      }
+    }
     if (allCorrect && allFilled && userFilledCount >= emptyCount && xpState) {
       const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);

@@ -182,22 +182,26 @@ function FlowGameInner() {
 
 function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
-    // Add one correct segment from solution for each incomplete path
-    if (!board.solution) return;
-    const newPaths = new Map(paths);
-    for (const [color, solutionPath] of board.solution) {
-      if (!newPaths.has(color) || (newPaths.get(color)?.length ?? 0) < solutionPath.length) {
-        const current = newPaths.get(color) ?? [];
-        const next = solutionPath[current.length];
-        if (next) {
-          newPaths.set(color, [...current, next]);
-          setPaths(newPaths);
-          setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
-          playError();
-          return;
-        }
-      }
+    // Find first color that isn't fully connected and add its next cell from solution
+    for (const [color, solutionCells] of board.solution) {
+      const current = paths.get(color);
+      const currentCells = current?.cells ?? [];
+      if (currentCells.length >= solutionCells.length) continue;
+      // Add next cell from solution path
+      const nextKey = solutionCells[currentCells.length];
+      if (!nextKey) continue;
+      const [nr, nc] = nextKey.split(",").map(Number);
+      const newCells = [...currentCells, nextKey];
+      const np = new Map(paths);
+      np.set(color, { color, cells: newCells });
+      const nc2 = new Map(cellColors);
+      nc2.set(nextKey, color);
+      setPaths(np);
+      setCellColors(nc2);
+      setHintsUsed(h => h + 1);
+      setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+      playError();
+      return;
     }
   }
 
@@ -287,11 +291,7 @@ function handleCheck() {
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -310,7 +310,6 @@ function handleCheck() {
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

@@ -80,6 +80,35 @@ function BridgesGameInner(){
     return total===island.required?"done":total>island.required?"over":"under";
   }
 
+
+  function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3) return;
+    // Add one bridge from solution that isn't placed yet or needs upgrading
+    for (const sol of board.solution) {
+      const existing = placed.find(b =>
+        (b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from)
+      );
+      if (!existing) {
+        setPlaced(prev => [...prev, {from:sol.from, to:sol.to, count:1}]);
+        setHintsUsed(h => h+1);
+        setXpState(prev => prev ? {...prev, startTime: prev.startTime-30000} : prev);
+        playError();
+        return;
+      }
+      if (existing.count < sol.count) {
+        setPlaced(prev => prev.map(b =>
+          (b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from)
+            ? {...b, count:sol.count} : b
+        ));
+        setHintsUsed(h => h+1);
+        setXpState(prev => prev ? {...prev, startTime: prev.startTime-30000} : prev);
+        playError();
+        return;
+      }
+    }
+  }
+
+
   return(
     <div className="game-page">
       <Navbar/>
@@ -165,11 +194,7 @@ function BridgesGameInner(){
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
-            onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
-            }}
+            onUseHint={handleHint}
             disabled={completed}/>
           </div>
 
@@ -185,7 +210,6 @@ function BridgesGameInner(){
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
