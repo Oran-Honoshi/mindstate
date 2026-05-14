@@ -190,9 +190,7 @@ export default function GamesPage() {
                   <div style={{ height:100, background:"rgba(79,110,247,0.04)", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
                     <GameSnapshot slug={game.slug}/>
                     <div style={{ position:"absolute", top:8, right:8, display:"flex", gap:4 }}>
-                      {game.free && (
-                        
-                      )}
+                      
                       <span style={{ fontSize:9, fontWeight:600, padding:"2px 7px", borderRadius:8, background:"rgba(34,197,94,0.1)", color:"#15803D" }}>
                         Live
                       </span>
