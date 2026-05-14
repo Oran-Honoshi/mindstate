@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -19,7 +20,10 @@ import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 
 function getDifficulty(stage: number): Difficulty {
-  return stage <= 300 ? "easy" : stage <= 700 ? "medium" : "hard";
+  if (stage === 1) return "medium";
+  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
+  const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
@@ -63,6 +67,14 @@ function FlowGameInner() {
   const [finalXP, setFinalXP] = useState(0);
   const [feedbackPaths, setFeedbackPaths] = useState<Map<string,string>>(new Map());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage = useCallback((s: number) => {
     const diff = getDifficulty(s);
@@ -241,6 +253,20 @@ function handleCheck() {
         <div
           style={{ border:"2px solid #E2E8F0", borderRadius:16, overflow:"hidden", boxShadow:"0 8px 32px rgba(0,0,0,0.08)", cursor:"crosshair", userSelect:"none" }}
           onMouseLeave={endDraw}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            const t = e.touches[0];
+            const el = document.elementFromPoint(t.clientX, t.clientY);
+            if (el) {
+              const key = (el as HTMLElement).dataset.cellkey;
+              if (key) {
+                const [r,c] = key.split(",").map(Number);
+                continueDraw(r,c);
+              }
+            }
+          }}
+          onTouchEnd={endDraw}
+          style={{touchAction:"none"}}
         >
           <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)` }}>
             {Array.from({ length:board.size }, (_,r) =>
@@ -250,10 +276,11 @@ function handleCheck() {
                 const cellColor = drawing?.cells.includes(k) ? drawing.color : cellColors.get(k);
                 return (
                   <div key={k}
+                    data-cellkey={k}
                     onMouseDown={() => startDraw(r,c)}
                     onMouseEnter={() => continueDraw(r,c)}
                     onMouseUp={endDraw}
-                    onTouchStart={() => startDraw(r,c)}
+                    onTouchStart={(e) => { e.preventDefault(); startDraw(r,c); }}
                     style={{
                       width:cellSize, height:cellSize,
                       display:"flex", alignItems:"center", justifyContent:"center",

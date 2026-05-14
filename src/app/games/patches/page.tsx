@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
@@ -21,7 +22,11 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{ShowSolution}from"@/components/ui/ShowSolution";
 
-function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
+function getDifficulty(s:number):Difficulty{
+  if(s===1)return"medium";
+  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
+  return h<20?"easy":h<70?"medium":"hard";
+}
 function shareResult(stage:number,xp:number,elapsed:string){
   const text=` MindState · Patches Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url="https://mindstate.vercel.app";
@@ -73,6 +78,14 @@ function PatchesGameInner(){
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage=useCallback((s:number)=>{
     const diff=getDifficulty(s);

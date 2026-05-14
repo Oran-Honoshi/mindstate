@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
 import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
@@ -19,7 +20,11 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
 import{generateQueensBoard,validateQueens,solveQueens,type QueensBoard}from"@/lib/games/queensGenerator";
 
-function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
+function getDifficulty(s:number):Difficulty{
+  if(s===1)return"medium";
+  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
+  return h<20?"easy":h<70?"medium":"hard";
+}
 
 const REGION_COLORS=[
   {fill:"#DBEAFE",border:"#1D4ED8",queen:"#1E3A8A"},
@@ -63,6 +68,14 @@ function QueensGameInner(){
   const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
   const[errors,setErrors]=useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
   const pausedRef=useRef(false);
 
   const loadStage=useCallback((s:number)=>{

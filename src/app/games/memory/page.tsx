@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -20,9 +21,10 @@ import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 
 function getDifficulty(stage: number): Difficulty {
-  if (stage <= 300) return "easy";
-  if (stage <= 700) return "medium";
-  return "hard";
+  if (stage === 1) return "medium";
+  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
+  const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
 const ICONS = [

@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -20,7 +21,10 @@ import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 
 function getDifficulty(stage: number): Difficulty {
-  return stage <= 300 ? "easy" : stage <= 700 ? "medium" : "hard";
+  if (stage === 1) return "medium";
+  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
+  const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
@@ -150,6 +154,14 @@ function ZipGameInner() {
   const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
   const boardRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const cellSizeRef = useRef(0);

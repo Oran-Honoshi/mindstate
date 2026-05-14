@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -58,6 +59,14 @@ function KakuroGameInner() {
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage = useCallback((s: number) => {
     const diff = getDifficulty(s);

@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -18,7 +19,10 @@ import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 
 function getDifficulty(stage: number): Difficulty {
-  return stage<=300?"easy":stage<=700?"medium":"hard";
+  if (stage === 1) return "medium";
+  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
+  const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 function shareResult(stage:number,xp:number,elapsed:string){
   const text=` MindState · Nonogram Stage ${stage} · ${xp} XP · ${elapsed}`;
@@ -50,6 +54,14 @@ function NonogramGameInner() {
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage=useCallback((s:number)=>{
     const diff=getDifficulty(s);

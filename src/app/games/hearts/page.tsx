@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
@@ -19,7 +20,11 @@ import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 
-function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
+function getDifficulty(s:number):Difficulty{
+  if(s===1)return"medium";
+  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
+  return h<20?"easy":h<70?"medium":"hard";
+}
 
 type Suit="♥"|"♦"|"♣"|"♠";
 type Card={suit:Suit;value:number;label:string};
@@ -92,6 +97,14 @@ function HeartsPageInner(){
   const[message,setMessage]=useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage=useCallback((s:number)=>{
     const diff=getDifficulty(s);

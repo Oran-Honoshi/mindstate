@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
@@ -20,7 +21,11 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{ShowSolution}from"@/components/ui/ShowSolution";
 
-function getDifficulty(s:number):Difficulty{return s<=300?"easy":s<=700?"medium":"hard";}
+function getDifficulty(s:number):Difficulty{
+  if(s===1)return"medium";
+  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
+  return h<20?"easy":h<70?"medium":"hard";
+}
 function shareResult(stage:number,score:number,best:number){const text=` MindState · 2048 Pro Stage ${stage} · Score: ${score} · Best tile: ${best}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 
 type Grid=number[][];
@@ -129,6 +134,14 @@ function TwentyFortyEightProPageInner(){
   const[finalXP,setFinalXP]=useState(0);
   const touchStart=useRef<{x:number;y:number}|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const diff=getDifficulty(stage);
   const target=diff==="easy"?512:diff==="medium"?1024:2048;

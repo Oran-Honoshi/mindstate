@@ -1,4 +1,5 @@
 "use client";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -22,9 +23,10 @@ import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 
 function getDifficulty(stage: number): Difficulty {
-  if (stage <= 300) return "easy";
-  if (stage <= 700) return "medium";
-  return "hard";
+  if (stage === 1) return "medium";
+  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
+  const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
@@ -151,6 +153,14 @@ function MinesweeperGameInner() {
   const [showMines, setShowMines] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  // Freeze game when user leaves the app
+  usePageVisibility(
+    () => { if (timerRef.current) clearInterval(timerRef.current); },
+    () => { if (xpState && !completed) {
+      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+    }}
+  );
+
 
   const loadStage = useCallback((s: number) => {
     const diff = getDifficulty(s);
