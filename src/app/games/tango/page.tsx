@@ -428,7 +428,6 @@ function handleCheck() {
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

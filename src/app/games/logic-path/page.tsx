@@ -339,7 +339,6 @@ function handleCheck() {
         stage={stage}
         difficulty={diff}
         xpEarned={finalXP}
-        maxXP={xpState.maxXP}
         elapsed={elapsed}
         onRetry={() => loadStage(stage)}
         onNext={() => { setCompleted(false); setStage(s => s+1); }}

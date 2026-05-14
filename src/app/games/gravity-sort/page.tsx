@@ -20,7 +20,6 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-import{ShowSolution}from"@/components/ui/ShowSolution";
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
@@ -210,7 +209,6 @@ function GravitySortPageInner(){
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        maxXP={xpState?.maxXP??1000}
         elapsed={elapsed}
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}

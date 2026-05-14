@@ -33,6 +33,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
   const[stage,setStage]=useState(1);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const[board,setBoard]=useState<PatternBoard|null>(null);
   const[selected,setSelected]=useState<string|null>(null);
   const[correct,setCorrect]=useState<boolean|null>(null);
