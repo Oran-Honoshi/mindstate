@@ -1,4 +1,5 @@
 "use client";
+import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -42,6 +43,7 @@ function LightUpPageInner(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
+  const [gridHistory, setGridHistory] = useState<typeof grid[]>([]);
   const [solutionGrid, setSolutionGrid] = useState<string[][]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   // Freeze game when user leaves the app
@@ -58,6 +60,7 @@ function LightUpPageInner(){
     const b=generateLightUp(`light-${diff}-${s}`,diff);
     const xp=createXPState(diff);
     setBoard(b);setGrid(b.grid.map(row=>[...row]));
+    setGridHistory([]);
     setLighting({lit:new Set(),conflicts:new Set(),blackErrors:new Set()});
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
@@ -76,6 +79,7 @@ function LightUpPageInner(){
     if(cell.type==="black")return;
     const ng=grid.map(row=>[...row]);
     ng[r][c]=cell.type==="bulb"?{type:"white",lit:false}:{type:"bulb"};
+    setGridHistory(h=>[...h.slice(-19),[...grid.map(r=>[...r])]]);
     setGrid(ng);
     const lt=computeLighting(ng);
     setLighting(lt);
@@ -89,6 +93,14 @@ function LightUpPageInner(){
   }
 
 
+    function handleUndo() {
+    if (gridHistory.length === 0) return;
+    const prev = gridHistory[gridHistory.length-1];
+    setGrid(prev);
+    setLighting(computeLighting(prev));
+    setGridHistory(h => h.slice(0,-1));
+  }
+
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3) return;
     // Place next correct bulb from solution
@@ -101,7 +113,7 @@ function LightUpPageInner(){
         setGrid(ng);
         setLighting(lt);
         setHintsUsed(h => h + 1);
-        setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+        setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
         playError();
         return;
       }
@@ -176,6 +188,7 @@ function LightUpPageInner(){
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}

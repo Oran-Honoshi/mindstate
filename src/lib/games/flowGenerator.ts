@@ -3,12 +3,12 @@ export type FlowBoard = {
   size: number;
   dots: Map<string, Color>;
   colors: Color[];
-  solution: Map<string, string[]>; // color -> ordered cell keys
+  solution: Map<string, string[]>;
   seed: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: "easy"|"medium"|"hard";
 };
 
-const COLORS = ["#EF4444","#3B82F6","#22C55E","#F59E0B","#A855F7","#EC4899","#14B8A6","#F97316","#6366F1","#84CC16"];
+const COLORS = ["#EF4444","#3B82F6","#22C55E","#F59E0B","#A855F7","#EC4899","#14B8A6","#F97316"];
 
 function mulberry32(seed: number) {
   return function() {
@@ -23,210 +23,98 @@ function seedToNum(s: string): number {
   for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return Math.abs(h);
 }
-function shuffle<T>(arr: T[], rng: () => number): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 function key(r: number, c: number) { return `${r},${c}`; }
 const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
 
 export function generateFlowBoard(seed: string, difficulty: "easy"|"medium"|"hard"): FlowBoard {
-  const size = difficulty === "easy" ? 6 : difficulty === "medium" ? 8 : 9;
-  const numColors = difficulty === "easy" ? 5 : difficulty === "medium" ? 7 : 9;
+  const size = difficulty === "easy" ? 5 : difficulty === "medium" ? 7 : 8;
+  const numColors = difficulty === "easy" ? 4 : difficulty === "medium" ? 6 : 7;
   const rng = mulberry32(seedToNum(seed));
 
-  // Strategy: fill entire grid first using a space-partitioning approach
-  // 1. Place color endpoints randomly
-  // 2. Grow paths using BFS to fill all cells
-  for (let attempt = 0; attempt < 200; attempt++) {
-    const grid = Array.from({length:size}, () => Array(size).fill(-1));
-    const colors = shuffle(COLORS.slice(0, numColors), rng);
-    const paths: number[][][] = Array.from({length:numColors}, () => []);
-    const endpoints: [number,number,number,number][] = []; // [r1,c1,r2,c2] per color
+  function ri(max: number) { return Math.floor(rng() * max); }
+  function shuffle<T>(a: T[]): T[] {
+    const b = [...a];
+    for (let i = b.length-1; i > 0; i--) { const j = ri(i+1); [b[i],b[j]]=[b[j],b[i]]; }
+    return b;
+  }
 
-    // Place endpoints — spread them out
-    const allCells: [number,number][] = [];
-    for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++)
-        allCells.push([r,c]);
-    const shuffledCells = shuffle(allCells, rng);
-
-    let placed = 0;
-    const used = new Set<string>();
-    const ends: [number,number][] = [];
-
-    for (const [r,c] of shuffledCells) {
-      if (placed >= numColors * 2) break;
-      if (used.has(key(r,c))) continue;
-      // Keep endpoints apart
-      const tooClose = ends.some(([er,ec]) => Math.abs(er-r)+Math.abs(ec-c) < 2);
-      if (tooClose) continue;
-      ends.push([r,c]);
-      used.add(key(r,c));
-      placed++;
-    }
-
-    if (placed < numColors * 2) continue;
-
-    // Assign endpoints to colors
-    for (let i = 0; i < numColors; i++) {
-      const [r1,c1] = ends[i*2];
-      const [r2,c2] = ends[i*2+1];
-      endpoints.push([r1,c1,r2,c2]);
-    }
-
-    // Find paths between endpoints using DFS with backtracking
-    // Fill entire grid
-    const cellColor = Array.from({length:size}, () => Array(size).fill(-1));
-    const pathCells: string[][] = Array.from({length:numColors}, () => []);
-
-    function dfs(ci: number, r: number, c: number, visited: Set<string>): boolean {
-      const [,,,er2,ec2] = [ci, ...endpoints[ci]];
-      const targetR = endpoints[ci][2], targetC = endpoints[ci][3];
-
-      if (r === targetR && c === targetC) {
-        // Check if all cells for this color segment are connected
-        pathCells[ci].push(key(r,c));
-        // For last color, check all cells filled
-        if (ci === numColors - 1) {
-          const totalFilled = pathCells.flat().length;
-          return totalFilled === size * size;
-        }
-        // Move to next color
-        const nextR = endpoints[ci+1][0], nextC = endpoints[ci+1][1];
-        pathCells[ci+1] = [key(nextR, nextC)];
-        cellColor[nextR][nextC] = ci+1;
-        visited.add(key(nextR,nextC));
-        if (dfs(ci+1, nextR, nextC, visited)) return true;
-        visited.delete(key(nextR,nextC));
-        cellColor[nextR][nextC] = -1;
-        pathCells[ci+1] = [];
-        pathCells[ci].pop();
-        return false;
-      }
-
-      pathCells[ci].push(key(r,c));
-      cellColor[r][c] = ci;
-
-      const dirs = shuffle([...DIRS], rng);
-      for (const [dr,dc] of dirs) {
-        const nr = r+dr, nc = c+dc;
-        if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
-        if (visited.has(key(nr,nc))) continue;
-        visited.add(key(nr,nc));
-        if (dfs(ci, nr, nc, visited)) return true;
-        visited.delete(key(nr,nc));
-      }
-
-      pathCells[ci].pop();
-      cellColor[r][c] = -1;
-      return false;
-    }
-
-    // Simple approach: generate paths greedily, then fill remaining cells
-    // Use a simpler but reliable method
-    const solution = new Map<string, string[]>();
-    const dots = new Map<string, Color>();
+  // Generate by placing paths first then filling remaining cells
+  for (let attempt = 0; attempt < 100; attempt++) {
     const colorAssign = Array.from({length:size}, () => Array(size).fill(-1));
-    let success = true;
+    const paths: string[][] = [];
+    const dots = new Map<string, Color>();
+    const colors = shuffle(COLORS.slice(0, numColors));
+    let ok = true;
 
     for (let ci = 0; ci < numColors; ci++) {
-      const [sr,sc,er,ec] = endpoints[ci];
-      // BFS to find path
-      const prev = new Map<string,string>();
-      const q: [number,number][] = [[sr,sc]];
-      const vis = new Set<string>();
-      vis.add(key(sr,sc));
-      let found = false;
+      // Random walk from a free cell
+      const free: [number,number][] = [];
+      for (let r=0;r<size;r++) for (let c=0;c<size;c++) if (colorAssign[r][c]===-1) free.push([r,c]);
+      if (free.length < 2) { ok = false; break; }
 
-      while (q.length > 0) {
-        const [r,c] = q.shift()!;
-        if (r === er && c === ec) { found = true; break; }
-        for (const [dr,dc] of shuffle([...DIRS], rng)) {
-          const nr=r+dr, nc=c+dc;
-          if (nr<0||nr>=size||nc<0||nc>=size) continue;
-          if (vis.has(key(nr,nc))) continue;
-          if (colorAssign[nr][nc] !== -1) continue;
-          vis.add(key(nr,nc));
-          prev.set(key(nr,nc), key(r,c));
-          q.push([nr,nc]);
-        }
+      const [sr, sc] = free[ri(Math.min(free.length, 4))];
+      const path: string[] = [key(sr,sc)];
+      colorAssign[sr][sc] = ci;
+      let [cr, cc] = [sr, sc];
+      const maxSteps = Math.floor(size * size / numColors) + ri(3);
+
+      for (let step = 0; step < maxSteps; step++) {
+        const nexts = shuffle(DIRS)
+          .map(([dr,dc]) => [cr+dr, cc+dc] as [number,number])
+          .filter(([nr,nc]) => nr>=0&&nr<size&&nc>=0&&nc<size&&colorAssign[nr][nc]===-1);
+        if (!nexts.length) break;
+        [cr, cc] = nexts[0];
+        colorAssign[cr][cc] = ci;
+        path.push(key(cr,cc));
       }
 
-      if (!found) { success = false; break; }
-
-      // Reconstruct path
-      const path: string[] = [];
-      let cur = key(er,ec);
-      while (cur !== key(sr,sc)) {
-        path.unshift(cur);
-        cur = prev.get(cur)!;
-      }
-      path.unshift(key(sr,sc));
-
-      path.forEach(k => {
-        const [r,c] = k.split(",").map(Number);
-        colorAssign[r][c] = ci;
-      });
-      solution.set(colors[ci], path);
-      dots.set(key(sr,sc), colors[ci]);
-      dots.set(key(er,ec), colors[ci]);
+      if (path.length < 2) { ok = false; break; }
+      paths.push(path);
+      dots.set(path[0], colors[ci]);
+      dots.set(path[path.length-1], colors[ci]);
     }
 
-    if (!success) continue;
+    if (!ok) continue;
 
-    // Fill remaining cells into nearest path (expand existing paths)
-    const remaining: [number,number][] = [];
-    for (let r=0;r<size;r++)
-      for (let c=0;c<size;c++)
-        if (colorAssign[r][c] === -1) remaining.push([r,c]);
-
-    // Assign remaining cells to adjacent colors
+    // Flood-fill remaining cells to nearest path
     let changed = true;
-    while (remaining.length > 0 && changed) {
+    while (changed) {
       changed = false;
-      for (let i = remaining.length-1; i >= 0; i--) {
-        const [r,c] = remaining[i];
+      for (let r=0;r<size;r++) for (let c=0;c<size;c++) {
+        if (colorAssign[r][c] !== -1) continue;
         for (const [dr,dc] of DIRS) {
           const nr=r+dr, nc=c+dc;
           if (nr<0||nr>=size||nc<0||nc>=size) continue;
-          const ci = colorAssign[nr][nc];
-          if (ci === -1) continue;
-          colorAssign[r][c] = ci;
-          const color = colors[ci];
-          solution.get(color)!.push(key(r,c));
-          remaining.splice(i,1);
+          if (colorAssign[nr][nc] === -1) continue;
+          colorAssign[r][c] = colorAssign[nr][nc];
+          paths[colorAssign[nr][nc]].push(key(r,c));
           changed = true;
           break;
         }
       }
     }
 
-    if (remaining.length > 0) continue;
+    // Check all filled
+    if (colorAssign.some(row => row.some(v => v === -1))) continue;
+
+    const solution = new Map<string, string[]>();
+    paths.forEach((path, ci) => solution.set(colors[ci], path));
 
     return { size, dots, colors: colors.slice(0, numColors), solution, seed, difficulty };
   }
 
-  // Fallback: simple 2-color board
+  // Fallback: 2 colors
   const dots = new Map<string,Color>();
   const solution = new Map<string,string[]>();
-  dots.set(key(0,0), COLORS[0]); dots.set(key(0,size-1), COLORS[0]);
-  dots.set(key(size-1,0), COLORS[1]); dots.set(key(size-1,size-1), COLORS[1]);
-  const path1 = Array.from({length:size}, (_,c) => key(0,c));
-  const path2 = Array.from({length:size}, (_,c) => key(size-1,c));
-  solution.set(COLORS[0], path1);
-  solution.set(COLORS[1], path2);
-  return { size, dots, colors: COLORS.slice(0,2), solution, seed, difficulty };
+  const size2 = difficulty === "easy" ? 5 : 7;
+  dots.set(key(0,0), COLORS[0]); dots.set(key(0,size2-1), COLORS[0]);
+  dots.set(key(size2-1,0), COLORS[1]); dots.set(key(size2-1,size2-1), COLORS[1]);
+  solution.set(COLORS[0], Array.from({length:size2}, (_,c) => key(0,c)));
+  solution.set(COLORS[1], Array.from({length:size2}, (_,c) => key(size2-1,c)));
+  return { size:size2, dots, colors:COLORS.slice(0,2), solution, seed, difficulty };
 }
 
-export function checkFlowComplete(
-  board: FlowBoard,
-  paths: Map<string, { color: Color; cells: string[] }>
-): boolean {
+export function checkFlowComplete(board: FlowBoard, paths: Map<string, {color:Color;cells:string[]}>): boolean {
   const filled = new Set<string>();
   for (const [,p] of paths) p.cells.forEach(c => filled.add(c));
   if (filled.size !== board.size * board.size) return false;

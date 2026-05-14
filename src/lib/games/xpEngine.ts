@@ -31,7 +31,7 @@ export function createXPState(difficulty: Difficulty): XPState {
 export function calculateXP(state: XPState, now = Date.now()): XPSnapshot {
   const { maxXP, hintsUsed, maxHints, startTime, decayDuration } = state;
   const elapsed = (now - startTime) / 1000;
-  const hintPenalty = Math.min(hintsUsed * (maxXP * 0.25), maxXP);
+  const hintPenalty = Math.min(hintsUsed * (maxXP * 0.10), maxXP);
   const maxAfterHints = maxXP - hintPenalty;
   const timePenalty = Math.min((elapsed / decayDuration) * maxAfterHints, maxAfterHints);
   const currentXP = Math.max(0, Math.round(maxAfterHints - timePenalty));

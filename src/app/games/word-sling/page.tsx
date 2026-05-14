@@ -74,7 +74,7 @@ function WordSlingPageInner(){
     setFeedback({text: `Hint: starts with "${word[0].toUpperCase()}"`, ok: true});
     setTimeout(() => setFeedback(null), 3000);
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
     playError();
   }
   const loadStage=useCallback((s:number)=>{

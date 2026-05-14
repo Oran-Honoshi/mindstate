@@ -9,6 +9,7 @@ import{Navbar}from"@/components/nav/Navbar";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import{UndoButton}from"@/components/ui/UndoButton";
 import{HintButton}from"@/components/ui/HintButton";
 
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
@@ -63,6 +64,7 @@ function QueensGameInner(){
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
   const[hintsUsed,setHintsUsed]=useState(0);
+  const[gridHistory,setGridHistory]=useState<number[][][]>([]);
   const[showFeedback,setShowFeedback]=useState(false);
   const[feedbackCells,setFeedbackCells]=useState<Set<string>>(new Set());
   const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
@@ -84,6 +86,7 @@ function QueensGameInner(){
     const xp=createXPState(diff);
     setBoard(b);
     setGrid(Array.from({length:b.size},()=>Array(b.size).fill(0)));
+    setGridHistory([]);
     setXpState(xp);setCompleted(false);setFinalXP(0);
     setElapsed("00:00");setHintsUsed(0);setShowFeedback(false);setErrors(new Set());
     if(timerRef.current)clearInterval(timerRef.current);
@@ -101,6 +104,7 @@ function QueensGameInner(){
 
   function handleCellClick(r:number,c:number){
     if(!board||completed)return;
+    setGridHistory(h=>[...h.slice(-19),grid.map(r=>[...r])]);
     const ng=grid.map(row=>[...row]);
     ng[r][c]=(ng[r][c]+1)%3;// 0→1→2→0
     setGrid(ng);
@@ -127,6 +131,13 @@ function QueensGameInner(){
       playSuccess();setTimeout(()=>triggerConfetti(),80);
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"queens",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
     }
+  }
+
+  function handleUndo(){
+    if(gridHistory.length===0)return;
+    setGrid(gridHistory[gridHistory.length-1]);
+    setGridHistory(h=>h.slice(0,-1));
+    setErrors(new Set());
   }
 
   function handleHint(){
@@ -252,6 +263,7 @@ function QueensGameInner(){
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}

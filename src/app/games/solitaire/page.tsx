@@ -274,7 +274,7 @@ function SolitairePageInner(){
         if (canFoundation(card, top)) {
           setSelected({pile:"waste", col:0, idx:waste.length-1});
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
           playError();
           return;
         }
@@ -286,7 +286,7 @@ function SolitairePageInner(){
         if (canStack(card, onto)) {
           setSelected({pile:"waste", col:0, idx:waste.length-1});
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
           playError();
           return;
         }
@@ -295,7 +295,7 @@ function SolitairePageInner(){
     // Draw if no moves
     drawCard();
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
     playError();
   }
   if(!xpState)return(<div style={{minHeight:"100vh",background:"#0F4C2A",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"rgba(255,255,255,0.5)",fontSize:13}}>Dealing cards...</p></div>);

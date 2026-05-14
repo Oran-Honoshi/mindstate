@@ -260,7 +260,7 @@ function MinesweeperGameInner() {
     const [r, c] = safeCells[Math.floor(Math.random() * safeCells.length)];
     handleClick(r, c);
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
     playError();
   }
   return(

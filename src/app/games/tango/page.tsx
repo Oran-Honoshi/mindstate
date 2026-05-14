@@ -22,6 +22,7 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { UndoButton } from "@/components/ui/UndoButton";
 import { HintButton } from "@/components/ui/HintButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
@@ -78,6 +79,7 @@ function TangoGameInner() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [history, setHistory] = useState<typeof playerGrid[]>([]);
   const [hintFlash, setHintFlash] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
@@ -110,6 +112,7 @@ function TangoGameInner() {
     setFinalXP(0);
     setElapsed("00:00");
     setHintsUsed(0);
+    setHistory([]);
     setErrorRows(new Set());
     setErrorCols(new Set());
     if (timerRef.current) clearInterval(timerRef.current);
@@ -185,6 +188,7 @@ function handleCellClick(r: number, c: number) {
     const next: Cell = cur===null?"S":cur==="S"?"M":null;
     const key = `${r}-${c}`;
     setSquish(key); setTimeout(()=>setSquish(null), 340);
+    setHistory(h => [...h.slice(-19), playerGrid.map(r=>[...r])]);
     const ng = playerGrid.map((row,ri)=>row.map((cell,ci)=>ri===r&&ci===c?next:cell));
     setPlayerGrid(ng);
     checkRowColErrors(ng, board.size);
@@ -207,7 +211,16 @@ function handleCellClick(r: number, c: number) {
     }
   }
 
-function handleHint() {
+function handleUndo() {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setPlayerGrid(prev);
+    setHistory(h => h.slice(0, -1));
+    setErrorRows(new Set()); setErrorCols(new Set());
+    setErrorCells(new Set()); setErrorReason("");
+  }
+
+  function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
     // Find first empty cell and fill it from solution
     for (let r = 0; r < board.size; r++) {
@@ -392,13 +405,14 @@ function handleCheck() {
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <UndoButton onUndo={handleUndo} canUndo={history.length > 0} disabled={completed}/>
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
+              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
             }}
             disabled={completed}/>
           </div>

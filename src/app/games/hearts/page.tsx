@@ -190,7 +190,7 @@ function HeartsPageInner(){
     const idx = hand.findIndex(c => c.suit === suggested.suit && c.label === suggested.label);
     setSelected(idx);
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
     playError();
   }
   if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Dealing cards...</p></div>);

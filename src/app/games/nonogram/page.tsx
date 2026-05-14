@@ -1,4 +1,5 @@
 "use client";
+import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -52,6 +53,7 @@ function NonogramGameInner() {
   const[mode,setMode]=useState<"fill"|"cross">("fill");
   const[dragging,setDragging]=useState(false);
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [gridHistory, setGridHistory] = useState<(boolean|null)[][][]>([]);
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   // Freeze game when user leaves the app
@@ -68,6 +70,7 @@ function NonogramGameInner() {
     const b=generateNonogram(`nono-${diff}-${s}`,diff);
     const xp=createXPState(diff);
     setBoard(b);setGrid(Array.from({length:b.size},()=>Array(b.size).fill(null)));
+    setGridHistory([]);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
@@ -84,6 +87,7 @@ function NonogramGameInner() {
     const ng=grid.map(row=>[...row]);
     if(mode==="fill") ng[r][c]=ng[r][c]===true?null:true;
     else ng[r][c]=ng[r][c]===false?null:false;
+    setGridHistory(h=>[...h.slice(-19),grid.map(r=>[...r])]);
     setGrid(ng); playClick();
     if(checkNonogram(board,ng)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
@@ -94,6 +98,12 @@ function NonogramGameInner() {
   }
 
 
+    function handleUndo() {
+    if (gridHistory.length === 0) return;
+    setGrid(gridHistory[gridHistory.length-1]);
+    setGridHistory(h => h.slice(0,-1));
+  }
+
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3) return;
     // Reveal one complete row that has no cells filled
@@ -103,7 +113,7 @@ function NonogramGameInner() {
         ng[r] = board.solution[r].map(v => v);
         setGrid(ng);
         setHintsUsed(h => h + 1);
-        setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+        setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
         playError();
         return;
       }
@@ -116,7 +126,7 @@ function NonogramGameInner() {
           ng[r][c] = board.solution[r][c];
           setGrid(ng);
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - 30000} : prev);
+          setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
           playError();
           return;
         }
@@ -153,17 +163,18 @@ function NonogramGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Mode toggle */}
+        {/* Mode toggle - hidden, using 3-state cycle instead */}
+        {false &&
         <div style={{display:"flex",background:"var(--bg3)",borderRadius:14,padding:3,gap:2}}>
           {(["fill","cross"] as const).map(m=>(
             <button key={m} onClick={()=>setMode(m)}
               style={{padding:"7px 16px",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
                 background:mode===m?"white":"transparent",color:mode===m?"#1C1917":"#94A3B8",
                 boxShadow:mode===m?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
-              {m==="fill"?"■ Fill":"✕ Cross"}
+              {m==="fill"?"■ Fill (tap to toggle)":"✕ Cross mode"}
             </button>
           ))}
-        </div>
+        </div>}
 
         {/* Nonogram grid */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
@@ -195,7 +206,7 @@ function NonogramGameInner() {
                       background:val===true?"#1C1917":val===false?"#F8F7F5":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
                       cursor:"pointer",outline:"none",fontSize:cellSize*0.4,color:"var(--text4)",fontWeight:700}}>
-                    {val===false&&<span style={{fontSize:cellSize*0.5,color:"#EF4444",fontWeight:700}}>✕</span>}
+                    {val===false&&<span style={{fontSize:Math.round(cellSize*0.55),color:"#EF4444",fontWeight:900,lineHeight:1}}>✕</span>}
                   </motion.button>
                 );
               })}
@@ -206,6 +217,7 @@ function NonogramGameInner() {
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}

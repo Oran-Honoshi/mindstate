@@ -1,4 +1,5 @@
 "use client";
+import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -126,6 +127,7 @@ function SudokuGameInner() {
   const[showFeedback,setShowFeedback]=useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
+  const [boardHistory, setBoardHistory] = useState<typeof playerBoard[]>([]);
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   // Freeze game when user leaves the app
@@ -144,6 +146,7 @@ function SudokuGameInner() {
     const xp = createXPState(diff);
     setPuzzleData(data);
     setPlayerBoard(data.puzzle.map(r => [...r]));
+    setBoardHistory([]);
     setSelected(null); setErrors(new Set());
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setShowFeedback(false); setElapsed("00:00");
     if (timerRef.current) clearInterval(timerRef.current);
@@ -156,6 +159,7 @@ function SudokuGameInner() {
     if (!puzzleData || !selected || completed) return;
     const [r, c] = selected;
     if (puzzleData.puzzle[r][c] !== null) return;
+    setBoardHistory(h=>[...h.slice(-19),playerBoard.map(r=>[...r])]);
     const nb = playerBoard.map(row => [...row]);
     nb[r][c] = num;
     setPlayerBoard(nb);
@@ -215,7 +219,14 @@ function SudokuGameInner() {
   const nums = Array.from({ length: puzzleData.size }, (_, i) => i + 1);
 
 
-function handleHint() {
+  function handleUndo() {
+    if (boardHistory.length === 0) return;
+    setPlayerBoard(boardHistory[boardHistory.length-1]);
+    setBoardHistory(h => h.slice(0,-1));
+    setErrors(new Set());
+  }
+
+  function handleHint() {
     if (!puzzleData || !xpState || completed || hintsUsed >= 3) return;
     for (let r = 0; r < puzzleData.size; r++) {
       for (let c = 0; c < puzzleData.size; c++) {
@@ -338,13 +349,14 @@ function handleCheck() {
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <UndoButton onUndo={handleUndo} canUndo={boardHistory.length>0} disabled={completed}/>
           <HintButton
             hintsLeft={3-hintsUsed}
             xpCost={100}
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
+              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
             }}
             disabled={completed}/>
           </div>

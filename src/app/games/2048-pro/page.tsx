@@ -279,7 +279,7 @@ function TwentyFortyEightProPageInner(){
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
               setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,startTime:prev.startTime-30000}:prev);
+              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
             }}
             disabled={completed}/>
           </div>
