@@ -30,6 +30,8 @@ const GAMES = [
   { slug:"hex-merge",     name:"Hex Merge",       desc:"Merge matching hexagonal tiles in chain reactions",       free:false, difficulty:"Easy–Hard", stages:1000, cat:"Arcade"   },
   { slug:"word-sling",    name:"Word Sling",      desc:"Build the highest-scoring words from your letter rack",   free:false, difficulty:"Easy–Hard", stages:1000, cat:"Word"     },
   { slug:"hearts",        name:"Hearts",          desc:"Avoid hearts and the Queen of Spades to win",             free:false, difficulty:"Easy–Hard", stages:1000, cat:"Card"     },
+  { slug:"name-country",  title:"Name the Country", description:"Guess the country from letter clues", icon:"🌍", category:"Word",   difficulty:"Easy–Hard", free:false },
+  { slug:"name-city",     title:"Name the City",    description:"Guess the world city from letter clues", icon:"🏙️", category:"Word", difficulty:"Easy–Hard", free:false },
   { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike — move all cards to the foundations",    free:false, difficulty:"Easy–Hard", stages:1000, cat:"Card"     },
   { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce every mine from number clues. No guessing.",       free:false, difficulty:"Easy–Hard", stages:1000, cat:"Logic"    },
 ];
