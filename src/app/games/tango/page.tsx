@@ -453,10 +453,6 @@ function handleCheck() {
 </div>
   );
 }
-
-      <AnimatePresence>
-        )}
-      </AnimatePresence>
 export default function TangoGame() {
   return (
     <ErrorBoundary game="tango">

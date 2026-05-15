@@ -301,12 +301,6 @@ function QueensGameInner(){
 </div>
   );
 }
-
-
-
-      <AnimatePresence>
-        )}
-      </AnimatePresence>
 export default function QueensGame() {
   return (
     <ErrorBoundary game="queens">

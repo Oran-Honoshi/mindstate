@@ -358,10 +358,6 @@ function MemoryGameInner() {
     </div>
   );
 }
-
-      <AnimatePresence>
-        )}
-      </AnimatePresence>
 export default function MemoryGame() {
   return (
     <ErrorBoundary game="memory">
