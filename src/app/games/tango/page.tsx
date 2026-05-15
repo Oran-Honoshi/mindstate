@@ -230,7 +230,7 @@ function handleUndo() {
           ng[r][c] = board.solution[r][c];
           setPlayerGrid(ng);
           setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
+          setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0) + 1, prev.maxHints)} : prev);
           playError();
           return;
         }
@@ -269,7 +269,7 @@ function handleCheck() {
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
+    // Check costs no XP — just feedback
     setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
   return (
@@ -284,6 +284,8 @@ function handleCheck() {
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}>
                 <ArrowLeft size={14}/> Games
               </Link>
+              <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
+              <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Tango</span>
               <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
               <span style={{ fontSize:11, color:"var(--text4)" }}>Stage</span>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
