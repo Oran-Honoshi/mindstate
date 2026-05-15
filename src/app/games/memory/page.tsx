@@ -360,8 +360,6 @@ function MemoryGameInner() {
 }
 
       <AnimatePresence>
-        {showReview && (
-          <ReviewModal trigger={reviewTrigger} onClose={() => setShowReview(false)}/>
         )}
       </AnimatePresence>
 export default function MemoryGame() {
