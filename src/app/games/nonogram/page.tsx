@@ -50,7 +50,6 @@ function NonogramGameInner() {
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
-  const[mode,setMode]=useState<"fill"|"cross">("fill");
   const[dragging,setDragging]=useState(false);
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [gridHistory, setGridHistory] = useState<(boolean|null)[][][]>([]);
@@ -85,9 +84,10 @@ function NonogramGameInner() {
   function handleCell(r:number,c:number){
     if(!board||completed)return;
     const ng=grid.map(row=>[...row]);
-    if(mode==="fill") ng[r][c]=ng[r][c]===true?null:true;
-    else ng[r][c]=ng[r][c]===false?null:false;
-    setGridHistory(h=>[...h.slice(-19),grid.map(r=>[...r])]);
+    // 3-state cycle: empty → black → X → empty
+    if(ng[r][c]===null) ng[r][c]=true;
+    else if(ng[r][c]===true) ng[r][c]=false;
+    else ng[r][c]=null;
     setGrid(ng); playClick();
     if(checkNonogram(board,ng)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
@@ -164,18 +164,6 @@ function NonogramGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Mode toggle - hidden, using 3-state cycle instead */}
-        {false &&
-        <div style={{display:"flex",background:"var(--bg3)",borderRadius:14,padding:3,gap:2}}>
-          {(["fill","cross"] as const).map(m=>(
-            <button key={m} onClick={()=>setMode(m)}
-              style={{padding:"7px 16px",borderRadius:11,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
-                background:mode===m?"white":"transparent",color:mode===m?"#1C1917":"#94A3B8",
-                boxShadow:mode===m?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
-              {m==="fill"?"■ Fill (tap to toggle)":"✕ Cross mode"}
-            </button>
-          ))}
-        </div>}
 
         {/* Nonogram grid */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
@@ -204,10 +192,12 @@ function NonogramGameInner() {
                 return(
                   <motion.button key={c} onClick={()=>handleCell(r,c)} whileTap={{scale:0.9}}
                     style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:val===true?"#1C1917":val===false?"#F8F7F5":"white",
+                      background:val===true?"#1C1917":val===false?"#FEF2F2":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
-                      cursor:"pointer",outline:"none",fontSize:cellSize*0.4,color:"var(--text4)",fontWeight:700}}>
-                    {val===false&&<span style={{fontSize:Math.round(cellSize*0.55),color:"#EF4444",fontWeight:900,lineHeight:1}}>✕</span>}
+                      cursor:"pointer",outline:"none",
+                      transition:"background 0.1s"}}>
+                    {val===true && <span style={{width:cellSize-4,height:cellSize-4,display:"block",background:"#1C1917",borderRadius:1}}/>}
+                    {val===false && <span style={{fontSize:Math.round(cellSize*0.6),color:"#EF4444",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
                   </motion.button>
                 );
               })}
