@@ -584,13 +584,27 @@ const INSTRUCTIONS: Record<string, {
     donts:["Don't leave any open pipe ends","Don't rotate locked tiles"],
     hint:"A straight pipe in a corner must align with both walls — only one rotation works.",
   },
-  lightup: {
+    lightup: {
     title:"How to Play Light Up",
-    goal:"Place light bulbs to illuminate every white cell without any bulb shining on another.",
-    rules:["Click a white cell to place a ● bulb","Bulbs shine horizontally and vertically until blocked by a black cell","Two bulbs must never shine on each other","Black cells with numbers require exactly that many adjacent bulbs","Every white cell must be illuminated"],
-    dos:["Start with numbered black cells — they constrain bulb placement","A '0' black cell means no adjacent bulbs allowed","A '4' black cell needs a bulb on all four sides"],
-    donts:["Don't place two bulbs in each other's line of sight","Don't leave any white cell dark"],
-    hint:"Black cells numbered '0' eliminate all adjacent cells — cross them out mentally.",
+    goal:"Place light bulbs so every white cell is illuminated.",
+    rules:[
+      "Click any white cell to place a bulb 💡, click again to remove it",
+      "Bulbs illuminate all cells in 4 directions (up/down/left/right) until blocked by a black cell",
+      "Every white cell must be lit by at least one bulb",
+      "No two bulbs may illuminate each other — they cannot be in the same line of sight",
+      "Red numbered black cells = that cell must have EXACTLY that many bulbs touching it (up/down/left/right only). A red 0 means NO bulbs adjacent. A red 3 means exactly 3 bulbs must touch it.",
+    ],
+    dos:[
+      "Start with numbered black cells — they tell you exactly how many bulbs go next to them",
+      "A 0-clue cell means all its neighbors are bulb-free",
+      "If a number matches its available neighbor count, fill all of them",
+      "Use process of elimination — if a cell can only be lit one way, place that bulb",
+    ],
+    donts:[
+      "Don't place two bulbs in the same row or column without a black cell between them",
+      "Don't ignore numbered cells — they are the key constraints",
+    ],
+    hint:"Red numbered squares are your anchor points. Start there and work outward.",
   },
   patches: {
     title:"How to Play Patches",

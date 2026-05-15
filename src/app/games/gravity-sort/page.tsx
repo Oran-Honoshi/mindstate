@@ -185,9 +185,33 @@ function GravitySortPageInner(){
             hintsLeft={3-hintsUsed}
             xpCost={100}
             onUseHint={()=>{
-              if(!xpState||hintsUsed>=3)return;
+              if(!board||!xpState||hintsUsed>=3||completed)return;
+              // Find first block that is in wrong column and has a correct destination
+              for(let fromCol=0;fromCol<blocks.length;fromCol++){
+                const col=blocks[fromCol];
+                if(col.length===0)continue;
+                const topBlock=col[col.length-1];
+                // This block belongs in column topBlock (each color maps to its index)
+                if(fromCol===topBlock)continue; // already correct
+                const toCol=topBlock;
+                if(blocks[toCol].length<board.rows){
+                  // Valid move: flash both columns
+                  setSelected(fromCol);
+                  setTimeout(()=>{
+                    const nb=blocks.map((c:number[])=>[...c]);
+                    const block=nb[fromCol].pop()!;
+                    nb[toCol].push(block);
+                    setBlocks(nb);setSelected(null);setMoves(m=>m+1);
+                    playError();
+                  },600);
+                  setHintsUsed(h=>h+1);
+                  setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+                  return;
+                }
+              }
+              // No direct move found — just deduct XP
               setHintsUsed(h=>h+1);
-              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
+              setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
             }}
             disabled={completed}/>
           </div>
