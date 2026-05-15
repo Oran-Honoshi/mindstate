@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -106,7 +107,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MemoryGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("memory"));
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
@@ -166,6 +167,7 @@ function MemoryGameInner() {
           setCompleted(true);
           if (timerRef.current) clearInterval(timerRef.current);
           setTimeout(() => triggerConfetti(), 80);
+          markStageCompleted("memory",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
           if (user) {
             updateStreak(user.id);
@@ -233,6 +235,8 @@ function MemoryGameInner() {
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}>
                 <ArrowLeft size={14}/> Games
               </Link>
+              <div style={{ width:1, height:16, background:"var(--border2)" }}/>
+              <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Memory</span>
               <div style={{ width:1, height:16, background:"var(--border2)" }}/>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10,

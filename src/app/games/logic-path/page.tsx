@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -82,7 +83,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function LogicPathPageInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("logic-path"));
   const [board, setBoard] = useState<LogicBoard | null>(null);
   const [grid, setGrid] = useState<PipeCell[][]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
@@ -141,6 +142,7 @@ function LogicPathPageInner() {
       setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
+          markStageCompleted("logic-path",stage);
       if (user) { updateStreak(user.id); saveScore({ user_id:user.id, game_slug:"logic-path", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) }); }
     }
   }

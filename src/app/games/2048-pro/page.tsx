@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -121,7 +122,7 @@ function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
   const[completed,setCompleted]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("2048-pro"));
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
   const[grid,setGrid]=useState<Grid>(()=>initGrid(1));
@@ -173,6 +174,7 @@ function TwentyFortyEightProPageInner(){
       const earned=finalizeXP(xpState);setFinalXP(earned);setGameState("won");
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("2048-pro",stage);
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"2048-pro",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}} else if(hasLost(ng)){
       setGameState("lost");if(timerRef.current)clearInterval(timerRef.current);
     }

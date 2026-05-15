@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -81,7 +82,7 @@ function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;on
 
 function HeartsPageInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("hearts"));
   const [completed, setCompleted] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const[hand,setHand]=useState<Card[]>([]);
@@ -167,6 +168,7 @@ function HeartsPageInner(){
             setFinalXP(earned);
             playSuccess();
             setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("hearts",stage);
             if(user){
               updateStreak(user.id);
               saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});

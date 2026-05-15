@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -31,7 +32,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function GravitySortPageInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("gravity-sort"));
   const[board,setBoard]=useState<GravityBoard|null>(null);
   const[blocks,setBlocks]=useState<number[][]>([]);
   const[selected,setSelected]=useState<number|null>(null);
@@ -87,6 +88,7 @@ function GravitySortPageInner(){
         const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
         if(timerRef.current)clearInterval(timerRef.current);
         playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("gravity-sort",stage);
         if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"gravity-sort",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
     }
   }

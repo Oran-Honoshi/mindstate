@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -28,7 +29,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function BridgesGameInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("bridges"));
   const[board,setBoard]=useState<BridgesBoard|null>(null);
   const[placed,setPlaced]=useState<Bridge[]>([]);
   const[xpState,setXpState]=useState<XPState|null>(null);
@@ -76,6 +77,7 @@ function BridgesGameInner(){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("bridges",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user)saveScore({user_id:user.id,game_slug:"bridges",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
     }

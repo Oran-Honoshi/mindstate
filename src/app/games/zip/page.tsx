@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -143,7 +144,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function ZipGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("zip"));
   const [board, setBoard] = useState<ZipBoard | null>(null);
   const [userPath, setUserPath] = useState<Pos[]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
@@ -235,6 +236,7 @@ function ZipGameInner() {
         setFinalXP(earned); setCompleted(true);
         if (timerRef.current) clearInterval(timerRef.current);
         playSuccess(); setTimeout(() => triggerConfetti(), 80);
+          markStageCompleted("zip",stage);
         if (user) saveScore({
           user_id: user.id, game_slug: "zip", stage_number: stage,
           difficulty: getDifficulty(stage), xp_earned: earned,

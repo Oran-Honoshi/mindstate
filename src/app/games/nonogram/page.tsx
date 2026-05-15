@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -40,7 +41,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function NonogramGameInner() {
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("nonogram"));
   const[board,setBoard]=useState<NonogramBoard|null>(null);
   const[grid,setGrid]=useState<(boolean|null)[][]>([]);
   const[xpState,setXpState]=useState<XPState|null>(null);
@@ -93,6 +94,7 @@ function NonogramGameInner() {
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("nonogram",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user)saveScore({user_id:user.id,game_slug:"nonogram",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
     }

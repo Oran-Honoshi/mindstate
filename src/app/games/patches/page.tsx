@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -63,7 +64,7 @@ function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:nu
 
 function PatchesGameInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("patches"));
   const[board,setBoard]=useState<PatchesBoard|null>(null);
   const[placed,setPlaced]=useState<Map<string,number>>(new Map()); // cell -> pieceId
   const[placedPieces,setPlacedPieces]=useState<Set<number>>(new Set());
@@ -172,6 +173,7 @@ function PatchesGameInner(){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("patches",stage);
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"patches",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
   }
 

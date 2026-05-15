@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
@@ -55,7 +56,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function QueensGameInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("queens"));
   const[board,setBoard]=useState<QueensBoard|null>(null);
   const[grid,setGrid]=useState<number[][]>([]);// 0=empty,1=mark,2=queen
   const[xpState,setXpState]=useState<XPState|null>(null);
@@ -129,6 +130,7 @@ function QueensGameInner(){
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("queens",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"queens",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
     }

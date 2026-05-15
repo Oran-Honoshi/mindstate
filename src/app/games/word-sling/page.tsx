@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -57,7 +58,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function WordSlingPageInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("word-sling"));
   const [board, setBoard] = useState<WordleBoard | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [results, setResults] = useState<LetterResult[][]>([]);

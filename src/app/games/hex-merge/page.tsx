@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -47,7 +48,7 @@ function tileColor(v:number):{bg:string;text:string}{return TILE_COLORS[v]??{bg:
 
 function HexMergePageInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("hex-merge"));
   const[board,setBoard]=useState<HexBoard|null>(null);
   const[cells,setCells]=useState<Map<string,number>>(new Map());
   const[selected,setSelected]=useState<[number,number]|null>(null);
@@ -106,6 +107,7 @@ function HexMergePageInner(){
           const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
           if(timerRef.current)clearInterval(timerRef.current);
           playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("hex-merge",stage);
           if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hex-merge",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
       } else {
         playError();setSelected([q,r]);

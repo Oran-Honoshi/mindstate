@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -43,7 +44,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function KakuroGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("kakuro"));
   const [board, setBoard] = useState<KakuroBoard | null>(null);
   const [userGrid, setUserGrid] = useState<(number|null)[][]>([]);
   const [selected, setSelected] = useState<[number,number] | null>(null);
@@ -119,6 +120,7 @@ function KakuroGameInner() {
       const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
+          markStageCompleted("kakuro",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if (user) saveScore({ user_id:user.id, game_slug:"kakuro", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) });
     }

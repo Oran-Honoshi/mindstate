@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -77,7 +78,7 @@ function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?
 
 function SolitairePageInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("solitaire"));
   const[tableau,setTableau]=useState<Card[][]>([]);
   const[stock,setStock]=useState<Card[]>([]);
   const[waste,setWaste]=useState<Card[]>([]);
@@ -148,7 +149,8 @@ function SolitairePageInner(){
         if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));
         else setTableau(t=>{const nt=t.map(p=>[...p]);nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;return nt;});
         setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();
-        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
+        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("solitaire",stage);if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
         return;
       }
     }

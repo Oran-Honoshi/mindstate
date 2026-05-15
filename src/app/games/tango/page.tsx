@@ -1,4 +1,6 @@
 "use client";
+import { StageMap } from "@/components/ui/StageMap";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -70,12 +72,13 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function TangoGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("tango"));
   const [board, setBoard] = useState<TangoBoard | null>(null);
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -296,7 +299,8 @@ function handleCheck() {
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-                <RotateCcw size={13}/>
+                <RotateCcw size={13}/></button>
+              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex",fontSize:11,fontWeight:600,gap:3,alignItems:"center"}}>⊞ Map
               </button>
               <button onClick={()=>{ const url=`${window.location.origin}/play/tango?seed=${board.seed}`; navigator.clipboard.writeText(url); }}
                 style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
@@ -439,6 +443,7 @@ function handleCheck() {
         gameName="Tango"
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
+      {showMap&&<StageMap gameSlug="tango" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
         stage={stage}

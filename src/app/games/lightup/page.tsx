@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -32,7 +33,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function LightUpPageInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("lightup"));
   const[board,setBoard]=useState<LightBoard|null>(null);
   const[grid,setGrid]=useState<LightCell[][]>([]);
   const[lighting,setLighting]=useState<ReturnType<typeof computeLighting>>({lit:new Set(),conflicts:new Set(),blackErrors:new Set()});
@@ -89,6 +90,7 @@ function LightUpPageInner(){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("lightup",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
   }

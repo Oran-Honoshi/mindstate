@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -140,7 +141,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MinesweeperGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("minesweeper"));
   const [completed, setCompleted] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [board, setBoard] = useState<Board|null>(null);
@@ -217,6 +218,7 @@ function MinesweeperGameInner() {
       const earned = finalizeXP(xpState); setFinalXP(earned); setGameOver("win");
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("minesweeper",stage);
       if (user) saveScore({user_id:user.id,game_slug:"minesweeper",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
       const k=`mindstate-stages-${user?.id??"guest"}`;
       if(typeof window!=="undefined") localStorage.setItem(k,String((parseInt(localStorage.getItem(k)??"0"))+1));

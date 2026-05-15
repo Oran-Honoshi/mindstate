@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -53,7 +54,7 @@ type PathState = { color: Color; cells: string[] };
 
 function FlowGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(1);
+  const [stage, setStage] = useState(() => getLastStage("flow"));
   const [board, setBoard] = useState<FlowBoard | null>(null);
   const [paths, setPaths] = useState<Map<string, PathState>>(new Map());
   const [cellColors, setCellColors] = useState<Map<string, Color>>(new Map());
@@ -172,6 +173,7 @@ function FlowGameInner() {
         setFinalXP(earned); setCompleted(true);
         if (timerRef.current) clearInterval(timerRef.current);
         playSuccess(); setTimeout(() => triggerConfetti(), 80);
+          markStageCompleted("flow",stage);
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
         if (user) saveScore({ user_id:user.id, game_slug:"flow", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) });
       }

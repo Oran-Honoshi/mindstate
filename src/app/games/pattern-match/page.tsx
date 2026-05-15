@@ -1,4 +1,5 @@
 "use client";
+import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -32,7 +33,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
+  const [stage, setStage] = useState(() => getLastStage("pattern-match"));
   const [hintsUsed, setHintsUsed] = useState(0);
   const[board,setBoard]=useState<PatternBoard|null>(null);
   const[selected,setSelected]=useState<string|null>(null);
@@ -80,7 +81,8 @@ function PatternMatchGameInner(){
     if(isCorrect){
       playSuccess();
       setTimeout(()=>{
-        if(xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);}
+        if(xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("pattern-match",stage);}
         if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"pattern-match",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:xpState?finalizeXP(xpState):0,time_taken:Math.floor((Date.now()-(xpState?.startTime??Date.now()))/1000)});}},600);
     } else {
       playError();
