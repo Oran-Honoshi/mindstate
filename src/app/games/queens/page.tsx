@@ -155,7 +155,7 @@ function QueensGameInner(){
         setGrid(ng);
         setHintsUsed(h=>h+1);
         // Deduct XP by pushing startTime back 3 minutes
-        setXpState(prev=>prev?{...prev,startTime:prev.startTime-(30*1000)}:prev);
+        setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
         playError();
         return;
       }
@@ -178,7 +178,7 @@ function QueensGameInner(){
     setFeedbackCells(correct);
     setWrongCells(wrong);
     setShowFeedback(true);
-    setXpState(prev=>prev?{...prev,startTime:prev.startTime-(45*1000)}:prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
     setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
   }
 

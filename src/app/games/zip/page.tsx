@@ -289,7 +289,7 @@ function handleHint() {
       const nextCell = board.path[nextIdx];
       setUserPath(prev => [...prev, nextCell]);
       setHintsUsed(h => h + 1);
-      setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
+      setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
       playError();
     }
   }
@@ -305,7 +305,7 @@ function handleCheck() {
         correctCount++;
       } else break;
     }
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
     // Visual: trim path to correct portion + flash
     if (correctCount < userPath.length) {
       setUserPath(userPath.slice(0, correctCount));

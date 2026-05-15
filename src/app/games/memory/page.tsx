@@ -190,7 +190,7 @@ function MemoryGameInner() {
     // Briefly reveal all unmatched cards
     setCards(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (30*1000)} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
     playError();
     setTimeout(() => {
       setCards(prev => prev.map(c => c.matched ? c : (selected.includes(c.id) ? c : {...c, flipped: false})));
@@ -202,7 +202,7 @@ function MemoryGameInner() {
     const matched = cards.filter(c => c.matched).length / 2;
     const total = cards.length / 2;
     setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
     playError();
     setTimeout(() => setShowFeedback(false), 2000);
   }

@@ -101,7 +101,7 @@ function PatternMatchGameInner(){
 
 function handleCheck() {
     if (!board || !xpState || completed) return;
-    setXpState(prev => prev ? {...prev, startTime: prev.startTime - (45*1000)} : prev);
+    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
     playError();
     setShowRule(true);
     setTimeout(() => setShowRule(false), 3000);
