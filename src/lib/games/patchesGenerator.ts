@@ -133,10 +133,41 @@ export function generatePatches(seed:string, difficulty:"easy"|"medium"|"hard"):
 }
 
 export function checkPatches(board:PatchesBoard, placed:Map<string,number>): boolean {
+  // Every cell must be covered by SOME piece
   for (let r=0;r<board.rows;r++) {
     for (let c=0;c<board.cols;c++) {
-      if (board.solution[r][c] !== (placed.get(`${r},${c}`)??-1)) return false;
+      if (!placed.has(`${r},${c}`)) return false;
     }
+  }
+  // Each placed piece must cover exactly the right cells
+  // Group placed cells by piece ID
+  const pieceMap = new Map<number, string[]>();
+  for (const [key, pid] of placed.entries()) {
+    if (!pieceMap.has(pid)) pieceMap.set(pid, []);
+    pieceMap.get(pid)!.push(key);
+  }
+  // Each piece in pieceMap must have the same cells as some piece in solution
+  for (const [pid, cells] of pieceMap.entries()) {
+    const piece = board.pieces.find(p => p.id === pid);
+    if (!piece) return false;
+    // Find where this piece should go in the solution
+    // The solution cells for this piece are all cells where solution[r][c] matches
+    // the original piece ID — but after shuffling IDs may differ
+    // So instead: verify piece covers a contiguous region matching its shape
+    const sortedCells = [...cells].sort();
+    // Find the min row/col to normalize
+    const rows = cells.map(k => parseInt(k.split(',')[0]));
+    const cols = cells.map(k => parseInt(k.split(',')[1]));
+    const minR = Math.min(...rows), minC = Math.min(...cols);
+    const normalized = cells
+      .map(k => { const [r,c] = k.split(',').map(Number); return `${r-minR},${c-minC}`; })
+      .sort()
+      .join('|');
+    const pieceNorm = piece.cells
+      .map(([r,c]) => `${r},${c}`)
+      .sort()
+      .join('|');
+    if (normalized !== pieceNorm) return false;
   }
   return true;
 }
