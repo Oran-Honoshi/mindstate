@@ -10,7 +10,6 @@ import { ArrowLeft, RotateCcw, ChevronRight, Share2,
          Music, Palette, Coffee, Globe, Compass, Atom } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
-import { ReviewModal, useReviewPrompt } from "@/components/ui/ReviewModal";
 import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
@@ -107,7 +106,6 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MemoryGameInner() {
   const { user } = useAuthStore();
-  const { show: showReview, trigger: reviewTrigger, setShow: setShowReview, onFirstWin } = useReviewPrompt();
   const [stage, setStage] = useState(1);
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -168,7 +166,7 @@ function MemoryGameInner() {
           setCompleted(true);
           if (timerRef.current) clearInterval(timerRef.current);
           setTimeout(() => triggerConfetti(), 80);
-          onFirstWin();
+          if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
           if (user) {
             updateStreak(user.id);
             saveScore({ user_id: user.id, game_slug: "memory", stage_number: stage,
