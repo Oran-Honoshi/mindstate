@@ -1,4 +1,5 @@
 "use client";
+import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -88,6 +89,7 @@ function SolitairePageInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[showFeedback,setShowFeedback]=useState(false);
@@ -388,6 +390,7 @@ function SolitairePageInner(){
         gameName="Solitaire"
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
+      {showMap&&<StageMap gameSlug="solitaire" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
         stage={stage}

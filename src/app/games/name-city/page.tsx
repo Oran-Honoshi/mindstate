@@ -1,4 +1,5 @@
 "use client";
+import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -48,6 +49,7 @@ function NameCityInner(){
   const[current,setCurrent]=useState("");
   const[shake,setShake]=useState(false);
   const[completed,setCompleted]=useState(false);
+  const[showMap,setShowMap]=useState(false);
   const[lost,setLost]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[shownHints,setShownHints]=useState<string[]>([]);
@@ -141,6 +143,7 @@ function NameCityInner(){
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
@@ -228,6 +231,7 @@ function NameCityInner(){
         </div>
       </main>
 
+      {showMap&&<StageMap gameSlug="name-city" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindState · Name the City Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>

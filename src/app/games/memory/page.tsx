@@ -1,4 +1,5 @@
 "use client";
+import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
@@ -113,6 +114,7 @@ function MemoryGameInner() {
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -252,6 +254,7 @@ function MemoryGameInner() {
                 style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)",
                   background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
                 <RotateCcw size={13}/>
+              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
               </button>
             </div>
           </div>
