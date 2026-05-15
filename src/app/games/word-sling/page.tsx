@@ -1,282 +1,335 @@
 "use client";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
-/* eslint-disable react-hooks/exhaustive-deps */
-import{useState,useEffect,useCallback,useRef}from"react";
-import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,ChevronRight,Share2,Delete,Check,X}from"lucide-react";
-import Link from"next/link";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, RotateCcw, ChevronRight, Delete } from "lucide-react";
+import Link from "next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Navbar } from "@/components/nav/Navbar";
+import { GameInstructions } from "@/components/ui/GameInstructions";
+import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
+import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { HintButton } from "@/components/ui/HintButton";
+import { UndoButton } from "@/components/ui/UndoButton";
 import { updateStreak } from "@/lib/supabase/streaks";
-import{Navbar}from"@/components/nav/Navbar";
-import{GameInstructions}from"@/components/ui/GameInstructions";
-import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
-import{HintButton}from"@/components/ui/HintButton";
+import { generateWordleBoard, scoreGuess, isValidGuess, type WordleBoard, type LetterResult } from "@/lib/games/wordSlingGenerator";
+import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
+import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
+import { triggerConfetti } from "@/components/effects/Confetti";
+import { saveScore } from "@/lib/supabase/scores";
+import { useAuthStore } from "@/store/authStore";
+import { consumeToken } from "@/lib/games/tokenEngine";
 
-import{generateWordBoard,isValidWord,scoreWord,type WordBoard}from"@/lib/games/wordSlingGenerator";
-import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
-import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
-import{triggerConfetti}from"@/components/effects/Confetti";
-import{saveScore}from"@/lib/supabase/scores";
-import{useAuthStore}from"@/store/authStore";
-import{consumeToken}from"@/lib/games/tokenEngine";
-
-function getDifficulty(s:number):Difficulty{
-  if(s===1)return"medium";
-  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
-  return h<20?"easy":h<70?"medium":"hard";
-}
-function shareResult(stage:number,score:number,words:number){
-  const text=` MindState · Word Sling Stage ${stage} · ${score} pts · ${words} words found`;
-  const url="https://mindstate.vercel.app";
-  if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});
-  else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");
+function getDifficulty(s: number): Difficulty {
+  if (s === 1) return "medium";
+  const h = Math.abs(Math.imul(s * 2654435761, s ^ 0x9e3779b9)) % 100;
+  return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
-function XPBar({xpState}:{xpState:XPState}){
-  const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
+const COLORS: Record<LetterResult, { bg: string; border: string; text: string }> = {
+  correct: { bg: "#22C55E", border: "#16A34A", text: "white" },
+  present: { bg: "#F59E0B", border: "#D97706", text: "white" },
+  absent:  { bg: "#4B5563", border: "#374151", text: "white" },
+};
+
+const KEYBOARD_ROWS = [
+  ["Q","W","E","R","T","Y","U","I","O","P"],
+  ["A","S","D","F","G","H","J","K","L"],
+  ["ENTER","Z","X","C","V","B","N","M","⌫"],
+];
+
+function XPBar({ xpState }: { xpState: XPState }) {
+  const [snap, setSnap] = useState(() => calculateXP(xpState));
+  useEffect(() => { const iv = setInterval(() => setSnap(calculateXP(xpState)), 500); return () => clearInterval(iv); }, [xpState]);
+  const pct = snap.percentRemaining;
+  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ flex: 1, height: 4, background: "var(--bg3)", borderRadius: 2, overflow: "hidden" }}>
+        <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.5 }}
+          style={{ height: "100%", background: color, borderRadius: 2 }} />
+      </div>
+      <span style={{ fontSize: 13, fontWeight: 700, color, fontFamily: "monospace", minWidth: 36 }}>{snap.currentXP}</span>
+      <span style={{ fontSize: 11, color: "var(--text4)" }}>XP</span>
+    </div>
+  );
 }
 
-function WordSlingPageInner(){
-  const{user}=useAuthStore();
-  const[stage,setStage]=useState(1);
-  const[board,setBoard]=useState<WordBoard|null>(null);
-  const[current,setCurrent]=useState<string[]>([]);
-  const[found,setFound]=useState<string[]>([]);
-  const[totalScore,setTotalScore]=useState(0);
-  const[feedback,setFeedback]=useState<{text:string;ok:boolean}|null>(null);
-  const[xpState,setXpState]=useState<XPState|null>(null);
-  const[elapsed,setElapsed]=useState("00:00");
-  const[completed,setCompleted]=useState(false);
-  const[showTokenModal,setShowTokenModal]=useState(false);
-  const[hintsUsed,setHintsUsed]=useState(0);
-  const[showFeedback,setShowFeedback]=useState(false);
-  const[finalXP,setFinalXP]=useState(0);
-  const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+function WordSlingPageInner() {
+  const { user } = useAuthStore();
+  const [stage, setStage] = useState(1);
+  const [board, setBoard] = useState<WordleBoard | null>(null);
+  const [guesses, setGuesses] = useState<string[]>([]);
+  const [results, setResults] = useState<LetterResult[][]>([]);
+  const [current, setCurrent] = useState("");
+  const [shake, setShake] = useState(false);
+  const [reveal, setReveal] = useState<number | null>(null);
+  const [xpState, setXpState] = useState<XPState | null>(null);
+  const [elapsed, setElapsed] = useState("00:00");
+  const [completed, setCompleted] = useState(false);
+  const [lost, setLost] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [finalXP, setFinalXP] = useState(0);
+  const [hintLetters, setHintLetters] = useState<Set<number>>(new Set());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
-    () => { if (xpState && !completed) {
-      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
-    }}
+    () => { if (xpState && !completed) timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000); }
   );
 
+  const loadStage = useCallback((s: number) => {
+    const diff = getDifficulty(s);
+    const b = generateWordleBoard(`wordle-${diff}-${s}`, diff);
+    const xp = createXPState(diff);
+    setBoard(b); setGuesses([]); setResults([]); setCurrent("");
+    setXpState(xp); setCompleted(false); setLost(false); setFinalXP(0);
+    setHintsUsed(0); setHintLetters(new Set()); setElapsed("00:00");
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
+    if (user) { const ok = consumeToken(user.id); if (!ok) { setShowTokenModal(true); return; } }
+  }, [user]);
 
+  useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
+
+  // Build keyboard letter states
+  const letterStates = new Map<string, LetterResult>();
+  results.forEach((res, gi) => {
+    res.forEach((r, li) => {
+      const letter = guesses[gi][li];
+      const prev = letterStates.get(letter);
+      if (prev === "correct") return;
+      if (prev === "present" && r === "absent") return;
+      letterStates.set(letter, r);
+    });
+  });
+
+  function handleKey(key: string) {
+    if (!board || completed || lost) return;
+    if (key === "ENTER" || key === "Enter") { submitGuess(); return; }
+    if (key === "⌫" || key === "Backspace") { setCurrent(c => c.slice(0, -1)); return; }
+    if (/^[A-Za-z]$/.test(key) && current.length < board.wordLength) {
+      setCurrent(c => c + key.toUpperCase());
+      playClick();
+    }
+  }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { handleKey(e.key); }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [board, current, completed, lost]);
+
+  function submitGuess() {
+    if (!board || !xpState) return;
+    if (current.length !== board.wordLength) {
+      setShake(true); setTimeout(() => setShake(false), 500);
+      playError(); return;
+    }
+    const res = scoreGuess(current, board.answer);
+    const newGuesses = [...guesses, current];
+    const newResults = [...results, res];
+    setGuesses(newGuesses);
+    setResults(newResults);
+    setCurrent("");
+    setReveal(newGuesses.length - 1);
+    setTimeout(() => setReveal(null), board.wordLength * 120 + 200);
+
+    const won = res.every(r => r === "correct");
+    const outOfGuesses = newGuesses.length >= board.maxGuesses && !won;
+
+    if (won) {
+      setTimeout(() => {
+        const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+        playSuccess(); triggerConfetti();
+        if (typeof window !== "undefined") {
+          const w = parseInt(localStorage.getItem("mindstate-wins") ?? "0") + 1;
+          localStorage.setItem("mindstate-wins", String(w));
+        }
+        if (user) { updateStreak(user.id); saveScore({ user_id: user.id, game_slug: "word-sling", stage_number: stage, difficulty: getDifficulty(stage), xp_earned: earned, time_taken: Math.floor((Date.now() - xpState.startTime) / 1000) }); }
+      }, board.wordLength * 120 + 400);
+    } else if (outOfGuesses) {
+      setTimeout(() => {
+        setLost(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+        playError();
+      }, board.wordLength * 120 + 400);
+    }
+  }
 
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3 || completed) return;
-    const unfound = board.solutions.filter(w => !found.includes(w));
-    if (unfound.length === 0) return;
-    const word = unfound[0];
-    setFeedback({text: `Hint: starts with "${word[0].toUpperCase()}"`, ok: true});
-    setTimeout(() => setFeedback(null), 3000);
+    // Reveal a random unguessed letter position
+    const known = new Set(hintLetters);
+    results.forEach(res => res.forEach((r, i) => { if (r === "correct") known.add(i); }));
+    const unknown = Array.from({ length: board.wordLength }, (_, i) => i).filter(i => !known.has(i));
+    if (!unknown.length) return;
+    const idx = unknown[Math.floor(Math.random() * unknown.length)];
+    setHintLetters(prev => new Set([...prev, idx]));
     setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-    playError();
-  }
-  const loadStage=useCallback((s:number)=>{
-    const diff=getDifficulty(s);
-    const b=generateWordBoard(`words-${diff}-${s}`,diff);
-    const xp=createXPState(diff);
-    setBoard(b);setCurrent([]);setFound([]);setTotalScore(0);setFeedback(null);
-    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
-    if(timerRef.current)clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
-  },[user]);
-
-  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
-
-  function addLetter(letter:string,idx:number){
-    if(current.includes(`${letter}-${idx}`))return;
-    setCurrent(prev=>[...prev,`${letter}-${idx}`]);
-    playClick();
+    setXpState(prev => prev ? { ...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints) } : prev);
   }
 
-  function submitWord(){
-    if(!board||current.length<board.minLength)return;
-    const word=current.map(l=>l.split("-")[0]).join("").toLowerCase();
-    if(found.includes(word)){
-      setFeedback({text:"Already found!",ok:false});
-      setTimeout(()=>setFeedback(null),1200);
-      playError();setCurrent([]);return;
-    }
-    if(isValidWord(word,board)){
-      const pts=scoreWord(word);
-      const newFound=[...found,word];
-      const newScore=totalScore+pts;
-      setFound(newFound);setTotalScore(newScore);
-      setFeedback({text:`+${pts} pts · ${word.toUpperCase()}`,ok:true});
-      setTimeout(()=>setFeedback(null),1400);
-      playSuccess();setCurrent([]);
-      // Complete when all solutions found OR enough score
-      const target=board.solutions.length;
-      if(newFound.length>=target&&xpState){
-        const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
-        if(timerRef.current)clearInterval(timerRef.current);
-        setTimeout(()=>triggerConfetti(),80);
-        if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"word-sling",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
-      }
-    } else {
-      setFeedback({text:"Not a word",ok:false});
-      setTimeout(()=>setFeedback(null),1200);
-      playError();setCurrent([]);
-    }
-  }
+  if (!board || !xpState) return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "var(--text4)", fontSize: 13 }}>Loading...</p>
+    </div>
+  );
 
-  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
+  const diff = getDifficulty(stage);
+  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "#EF4444";
+  const cellSize = Math.min(56, Math.floor((Math.min(typeof window !== "undefined" ? window.innerWidth : 400, 400) - 32) / board.wordLength));
 
-  const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
-  const wordDisplay=current.map(l=>l.split("-")[0]).join("");
-
-  return(
+  return (
     <div className="game-page">
-      <Navbar/>
-      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
-        <div style={{width:"100%",maxWidth:520,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
-              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Word Sling</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
+      <Navbar />
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "76px 16px 32px", gap: 16 }}>
+
+        {/* Header */}
+        <div style={{ width: "100%", maxWidth: 480, background: "var(--surface)", borderRadius: 20, border: "0.5px solid var(--border)", padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Link href="/games" style={{ color: "var(--text4)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}><ArrowLeft size={14} /> Games</Link>
+              <div style={{ width: 1, height: 16, background: "#E2E8F0" }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif" }}>Word Sling</span>
+              <div style={{ width: 1, height: 16, background: "#E2E8F0" }} />
+              <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif" }}>{stage}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: `${diffColor}15`, color: diffColor }}>{diff.toUpperCase()} · {board.wordLength} letters</span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:12,color:"#4F6EF7",fontWeight:700}}>{totalScore} pts</span>
-              <span style={{fontSize:11,color:"var(--text4)"}}>{found.length}/{board.solutions.length} words</span>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="word-sling" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, color: "var(--text4)", fontFamily: "monospace" }}>{elapsed}</span>
+              <GameInstructions game="word-sling"
+                onOpen={() => { if (timerRef.current) clearInterval(timerRef.current); }}
+                onClose={() => { if (xpState && !completed) timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000); }} />
+              <button onClick={() => loadStage(stage)} style={{ padding: 7, borderRadius: 9, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex" }}><RotateCcw size={13} /></button>
             </div>
           </div>
-          <XPBar xpState={xpState}/>
+          <XPBar xpState={xpState} />
         </div>
 
-        {/* Current word display */}
-        <div style={{width:"100%",maxWidth:520,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"20px 24px",minHeight:80,display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <div style={{flex:1}}>
-            {feedback ? (
-              <motion.p initial={{scale:0.9}} animate={{scale:1}}
-                style={{fontSize:20,fontWeight:700,color:feedback.ok?"#22C55E":"#EF4444",fontFamily:"Georgia,serif"}}>
-                {feedback.text}
-              </motion.p>
-            ) : (
-              <p style={{fontSize:28,fontWeight:700,color:wordDisplay?"#1C1917":"#CBD5E1",fontFamily:"monospace",letterSpacing:"0.1em",minHeight:40}}>
-                {wordDisplay||"—"}
-              </p>
-            )}
-            <p style={{fontSize:11,color:"var(--text4)",marginTop:4}}>
-              {current.length>0?`${current.length} letters`:`Min ${board.minLength} letters`}
-            </p>
+        {/* Hint letters banner */}
+        {hintLetters.size > 0 && (
+          <div style={{ fontSize: 13, color: "#F59E0B", fontWeight: 600 }}>
+            💡 Hint: position{hintLetters.size > 1 ? "s" : ""} {[...hintLetters].map(i => i + 1).join(", ")} = {[...hintLetters].map(i => board.answer[i]).join(", ")}
           </div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>setCurrent([])} style={{padding:10,borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center"}}>
-              <Delete size={16} color="#94A3B8"/>
-            </button>
-            <button onClick={submitWord} disabled={current.length<board.minLength}
-              style={{padding:"10px 20px",borderRadius:12,border:"none",background:current.length>=board.minLength?"linear-gradient(135deg,#4F6EF7,#9C6BE8)":"#E2E8F0",cursor:current.length>=board.minLength?"pointer":"not-allowed",fontSize:13,fontWeight:700,color:"white",display:"flex",alignItems:"center",gap:6}}>
-              <Check size={14}/> Submit
-            </button>
-          </div>
-        </div>
+        )}
 
-        {/* Letter tiles */}
-        <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",maxWidth:400}}>
-          {board.letters.map((letter,i)=>{
-            const key=`${letter}-${i}`;
-            const isUsed=current.includes(key);
-            return(
-              <motion.button key={key} onClick={()=>addLetter(letter,i)}
-                whileTap={{scale:0.88}}
-                disabled={isUsed}
-                style={{width:52,height:52,borderRadius:14,border:"1.5px solid",
-                  background:isUsed?"#F8F7F5":"white",
-                  borderColor:isUsed?"#E2E8F0":"#DDD6F8",
-                  fontSize:20,fontWeight:700,color:isUsed?"#CBD5E1":"#1C1917",
-                  cursor:isUsed?"not-allowed":"pointer",outline:"none",
-                  boxShadow:isUsed?"none":"0 4px 12px rgba(79,110,247,0.1)",
-                  transform:isUsed?"scale(0.92)":"scale(1)",
-                  transition:"all 0.15s"}}>
-                {letter}
-              </motion.button>
+        {/* Guess grid */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {Array.from({ length: board.maxGuesses }, (_, gi) => {
+            const guess = gi < guesses.length ? guesses[gi] : gi === guesses.length ? current : "";
+            const res = results[gi];
+            const isRevealing = reveal === gi;
+            return (
+              <motion.div key={gi}
+                animate={shake && gi === guesses.length ? { x: [-6, 6, -6, 6, 0] } : {}}
+                transition={{ duration: 0.3 }}
+                style={{ display: "flex", gap: 6 }}>
+                {Array.from({ length: board.wordLength }, (_, li) => {
+                  const letter = guess[li] ?? "";
+                  const result = res?.[li];
+                  const color = result ? COLORS[result] : null;
+                  const delay = isRevealing ? li * 120 : 0;
+                  return (
+                    <motion.div key={li}
+                      initial={false}
+                      animate={result && isRevealing ? {
+                        rotateX: [0, -90, 0],
+                        backgroundColor: [color!.bg + "00", color!.bg],
+                      } : {}}
+                      transition={{ delay: delay / 1000, duration: 0.3 }}
+                      style={{
+                        width: cellSize, height: cellSize,
+                        border: `2px solid ${color ? color.border : letter ? "#4F6EF7" : "var(--border2)"}`,
+                        borderRadius: 8,
+                        background: color ? color.bg : "var(--surface)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: Math.round(cellSize * 0.42), fontWeight: 700,
+                        color: color ? color.text : "var(--text1)",
+                        fontFamily: "Georgia,serif",
+                      }}>
+                      {letter}
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
             );
           })}
         </div>
 
-        {/* Found words */}
-        {found.length>0&&(
-          <div style={{width:"100%",maxWidth:520,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-            <p style={{fontSize:11,fontWeight:600,color:"var(--text4)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>Found Words</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-              {found.map(word=>(
-                <motion.div key={word} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}}
-                  style={{padding:"4px 12px",borderRadius:20,background:"#F0FDF4",border:"0.5px solid #86EFAC",fontSize:13,fontWeight:600,color:"#15803D"}}>
-                  {word.toUpperCase()} +{scoreWord(word)}
-                </motion.div>
-              ))}
-            </div>
-          </div>
+        {/* Lost reveal */}
+        {lost && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            style={{ padding: "10px 20px", borderRadius: 14, background: "#FEF2F2", border: "1px solid #FECACA", fontSize: 14, fontWeight: 700, color: "#EF4444" }}>
+            The word was: {board.answer}
+          </motion.div>
         )}
 
-        {/* Solutions hint */}
-        <div style={{width:"100%",maxWidth:520}}>
-          <p style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
-            Find all {board.solutions.length} hidden words to complete the stage
-          </p>
+        {/* Keyboard */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", maxWidth: 480 }}>
+          {KEYBOARD_ROWS.map((row, ri) => (
+            <div key={ri} style={{ display: "flex", justifyContent: "center", gap: 5 }}>
+              {row.map(key => {
+                const state = letterStates.get(key);
+                const color = state ? COLORS[state] : null;
+                const isWide = key === "ENTER" || key === "⌫";
+                return (
+                  <motion.button key={key} whileTap={{ scale: 0.9 }}
+                    onClick={() => handleKey(key === "⌫" ? "Backspace" : key === "ENTER" ? "Enter" : key)}
+                    style={{
+                      width: isWide ? 58 : 34, height: 48, borderRadius: 8,
+                      border: "none",
+                      background: color ? color.bg : "var(--bg3)",
+                      color: color ? color.text : "var(--text2)",
+                      fontSize: isWide ? 11 : 14, fontWeight: 700,
+                      cursor: "pointer", outline: "none",
+                    }}>
+                    {key}
+                  </motion.button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-
         {/* Controls */}
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+          <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed || lost} />
+        </div>
 
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+            style={{ padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--text3)", opacity: stage === 1 ? 0.4 : 1 }}>← Prev</button>
+          <span style={{ fontSize: 12, color: "var(--text4)" }}>Stage {stage} of 1000</span>
+          <button onClick={() => setStage(s => s + 1)}
+            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", fontSize: 12, color: "var(--text2)", fontWeight: 600 }}>Next <ChevronRight size={13} /></button>
         </div>
       </main>
 
-      
-      
-      <OutOfTokensModal
-        gameName="Word Sling"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Word Sling" open={showTokenModal} onClose={() => setShowTokenModal(false)} />
       <CompletionPopup
         open={completed}
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
         elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Word Sling Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+        onRetry={() => loadStage(stage)}
+        onNext={() => { setCompleted(false); setStage(s => s + 1); }}
+        onShare={() => {
+          const text = `MindState · Word Sling Stage ${stage} · ${finalXP} XP · ${elapsed}`;
+          if (navigator.share) navigator.share({ title: "MindState", text, url: "https://mindstate.vercel.app" }).catch(() => {});
+          else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text), "_blank");
+        }} />
+    </div>
   );
 }
 
 export default function WordSlingPage() {
   return (
     <ErrorBoundary game="word-sling">
-      <WordSlingPageInner/>
+      <WordSlingPageInner />
     </ErrorBoundary>
   );
 }

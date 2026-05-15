@@ -24,13 +24,28 @@ export function generateHex(seed:string, difficulty:"easy"|"medium"|"hard"): Hex
     for(let r=r1;r<=r2;r++) cells.set(hexKey(q,r),0);
   }
 
-  // Place initial tiles (1,2,4,8 values)
-  const vals=[1,2,4,8];
+  // Place tiles ensuring adjacent pairs exist for merging
+  const vals=[1,2,4,8,16];
   const keys=[...cells.keys()];
   const numTiles=difficulty==="easy"?8:difficulty==="medium"?14:20;
-  for(let i=0;i<numTiles;i++){
+  // First place pairs of matching tiles on adjacent cells
+  const numPairs=Math.floor(numTiles/2);
+  let placed=0;
+  for(let p=0;p<numPairs&&placed<numTiles-1;p++){
+    const val=vals[Math.floor(rng()*3)]; // 1,2,4 for easy merging
     const k=keys[Math.floor(rng()*keys.length)];
-    cells.set(k,vals[Math.floor(rng()*vals.length)]);
+    const[q,r]=k.split(",").map(Number);
+    const dirs=HEX_DIRS.filter(([dq,dr])=>cells.has(hexKey(q+dq,r+dr)));
+    if(!dirs.length)continue;
+    const[dq,dr]=dirs[Math.floor(rng()*dirs.length)];
+    cells.set(k,val);
+    cells.set(hexKey(q+dq,r+dr),val);
+    placed+=2;
+  }
+  // Fill remaining with random values
+  for(let i=placed;i<numTiles;i++){
+    const k=keys[Math.floor(rng()*keys.length)];
+    if(cells.get(k)===0)cells.set(k,vals[Math.floor(rng()*vals.length)]);
   }
 
   return{radius,cells,seed,difficulty};

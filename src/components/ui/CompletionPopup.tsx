@@ -43,7 +43,7 @@ interface CompletionPopupProps {
   stage: number;
   difficulty: string;
   xpEarned: number;
-  maxXP: number;
+  maxXP?: number;
   elapsed: string;
   bonusAwarded?: boolean;
   onRetry: () => void;
