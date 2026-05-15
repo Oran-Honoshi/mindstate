@@ -143,6 +143,7 @@ function HexMergePageInner(){
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Hex Merge</span>
               <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>TARGET {target}</span>
             </div>
