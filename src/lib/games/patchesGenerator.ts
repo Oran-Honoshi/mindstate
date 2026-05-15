@@ -1,9 +1,8 @@
 export type Piece = { cells: [number,number][]; color: string; id: number };
 export type PatchesBoard = {
-  rows: number;
-  cols: number;
+  rows: number; cols: number;
   pieces: Piece[];
-  solution: number[][]; // grid showing which piece id fills each cell (-1=empty)
+  solution: number[][];
   seed: string;
   difficulty: "easy"|"medium"|"hard";
 };
@@ -13,92 +12,130 @@ const PIECE_COLORS = [
   "#EC4899","#14B8A6","#F97316","#6366F1","#84CC16",
 ];
 
-// Standard polyomino shapes (tetrominoes + pentominoes)
-const SHAPES: [number,number][][] = [
-  [[0,0],[0,1],[0,2],[0,3]],           // I tetromino
-  [[0,0],[0,1],[1,0],[1,1]],           // O tetromino
-  [[0,0],[0,1],[0,2],[1,1]],           // T tetromino
-  [[0,0],[0,1],[1,1],[1,2]],           // S tetromino
-  [[0,1],[0,2],[1,0],[1,1]],           // Z tetromino
-  [[0,0],[1,0],[1,1],[1,2]],           // L tetromino
-  [[0,2],[1,0],[1,1],[1,2]],           // J tetromino
-  [[0,0],[0,1],[0,2],[1,0],[2,0]],     // L pentomino
-  [[0,0],[0,1],[0,2],[1,2],[2,2]],     // U variant
-  [[0,0],[0,1],[1,1],[2,1],[2,2]],     // Z pentomino
-  [[0,1],[1,0],[1,1],[1,2],[2,1]],     // + pentomino
-  [[0,0],[1,0],[1,1],[1,2],[2,2]],     // S pentomino
-];
-
 function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
 
-function rotatePiece(cells:[number,number][]): [number,number][] {
-  return cells.map(([r,c])=>[-c,r] as [number,number]);
-}
-function normalizePiece(cells:[number,number][]): [number,number][] {
-  const minR=Math.min(...cells.map(([r])=>r));
-  const minC=Math.min(...cells.map(([,c])=>c));
-  return cells.map(([r,c])=>[r-minR,c-minC] as [number,number]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+const DIRS:([number,number])[] = [[0,1],[1,0],[0,-1],[-1,0]];
+
+// Grow a random polyomino from a starting cell using flood-fill growth
+function growPiece(
+  grid: number[][],
+  startR: number, startC: number,
+  targetSize: number,
+  rows: number, cols: number,
+  rng: () => number
+): [number,number][] {
+  const cells: [number,number][] = [[startR, startC]];
+  const frontier: [number,number][] = [];
+
+  // Add initial neighbors
+  for (const [dr,dc] of DIRS) {
+    const nr=startR+dr, nc=startC+dc;
+    if (nr>=0&&nr<rows&&nc>=0&&nc<cols&&grid[nr][nc]===-1) {
+      frontier.push([nr,nc]);
+    }
+  }
+
+  while (cells.length < targetSize && frontier.length > 0) {
+    // Pick random frontier cell
+    const idx = Math.floor(rng() * frontier.length);
+    const [r,c] = frontier.splice(idx,1)[0];
+    if (grid[r][c] !== -1) continue;
+    cells.push([r,c]);
+    // Add its neighbors to frontier
+    for (const [dr,dc] of DIRS) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<rows&&nc>=0&&nc<cols&&grid[nr][nc]===-1) {
+        if (!frontier.some(([fr,fc])=>fr===nr&&fc===nc) &&
+            !cells.some(([cr,cc])=>cr===nr&&cc===nc)) {
+          frontier.push([nr,nc]);
+        }
+      }
+    }
+  }
+
+  return cells;
 }
 
 export function generatePatches(seed:string, difficulty:"easy"|"medium"|"hard"): PatchesBoard {
-  const rows=difficulty==="easy"?5:difficulty==="medium"?6:7;
-  const cols=difficulty==="easy"?5:difficulty==="medium"?6:7;
-  const rng=mulberry32(seedToNum(seed));
+  const rows = difficulty==="easy"?4:difficulty==="medium"?5:6;
+  const cols = difficulty==="easy"?4:difficulty==="medium"?5:6;
+  const totalCells = rows * cols;
+  // Target piece sizes: 3-5 cells each
+  const minSize = difficulty==="easy"?3:3;
+  const maxSize = difficulty==="easy"?4:5;
 
-  function ri<T>(arr:T[]):T{return arr[Math.floor(rng()*arr.length)];}
+  const rng = mulberry32(seedToNum(seed));
 
-  // Build solution by placing pieces randomly
-  const solution:number[][]=Array.from({length:rows},()=>Array(cols).fill(-1));
-  const pieces:Piece[]=[];
-  let pieceId=0;
-  let attempts=0;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const grid: number[][] = Array.from({length:rows}, () => Array(cols).fill(-1));
+    const pieces: Piece[] = [];
+    let pieceId = 0;
 
-  while(attempts<500){
-    attempts++;
-    // Find first empty cell
-    let startR=-1,startC=-1;
-    outer:for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){if(solution[r][c]===-1){startR=r;startC=c;break outer;}}}
-    if(startR===-1)break; // all filled
+    let safety = 0;
+    while (safety++ < 200) {
+      // Find first empty cell
+      let startR=-1, startC=-1;
+      outer: for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+        if (grid[r][c]===-1) { startR=r; startC=c; break outer; }
+      }
+      if (startR===-1) break; // all filled
 
-    // Try a random shape with random rotation
-    let shape=[...ri(SHAPES)];
-    const rotations=Math.floor(rng()*4);
-    for(let i=0;i<rotations;i++) shape=rotatePiece(shape) as [number,number][];
-    shape=normalizePiece(shape);
+      // Count remaining empty cells
+      const emptyCells = grid.flat().filter(v=>v===-1).length;
+      // Don't make piece bigger than remaining cells
+      const target = Math.min(
+        minSize + Math.floor(rng()*(maxSize-minSize+1)),
+        emptyCells
+      );
 
-    // Place starting at startR, startC — offset to cover startR,startC
-    const offsetR=startR-shape[0][0];
-    const offsetC=startC-shape[0][1];
-    const placed:([number,number])[]=(shape as [number,number][]).map(([r,c])=>[r+offsetR,c+offsetC]);
+      // Mark tentatively to prevent reuse
+      const cells = growPiece(grid, startR, startC, target, rows, cols, rng);
 
-    // Check bounds and empty
-    const valid=placed.every(([r,c])=>r>=0&&r<rows&&c>=0&&c<cols&&solution[r][c]===-1);
-    if(!valid)continue;
+      // Actually place
+      const color = PIECE_COLORS[pieceId % PIECE_COLORS.length];
+      cells.forEach(([r,c]) => { grid[r][c] = pieceId; });
+      pieces.push({ cells, color, id: pieceId });
+      pieceId++;
+    }
 
-    // Place
-    const color=PIECE_COLORS[pieceId%PIECE_COLORS.length];
-    placed.forEach(([r,c])=>{solution[r][c]=pieceId;});
-    pieces.push({cells:placed,color,id:pieceId});
-    pieceId++;
+    // Verify all cells covered
+    if (grid.flat().every(v => v !== -1)) {
+      // Normalize piece cells to start from (0,0)
+      const normalizedPieces = pieces.map(p => {
+        const minR = Math.min(...p.cells.map(([r])=>r));
+        const minC = Math.min(...p.cells.map(([,c])=>c));
+        return {
+          ...p,
+          cells: p.cells.map(([r,c]) => [r-minR, c-minC] as [number,number])
+        };
+      });
+
+      // Shuffle for display
+      const shuffled = [...normalizedPieces];
+      for (let i=shuffled.length-1;i>0;i--) {
+        const j=Math.floor(rng()*(i+1));
+        [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+      }
+
+      return { rows, cols, pieces: shuffled, solution: grid, seed, difficulty };
+    }
   }
 
-  // Shuffle piece order for display
-  for(let i=pieces.length-1;i>0;i--){
-    const j=Math.floor(rng()*(i+1));
-    [pieces[i],pieces[j]]=[pieces[j],pieces[i]];
-  }
-
-  return{rows,cols,pieces,solution,seed,difficulty};
+  // Fallback: simple 2x2 grid split into 4 single cells
+  const grid = Array.from({length:rows}, (_,r) => Array.from({length:cols}, (_,c) => r*cols+c));
+  const pieces: Piece[] = Array.from({length:rows*cols}, (_,i) => ({
+    id: i,
+    color: PIECE_COLORS[i % PIECE_COLORS.length],
+    cells: [[0,0] as [number,number]]
+  }));
+  return { rows, cols, pieces, solution: grid, seed, difficulty };
 }
 
 export function checkPatches(board:PatchesBoard, placed:Map<string,number>): boolean {
-  // Every cell must be covered exactly once with the right piece
-  for(let r=0;r<board.rows;r++){
-    for(let c=0;c<board.cols;c++){
-      const expected=board.solution[r][c];
-      const actual=placed.get(`${r},${c}`)??-1;
-      if(expected!==actual)return false;
+  for (let r=0;r<board.rows;r++) {
+    for (let c=0;c<board.cols;c++) {
+      if (board.solution[r][c] !== (placed.get(`${r},${c}`)??-1)) return false;
     }
   }
   return true;

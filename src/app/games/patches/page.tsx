@@ -107,10 +107,19 @@ function PatchesGameInner(){
     if(!board)return null;
     const piece=board.pieces.find(p=>p.id===pieceId);
     if(!piece)return null;
-    // Offset piece so first cell aligns with r,c
-    const dr=r-piece.cells[0][0];
-    const dc=c-piece.cells[0][1];
-    return piece.cells.map(([pr,pc])=>[pr+dr,pc+dc] as [number,number]);
+    // Piece cells are normalized to start from [0,0]
+    // Offset all cells by the clicked position
+    return piece.cells.map(([pr,pc])=>[pr+r,pc+c] as [number,number]);
+  }
+
+  // Find where this piece belongs in the solution
+  function getSolutionCellsForPiece(pieceId:number):[number,number][]|null{
+    if(!board)return null;
+    const cells:[number,number][]=[];
+    for(let r=0;r<board.rows;r++)
+      for(let c=0;c<board.cols;c++)
+        if(board.solution[r][c]===pieceId) cells.push([r,c]);
+    return cells.length>0?cells:null;
   }
 
   function handleCellHover(r:number,c:number){

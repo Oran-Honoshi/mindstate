@@ -154,25 +154,25 @@ function HeartsPageInner(){
       setTrick({player:null,cpu:null});setSelected(null);
 
       if(newHand.length===0){
-        // Game over
+        // Game over — in Hearts, FEWER points = WIN
         setTimeout(()=>{
           setPhase("done");
-          if(playerScore<=cpuScore&&xpState){
-            const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
-            if(timerRef.current)clearInterval(timerRef.current);
-            playSuccess();setTimeout(()=>triggerConfetti(),80);
-            if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
-          } else if(xpState){
-            setCompleted(true);
-            if(timerRef.current)clearInterval(timerRef.current);
-          }
-          if(playerWins||playerScore<cpuScore){
-            // Player wins if fewer points
-          }
-          if(xpState){
-            const won=playerScore<=cpuScore;
-            if(won){const earned=finalizeXP(xpState);setFinalXP(earned);playSuccess();setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
-            else playError();
+          if(timerRef.current)clearInterval(timerRef.current);
+          // Use current accumulated scores + trick points
+          const finalPlayerScore = playerScore + (playerWins ? trickPts : 0);
+          const finalCpuScore = cpuScore + (!playerWins ? trickPts : 0);
+          const won = finalPlayerScore < finalCpuScore;
+          if(won && xpState){
+            const earned=finalizeXP(xpState);
+            setFinalXP(earned);
+            playSuccess();
+            setTimeout(()=>triggerConfetti(),80);
+            if(user){
+              updateStreak(user.id);
+              saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+            }
+          } else {
+            playError();
           }
         },800);
       } else {

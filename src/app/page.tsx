@@ -1,4 +1,5 @@
 "use client";
+import { ReviewModal } from "@/components/ui/ReviewModal";
 import React from "react";
 import{FAQSchema,OrganizationSchema,WebAppSchema,HowToSchema}from"@/app/seo-schema";
 import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
@@ -577,6 +578,35 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
+
+function TrustpilotBadge() {
+  return (
+    <div style={{
+      background:"white", borderRadius:20, padding:"28px 32px",
+      border:"0.5px solid rgba(0,0,0,0.07)", textAlign:"center",
+      boxShadow:"0 2px 8px rgba(0,0,0,0.04)", maxWidth:480, margin:"0 auto",
+    }}>
+      <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:12}}>
+        {[1,2,3,4,5].map(s=>(
+          <span key={s} style={{fontSize:28,color:"#F59E0B"}}>★</span>
+        ))}
+      </div>
+      <p style={{fontSize:16,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:6}}>
+        Loved by brain-training fans
+      </p>
+      <p style={{fontSize:13,color:"#64748B",marginBottom:16,lineHeight:1.6}}>
+        "Addictive, beautiful, and actually makes me feel sharper."
+      </p>
+      <a href="https://www.trustpilot.com/review/mindstate.vercel.app" target="_blank"
+        style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,
+          color:"#00B67A",textDecoration:"none",
+          padding:"10px 20px",borderRadius:12,border:"1.5px solid #00B67A"}}>
+        ★ Rate us on Trustpilot
+      </a>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
   const { user, profile } = useAuthStore();

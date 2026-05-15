@@ -23,6 +23,7 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { UndoButton } from "@/components/ui/UndoButton";
+import { ReviewModal, useReviewPrompt } from "@/components/ui/ReviewModal";
 import { HintButton } from "@/components/ui/HintButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
@@ -70,6 +71,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function TangoGameInner() {
   const { user } = useAuthStore();
+  const { show: showReview, trigger: reviewTrigger, setShow: setShowReview, onFirstWin } = useReviewPrompt();
   const [stage, setStage] = useState(1);
   const [board, setBoard] = useState<TangoBoard | null>(null);
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>([]);
@@ -454,6 +456,11 @@ function handleCheck() {
   );
 }
 
+      <AnimatePresence>
+        {showReview && (
+          <ReviewModal trigger={reviewTrigger} onClose={() => setShowReview(false)}/>
+        )}
+      </AnimatePresence>
 export default function TangoGame() {
   return (
     <ErrorBoundary game="tango">

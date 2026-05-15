@@ -224,23 +224,35 @@ function TwentyFortyEightSnapshot({ solved }: { solved: boolean }) {
 }
 
 function KakuroSnapshot({ solved }: { solved: boolean }) {
-  // 3x3 simplified kakuro
+  // 3x3 correct kakuro: right clue bottom-right, down clue top-left
+  const S=26;
+  function ClueCell({down,right}:{down?:number;right?:number}){
+    return(
+      <div style={{width:S,height:S,background:"#2D3748",position:"relative",overflow:"hidden"}}>
+        <svg width={S} height={S} style={{position:"absolute"}}>
+          <line x1={1} y1={S-1} x2={S-1} y2={1} stroke="#4A5568" strokeWidth="1"/>
+          {down&&<text x={3} y={11} style={{fontSize:8,fill:"white",fontWeight:700}}>{down}</text>}
+          {right&&<text x={S-3} y={S-3} textAnchor="end" style={{fontSize:8,fill:"white",fontWeight:700}}>{right}</text>}
+        </svg>
+      </div>
+    );
+  }
   return(
-    <div style={{border:"2px solid #374151",borderRadius:4,overflow:"hidden",display:"inline-block"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,26px)"}}>
-        {/* Row 0: clue, white, white */}
-        <div style={{width:26,height:26,background:"#374151",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,color:"white",fontWeight:700,position:"relative"}}>
-          <svg width={26} height={26}><line x1={0} y1={0} x2={26} y2={26} stroke="#555" strokeWidth="1"/><text x={18} y={22} style={{fontSize:8,fill:"white",fontWeight:700}}>6</text></svg>
-        </div>
-        {[solved?"2":"",solved?"4":""].map((v,i)=>(
-          <div key={i} style={{width:26,height:26,background:"white",border:"0.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
+    <div style={{border:"2px solid #2D3748",borderRadius:4,overflow:"hidden",display:"inline-block"}}>
+      <div style={{display:"grid",gridTemplateColumns:`repeat(3,${S}px)`}}>
+        {/* Row 0 */}
+        <div style={{width:S,height:S,background:"#2D3748"}}/>
+        <ClueCell down={6}/>
+        <ClueCell down={7}/>
+        {/* Row 1 */}
+        <ClueCell right={9}/>
+        {[solved?"5":"",solved?"4":""].map((v,i)=>(
+          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
         ))}
-        {/* Row 1: clue, white, white */}
-        <div style={{width:26,height:26,background:"#374151"}}>
-          <svg width={26} height={26}><line x1={0} y1={0} x2={26} y2={26} stroke="#555" strokeWidth="1"/><text x={18} y={22} style={{fontSize:8,fill:"white",fontWeight:700}}>3</text></svg>
-        </div>
-        {[solved?"1":"",solved?"2":""].map((v,i)=>(
-          <div key={i} style={{width:26,height:26,background:"white",border:"0.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
+        {/* Row 2 */}
+        <ClueCell right={4}/>
+        {[solved?"1":"",solved?"3":""].map((v,i)=>(
+          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
         ))}
       </div>
     </div>
@@ -529,11 +541,24 @@ const INSTRUCTIONS: Record<string, {
   },
   kakuro: {
     title:"How to Play Kakuro",
-    goal:"Fill white cells with digits 1–9 so every run sums to its clue.",
-    rules:["Black cells show clues: top-left = down sum, bottom-right = across sum","Fill white cells with digits 1 through 9","No digit may repeat within the same run","Every run must exactly equal its clue number"],
-    dos:["Small sums in short runs are very constrained — start there","A run of 2 summing to 3 must be 1+2","A run of 2 summing to 17 must be 8+9"],
-    donts:["Don't repeat the same digit in one run","Don't use 0 — only 1 through 9"],
-    hint:"Use forced combinations: 2-cell sum of 3 → must be 1+2. Sum of 17 → must be 8+9.",
+    goal:"Fill every white cell with a digit so each run of cells sums exactly to its clue.",
+    rules:[
+      "Dark clue cells have a diagonal line — number top-left = sum going DOWN, number bottom-right = sum going RIGHT",
+      "Fill white cells with digits 1–9 only",
+      "No digit may repeat within the same run (e.g. a run of 4 cannot be 2+2 — must be 1+3)",
+      "Every run must total exactly its clue number",
+    ],
+    dos:[
+      "Start with the most constrained runs — short runs with small or large sums have very few options",
+      "2 cells summing to 3 → must be 1+2 (only option)",
+      "2 cells summing to 17 → must be 8+9 (only option)",
+      "Use elimination: if a digit appears in a crossing run, remove it from your options",
+    ],
+    donts:[
+      "Don't repeat any digit within the same run",
+      "Don't use 0 — only digits 1 through 9",
+    ],
+    hint:"Forced pairs: sum=3 (2 cells) → 1+2. Sum=16 → 7+9. Sum=17 → 8+9. These leave no choice.",
   },
   "gravity-sort": {
     title:"How to Play Gravity Sort",
