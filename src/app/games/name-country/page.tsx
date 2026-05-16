@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -49,6 +51,8 @@ function NameCountryInner(){
   const[current,setCurrent]=useState("");
   const[shake,setShake]=useState(false);
   const[completed,setCompleted]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[lost,setLost]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -64,6 +68,7 @@ function NameCountryInner(){
   );
 
   const loadStage=useCallback((s:number)=>{
+    saveGameState("name-country", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateCountryGame(`country-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -75,6 +80,15 @@ function NameCountryInner(){
     if(user){const ok=consumeToken(user.id);if(!ok)return;}
   },[user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("name-country");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   const letterStates=new Map<string,LetterResult>();
@@ -103,6 +117,7 @@ function NameCountryInner(){
     if(won){
       setTimeout(()=>{
         const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
+        clearGameState("name-country");
         if(timerRef.current)clearInterval(timerRef.current);
         playSuccess();triggerConfetti();
         if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"name-country",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}

@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -122,6 +124,8 @@ function XPBar({xpState}:{xpState:XPState}){
 function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
   const[completed,setCompleted]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const [stage, setStage] = useState(() => getLastStage("2048-pro"));
@@ -149,6 +153,7 @@ function TwentyFortyEightProPageInner(){
   const target=diff==="easy"?512:diff==="medium"?1024:2048;
 
   const loadStage=useCallback((s:number)=>{
+    saveGameState("2048-pro", {stage, savedAt: Date.now()});
     const d=getDifficulty(s);
     const xp=createXPState(d);
     const g=initGrid(s*997);
@@ -162,6 +167,15 @@ function TwentyFortyEightProPageInner(){
     }
   },[user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("2048-pro");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   const handleMove=useCallback((dir:"up"|"down"|"left"|"right")=>{

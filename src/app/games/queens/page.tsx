@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -63,6 +65,8 @@ function QueensGameInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
@@ -84,6 +88,7 @@ function QueensGameInner(){
   const pausedRef=useRef(false);
 
   const loadStage=useCallback((s:number)=>{
+    saveGameState("queens", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateQueensBoard(`queens-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -103,6 +108,15 @@ function QueensGameInner(){
     }
   },[user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("queens");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   function handleCellClick(r:number,c:number){

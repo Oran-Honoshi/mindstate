@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -53,6 +55,8 @@ function KakuroGameInner() {
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showResume, setShowResume] = useState(false);
+  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [showMap, setShowMap] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -72,6 +76,7 @@ function KakuroGameInner() {
 
 
   const loadStage = useCallback((s: number) => {
+    saveGameState("kakuro", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const b = generateKakuro(`kakuro-${diff}-${s}`, diff);
     const xp = createXPState(diff);
@@ -89,6 +94,15 @@ function KakuroGameInner() {
     }
   }, [user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("kakuro");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
 
   function handleInput(num: number | null) {

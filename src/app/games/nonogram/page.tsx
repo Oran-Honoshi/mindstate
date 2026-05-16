@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import{UndoButton}from"@/components/ui/UndoButton";
@@ -48,6 +50,8 @@ function NonogramGameInner() {
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -68,6 +72,7 @@ function NonogramGameInner() {
 
 
   const loadStage=useCallback((s:number)=>{
+    saveGameState("nonogram", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateNonogram(`nono-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -82,6 +87,15 @@ function NonogramGameInner() {
     }
   },[user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("nonogram");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   function handleCell(r:number,c:number){

@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -40,6 +42,8 @@ function GravitySortPageInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -57,6 +61,7 @@ function GravitySortPageInner(){
 
 
   const loadStage=useCallback((s:number)=>{
+    saveGameState("gravity-sort", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateGravitySort(`gravity-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -70,6 +75,15 @@ function GravitySortPageInner(){
     }
   },[user]);
 
+  useEffect(()=>{
+    const saved=loadGameState("gravity-sort");
+    if(saved&&(saved.stage as number)>1){
+      setResumeData(saved);
+      setShowResume(true);
+    } else {
+      loadStage(stage);
+    }
+  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   function handleColClick(col:number){
@@ -88,6 +102,7 @@ function GravitySortPageInner(){
       setBlocks(nb);setSelected(null);setMoves(m=>m+1);playClick();
       if(checkGravitySort(board,nb)&&xpState){
         const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
+        clearGameState("gravity-sort");
         if(timerRef.current)clearInterval(timerRef.current);
         playSuccess();setTimeout(()=>triggerConfetti(),80);
           markStageCompleted("gravity-sort",stage);

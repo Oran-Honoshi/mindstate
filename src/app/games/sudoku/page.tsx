@@ -1,4 +1,6 @@
 "use client";
+import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import{UndoButton}from"@/components/ui/UndoButton";
@@ -122,6 +124,8 @@ function SudokuGameInner() {
   const [xpState, setXpState] = useState<XPState|null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
+  const [showResume, setShowResume] = useState(false);
+  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [showMap, setShowMap] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
@@ -166,6 +170,11 @@ function SudokuGameInner() {
     const nb = playerBoard.map(row => [...row]);
     nb[r][c] = num;
     setPlayerBoard(nb);
+    // Auto-save progress
+    saveGameState("sudoku", {
+      stage, playerBoard: nb, elapsed,
+      startTime: xpState?.startTime, hintsUsed,
+    });
     const errs = new Set<string>();
     nb.forEach((row, ri) => row.forEach((v, ci) => {
       if (puzzleData.puzzle[ri][ci] !== null || v === null) return;
@@ -387,6 +396,31 @@ function handleCheck() {
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="sudoku" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="sudoku"
+          stageName={resumeData.stage as number}
+          savedAt={resumeData.savedAt as number ?? Date.now()}
+          onResume={()=>{
+            // Restore saved state
+            const s = resumeData;
+            setStage(s.stage as number);
+            setShowResume(false);
+            setResumeData(null);
+            // loadStage will be called by stage effect, but we need to restore board
+            // after it loads — use a flag
+            setTimeout(()=>{
+              if(s.playerBoard) setPlayerBoard(s.playerBoard as (number|null)[][]);
+            }, 100);
+          }}
+          onStartFresh={()=>{
+            clearGameState("sudoku");
+            setShowResume(false);
+            setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       <CompletionPopup
         open={completed}
         stage={stage}
