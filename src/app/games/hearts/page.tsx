@@ -224,7 +224,7 @@ function HeartsPageInner(){
         {/* Header */}
         <div style={{width:"100%",maxWidth:540,background:"rgba(255,255,255,0.1)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.2)",padding:"16px 20px",backdropFilter:"blur(12px)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
               <Link href="/games" style={{color:"rgba(255,255,255,0.7)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"rgba(255,255,255,0.2)"}}/>
               <span style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{stage}</span>
