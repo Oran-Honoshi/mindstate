@@ -225,12 +225,8 @@ function QueensGameInner(){
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="queens"
-                onOpen={()=>{pausedRef.current=true;}}
-                onClose={()=>{pausedRef.current=false;}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -301,7 +297,6 @@ function QueensGameInner(){
         </div>
       </main>
 
-      
       <OutOfTokensModal
         gameName="Queens"
         open={showTokenModal}

@@ -1,4 +1,6 @@
 "use client";
+import{GameInstructions}from"@/components/ui/GameInstructions";
+import{StageMap}from"@/components/ui/StageMap";
 import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
 
 import { useState, useEffect } from "react";
@@ -43,7 +45,9 @@ const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
 export default function GamesPage() {
   const { user, profile } = useAuthStore();
   const [search, setSearch] = useState("");
-  const [cat, setCat] = useState("All");
+
+  const [instructionsGame, setInstructionsGame] = useState<string|null>(null);
+  const [stageMapGame, setStageMapGame] = useState<string|null>(null);  const [cat, setCat] = useState("All");
   const [filter, setFilter] = useState("All");
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
@@ -213,6 +217,19 @@ export default function GamesPage() {
                   </div>
                 </div>
               </Link>
+              {/* Quick actions outside the link */}
+              <div style={{display:"flex",gap:6,padding:"0 14px 14px",marginTop:-4}} onClick={e=>e.stopPropagation()}>
+                <button
+                  onClick={(e)=>{e.preventDefault();e.stopPropagation();setInstructionsGame(game.slug);}}
+                  style={{flex:1,padding:"7px 0",borderRadius:10,border:"0.5px solid #E2E8F0",background:"#F8FAFC",fontSize:11,fontWeight:600,color:"#64748B",cursor:"pointer"}}>
+                  ? How to play
+                </button>
+                <button
+                  onClick={(e)=>{e.preventDefault();e.stopPropagation();setStageMapGame(game.slug);}}
+                  style={{flex:1,padding:"7px 0",borderRadius:10,border:"0.5px solid #E0E7FF",background:"#EEF2FF",fontSize:11,fontWeight:600,color:"#4F6EF7",cursor:"pointer"}}>
+                  ⊞ My Progress
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -242,6 +259,23 @@ export default function GamesPage() {
           </div>
         )}
       </main>
-    </div>
+    
+      {instructionsGame && (
+        <GameInstructions
+          game={instructionsGame}
+          standalone={true}
+          onClose={()=>setInstructionsGame(null)}
+        />
+      )}
+      {stageMapGame && (
+        <StageMap
+          gameSlug={stageMapGame}
+          totalStages={GAMES.find(g=>g.slug===stageMapGame)?.stages??1000}
+          currentStage={1}
+          onSelectStage={(s)=>{window.location.href=`/games/${stageMapGame}`;}}
+          onClose={()=>setStageMapGame(null)}
+        />
+      )}
+      </div>
   );
 }

@@ -82,7 +82,6 @@ function FlowGameInner() {
     }}
   );
 
-
   const loadStage = useCallback((s: number) => {
     saveGameState("flow", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
@@ -210,7 +209,6 @@ function FlowGameInner() {
   const connected = paths.size;
   const total = board.colors.length;
 
-
 function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
     // Find first color that isn't fully connected and add its next cell from solution
@@ -259,10 +257,8 @@ function handleCheck() {
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:12, color:"var(--text4)" }}>{connected}/{total} flows</span>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
-              <GameInstructions game="flow" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -351,7 +347,6 @@ function handleCheck() {
         </div>
       </main>
 
-      
       {showMap&&<StageMap gameSlug="flow" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
@@ -369,7 +364,6 @@ function handleCheck() {
 </div>
   );
 }
-
 
 function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
   open?: boolean; stage: number; elapsed: string; difficulty: string;

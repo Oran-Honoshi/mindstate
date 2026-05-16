@@ -112,7 +112,6 @@ function HeartsPageInner(){
     }}
   );
 
-
   const loadStage=useCallback((s:number)=>{
     saveGameState("hearts", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
@@ -199,7 +198,6 @@ function HeartsPageInner(){
     },1200);
   }
 
-
   function handleHint() {
     if (!xpState || hintsUsed >= 3 || phase !== "play") return;
     // Suggest the safest card (lowest point value)
@@ -232,8 +230,7 @@ function HeartsPageInner(){
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <span style={{fontSize:12,color:"rgba(255,255,255,0.7)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:"pointer",color:"rgba(255,255,255,0.7)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -289,7 +286,6 @@ function HeartsPageInner(){
             Play {hand[selected].label}{hand[selected].suit}
           </button>
         )}
-
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>

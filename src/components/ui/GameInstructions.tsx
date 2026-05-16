@@ -7,8 +7,9 @@ import { SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 
 export interface GameInstructionsProps {
   game: string;
-  onOpen?: () => void;   // called to pause timer
-  onClose?: () => void;  // called to resume timer
+  onOpen?: () => void;
+  onClose?: () => void;
+  standalone?: boolean;  // open immediately, no trigger button
 }
 
 // ── Mini board snapshots ──────────────────────────────────────────────────────
@@ -659,18 +660,22 @@ const INSTRUCTIONS: Record<string, {
   },
 };
 
-export function GameInstructions({ game, onOpen, onClose }: GameInstructionsProps) {
-  const [open, setOpen] = useState(false);
+export function GameInstructions({ game, onOpen, onClose, standalone }: GameInstructionsProps) {
+  const [open, setOpen] = useState(!!standalone);
   const info = INSTRUCTIONS[game];
   const Snapshot = SNAPSHOTS[game];
+  // When standalone and closed, notify parent
+  useEffect(() => {
+    if (standalone && !open) onClose?.();
+  }, [open, standalone]);
 
   function handleOpen() {
     setOpen(true);
-    onOpen?.(); // pause timer
+    onOpen?.();
   }
   function handleClose() {
     setOpen(false);
-    onClose?.(); // resume timer
+    onClose?.();
   }
 
   if (!info) return null;

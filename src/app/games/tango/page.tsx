@@ -106,7 +106,6 @@ function TangoGameInner() {
     }}
   );
 
-
   const loadStage = useCallback((s: number) => {
     saveGameState("tango", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
@@ -246,7 +245,6 @@ function handleUndo() {
     }
   }
 
-
   if (!board || !xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <p style={{ color:"var(--text4)", fontSize:13 }}>Generating board...</p>
@@ -262,7 +260,6 @@ function handleUndo() {
 
   const cm = new Map<string,"same"|"diff">();
   board.constraints.forEach(c=>cm.set(`${c.row1}-${c.col1}-${c.row2}-${c.col2}`,c.type));
-
 
 function handleCheck() {
     if (!board || !xpState || completed) return;
@@ -442,8 +439,7 @@ function handleCheck() {
       </main>
 
       {/* Completion overlay */}
-      
-      
+
       <OutOfTokensModal
         gameName="Tango"
         open={showTokenModal}

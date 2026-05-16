@@ -74,7 +74,6 @@ function KakuroGameInner() {
     }}
   );
 
-
   const loadStage = useCallback((s: number) => {
     saveGameState("kakuro", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
@@ -153,7 +152,6 @@ function KakuroGameInner() {
   const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 420) : 360;
   const cellSize = Math.floor(maxW / board.size);
 
-
 function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
     // Fill one empty cell with a valid number (1-9 that doesn't conflict)
@@ -219,10 +217,8 @@ function handleCheck() {
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
-              <GameInstructions game="kakuro" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -285,7 +281,6 @@ function handleCheck() {
           </button>
         </div>
 
-
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <HintButton
@@ -302,7 +297,6 @@ function handleCheck() {
         </div>
       </main>
 
-      
       {showMap&&<StageMap gameSlug="kakuro" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
@@ -320,7 +314,6 @@ function handleCheck() {
 </div>
   );
 }
-
 
 function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
   open?: boolean; stage: number; elapsed: string; difficulty: string;

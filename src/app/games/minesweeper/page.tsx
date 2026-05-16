@@ -168,7 +168,6 @@ function MinesweeperGameInner() {
     }}
   );
 
-
   const loadStage = useCallback((s: number) => {
     saveGameState("minesweeper", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
@@ -266,7 +265,6 @@ function MinesweeperGameInner() {
   const cellSize = Math.max(Math.floor(maxW/board.cols), 28);
   const minesLeft = board.mines-flagCount;
 
-
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3 || gameOver) return;
     // Reveal one safe hidden cell
@@ -307,7 +305,6 @@ function MinesweeperGameInner() {
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}>
                 <RotateCcw size={13}/>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
               </button>
             </div>
           </div>

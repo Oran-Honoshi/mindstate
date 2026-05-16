@@ -55,7 +55,6 @@ function BridgesGameInner(){
     }}
   );
 
-
   const loadStage=useCallback((s:number)=>{
     saveGameState("bridges", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
@@ -112,7 +111,6 @@ function BridgesGameInner(){
     return total===island.required?"done":total>island.required?"over":"under";
   }
 
-
   function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
     // Add one bridge from solution that isn't placed yet or needs upgrading
@@ -140,7 +138,6 @@ function BridgesGameInner(){
     }
   }
 
-
   return(
     <div className="game-page">
       <Navbar/>
@@ -155,10 +152,8 @@ function BridgesGameInner(){
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="bridges" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -221,7 +216,6 @@ function BridgesGameInner(){
           })}
         </svg>
 
-
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <HintButton
@@ -255,7 +249,6 @@ function BridgesGameInner(){
 </div>
   );
 }
-
 
 function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
   open?: boolean; stage: number; elapsed: string; difficulty: string;

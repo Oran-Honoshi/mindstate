@@ -70,7 +70,6 @@ function NonogramGameInner() {
     }}
   );
 
-
   const loadStage=useCallback((s:number)=>{
     saveGameState("nonogram", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
@@ -115,7 +114,6 @@ function NonogramGameInner() {
       if(user)saveScore({user_id:user.id,game_slug:"nonogram",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
     }
   }
-
 
     function handleUndo() {
     if (gridHistory.length === 0) return;
@@ -175,14 +173,11 @@ function NonogramGameInner() {
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="nonogram" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
-
 
         {/* Nonogram grid */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
@@ -224,7 +219,6 @@ function NonogramGameInner() {
           ))}
         </div>
 
-
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
@@ -242,7 +236,6 @@ function NonogramGameInner() {
         </div>
       </main>
 
-      
       {showMap&&<StageMap gameSlug="nonogram" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
@@ -260,7 +253,6 @@ function NonogramGameInner() {
 </div>
   );
 }
-
 
 function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
   open?: boolean; stage: number; elapsed: string; difficulty: string;

@@ -145,7 +145,6 @@ function SudokuGameInner() {
     }}
   );
 
-
   const loadStage = useCallback((s: number) => {
     const diff = getDifficulty(s);
     const seed = buildSeed("sudoku", diff, s);
@@ -232,7 +231,6 @@ function SudokuGameInner() {
   const cellSize = Math.floor(maxW / puzzleData.size);
   const nums = Array.from({ length: puzzleData.size }, (_, i) => i + 1);
 
-
   function handleUndo() {
     if (boardHistory.length === 0) return;
     setPlayerBoard(boardHistory[boardHistory.length-1]);
@@ -295,7 +293,6 @@ function handleCheck() {
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
               <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
                 <RotateCcw size={13}/>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
               </button>
             </div>
           </div>
@@ -389,8 +386,6 @@ function handleCheck() {
         </div>
       </main>
 
-      
-      
       <OutOfTokensModal
         gameName="Sudoku"
         open={showTokenModal}
@@ -437,7 +432,6 @@ function handleCheck() {
 </div>
   );
 }
-
 
 function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
   open?: boolean; stage: number; elapsed: string; difficulty: string;

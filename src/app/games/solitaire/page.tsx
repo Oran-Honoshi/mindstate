@@ -107,7 +107,6 @@ function SolitairePageInner(){
     }}
   );
 
-
   const loadStage=useCallback((s:number)=>{
     saveGameState("solitaire", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
@@ -281,7 +280,6 @@ function SolitairePageInner(){
     playClick();
   }
 
-
   function handleHint() {
     if (!xpState || completed || hintsUsed >= 3) return;
     // Try waste → foundation
@@ -398,8 +396,6 @@ function SolitairePageInner(){
         </div>
       </main>
 
-      
-      
       <OutOfTokensModal
         gameName="Solitaire"
         open={showTokenModal}

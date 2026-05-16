@@ -61,7 +61,6 @@ function LightUpPageInner(){
     }}
   );
 
-
   const loadStage=useCallback((s:number)=>{
     saveGameState("lightup", {stage, savedAt: Date.now()});
     const diff=getDifficulty(s);
@@ -110,7 +109,6 @@ function LightUpPageInner(){
           if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
   }
-
 
     function handleUndo() {
     if (gridHistory.length === 0) return;
@@ -163,10 +161,8 @@ function LightUpPageInner(){
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:11,color:"var(--text4)"}}>{litCount}/{totalWhite} lit</span>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="lightup" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -206,7 +202,6 @@ function LightUpPageInner(){
           </div>
         </div>
 
-
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
@@ -223,8 +218,7 @@ function LightUpPageInner(){
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
-      
-      
+
       <OutOfTokensModal
         gameName="Lightup"
         open={showTokenModal}

@@ -148,7 +148,6 @@ function TwentyFortyEightProPageInner(){
     }}
   );
 
-
   const diff=getDifficulty(stage);
   const target=diff==="easy"?512:diff==="medium"?1024:2048;
 
@@ -224,10 +223,8 @@ function TwentyFortyEightProPageInner(){
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <GameInstructions game="2048-pro" onOpen={()=>{if(timerRef.current){clearInterval(timerRef.current);}}} onClose={()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}}}/>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",fontSize:11,fontWeight:600}}>⊞</button>
-            </div>
+              </div>
           </div>
           {xpState&&<XPBar xpState={xpState}/>}
         </div>
@@ -289,7 +286,6 @@ function TwentyFortyEightProPageInner(){
             </button>
           ))}
         </div>
-
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
