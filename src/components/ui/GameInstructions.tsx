@@ -29,15 +29,34 @@ function TangoSnapshot({ solved }: { solved: boolean }) {
 }
 
 function QueensSnapshot({ solved }: { solved: boolean }) {
-  const REGIONS = [[0,0,1,1],[0,0,1,1],[2,2,3,3],[2,2,3,3]];
+  // 4x4 grid: 4 color regions, one queen per row/col/region
+  // Region map: each cell gets a color index
+  const REGION = [
+    [0,0,1,1],
+    [0,0,1,1],
+    [2,2,3,3],
+    [2,2,3,3],
+  ];
   const COLORS = ["#DBEAFE","#FED7AA","#BBF7D0","#E9D5FF"];
-  const queens = solved ? [[0,1],[1,3],[2,0],[3,2]] : [];
+  const BORDER = ["#93C5FD","#FDBA74","#6EE7B7","#C4B5FD"];
+  // Valid solution: one queen per row, col, region — no adjacency
+  const SOLUTION = [[0,1],[1,3],[2,0],[3,2]];
+  const queens = solved ? SOLUTION : [];
+  const isQueen = (r:number,c:number) => queens.some(([qr,qc])=>qr===r&&qc===c);
+
   return (
-    <div style={{border:"1.5px solid #374151",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,24px)"}}>
-        {REGIONS.map((row,r)=>row.map((rid,c)=>(
-          <div key={`${r}-${c}`} style={{width:24,height:24,background:COLORS[rid],border:"0.5px solid rgba(0,0,0,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>
-            {queens.some(([qr,qc])=>qr===r&&qc===c)&&""}
+    <div style={{border:"2px solid #374151",borderRadius:8,overflow:"hidden",display:"inline-block",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,28px)",gridTemplateRows:"repeat(4,28px)"}}>
+        {REGION.map((row,r)=>row.map((rid,c)=>(
+          <div key={`${r}-${c}`} style={{
+            width:28,height:28,
+            background:isQueen(r,c)?COLORS[rid]:COLORS[rid],
+            border:`0.5px solid ${BORDER[rid]}`,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:14,
+            boxShadow:isQueen(r,c)?`inset 0 0 0 2px ${BORDER[rid]}`:"none",
+          }}>
+            {isQueen(r,c) && "♛"}
           </div>
         )))}
       </div>
