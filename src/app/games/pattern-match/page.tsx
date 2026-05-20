@@ -16,6 +16,7 @@ import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
+import { useBoardWidth } from "@/hooks/useScreenWidth";
 
 import{generatePattern,type PatternBoard}from"@/lib/games/patternGenerator";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
@@ -30,7 +31,6 @@ function getDifficulty(s:number):Difficulty{
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function shareResult(stage:number,xp:number,elapsed:string){const text=` MindState · Pattern Match Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
@@ -51,9 +51,11 @@ function PatternMatchGameInner(){
   const[finalXP,setFinalXP]=useState(0);
   const[hintFlash,setHintFlash]=useState(false);
   const[showRule,setShowRule]=useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
+  // Responsive: sequence item size based on viewport and item count
+  const boardWidth = useBoardWidth(32, 520);
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -67,7 +69,7 @@ function PatternMatchGameInner(){
     const b=generatePattern(`pattern-${diff}-${s}`,diff);
     const xp=createXPState(diff);
     setBoard(b);setSelected(null);setCorrect(null);setShowRule(false);setHintsUsed(0);
-    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
+    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){
@@ -84,7 +86,7 @@ function PatternMatchGameInner(){
     } else {
       loadStage(stage);
     }
-  },[]); // mount only
+  },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   function handleAnswer(opt:{value:string;color?:string}){
@@ -116,19 +118,16 @@ function PatternMatchGameInner(){
     setTimeout(()=>setShowRule(false),4000);
   }
 
-function handleCheck() {
-    if (!board || !xpState || completed) return;
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
-    playError();
-    setShowRule(true);
-    setTimeout(() => setShowRule(false), 3000);
-  }
-
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating puzzle...</p></div>);
 
   const diff=getDifficulty(stage);
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
   const hintsLeft=xpState.maxHints-xpState.hintsUsed;
+
+  // Responsive: sequence has N items + 1 "?" box
+  const totalItems = board.sequence.length + 1;
+  const seqGap = 10;
+  const itemSize = Math.min(60, Math.floor((boardWidth - (totalItems - 1) * seqGap - 24) / totalItems));
 
   return(
     <div className="game-page">
@@ -146,23 +145,23 @@ function handleCheck() {
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Sequence */}
-        <div style={{background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"24px 28px",width:"100%",maxWidth:560,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        {/* Sequence — responsive item size */}
+        <div style={{background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"24px 20px",width:"100%",maxWidth:560,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <p style={{fontSize:11,fontWeight:600,color:"var(--text4)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16}}>What comes next?</p>
-          <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",justifyContent:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:seqGap,flexWrap:"wrap",justifyContent:"center"}}>
             {board.sequence.map((item,i)=>(
               <motion.div key={i} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}} transition={{delay:i*0.08,type:"spring",stiffness:400,damping:25}}
-                style={{width:60,height:60,borderRadius:16,background:"var(--bg2)",border:"1.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:item.color?28:18,fontWeight:700,color:item.color??"#1C1917"}}>
+                style={{width:itemSize,height:itemSize,borderRadius:14,background:"var(--bg2)",border:"1.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:item.color?Math.round(itemSize*0.5):Math.round(itemSize*0.3),fontWeight:700,color:item.color??"#1C1917",flexShrink:0}}>
                 {item.value}
               </motion.div>
             ))}
             <motion.div initial={{scale:0}} animate={{scale:1}} transition={{delay:board.sequence.length*0.08,type:"spring"}}
-              style={{width:60,height:60,borderRadius:16,border:"2.5px dashed #4F6EF7",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,color:"#C7D2FE"}}>
+              style={{width:itemSize,height:itemSize,borderRadius:14,border:"2.5px dashed #4F6EF7",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(itemSize*0.4),color:"#C7D2FE",flexShrink:0}}>
               ?
             </motion.div>
           </div>
@@ -174,7 +173,7 @@ function handleCheck() {
           )}
         </div>
 
-        {/* Options */}
+        {/* Options grid */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,width:"100%",maxWidth:560}}>
           {board.options.map((opt,i)=>{
             const key=`${opt.value}-${opt.color??""}`;
@@ -197,7 +196,7 @@ function handleCheck() {
           })}
         </div>
 
-        {/* Hint */}
+        {/* Hint button */}
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <button onClick={handleHint} disabled={hintsLeft===0||completed||selected!==null}
             style={{display:"flex",alignItems:"center",gap:6,padding:"10px 18px",borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:hintsLeft>0?"pointer":"not-allowed",fontSize:12,fontWeight:600,color:hintsLeft>0?"#374151":"#C4C0B8",opacity:hintsLeft===0?0.5:1}}>
@@ -208,18 +207,9 @@ function handleCheck() {
           </AnimatePresence>
         </div>
 
-        {/* Controls */}
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          </div>
-
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
+          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
@@ -228,7 +218,7 @@ function handleCheck() {
         gameName="Pattern Match"
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
-      {showMap&&<StageMap gameSlug="pattern-match" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showMap&&<StageMap gameSlug="pattern-match" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
         stage={stage}
@@ -239,10 +229,10 @@ function handleCheck() {
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
           const text=`MindState · Pattern Match Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
+          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
-</div>
+    </div>
   );
 }
 

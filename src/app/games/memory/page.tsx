@@ -8,7 +8,7 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, ChevronRight, Share2,
+import { ArrowLeft, RotateCcw, ChevronRight,
          Leaf, Flame, Droplets, Star, Moon, Sun, Cloud, Zap,
          Heart, Crown, Gem, Snowflake, Feather, Fish, Bird,
          Music, Palette, Coffee, Globe, Compass, Atom } from "lucide-react";
@@ -23,10 +23,10 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { useBoardWidth } from "@/hooks/useScreenWidth";
 
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
-  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
   const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
   return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
@@ -125,6 +125,9 @@ function MemoryGameInner() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
 
+  // Responsive: calculate cell size from viewport
+  const boardWidth = useBoardWidth(32, 520);
+
   const loadStage = useCallback((s: number) => {
     saveGameState("memory", {stage, savedAt: Date.now()});
     const diff = getDifficulty(s);
@@ -196,7 +199,6 @@ function MemoryGameInner() {
 
   function handleHint() {
     if (!xpState || completed || hintsUsed >= 3) return;
-    // Briefly reveal all unmatched cards
     setCards(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
     setHintsUsed(h => h + 1);
     setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
@@ -206,22 +208,17 @@ function MemoryGameInner() {
     }, 1200);
   }
 
-  function handleCheck() {
-    if (!xpState || completed) return;
-    const matched = cards.filter(c => c.matched).length / 2;
-    const total = cards.length / 2;
-    setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
-    playError();
-    setTimeout(() => setShowFeedback(false), 2000);
-  }
-
   const diff = getDifficulty(stage);
   const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "#EF4444";
   const cols = diff === "easy" ? 4 : diff === "medium" ? 5 : 6;
   const matched = cards.filter(c => c.matched).length / 2;
   const total = cards.length / 2;
-  const cellSize = diff === "easy" ? 72 : diff === "medium" ? 64 : 56;
+  const gap = 8;
+  // Responsive cell size: distribute board width across columns
+  const cellSize = Math.min(
+    diff === "easy" ? 80 : diff === "medium" ? 72 : 62,
+    Math.floor((boardWidth - (cols - 1) * gap) / cols)
+  );
 
   if (!xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -234,11 +231,10 @@ function MemoryGameInner() {
       <Navbar/>
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
-        {/* Header */}
         <div style={{ width:"100%", maxWidth:560, background:"var(--surface)", borderRadius:20,
           border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}>
                 <ArrowLeft size={14}/> Games
               </Link>
@@ -252,7 +248,7 @@ function MemoryGameInner() {
               </span>
               <span style={{ fontSize:12, color:"var(--text4)" }}>{matched}/{total} found</span>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
               <button onClick={() => loadStage(stage)}
                 style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)",
@@ -264,12 +260,10 @@ function MemoryGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Hint + Check */}
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed}/>
-          </div>
+        </div>
 
-        {/* Progress feedback toast */}
         {showFeedback && (
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{ background:"var(--surface)", border:"0.5px solid var(--border)", borderRadius:12,
@@ -278,8 +272,15 @@ function MemoryGameInner() {
           </motion.div>
         )}
 
-        {/* Card grid */}
-        <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`, gap:10 }}>
+        {/* Card grid — responsive */}
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
+          gap,
+          width:"100%",
+          maxWidth: cols * cellSize + (cols - 1) * gap,
+          overflow:"hidden",
+        }}>
           {cards.map(card => {
             const iconData = ICONS[card.iconIdx];
             const Icon = iconData.icon;
@@ -288,7 +289,7 @@ function MemoryGameInner() {
                 onClick={() => handleFlip(card.id)}
                 whileTap={!card.flipped && !card.matched ? {scale: 0.92} : {}}
                 style={{
-                  width: cellSize, height: cellSize, borderRadius: 14,
+                  width: cellSize, height: cellSize, borderRadius: 12,
                   border: `2px solid ${card.matched ? "#86EFAC" : card.flipped ? iconData.bg : "transparent"}`,
                   background: card.flipped || card.matched ? iconData.bg
                     : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
@@ -304,7 +305,6 @@ function MemoryGameInner() {
           })}
         </div>
 
-        {/* Stage nav */}
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s-1)} disabled={stage === 1}
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)",
@@ -312,7 +312,7 @@ function MemoryGameInner() {
               fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
             ← Prev
           </button>
-          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
+          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s => s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12,
               border:"0.5px solid var(--border2)", background:"var(--surface)",
@@ -322,7 +322,6 @@ function MemoryGameInner() {
         </div>
       </main>
 
-      {/* Completion popup */}
       <AnimatePresence>
         {completed && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}

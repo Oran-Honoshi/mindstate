@@ -20,6 +20,7 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
+import { useBoardWidth } from "@/hooks/useScreenWidth";
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"easy";
@@ -62,6 +63,9 @@ function NameCityInner(){
   const[finalXP,setFinalXP]=useState(0);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
+  // Responsive grid width
+  const gridAreaWidth = useBoardWidth(32, 480);
+
   usePageVisibility(
     ()=>{if(timerRef.current)clearInterval(timerRef.current);},
     ()=>{if(xpState&&!completed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
@@ -88,7 +92,7 @@ function NameCityInner(){
     } else {
       loadStage(stage);
     }
-  },[]); // mount only
+  },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   const letterStates=new Map<string,LetterResult>();
@@ -138,7 +142,8 @@ function NameCityInner(){
 
   const diff=getDifficulty(stage);
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
-  const cellSize=Math.min(48,Math.floor(340/board.wordLength));
+  // Responsive cell size: fill available width, cap at 52px
+  const cellSize=Math.min(52, Math.floor((gridAreaWidth - (board.wordLength - 1) * 6) / board.wordLength));
 
   return(
     <div className="game-page">
@@ -158,7 +163,7 @@ function NameCityInner(){
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -181,7 +186,8 @@ function NameCityInner(){
           </div>
         )}
 
-        <div style={{display:"flex",flexDirection:"column",gap:5}}>
+        {/* Guess grid — responsive */}
+        <div style={{display:"flex",flexDirection:"column",gap:5,width:"100%",maxWidth:480,alignItems:"center"}}>
           {Array.from({length:board.maxGuesses},(_,gi)=>{
             const guess=gi<guesses.length?guesses[gi]:gi===guesses.length?current:"";
             const res=results[gi];
@@ -217,6 +223,7 @@ function NameCityInner(){
           </motion.div>
         )}
 
+        {/* Keyboard */}
         <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%",maxWidth:480}}>
           {KB.map((row,ri)=>(
             <div key={ri} style={{display:"flex",justifyContent:"center",gap:5}}>
@@ -248,7 +255,7 @@ function NameCityInner(){
       {showMap&&<StageMap gameSlug="name-city" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Name the City Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindState · Name the City Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

@@ -31,10 +31,11 @@ import { HintButton } from "@/components/ui/HintButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import { useBoardWidth } from "@/hooks/useScreenWidth";
 
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
-  const url = "https://mindstate.vercel.app";
+  const url = "https://mindstate.app";
   if (navigator.share) {
     navigator.share({ title:"MindState", text, url }).catch(()=>{});
   } else {
@@ -45,7 +46,6 @@ function shareResult(game: string, stage: number, xp: number, elapsed: string) {
 
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
-  // Pseudo-random mix: 20% easy, 50% medium, 30% hard
   const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
   return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
@@ -88,17 +88,19 @@ function TangoGameInner() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [history, setHistory] = useState<typeof playerGrid[]>([]);
   const [hintFlash, setHintFlash] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
   const [errorReason, setErrorReason] = useState<string>("");
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
   const [squish, setSquish] = useState<string|null>(null);
-  // Row/col error highlighting — only shown when row/col is full but wrong
   const [errorRows, setErrorRows] = useState<Set<number>>(new Set());
   const [errorCols, setErrorCols] = useState<Set<number>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
+  // Fix: main has padding "76px 16px 32px" = 32px each side = 64px total horizontal
+  // Use 48 as safe margin (accounts for header card padding too)
+  const maxW = useBoardWidth(48, 560);
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -131,8 +133,7 @@ function TangoGameInner() {
     return () => { if(timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // Only show errors when a row/col is completely filled AND wrong
-    function checkRowColErrors(grid: Cell[][], size: number) {
+  function checkRowColErrors(grid: Cell[][], size: number) {
     const newErrorRows = new Set<number>();
     const newErrorCols = new Set<number>();
     const newErrorCells = new Set<string>();
@@ -143,7 +144,6 @@ function TangoGameInner() {
       if (!row.every(c => c !== null)) continue;
       const suns = row.filter(c => c === "S").length;
       const moons = row.filter(c => c === "M").length;
-      // Check triple
       for (let c = 0; c <= size - 3; c++) {
         if (row[c] !== null && row[c] === row[c+1] && row[c] === row[c+2]) {
           newErrorCells.add(`${r},${c}`);
@@ -163,7 +163,6 @@ function TangoGameInner() {
       if (!col.every(v => v !== null)) continue;
       const suns = col.filter(v => v === "S").length;
       const moons = col.filter(v => v === "M").length;
-      // Check triple
       for (let r = 0; r <= size - 3; r++) {
         if (col[r] !== null && col[r] === col[r+1] && col[r] === col[r+2]) {
           newErrorCells.add(`${r},${c}`);
@@ -187,7 +186,7 @@ function TangoGameInner() {
     }
   }
 
-function handleCellClick(r: number, c: number) {
+  function handleCellClick(r: number, c: number) {
     if (!board || completed) return;
     const given = board.puzzle[r][c];
     if (given !== null) return;
@@ -200,7 +199,6 @@ function handleCellClick(r: number, c: number) {
     setPlayerGrid(ng);
     checkRowColErrors(ng, board.size);
     playClick();
-    // Check win
     const ns = validateBoard(board.puzzle, ng, board.solution);
     const done = ns.every(row=>row.every(s=>s==="correct"||s==="given"));
     if (done && xpState) {
@@ -218,7 +216,7 @@ function handleCellClick(r: number, c: number) {
     }
   }
 
-function handleUndo() {
+  function handleUndo() {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
     setPlayerGrid(prev);
@@ -229,7 +227,6 @@ function handleUndo() {
 
   function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3) return;
-    // Find first empty cell and fill it from solution
     for (let r = 0; r < board.size; r++) {
       for (let c = 0; c < board.size; c++) {
         if (playerGrid[r][c] === null) {
@@ -253,36 +250,19 @@ function handleUndo() {
 
   const diff = getDifficulty(stage);
   const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
-  // Bigger board — fill viewport better
-  const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 80, 560) : 480;
+  // gap between cells is 10, board has (size-1) gaps
   const cellSize = Math.floor((maxW - (board.size-1)*10) / board.size);
   const hintsLeft = xpState.maxHints - xpState.hintsUsed;
 
   const cm = new Map<string,"same"|"diff">();
   board.constraints.forEach(c=>cm.set(`${c.row1}-${c.col1}-${c.row2}-${c.col2}`,c.type));
 
-function handleCheck() {
-    if (!board || !xpState || completed) return;
-    const correct = new Set<string>();
-    const wrong = new Set<string>();
-    playerGrid.forEach((row, r) => row.forEach((val, c) => {
-      if (val !== null) {
-        if (val === board.solution[r][c]) correct.add(`${r},${c}`);
-        else wrong.add(`${r},${c}`);
-      }
-    }));
-    setFeedbackCells(correct);
-    setWrongCells(wrong);
-    setShowFeedback(true);
-    // Check costs no XP — just feedback
-    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
-  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:20 }}>
 
-        {/* Stage header — clean, no grid */}
+        {/* Stage header */}
         <div style={{ width:"100%", maxWidth:580, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, overflow:"hidden", flexShrink:1 }}>
@@ -320,96 +300,75 @@ function handleCheck() {
           <span>· Equal per row & col · No 3 in a row</span>
         </div>
 
-        {/* Board — LARGE */}
-        <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)`, gap:10 }}>
-          {board.puzzle.map((_,r)=>board.puzzle[r].map((_,c)=>{
-            const given = board.puzzle[r][c];
-            const isGiven = given !== null;
-            const value = playerGrid[r][c];
-            const key = `${r}-${c}`;
-            const isErrorRow = errorRows.has(r);
-            const isErrorCol = errorCols.has(c);
-            const hasError = isErrorRow || isErrorCol;
-            const rightC = cm.get(`${r}-${c}-${r}-${c+1}`);
-            const bottomC = cm.get(`${r}-${c}-${r+1}-${c}`);
+        {/* Board — width capped to viewport */}
+        <div style={{ width:"100%", maxWidth:maxW, overflow:"hidden" }}>
+          <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)`, gap:10 }}>
+            {board.puzzle.map((_,r)=>board.puzzle[r].map((_,c)=>{
+              const given = board.puzzle[r][c];
+              const isGiven = given !== null;
+              const value = playerGrid[r][c];
+              const key = `${r}-${c}`;
+              const isErrorRow = errorRows.has(r);
+              const isErrorCol = errorCols.has(c);
+              const hasError = isErrorRow || isErrorCol;
+              const rightC = cm.get(`${r}-${c}-${r}-${c+1}`);
+              const bottomC = cm.get(`${r}-${c}-${r+1}-${c}`);
 
-            return (
-              <div key={key} style={{ position:"relative", width:cellSize, height:cellSize }}>
-                <motion.button
-                  onClick={()=>handleCellClick(r,c)}
-                  whileTap={!isGiven?{scale:0.88}:{}}
-                  animate={squish===key?{scaleX:[1,0.86,1.08,1],scaleY:[1,1.1,0.94,1]}:{}}
-                  transition={{ duration:0.32 }}
-                  style={{
-                    width:"100%", height:"100%",
-                    borderRadius: Math.round(cellSize*0.22),
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    border:"1.5px solid",
-                    background: isGiven ? "#F8F7F5"
-                      : hasError ? "rgba(239,68,68,0.08)"
-                      : value ? "white" : "white",
-                    borderColor: isGiven ? "#EDE9E4"
-                      : value ? "#DDD6F8" : "#EDE9E4",
-                    boxShadow: isGiven ? "none"
-                      : value ? "0 4px 16px rgba(79,110,247,0.12), 0 2px 6px rgba(0,0,0,0.06)"
-                      : "0 2px 6px rgba(0,0,0,0.05)",
-                    cursor: isGiven ? "default" : "pointer",
-                    outline:"none",
-                    transition:"border-color 0.2s, box-shadow 0.2s, background 0.2s",
-                  }}>
-                  {value==="S" && <SunIcon size={Math.round(cellSize*0.48)}/>}
-                  {value==="M" && <MoonIcon size={Math.round(cellSize*0.48)}/>}
-                  {!value && <div style={{ width:Math.round(cellSize*0.14), height:Math.round(cellSize*0.14), borderRadius:"50%", background:isGiven?"#CCC7BE":"#E8E4DE" }}/>}
-                </motion.button>
+              return (
+                <div key={key} style={{ position:"relative", width:cellSize, height:cellSize }}>
+                  <motion.button
+                    onClick={()=>handleCellClick(r,c)}
+                    whileTap={!isGiven?{scale:0.88}:{}}
+                    animate={squish===key?{scaleX:[1,0.86,1.08,1],scaleY:[1,1.1,0.94,1]}:{}}
+                    transition={{ duration:0.32 }}
+                    style={{
+                      width:"100%", height:"100%",
+                      borderRadius: Math.round(cellSize*0.22),
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      border:"1.5px solid",
+                      background: isGiven ? "#F8F7F5"
+                        : hasError ? "rgba(239,68,68,0.08)"
+                        : value ? "white" : "white",
+                      borderColor: isGiven ? "#EDE9E4"
+                        : value ? "#DDD6F8" : "#EDE9E4",
+                      boxShadow: isGiven ? "none"
+                        : value ? "0 4px 16px rgba(79,110,247,0.12), 0 2px 6px rgba(0,0,0,0.06)"
+                        : "0 2px 6px rgba(0,0,0,0.05)",
+                      cursor: isGiven ? "default" : "pointer",
+                      outline:"none",
+                    }}>
+                    {value==="S" && <SunIcon size={Math.round(cellSize*0.48)}/>}
+                    {value==="M" && <MoonIcon size={Math.round(cellSize*0.48)}/>}
+                    {!value && <div style={{ width:Math.round(cellSize*0.14), height:Math.round(cellSize*0.14), borderRadius:"50%", background:isGiven?"#CCC7BE":"#E8E4DE" }}/>}
+                  </motion.button>
 
-                {/* Constraint badges */}
-                {rightC && c < board.size-1 && (
-                  <div style={{ position:"absolute", right:-10, top:"50%", transform:"translateY(-50%)", zIndex:10,
-                    width:20, height:20, borderRadius:"50%", background:"var(--surface)",
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:9, fontWeight:700,
-                    border:`1.5px solid ${rightC==="same"?"#4F6EF7":"#F87171"}`,
-                    color:rightC==="same"?"#4F6EF7":"#F87171",
-                    boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
-                    {rightC==="same"?"=":"×"}
-                  </div>
-                )}
-                {bottomC && r < board.size-1 && (
-                  <div style={{ position:"absolute", bottom:-10, left:"50%", transform:"translateX(-50%)", zIndex:10,
-                    width:20, height:20, borderRadius:"50%", background:"var(--surface)",
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:9, fontWeight:700,
-                    border:`1.5px solid ${bottomC==="same"?"#4F6EF7":"#F87171"}`,
-                    color:bottomC==="same"?"#4F6EF7":"#F87171",
-                    boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
-                    {bottomC==="same"?"=":"×"}
-                  </div>
-                )}
-              </div>
-            );
-          }))}
+                  {rightC && c < board.size-1 && (
+                    <div style={{ position:"absolute", right:-10, top:"50%", transform:"translateY(-50%)", zIndex:10,
+                      width:20, height:20, borderRadius:"50%", background:"var(--surface)",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:9, fontWeight:700,
+                      border:`1.5px solid ${rightC==="same"?"#4F6EF7":"#F87171"}`,
+                      color:rightC==="same"?"#4F6EF7":"#F87171",
+                      boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
+                      {rightC==="same"?"=":"×"}
+                    </div>
+                  )}
+                  {bottomC && r < board.size-1 && (
+                    <div style={{ position:"absolute", bottom:-10, left:"50%", transform:"translateX(-50%)", zIndex:10,
+                      width:20, height:20, borderRadius:"50%", background:"var(--surface)",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:9, fontWeight:700,
+                      border:`1.5px solid ${bottomC==="same"?"#4F6EF7":"#F87171"}`,
+                      color:bottomC==="same"?"#4F6EF7":"#F87171",
+                      boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
+                      {bottomC==="same"?"=":"×"}
+                    </div>
+                  )}
+                </div>
+              );
+            }))}
+          </div>
         </div>
-
-        {/* Controls */}
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <button onClick={handleHint} disabled={hintsLeft===0||completed}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:14,
-              border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:hintsLeft>0?"pointer":"not-allowed",
-              fontSize:13, fontWeight:600, color:hintsLeft>0?"#374151":"#C4C0B8",
-              opacity:hintsLeft===0?0.5:1 }}>
-            <Lightbulb size={14}/> Hint ({hintsLeft})
-          </button>
-          <AnimatePresence>
-            {hintFlash && (
-              <motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}}
-                style={{ fontSize:11, color:"#F59E0B", fontWeight:600 }}>
-                −25% XP
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Stage nav — simple prev/next, no grid */}
 
         {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
@@ -419,32 +378,29 @@ function handleCheck() {
             xpCost={100}
             onUseHint={()=>{
               if(!xpState||hintsUsed>=3)return;
-              setHintsUsed(h=>h+1);
-              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
+              handleHint();
             }}
             disabled={completed}/>
-          </div>
+        </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
             ← Prev
           </button>
-          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} disabled={stage>=1000}
+          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
+          <button onClick={()=>setStage(s=>s+1)} disabled={stage>=100}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>
             Next <ChevronRight size={13}/>
           </button>
         </div>
       </main>
 
-      {/* Completion overlay */}
-
       <OutOfTokensModal
         gameName="Tango"
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
-      {showMap&&<StageMap gameSlug="tango" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showMap&&<StageMap gameSlug="tango" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
         stage={stage}
@@ -455,10 +411,10 @@ function handleCheck() {
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
           const text=`MindState · Tango Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
+          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
-</div>
+    </div>
   );
 }
 export default function TangoGame() {
