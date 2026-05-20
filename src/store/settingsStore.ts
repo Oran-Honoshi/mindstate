@@ -1,3 +1,4 @@
+"use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,9 +7,11 @@ export type Theme = "light" | "dark";
 
 interface SettingsState {
   isSilentMode: boolean;
+  isAccessibilityMode: boolean;
   theme: Theme;
   language: Language;
   toggleSilentMode: () => void;
+  toggleAccessibilityMode: () => void;
   toggleTheme: () => void;
   setLanguage: (lang: Language) => void;
 }
@@ -17,9 +20,20 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
       isSilentMode: false,
+      isAccessibilityMode: false,
       theme: "light",
       language: "en",
+
       toggleSilentMode: () => set(s => ({ isSilentMode: !s.isSilentMode })),
+
+      toggleAccessibilityMode: () => {
+        const next = !get().isAccessibilityMode;
+        set({ isAccessibilityMode: next });
+        if (typeof document !== "undefined") {
+          document.documentElement.classList.toggle("accessibility-mode", next);
+        }
+      },
+
       toggleTheme: () => {
         const next = get().theme === "light" ? "dark" : "light";
         set({ theme: next });
@@ -28,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
           document.documentElement.style.colorScheme = next;
         }
       },
+
       setLanguage: (language) => {
         set({ language });
         if (typeof document !== "undefined") {
@@ -35,7 +50,6 @@ export const useSettingsStore = create<SettingsState>()(
           document.documentElement.dir = dir;
           document.documentElement.lang = language;
         }
-        // Update i18n
         import("@/lib/i18n/config").then(({ default: i18n }) => {
           i18n.changeLanguage(language);
         });

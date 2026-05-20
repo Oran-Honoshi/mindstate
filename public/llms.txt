@@ -1,0 +1,47 @@
+# MindState
+> https://mindstate.vercel.app
+
+An ad-free, minimalist PWA suite containing 24 algorithmic logic, memory, and word games designed for cross-generational mental fitness. Suitable for children, professionals, and seniors.
+
+## Tagline
+Sharper Every Day.
+
+## Core Pages
+- [Landing Page](https://mindstate.vercel.app): Product overview, interactive demo, pricing, FAQ.
+- [Games Catalog](https://mindstate.vercel.app/games): All 24 games including Tango, Queens, Sudoku, Nonogram, Memory, Zip, Flow, Minesweeper, Bridges, Kakuro, Logic Path, Light Up, Patches, 2048 Pro, Gravity Sort, Hex Merge, Pattern Match, Word Sling, Hearts, Solitaire, Nonogram, Word Climb, Pinpoint, Name the Country, Name the City.
+- [Daily Challenge](https://mindstate.vercel.app/daily): A fresh puzzle every day, free for all users.
+- [Leaderboard](https://mindstate.vercel.app/leaderboard): Global XP rankings.
+- [Family Dashboard](https://mindstate.vercel.app/family): Shared leaderboard for family group members.
+- [Pricing](https://mindstate.vercel.app/pricing): Subscription plans with 7-day free trial.
+
+## Pricing
+- Individual: $2/month — unlimited plays across all 24 games
+- Family 3: $5/month — up to 3 members with shared family leaderboard
+- Family 7: $10/month — up to 7 members with shared family leaderboard
+- Free tier: 5 daily plays across any games, daily challenge always free
+
+## Game Mechanics
+- Each game has 100 procedural difficulty stages (30 Easy, 40 Medium, 30 Hard)
+- Stages are generated algorithmically from seeds — not hardcoded
+- XP system: each stage starts at 1000 XP, decays linearly over time
+- Hints: 3 per stage, each costs 10% of maximum XP (100 XP)
+- First-play-only scoring — retries do not overwrite leaderboard scores
+- Daily challenge: medium difficulty Mon/Wed/Fri, hard Tue/Thu/Sat/Sun
+
+## Audience
+- Children: logic puzzles that build spatial reasoning and STEM foundations
+- Professionals: 3-minute cognitive reset between meetings
+- Seniors: accessible mode with larger targets and optional timer-free play
+- Families: shared leaderboard and challenge-link sharing across generations
+
+## Technology
+- Progressive Web App — installable on any device, works offline
+- Zero ads — Anthropic-style clean interface
+- Multi-language: English, Spanish, German, French, Portuguese, Dutch, Hebrew (RTL)
+- Dark and light mode
+- Accessibility mode: enlarged touch targets, sans-serif typography, optional XP timer disable
+
+## Differentiators vs Competitors
+- NYT Games / LinkedIn Games: MindState has 24 games vs handful, family groups, algorithmic infinite variety
+- Lumosity / Elevate: MindState is $2/mo vs $12-15/mo, pure PWA with no app store friction
+- All competitors: MindState is the only product with a dedicated family group billing model at this price point

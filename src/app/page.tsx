@@ -1,17 +1,16 @@
 "use client";
 import { ReviewModal } from "@/components/ui/ReviewModal";
 import React from "react";
-import{FAQSchema,OrganizationSchema,WebAppSchema,HowToSchema}from"@/app/seo-schema";
-import{ComingSoonTeaser}from"@/components/ui/ComingSoonTeaser";
+import { FAQSchema, OrganizationSchema, WebAppSchema, HowToSchema } from "@/app/seo-schema";
+import { ComingSoonTeaser } from "@/components/ui/ComingSoonTeaser";
 import { GameSnapshot } from "@/components/ui/GameSnapshots";
-// Game snapshot components imported inline below
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, ChevronRight, ArrowRight, Check,
   Volume2, VolumeX, Sun, Moon, Star, Zap,
-  Flame, Shield, Infinity, Trophy, Lock
+  Flame, Shield, Infinity, Trophy, Lock, Accessibility
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -39,7 +38,7 @@ const IMGS = {
 };
 
 const PLANS = [
-  { name:"Individual", price:"$2",  period:"/mo", features:["All 20 games","1,000 stages each","Unlimited daily plays","Global leaderboard","Infinite mode"], highlight:false },
+  { name:"Individual", price:"$2",  period:"/mo", features:["All 24 games","100 stages each","Unlimited daily plays","Global leaderboard","Infinite mode"], highlight:false },
   { name:"Family · 3", price:"$5",  period:"/mo", features:["3 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:true },
   { name:"Family · 7", price:"$10", period:"/mo", features:["7 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:false },
 ];
@@ -83,7 +82,7 @@ function MiniMemoryHero() {
   const matched=state.filter(c=>c.matched).length/2;
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>All pairs found! ✓</motion.div>}
+      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>All pairs found!</motion.div>}
       <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`,gap:6}}>
         {state.map(card=>(
           <motion.button key={card.id} onClick={()=>flip(card.id)} whileTap={{scale:0.88}}
@@ -144,7 +143,7 @@ function MiniQueensHero() {
   const won=checkWon(grid);
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Solved! ✓</motion.div>}
+      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Solved!</motion.div>}
       <div style={{border:"2px solid #374151",borderRadius:10,overflow:"hidden"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
           {REGIONS.map((row,r)=>row.map((rid,c)=>{
@@ -174,10 +173,8 @@ function MiniQueensHero() {
 function HeroCarousel() {
   const [active, setActive] = useState(0);
   const game = CAROUSEL_GAMES[active];
-  
   return (
     <div style={{width:"100%"}}>
-      {/* Tab switcher */}
       <div style={{display:"flex",gap:6,marginBottom:14,justifyContent:"center"}}>
         {CAROUSEL_GAMES.map((g,i)=>(
           <button key={g.key} onClick={()=>setActive(i)}
@@ -190,8 +187,6 @@ function HeroCarousel() {
           </button>
         ))}
       </div>
-      
-      {/* Game */}
       <AnimatePresence mode="wait">
         <motion.div key={active}
           initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-20}}
@@ -201,8 +196,6 @@ function HeroCarousel() {
           {active===2 && <MiniQueensHero/>}
         </motion.div>
       </AnimatePresence>
-      
-      {/* Footer */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
         <span style={{fontSize:10,color:"var(--text4)"}}>{game.desc}</span>
         <Link href={game.href} style={{fontSize:11,fontWeight:600,color:"#4F6EF7",display:"flex",alignItems:"center",gap:3,textDecoration:"none"}}>
@@ -258,7 +251,7 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
           <p style={{fontSize:13,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Tango</p>
         </div>
         <AnimatePresence>
-          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:20}}>✓ Solved!</motion.span>}
+          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:20}}>Solved!</motion.span>}
         </AnimatePresence>
       </div>
       <div style={{height:3,background:"var(--bg3)",borderRadius:2,marginBottom:12}}>
@@ -312,38 +305,42 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
   );
 }
 
-// ── All 20 games ──────────────────────────────────────────────────────────────
+// ── All 24 games ──────────────────────────────────────────────────────────────
 const GAMES = [
-  { slug:"tango",         name:"Tango",          desc:"Balance rows & columns", free:true  },
-  { slug:"memory",        name:"Memory",          desc:"Flip cards, find pairs", free:true  },
-  { slug:"queens",        name:"Queens",          desc:"One queen per region",   free:true  },
-  { slug:"sudoku",        name:"Mini Sudoku",     desc:"No repeats in grid",     free:false },
-  { slug:"zip",           name:"Zip",             desc:"Trace through every cell",free:false},
-  { slug:"flow",          name:"Flow",            desc:"Connect color dots",     free:false },
-  { slug:"bridges",       name:"Bridges",         desc:"Right number of bridges",free:false },
-  { slug:"kakuro",        name:"Kakuro",          desc:"Digit sums guide you",   free:false },
-  { slug:"logic-path",    name:"Logic Path",      desc:"Rotate pipes to connect",free:false },
-  { slug:"lightup",       name:"Light Up",        desc:"Illuminate every cell",  free:false },
-  { slug:"nonogram",      name:"Nonogram",        desc:"Pixel art from clues",   free:false },
-  { slug:"pattern-match", name:"Pattern Match",   desc:"Find the rule",          free:false },
-  { slug:"patches",       name:"Patches",         desc:"Tile with polyominoes",  free:false },
-  { slug:"2048-pro",      name:"2048 Pro",        desc:"Merge to the target",    free:false },
-  { slug:"gravity-sort",  name:"Gravity Sort",    desc:"Sort falling blocks",    free:false },
-  { slug:"hex-merge",     name:"Hex Merge",       desc:"Chain hex merges",       free:false },
-  { slug:"word-sling",    name:"Word Sling",      desc:"Build scoring words",    free:false },
-  { slug:"hearts",        name:"Hearts",          desc:"Avoid penalty cards",    free:false },
-  { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike",       free:false },
-  { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce the mines",       free:false },
+  { slug:"tango",         name:"Tango",          desc:"Balance rows & columns",  free:true  },
+  { slug:"memory",        name:"Memory",          desc:"Flip cards, find pairs",  free:true  },
+  { slug:"queens",        name:"Queens",          desc:"One queen per region",    free:true  },
+  { slug:"sudoku",        name:"Mini Sudoku",     desc:"No repeats in grid",      free:false },
+  { slug:"zip",           name:"Zip",             desc:"Trace through every cell",free:false },
+  { slug:"flow",          name:"Flow",            desc:"Connect color dots",      free:false },
+  { slug:"bridges",       name:"Bridges",         desc:"Right number of bridges", free:false },
+  { slug:"kakuro",        name:"Kakuro",          desc:"Digit sums guide you",    free:false },
+  { slug:"logic-path",    name:"Logic Path",      desc:"Rotate pipes to connect", free:false },
+  { slug:"lightup",       name:"Light Up",        desc:"Illuminate every cell",   free:false },
+  { slug:"nonogram",      name:"Nonogram",        desc:"Pixel art from clues",    free:false },
+  { slug:"pattern-match", name:"Pattern Match",   desc:"Find the rule",           free:false },
+  { slug:"patches",       name:"Patches",         desc:"Tile with polyominoes",   free:false },
+  { slug:"2048-pro",      name:"2048 Pro",        desc:"Merge to the target",     free:false },
+  { slug:"gravity-sort",  name:"Gravity Sort",    desc:"Sort falling blocks",     free:false },
+  { slug:"hex-merge",     name:"Hex Merge",       desc:"Chain hex merges",        free:false },
+  { slug:"word-sling",    name:"Word Sling",      desc:"Build scoring words",     free:false },
+  { slug:"hearts",        name:"Hearts",          desc:"Avoid penalty cards",     free:false },
+  { slug:"solitaire",     name:"Solitaire",       desc:"Classic Klondike",        free:false },
+  { slug:"minesweeper",   name:"Minesweeper",     desc:"Deduce the mines",        free:false },
+  { slug:"word-climb",    name:"Word Climb",      desc:"Climb the word ladder",   free:false },
+  { slug:"pinpoint",      name:"Pinpoint",        desc:"Guess from clues",        free:false },
+  { slug:"name-country",  name:"Name the Country",desc:"Identify from the flag",  free:false },
+  { slug:"name-city",     name:"Name the City",   desc:"Identify the city",       free:false },
 ];
 
-
-// ── Landing page mini snapshots for non-preview game cards ───────────────────
+// ── Landing page mini snapshots ───────────────────────────────────────────────
 function LandingSnapshot({ slug }: { slug: string }) {
   const snaps: Record<string, React.ReactNode> = {
+
     "flow": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(79,110,247,0.04)" rx={8}/>
-        {[["#EF4444","0,0","0,3"],[" #3B82F6","3,0","3,3"],["#22C55E","0,2","2,0"],["#F59E0B","1,3","3,2"]].map(([c,s,e],i)=>(
+        {([ ["#EF4444","0,0","0,3"],[" #3B82F6","3,0","3,3"],["#22C55E","0,2","2,0"],["#F59E0B","1,3","3,2"] ] as [string,string,string][]).map(([c,s,e],i)=>(
           <g key={i}>
             <circle cx={parseInt(s.split(",")[1])*20+10} cy={parseInt(s.split(",")[0])*20+10} r={8} fill={c}/>
             <circle cx={parseInt(e.split(",")[1])*20+10} cy={parseInt(e.split(",")[0])*20+10} r={8} fill={c}/>
@@ -351,6 +348,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
         ))}
       </svg>
     ),
+
     "bridges": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(180,83,9,0.04)" rx={8}/>
@@ -358,66 +356,115 @@ function LandingSnapshot({ slug }: { slug: string }) {
         <line x1={15} y1={65} x2={65} y2={65} stroke="#374151" strokeWidth={2}/>
         <line x1={15} y1={15} x2={15} y2={65} stroke="#374151" strokeWidth={2}/>
         <line x1={65} y1={15} x2={65} y2={65} stroke="#374151" strokeWidth={2}/>
-        {[[15,15,3],[65,15,2],[15,65,2],[65,65,3]].map(([x,y,n],i)=>(
-          <g key={i}><circle cx={x} cy={y} r={10} fill="#4F6EF7"/><text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"white"}}>{n}</text></g>
+        {([
+          [15, 15, 3],
+          [65, 15, 2],
+          [15, 65, 2],
+          [65, 65, 3],
+        ] as [number, number, number][]).map(([x, y, n], i) => (
+          <g key={i}>
+            <circle cx={x} cy={y} r={10} fill="#4F6EF7"/>
+            <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
+              style={{fontSize:9,fontWeight:700,fill:"white"}}>{n}</text>
+          </g>
         ))}
       </svg>
     ),
+
     "nonogram": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(190,24,93,0.04)" rx={8}/>
-        {[[1,0,1,1],[0,1,1,0],[1,1,0,1],[1,0,1,1]].map((row,r)=>row.map((cell,c)=>(
+        {([[1,0,1,1],[0,1,1,0],[1,1,0,1],[1,0,1,1]] as number[][]).map((row,r)=>row.map((cell,c)=>(
           <rect key={`${r}-${c}`} x={c*16+16} y={r*16+16} width={14} height={14} fill={cell?"#1C1917":"rgba(0,0,0,0.06)"} rx={2}/>
         )))}
       </svg>
     ),
+
     "pattern-match": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(124,58,237,0.04)" rx={8}/>
         {[3,6,9,12].map((n,i)=>(
-          <g key={i}><rect x={i*16+4} y={25} width={13} height={13} rx={3} fill="rgba(124,58,237,0.15)" stroke="#7C3AED" strokeWidth={1}/><text x={i*16+10.5} y={34} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#7C3AED"}}>{n}</text></g>
+          <g key={i}>
+            <rect x={i*16+4} y={25} width={13} height={13} rx={3} fill="rgba(124,58,237,0.15)" stroke="#7C3AED" strokeWidth={1}/>
+            <text x={i*16+10.5} y={34} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#7C3AED"}}>{n}</text>
+          </g>
         ))}
         <rect x={68} y={25} width={13} height={13} rx={3} fill="none" stroke="#7C3AED" strokeWidth={1.5} strokeDasharray="3"/>
         <text x={74.5} y={34} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#7C3AED"}}>?</text>
         <text x={40} y={55} textAnchor="middle" style={{fontSize:9,fill:"#94A3B8"}}>Add 3 each time</text>
       </svg>
     ),
+
     "2048-pro": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="#FAF8EF" rx={8}/>
         <rect x={4} y={4} width={72} height={72} rx={6} fill="#BBADA0"/>
-        {[[2,4,8,16],[32,64,128,256],[0,2,4,8],[0,0,2,4]].map((row,r)=>row.map((val,c)=>{
+        {([[2,4,8,16],[32,64,128,256],[0,2,4,8],[0,0,2,4]] as number[][]).map((row,r)=>row.map((val,c)=>{
           const clrs:Record<number,string>={0:"#CDC1B4",2:"#EEE4DA",4:"#EDE0C8",8:"#F2B179",16:"#F59563",32:"#F67C5F",64:"#F65E3B",128:"#EDCF72",256:"#EDC22E"};
           return<rect key={`${r}-${c}`} x={c*17+8} y={r*17+8} width={14} height={14} rx={2} fill={clrs[val]||"#CDC1B4"}/>;
         }))}
       </svg>
     ),
+
     "kakuro": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(29,78,216,0.04)" rx={8}/>
-        {[[0,0,"B"],[0,1,"W"],[0,2,"W"],[1,0,"W"],[1,1,"W"],[1,2,"B"],[2,0,"W"],[2,1,"B"],[2,2,"W"]].map(([r,c,t],i)=>(
+        {([
+          [0, 0, "B"],
+          [0, 1, "W"],
+          [0, 2, "W"],
+          [1, 0, "W"],
+          [1, 1, "W"],
+          [1, 2, "B"],
+          [2, 0, "W"],
+          [2, 1, "B"],
+          [2, 2, "W"],
+        ] as [number, number, string][]).map(([r, c, t], i) => (
           <g key={i}>
-            <rect x={c*22+12} y={r*22+12} width={20} height={20} fill={t==="B"?"#374151":"white"} stroke="#E2E8F0" strokeWidth={0.5}/>
-            {t==="B"&&i===0&&<><line x1={12} y1={12} x2={32} y2={32} stroke="#555" strokeWidth={0.5}/><text x={28} y={30} style={{fontSize:7,fill:"white",fontWeight:700}}>9</text></>}
-            {t==="B"&&i===5&&<><line x1={56} y1={34} x2={76} y2={54} stroke="#555" strokeWidth={0.5}/><text x={70} y={52} style={{fontSize:7,fill:"white",fontWeight:700}}>3</text></>}
-            {t==="W"&&i===1&&<text x={22+12+10} y={22+10+8} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"#4F6EF7"}}>4</text>}
+            <rect
+              x={c * 22 + 12} y={r * 22 + 12}
+              width={20} height={20}
+              fill={t === "B" ? "#374151" : "white"}
+              stroke="#E2E8F0" strokeWidth={0.5}
+            />
+            {t === "B" && i === 0 && (
+              <>
+                <line x1={12} y1={12} x2={32} y2={32} stroke="#555" strokeWidth={0.5}/>
+                <text x={28} y={30} style={{fontSize:7, fill:"white", fontWeight:700}}>9</text>
+              </>
+            )}
+            {t === "B" && i === 5 && (
+              <>
+                <line x1={56} y1={34} x2={76} y2={54} stroke="#555" strokeWidth={0.5}/>
+                <text x={70} y={52} style={{fontSize:7, fill:"white", fontWeight:700}}>3</text>
+              </>
+            )}
+            {t === "W" && i === 1 && (
+              <text
+                x={c * 22 + 22} y={r * 22 + 22}
+                textAnchor="middle" dominantBaseline="middle"
+                style={{fontSize:9, fontWeight:700, fill:"#4F6EF7"}}
+              >4</text>
+            )}
           </g>
         ))}
       </svg>
     ),
+
     "gravity-sort": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(194,65,12,0.04)" rx={8}/>
-        {[["#EF4444","#3B82F6","#22C55E"],["#3B82F6","#22C55E","#EF4444"],["#22C55E","#EF4444","#3B82F6"]].map((col,c)=>col.map((color,r)=>(
+        {([["#EF4444","#3B82F6","#22C55E"],["#3B82F6","#22C55E","#EF4444"],["#22C55E","#EF4444","#3B82F6"]] as string[][]).map((col,c)=>col.map((color,r)=>(
           <rect key={`${c}-${r}`} x={c*22+12} y={r*18+14} width={18} height={15} rx={4} fill={color} opacity={0.85}/>
         )))}
         <text x={40} y={74} textAnchor="middle" style={{fontSize:8,fill:"#94A3B8"}}>Sort by color</text>
       </svg>
     ),
+
     "hex-merge": (
       <svg width={80} height={80} viewBox="-40 -40 80 80">
         <rect x={-40} y={-40} width={80} height={80} fill="rgba(13,148,136,0.04)" rx={8}/>
-        {[[-1,-1,2],[0,-1,4],[1,-2,2],[-1,0,4],[0,0,8],[1,-1,4],[-1,1,2],[0,1,4],[1,0,2]].map(([q,r,val],i)=>{
+        {([[-1,-1,2],[0,-1,4],[1,-2,2],[-1,0,4],[0,0,8],[1,-1,4],[-1,1,2],[0,1,4],[1,0,2]] as [number,number,number][]).map(([q,r,val],i)=>{
           const x=14*(1.5*q),y=14*(Math.sqrt(3)/2*q+Math.sqrt(3)*r);
           const clrs:Record<number,string>={2:"#DBEAFE",4:"#BBF7D0",8:"#FDE68A"};
           const pts=Array.from({length:6},(_,k)=>{const a=Math.PI/180*(60*k-30);return`${x+12*Math.cos(a)},${y+12*Math.sin(a)}`;}).join(" ");
@@ -425,34 +472,37 @@ function LandingSnapshot({ slug }: { slug: string }) {
         })}
       </svg>
     ),
+
     "logic-path": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(8,145,178,0.04)" rx={8}/>
-        {[[false,true,false,true],[true,false,true,false],[false,true,false,true],[true,true,false,false],[false,false,true,true],[true,false,true,false],[false,true,true,false],[false,false,false,true],[true,false,false,false]].map((pipe,i)=>{
+        {([[false,true,false,true],[true,false,true,false],[false,true,false,true],[true,true,false,false],[false,false,true,true],[true,false,true,false],[false,true,true,false],[false,false,false,true],[true,false,false,false]] as boolean[][]).map((pipe,i)=>{
           const r=Math.floor(i/3),c=i%3,cx=c*22+22,cy=r*22+22,w=3;const color="#4F6EF7";
           return<g key={i}>{pipe[0]&&<rect x={cx-w/2} y={cy-11} width={w} height={11} fill={color} rx={1}/>}{pipe[1]&&<rect x={cx} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}{pipe[2]&&<rect x={cx-w/2} y={cy} width={w} height={11} fill={color} rx={1}/>}{pipe[3]&&<rect x={cx-11} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}<circle cx={cx} cy={cy} r={w*0.9} fill={color}/></g>;
         })}
       </svg>
     ),
+
     "lightup": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(202,138,4,0.04)" rx={8}/>
-        {[[0,0,"B1"],[0,1,"●"],[0,2,"lit"],[1,0,"●"],[1,1,"B"],[1,2,"●"],[2,0,"lit"],[2,1,"●"],[2,2,"B0"]].map((item,i)=>{
-          const r=Math.floor(i/3),c=i%3,type=item[2] as string;
+        {([[0,0,"B1"],[0,1,"dot"],[0,2,"lit"],[1,0,"dot"],[1,1,"B"],[1,2,"dot"],[2,0,"lit"],[2,1,"dot"],[2,2,"B0"]] as [number,number,string][]).map(([r,c,type],i)=>{
           const isBlack=type.startsWith("B");
-          return<g key={i}><rect x={c*24+8} y={r*24+8} width={22} height={22} fill={isBlack?"#374151":type==="●"?"#FFFBEB":"#FFFDE7"} stroke="#E2E8F0" strokeWidth={0.5}/>{type==="●"&&<text x={c*24+19} y={r*24+21} textAnchor="middle" style={{fontSize:13}}>●</text>}{isBlack&&type.length>1&&<text x={c*24+19} y={r*24+21} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{type.slice(1)}</text>}</g>;
+          return<g key={i}><rect x={c*24+8} y={r*24+8} width={22} height={22} fill={isBlack?"#374151":type==="dot"?"#FFFBEB":"#FFFDE7"} stroke="#E2E8F0" strokeWidth={0.5}/>{type==="dot"&&<text x={c*24+19} y={r*24+21} textAnchor="middle" style={{fontSize:13}}>●</text>}{isBlack&&type.length>1&&<text x={c*24+19} y={r*24+21} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{type.slice(1)}</text>}</g>;
         })}
       </svg>
     ),
+
     "patches": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(245,158,11,0.04)" rx={8}/>
-        {[[0,"#EF4444"],[0,"#EF4444"],[1,"#3B82F6"],[1,"#3B82F6"],[0,"#EF4444"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[3,"#F59E0B"],[2,"#22C55E"],[3,"#F59E0B"]].map(([,color],i)=>{
+        {([[0,"#EF4444"],[0,"#EF4444"],[1,"#3B82F6"],[1,"#3B82F6"],[0,"#EF4444"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[3,"#F59E0B"],[2,"#22C55E"],[3,"#F59E0B"]] as [number,string][]).map(([,color],i)=>{
           const r=Math.floor(i/4),c=i%4;
           return<rect key={i} x={c*16+8} y={r*16+8} width={15} height={15} fill={color} opacity={0.8} rx={2}/>;
         })}
       </svg>
     ),
+
     "word-sling": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(4,120,87,0.04)" rx={8}/>
@@ -468,20 +518,22 @@ function LandingSnapshot({ slug }: { slug: string }) {
         <text x={54} y={60} textAnchor="middle" dominantBaseline="middle" style={{fontSize:8,fontWeight:700,fill:"#15803D"}}>TRAIN</text>
       </svg>
     ),
+
     "hearts": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(225,29,72,0.04)" rx={8}/>
-        {[["A♠","#1C1917"],["K♥","#DC2626"],["Q♦","#DC2626"],["J♣","#1C1917"]].map(([card,color],i)=>(
+        {([["A♠","#1C1917"],["K♥","#DC2626"],["Q♦","#DC2626"],["J♣","#1C1917"]] as [string,string][]).map(([card,color],i)=>(
           <g key={i}><rect x={i*17+6} y={28} width={15} height={24} rx={3} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={i*17+13.5} y={40} textAnchor="middle" dominantBaseline="middle" style={{fontSize:7,fontWeight:700,fill:color}}>{card}</text></g>
         ))}
         <text x={40} y={65} textAnchor="middle" style={{fontSize:9,fontWeight:600,fill:"#94A3B8"}}>Avoid ♥ & Q♠</text>
       </svg>
     ),
+
     "solitaire": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(67,56,202,0.04)" rx={8}/>
-        {[["A♥","#DC2626",6,6],["A♦","#DC2626",22,6],["A♣","#1C1917",38,6],["A♠","#1C1917",54,6],
-          ["K♠","#1C1917",6,34],["Q♥","#DC2626",6,46],["J♣","#1C1917",6,58]].map(([card,color,x,y],i)=>(
+        {([["A♥","#DC2626",6,6],["A♦","#DC2626",22,6],["A♣","#1C1917",38,6],["A♠","#1C1917",54,6],
+           ["K♠","#1C1917",6,34],["Q♥","#DC2626",6,46],["J♣","#1C1917",6,58]] as [string,string,number,number][]).map(([card,color,x,y],i)=>(
           <g key={i}><rect x={x} y={y} width={14} height={20} rx={2} fill="white" stroke="#E2E8F0" strokeWidth={1}/><text x={x+7} y={y+12} textAnchor="middle" dominantBaseline="middle" style={{fontSize:6,fontWeight:700,fill:color}}>{card}</text></g>
         ))}
       </svg>
@@ -492,7 +544,6 @@ function LandingSnapshot({ slug }: { slug: string }) {
   if (!snap) return <GameIcon slug={slug} size={52}/>;
   return <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{snap}</div>;
 }
-
 
 
 // ── Game Card ─────────────────────────────────────────────────────────────────
@@ -517,7 +568,6 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
             transform:hovered?"translateY(-4px) scale(1.01)":"translateY(0) scale(1)",
             transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
           }}>
-          {/* Icon area */}
           <div style={{
             height:110,
             background:hovered
@@ -528,8 +578,6 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
             overflow:"hidden",
           }}>
             <GameSnapshot slug={game.slug}/>
-
-            {/* Hover overlay — "Play Stage 1" */}
             <AnimatePresence>
               {hovered && (
                 <motion.div
@@ -544,7 +592,7 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
                     backdropFilter:"blur(4px)",
                   }}>
                   <span style={{ fontSize:13, fontWeight:700, color:"white" }}>
-                    {game.free ? "▶  Play Stage 1" : "▶  Play Now"}
+                    {game.free ? "Play Stage 1" : "Play Now"}
                   </span>
                   <span style={{ fontSize:10, color:"rgba(255,255,255,0.7)" }}>
                     {game.free ? "Free" : "Uses 1 daily play"}
@@ -552,8 +600,6 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Badges */}
             <div style={{ position:"absolute", top:8, right:8, display:"flex", gap:4 }}>
               {game.free && (
                 <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:8, background:"rgba(79,110,247,0.15)", color:"#4F6EF7" }}>
@@ -565,8 +611,6 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
               </span>
             </div>
           </div>
-
-          {/* Info */}
           <div style={{ padding:"11px 14px 13px" }}>
             <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:3 }}>{game.name}</p>
             <p style={{ fontSize:11, color:"var(--text3)", lineHeight:1.5 }}>{game.desc}</p>
@@ -577,8 +621,7 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-
+// ── Trustpilot Badge ──────────────────────────────────────────────────────────
 function TrustpilotBadge() {
   return (
     <div style={{
@@ -597,7 +640,7 @@ function TrustpilotBadge() {
       <p style={{fontSize:13,color:"#64748B",marginBottom:16,lineHeight:1.6}}>
         "Addictive, beautiful, and actually makes me feel sharper."
       </p>
-      <a href="https://www.trustpilot.com/review/mindstate.vercel.app" target="_blank"
+      <a href="https://www.trustpilot.com/review/mindstate.app" target="_blank"
         style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,
           color:"#00B67A",textDecoration:"none",
           padding:"10px 20px",borderRadius:12,border:"1.5px solid #00B67A"}}>
@@ -607,8 +650,9 @@ function TrustpilotBadge() {
   );
 }
 
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
+  const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, toggleTheme } = useSettingsStore();
   const { user, profile } = useAuthStore();
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
@@ -619,8 +663,6 @@ export default function LandingPage() {
     const iv = setInterval(() => setTokens(getTokensRemaining(user.id)), 10000);
     return () => clearInterval(iv);
   }, [user, isPro]);
-
-  const W = "max-width:1200px;margin:0 auto;padding:0 48px";
 
   return (
     <div style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text1)" }}>
@@ -665,6 +707,18 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* Accessibility mode toggle */}
+          <button
+            onClick={toggleAccessibilityMode}
+            title={isAccessibilityMode ? "Accessibility mode on" : "Accessibility mode off"}
+            style={{
+              padding:8, borderRadius:10, background:"transparent", border:"none",
+              cursor:"pointer", display:"flex",
+              color: isAccessibilityMode ? "#4F6EF7" : "var(--text4)",
+            }}>
+            <Accessibility size={16}/>
+          </button>
+
           <button onClick={toggleSilentMode} style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
             {isSilentMode?<VolumeX size={16}/>:<Volume2 size={16}/>}
           </button>
@@ -703,7 +757,7 @@ export default function LandingPage() {
         <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 16px", borderRadius:20, background:"var(--surface)", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", marginBottom:28, fontSize:13, color:"var(--text3)", fontWeight:500 }}>
             <span style={{ width:8, height:8, borderRadius:"50%", background:"#22C55E", display:"block" }}/>
-            20 Games · 1,000 Stages Each · Free to Start
+            24 Games · 100 Stages Each · Free to Start
           </div>
 
           <h1 className="hero-h1" style={{ fontFamily:"Georgia,serif", fontWeight:700, lineHeight:1.06, marginBottom:24, fontSize:"clamp(52px,5.5vw,80px)" }}>
@@ -712,7 +766,7 @@ export default function LandingPage() {
           </h1>
 
           <p style={{ fontSize:20, color:"var(--text3)", lineHeight:1.65, marginBottom:36, maxWidth:460 }}>
-            Explore 20 logic disciplines and 1,000 hand-crafted stages each. An elegant training suite for the modern mind.
+            24 logic disciplines. 100 stages each. An elegant training suite for every mind — children, professionals, and seniors alike.
           </p>
 
           <div style={{ display:"flex", gap:14, marginBottom:40, flexWrap:"wrap" }}>
@@ -744,7 +798,7 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Right — device */}
+        {/* Right — device mockup */}
         <motion.div className="hero-device" initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6, delay:0.15 }} style={{ display:"flex", justifyContent:"center" }}>
           <div style={{ position:"relative" }}>
             <div style={{ background:"linear-gradient(145deg,#E8E4DE,#CEC9C1)", borderRadius:32, padding:12, boxShadow:"0 40px 80px rgba(0,0,0,0.2),0 8px 24px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.5)" }}>
@@ -765,8 +819,8 @@ export default function LandingPage() {
       <section style={{ background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", padding:"22px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-around", flexWrap:"wrap", gap:16 }}>
           {[
-            { icon:Trophy,   text:"20 Unique Disciplines" },
-            { icon:Star,     text:"20,000+ Expert Stages" },
+            { icon:Trophy,   text:"24 Unique Disciplines" },
+            { icon:Star,     text:"2,400+ Expert Stages" },
             { icon:Infinity, text:"Infinite Daily Challenges" },
             { icon:Shield,   text:"Zero Ads. Ever." },
             { icon:Zap,      text:"5 Free Plays Daily" },
@@ -780,7 +834,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TOKEN ECONOMY EXPLAINER ── */}
+      {/* ── TOKEN ECONOMY ── */}
       <section style={{ maxWidth:1200, margin:"0 auto", padding:"72px 48px 0" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ marginBottom:36 }}>
           <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>How it works</p>
@@ -788,26 +842,23 @@ export default function LandingPage() {
             Play every game, every day.
           </h2>
           <p style={{ fontSize:18, color:"var(--text3)", maxWidth:560 }}>
-            Free players get 5 daily plays across all 20 games. Pro subscribers play without limits.
+            Free players get 5 daily plays across all 24 games. Pro subscribers play without limits.
           </p>
         </motion.div>
 
-        {/* Bento stats */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:72 }}>
-          {/* Free tier */}
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0 }}
-            style={{ gridColumn:"span 1", background:"var(--surface)", borderRadius:24, border:"0.5px solid var(--border)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
+            style={{ background:"var(--surface)", borderRadius:24, border:"0.5px solid var(--border)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Zap size={22} color="#4F6EF7"/>
             </div>
             <p style={{ fontSize:48, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>5</p>
             <p style={{ fontSize:16, fontWeight:600, color:"var(--text2)", marginBottom:6 }}>Free Daily Plays</p>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Play any of the 20 games. Tokens reset every 24 hours at midnight.</p>
+            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Play any of the 24 games. Tokens reset every 24 hours at midnight.</p>
           </motion.div>
 
-          {/* Streak */}
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.08 }}
-            style={{ gridColumn:"span 1", background:"linear-gradient(135deg,rgba(245,158,11,0.1),rgba(234,88,12,0.08))", borderRadius:24, border:"0.5px solid rgba(245,158,11,0.2)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
+            style={{ background:"linear-gradient(135deg,rgba(245,158,11,0.1),rgba(234,88,12,0.08))", borderRadius:24, border:"0.5px solid rgba(245,158,11,0.2)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(245,158,11,0.15)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Flame size={22} color="#F59E0B" className="streak-fire"/>
             </div>
@@ -816,15 +867,14 @@ export default function LandingPage() {
             <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Play 7 days in a row and earn 10 bonus plays automatically added to your account.</p>
           </motion.div>
 
-          {/* Pro */}
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.16 }}
-            style={{ gridColumn:"span 1", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", borderRadius:24, padding:"28px 28px", boxShadow:"0 16px 40px rgba(79,110,247,0.25)" }}>
+            style={{ background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", borderRadius:24, padding:"28px 28px", boxShadow:"0 16px 40px rgba(79,110,247,0.25)" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(255,255,255,0.2)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Infinity size={22} color="white"/>
             </div>
             <p style={{ fontSize:48, fontWeight:700, color:"white", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>∞</p>
             <p style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Pro Unlimited</p>
-            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited plays, all 1,000 stages per game, Infinite Mode and Family leaderboards from $2/mo.</p>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited plays, all 100 stages per game, Infinite Mode and Family leaderboards from $2/mo.</p>
             <Link href="/pricing" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 18px", borderRadius:12, background:"white", color:"#4F6EF7", fontSize:13, fontWeight:700, textDecoration:"none" }}>
               Upgrade <ChevronRight size={13}/>
             </Link>
@@ -863,7 +913,7 @@ export default function LandingPage() {
           <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>The Collection</p>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
             <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1.1 }}>
-              Twenty Games.<br/>
+              Twenty-Four Games.<br/>
               <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>One Subscription.</em>
             </h2>
             <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 20px", borderRadius:14, border:"0.5px solid var(--border)", background:"var(--surface)", color:"var(--text2)", textDecoration:"none", fontSize:14, fontWeight:600 }}>
@@ -889,9 +939,9 @@ export default function LandingPage() {
           </h2>
           <div className="how-grid">
             {[
-              { from:"#4F6EF7", to:"#7C4FD4", num:"01", title:"Choose a discipline", body:"20 logic games, each with its own rhythm. Start free with any game — no account needed." },
+              { from:"#4F6EF7", to:"#7C4FD4", num:"01", title:"Choose a discipline", body:"24 logic games, each with its own rhythm. Start free with any game — no account needed." },
               { from:"#9C6BE8", to:"#C4785A", num:"02", title:"Train daily",          body:"XP decays in real time. The faster you solve, the more you earn. Build a streak for bonus plays." },
-              { from:"#7C9E87", to:"#4A7C59", num:"03", title:"Master & compete",     body:"Family leaderboards, shareable challenge links, and real-time celebrations when records fall." },
+              { from:"#7C9E87", to:"#4A7C59", num:"03", title:"Master and compete",   body:"Family leaderboards, shareable challenge links, and real-time celebrations when records fall." },
             ].map((s,i)=>(
               <motion.div key={i} initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
                 style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:28, boxShadow:"var(--shadow-sm)" }}>
@@ -976,29 +1026,26 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
       {/* ── FAQ ── */}
       <div id="faq" style={{scrollMarginTop:"70px"}}/>
       <section style={{ maxWidth:720, margin:"0 auto", padding:"80px 48px" }}>
         <div style={{ textAlign:"center", marginBottom:48 }}>
-          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em",
-            textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>FAQ</p>
-          <h2 style={{ fontSize:36, fontWeight:700, color:"var(--text1)",
-            fontFamily:"Georgia,serif", lineHeight:1.15 }}>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>FAQ</p>
+          <h2 style={{ fontSize:36, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1.15 }}>
             Frequently Asked Questions
           </h2>
         </div>
         {[
-          ["Is MindState free to use?", "Yes — free users get 5 plays per day across all 20 games. Daily challenges are always free. Subscribe for unlimited access at $2/month."],
-          ["What does Pro include?", "Unlimited plays across all 20 games, all 1,000 stages per game, family leaderboards for up to 7 members, and early access to new games."],
+          ["Is MindState free to use?", "Yes — free users get 5 plays per day across all 24 games. Daily challenges are always free. Subscribe for unlimited access at $2/month."],
+          ["What does Pro include?", "Unlimited plays across all 24 games, all 100 stages per game, family leaderboards for up to 7 members, and early access to new games."],
           ["How much does Pro cost?", "Individual Pro is $2/month. Family plans start at $5/month for 3 members and $10/month for 7 members."],
+          ["Is it appropriate for children?", "Yes. The puzzles build spatial reasoning and logical thinking without any ads, distractions, or inappropriate content."],
+          ["Can it help older adults stay sharp?", "Yes. Accessibility Mode provides larger touch targets and optional timer-free play, designed for comfortable daily use at any age."],
+          ["How does family billing work?", "One monthly charge covers up to 3 or 7 independent player profiles, each with their own progress and scores, plus a shared family leaderboard."],
           ["Can I cancel anytime?", "Yes. Cancel from your profile settings at any time. You keep access until the end of your billing period."],
-          ["What are the 20 games?", "Tango, Memory, Queens, Sudoku, Zip, Minesweeper, Flow, Nonogram, Bridges, Pattern Match, 2048 Pro, Kakuro, Gravity Sort, Hex Merge, Logic Path, Light Up, Patches, Word Sling, Hearts, and Solitaire."],
           ["Do I need an account?", "No — you can play as a guest. Creating a free account saves your progress, streaks, and XP scores to the leaderboard."],
           ["Does it work offline?", "Yes. MindState is a Progressive Web App. Install it to your home screen and play without an internet connection."],
-          ["Are new games coming?", "Yes — 6 new games are in development including Chess Puzzles, Cryptogram, and Calcudoku. Pro subscribers get early access first."],
           ["What languages are supported?", "English, Spanish, German, French, Portuguese, Dutch, and Hebrew with full right-to-left layout."],
-          ["Is this good for brain training?", "MindState covers spatial reasoning, numerical logic, memory, and pattern recognition — 20 disciplines designed for daily cognitive exercise."],
         ].map(([q, a], i) => (
           <details key={i} style={{ borderBottom:"0.5px solid var(--border)" }}>
             <summary style={{ fontSize:15, fontWeight:600, color:"var(--text1)",
@@ -1007,8 +1054,7 @@ export default function LandingPage() {
               {q}
               <span style={{ fontSize:20, color:"var(--text4)", flexShrink:0 }}>+</span>
             </summary>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.75,
-              paddingBottom:18, maxWidth:600 }}>{a}</p>
+            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.75, paddingBottom:18, maxWidth:600 }}>{a}</p>
           </details>
         ))}
       </section>

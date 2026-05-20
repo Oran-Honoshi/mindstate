@@ -169,3 +169,94 @@ body {
   0%,100% { opacity:1; } 50% { opacity:0.7; }
 }
 .streak-fire { animation: flicker 1.5s ease-in-out infinite; }
+
+
+/*
+  ─────────────────────────────────────────────────────────
+  ACCESSIBILITY MODE
+  Applied via .accessibility-mode on <html> when the user
+  enables the Large Print / Senior-friendly toggle.
+  
+  Goals:
+    1. All tap targets ≥ 48×48px (WCAG 2.5.5 AAA)
+    2. Typography switches to system sans (higher legibility)
+    3. XP timer visual decay is hidden (CSS only — JS must
+       also read isAccessibilityMode from store to skip decay)
+    4. Increased line-height and letter-spacing throughout
+  ─────────────────────────────────────────────────────────
+*/
+
+.accessibility-mode {
+  /* Override Georgia serif headings with legible sans */
+  --font-display: var(--font-outfit), system-ui, sans-serif;
+}
+
+/* Larger body text */
+.accessibility-mode body {
+  font-size: 17px;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+/* Replace Georgia headings */
+.accessibility-mode h1,
+.accessibility-mode h2,
+.accessibility-mode h3,
+.accessibility-mode h4,
+.accessibility-mode [style*="Georgia"],
+.accessibility-mode [style*="serif"] {
+  font-family: var(--font-outfit), system-ui, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
+/* All interactive elements: minimum 48px tap target */
+.accessibility-mode button,
+.accessibility-mode [role="button"],
+.accessibility-mode a,
+.accessibility-mode input,
+.accessibility-mode select {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Game grid cells — overrides inline px values where possible */
+.accessibility-mode .game-cell {
+  min-width: 48px !important;
+  min-height: 48px !important;
+}
+
+/* Hide the XP timer bar visual decay animation */
+.accessibility-mode .xp-timer-bar {
+  animation: none !important;
+  transition: none !important;
+  /* Keep bar full width so it doesn't cause layout shift */
+  width: 100% !important;
+}
+
+/* Hide the live XP countdown number */
+.accessibility-mode .xp-live-counter {
+  visibility: hidden;
+}
+
+/* Increase nav link hit targets */
+.accessibility-mode .ms-nav a,
+.accessibility-mode .ms-nav button {
+  padding: 12px 16px;
+}
+
+/* Stronger contrast on borders */
+.accessibility-mode {
+  --border: rgba(0, 0, 0, 0.25);
+  --border2: rgba(0, 0, 0, 0.35);
+}
+
+.accessibility-mode.dark {
+  --border: rgba(255, 255, 255, 0.25);
+  --border2: rgba(255, 255, 255, 0.35);
+}
+
+/* Focus rings — always visible in accessibility mode */
+.accessibility-mode *:focus-visible {
+  outline: 3px solid #4F6EF7;
+  outline-offset: 3px;
+}
