@@ -8,13 +8,13 @@ import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Brain, ChevronRight, ArrowRight, Check,
+  ChevronRight, ArrowRight, Check,
   Volume2, VolumeX, Sun, Moon, Star, Zap,
-  Flame, Shield, Infinity, Trophy, Lock, Accessibility
+  Flame, Shield, Infinity, Trophy, Download, Accessibility
 } from "lucide-react";
 import Link from "next/link";
 import {
-  generateTangoBoard, validateBoard,
+  generateTangoBoard, validateBoard, buildSeed,
   type Cell, type TangoBoard, type CellStatus
 } from "@/lib/games/tangoGenerator";
 import { playClick, playSuccess } from "@/lib/audio/soundEngine";
@@ -23,6 +23,7 @@ import { useAuthStore } from "@/store/authStore";
 import { GameIcon, SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 const BASE = "https://ixlcndaryfgkbcjooitu.supabase.co/storage/v1/object/public/asset%20library/";
 const IMGS = {
@@ -42,7 +43,6 @@ const PLANS = [
   { name:"Family · 3", price:"$5",  period:"/mo", features:["3 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:true },
   { name:"Family · 7", price:"$10", period:"/mo", features:["7 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:false },
 ];
-
 
 // ── HERO CAROUSEL ─────────────────────────────────────────────────────────
 const CAROUSEL_GAMES = [
@@ -545,7 +545,6 @@ function LandingSnapshot({ slug }: { slug: string }) {
   return <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{snap}</div>;
 }
 
-
 // ── Game Card ─────────────────────────────────────────────────────────────────
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
@@ -657,6 +656,9 @@ export default function LandingPage() {
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
 
+  // PWA install prompt — intercepts Chrome's bottom-sheet and gives us control
+  const { isInstallable, triggerInstall } = usePWAInstall();
+
   useEffect(() => {
     if (!user || isPro) return;
     setTokens(getTokensRemaining(user.id));
@@ -692,7 +694,7 @@ export default function LandingPage() {
 
         {/* Right controls */}
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          {/* Token counter for logged-in free users */}
+          {/* Token counter */}
           {user && !isPro && (
             <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:20, background:"var(--bg2)", border:"0.5px solid var(--border)" }}>
               <Zap size={13} color={tokens>0?"#4F6EF7":"#EF4444"} fill={tokens>0?"#4F6EF7":"#EF4444"}/>
@@ -705,6 +707,25 @@ export default function LandingPage() {
               <Infinity size={12} color="#4F6EF7"/>
               <span style={{ fontSize:11, fontWeight:700, color:"#4F6EF7" }}>Pro</span>
             </div>
+          )}
+
+          {/* Install App — only shown when Chrome fires beforeinstallprompt */}
+          {isInstallable && (
+            <motion.button
+              initial={{ opacity:0, scale:0.8 }}
+              animate={{ opacity:1, scale:1 }}
+              onClick={triggerInstall}
+              title="Install MindState app"
+              style={{
+                display:"flex", alignItems:"center", gap:5,
+                padding:"6px 12px", borderRadius:20,
+                background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                border:"none", cursor:"pointer", color:"white",
+                fontSize:12, fontWeight:600,
+              }}>
+              <Download size={13}/>
+              <span className="hide-mobile">Install App</span>
+            </motion.button>
           )}
 
           {/* Accessibility mode toggle */}
@@ -753,7 +774,6 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="hero-grid" style={{ maxWidth:1200, margin:"0 auto", padding:"100px 48px 80px", minHeight:"100vh" }}>
-        {/* Left */}
         <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 16px", borderRadius:20, background:"var(--surface)", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", marginBottom:28, fontSize:13, color:"var(--text3)", fontWeight:500 }}>
             <span style={{ width:8, height:8, borderRadius:"50%", background:"#22C55E", display:"block" }}/>
@@ -778,6 +798,16 @@ export default function LandingPage() {
               style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--surface)", color:"var(--text2)", fontWeight:600, fontSize:16, textDecoration:"none", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)" }}>
               Explore Games <ArrowRight size={15}/>
             </Link>
+            {/* Hero-level install CTA — only on mobile when installable */}
+            {isInstallable && (
+              <motion.button
+                initial={{ opacity:0, y:8 }}
+                animate={{ opacity:1, y:0 }}
+                onClick={triggerInstall}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--surface)", color:"var(--text2)", fontWeight:600, fontSize:16, border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                <Download size={15}/> Install App
+              </motion.button>
+            )}
           </div>
 
           {/* Social proof */}
@@ -921,7 +951,6 @@ export default function LandingPage() {
             </Link>
           </div>
         </motion.div>
-
         <div className="games-grid-4">
           {GAMES.map((game,i)=><GameCard key={game.slug} game={game} i={i}/>)}
         </div>
@@ -977,7 +1006,6 @@ export default function LandingPage() {
       </section>
 
       <div id="coming-soon" style={{scrollMarginTop:"70px"}}/>
-      {/* ── COMING SOON FULL ── */}
       <ComingSoonTeaser/>
 
       <div id="pricing" style={{scrollMarginTop:"70px"}}/>
