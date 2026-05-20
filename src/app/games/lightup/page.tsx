@@ -31,7 +31,7 @@ function getDifficulty(s:number):Difficulty{
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function shareResult(stage:number,xp:number,elapsed:string){const text=`● MindState · Light Up Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
+function shareResult(stage:number,xp:number,elapsed:string){const text=`● MindState · Light Up Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
 function LightUpPageInner(){
@@ -53,7 +53,6 @@ function LightUpPageInner(){
   const [gridHistory, setGridHistory] = useState<typeof grid[]>([]);
   const [solutionGrid, setSolutionGrid] = useState<string[][]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -86,7 +85,7 @@ function LightUpPageInner(){
     } else {
       loadStage(stage);
     }
-  },[]); // mount only
+  },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
   function handleCell(r:number,c:number){
@@ -94,7 +93,8 @@ function LightUpPageInner(){
     const cell=grid[r][c];
     if(cell.type==="black")return;
     const ng=grid.map(row=>[...row]);
-    ng[r][c]=cell.type==="bulb"?{type:"white",lit:false}:{type:"bulb"};
+    // Fix: white cell has no 'lit' property — just use type discriminant
+    ng[r][c]=cell.type==="bulb"?{type:"white"}:{type:"bulb"};
     setGridHistory(h=>[...h.slice(-19),[...grid.map(r=>[...r])]]);
     setGrid(ng);
     const lt=computeLighting(ng);
@@ -105,12 +105,12 @@ function LightUpPageInner(){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
-          markStageCompleted("lightup",stage);
-          if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
+      markStageCompleted("lightup",stage);
+      if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
   }
 
-    function handleUndo() {
+  function handleUndo() {
     if (gridHistory.length === 0) return;
     const prev = gridHistory[gridHistory.length-1];
     setGrid(prev);
@@ -120,7 +120,6 @@ function LightUpPageInner(){
 
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3) return;
-    // Place next correct bulb from solution
     for (const solKey of board.solution) {
       const [sr, sc] = solKey.split(",").map(Number);
       if (grid[sr][sc].type === "white") {
@@ -136,6 +135,7 @@ function LightUpPageInner(){
       }
     }
   }
+
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
 
   const diff=getDifficulty(stage);
@@ -162,7 +162,7 @@ function LightUpPageInner(){
               <span style={{fontSize:11,color:"var(--text4)"}}>{litCount}/{totalWhite} lit</span>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -202,7 +202,6 @@ function LightUpPageInner(){
           </div>
         </div>
 
-        {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
           <HintButton
@@ -210,20 +209,20 @@ function LightUpPageInner(){
             xpCost={100}
             onUseHint={handleHint}
             disabled={completed}/>
-          </div>
+        </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
+          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
       <OutOfTokensModal
-        gameName="Lightup"
+        gameName="Light Up"
         open={showTokenModal}
         onClose={()=>setShowTokenModal(false)}/>
-      {showMap&&<StageMap gameSlug="lightup" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showMap&&<StageMap gameSlug="lightup" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
         stage={stage}
@@ -233,11 +232,11 @@ function LightUpPageInner(){
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
-          const text=`MindState · Lightup Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
+          const text=`MindState · Light Up Stage ${stage} · ${finalXP} XP · ${elapsed}`;
+          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
-</div>
+    </div>
   );
 }
 
