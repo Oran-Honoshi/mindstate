@@ -1,23 +1,21 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
-import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2}from"lucide-react";
+import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
 import Link from"next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
-import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
+import { ShowSolution } from "@/components/ui/ShowSolution";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
-
 import{generateGravitySort,checkGravitySort,type GravityBoard}from"@/lib/games/gravitySortGenerator";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
@@ -25,15 +23,9 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
-function getDifficulty(s:number):Difficulty{
-  if(s===1)return"medium";
-  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
-  return h<20?"easy":h<70?"medium":"hard";
-}
-
+function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
 function GravitySortPageInner(){
@@ -45,71 +37,54 @@ function GravitySortPageInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
-  const[showResume,setShowResume]=useState(false);
-  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
   const[moves,setMoves]=useState(0);
+  const[solutionRevealed,setSolutionRevealed]=useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-
-  // Responsive: calculate block size from viewport and column count
-  const boardWidth = useBoardWidth(32, 460);
+  const boardWidth=useBoardWidth(32,460);
 
   usePageVisibility(
-    () => { if (timerRef.current) clearInterval(timerRef.current); },
-    () => { if (xpState && !completed) {
-      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
-    }}
+    ()=>{if(timerRef.current)clearInterval(timerRef.current);},
+    ()=>{if(xpState&&!completed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("gravity-sort", {stage, savedAt: Date.now()});
+    saveGameState("gravity-sort",{stage,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const b=generateGravitySort(`gravity-${diff}-${s}`,diff);
     const xp=createXPState(diff);
     setBoard(b);setBlocks(b.blocks.map(col=>[...col]));setSelected(null);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");setMoves(0);
+    setSolutionRevealed(false);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("gravity-sort");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
-  },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  function handleRevealSolution(){
+    if(!xpState)return;
+    setSolutionRevealed(true);
+    setSelected(null);
+    setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
+    if(timerRef.current)clearInterval(timerRef.current);
+  }
+
   function handleColClick(col:number){
-    if(!board||completed)return;
-    if(selected===null){
-      if(blocks[col].length===0)return;
-      setSelected(col);playClick();
-    } else {
+    if(!board||completed||solutionRevealed)return;
+    if(selected===null){if(blocks[col].length===0)return;setSelected(col);playClick();}
+    else{
       if(selected===col){setSelected(null);return;}
       if(blocks[col].length>=board.rows){playError();setSelected(null);return;}
       if(blocks[selected].length===0){setSelected(col);return;}
-      const nb=blocks.map(c=>[...c]);
-      const block=nb[selected].pop()!;
-      nb[col].push(block);
+      const nb=blocks.map(c=>[...c]);const block=nb[selected].pop()!;nb[col].push(block);
       setBlocks(nb);setSelected(null);setMoves(m=>m+1);playClick();
-      if(checkGravitySort(board,nb)&&xpState){
-        const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
-        clearGameState("gravity-sort");
-        if(timerRef.current)clearInterval(timerRef.current);
-        playSuccess();setTimeout(()=>triggerConfetti(),80);
-        markStageCompleted("gravity-sort",stage);
-        if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"gravity-sort",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
+      if(checkGravitySort(board,nb)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);clearGameState("gravity-sort");if(timerRef.current)clearInterval(timerRef.current);playSuccess();setTimeout(()=>triggerConfetti(),80);markStageCompleted("gravity-sort",stage);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"gravity-sort",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
     }
   }
 
@@ -117,9 +92,9 @@ function GravitySortPageInner(){
 
   const diff=getDifficulty(stage);
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
-  const gap = 8;
-  // Responsive block size: fit all columns into viewport
-  const blockSize = Math.min(56, Math.floor((boardWidth - (board.cols - 1) * gap) / board.cols));
+  const gap=8;
+  const blockSize=Math.min(56,Math.floor((boardWidth-(board.cols-1)*gap)/board.cols));
+  const currentXP=calculateXP(xpState).currentXP;
 
   return(
     <div className="game-page">
@@ -144,92 +119,43 @@ function GravitySortPageInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
-          Click a column to pick up its top block · Click another to drop it<br/>Sort each color into its own column
-        </div>
+        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>Click a column to pick up its top block · Click another to drop it<br/>Sort each color into its own column</div>}
 
-        {/* Target indicator */}
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:400}}>
+            Strategy: Move top block to its matching color column · Use free columns as buffers · XP set to 1
+          </motion.div>
+        )}
+
         <div style={{display:"flex",gap:gap,flexWrap:"wrap",justifyContent:"center"}}>
-          {board.colors.map((color,i)=>(
-            <div key={i} style={{width:blockSize,textAlign:"center"}}>
-              <div style={{width:blockSize,height:6,borderRadius:3,background:color,opacity:0.4,marginBottom:2}}/>
-              <span style={{fontSize:9,color:"var(--text4)"}}>col {i+1}</span>
-            </div>
-          ))}
-          {Array.from({length:board.cols-board.colors.length},(_,i)=>(
-            <div key={`empty-${i}`} style={{width:blockSize,textAlign:"center"}}>
-              <div style={{width:blockSize,height:6,borderRadius:3,background:"#E2E8F0",marginBottom:2}}/>
-              <span style={{fontSize:9,color:"var(--text4)"}}>free</span>
-            </div>
-          ))}
+          {board.colors.map((color,i)=>(<div key={i} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:color,opacity:0.4,marginBottom:2}}/><span style={{fontSize:9,color:"var(--text4)"}}>col {i+1}</span></div>))}
+          {Array.from({length:board.cols-board.colors.length},(_,i)=>(<div key={`e-${i}`} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:"#E2E8F0",marginBottom:2}}/><span style={{fontSize:9,color:"var(--text4)"}}>free</span></div>))}
         </div>
 
-        {/* Columns — overflow hidden to prevent bleed */}
         <div style={{display:"flex",gap:gap,alignItems:"flex-end",maxWidth:"100%",overflow:"hidden"}}>
           {blocks.map((col,ci)=>{
             const isSelected=selected===ci;
             const isSorted=col.length>0&&col.every(b=>b===ci)&&ci<board.colors.length;
             return(
-              <motion.div key={ci}
-                onClick={()=>handleColClick(ci)}
-                animate={isSelected?{y:-8}:{y:0}}
-                transition={{type:"spring",stiffness:400,damping:25}}
-                style={{cursor:"pointer",display:"flex",flexDirection:"column-reverse",gap:4,
-                  width:blockSize,minHeight:board.rows*blockSize+board.rows*4,
-                  background:isSelected?"rgba(79,110,247,0.06)":"#F8F7F5",
-                  borderRadius:14,padding:6,border:`2px solid ${isSelected?"#4F6EF7":isSorted?"#22C55E":"#E2E8F0"}`,
-                  transition:"border-color 0.2s,background 0.2s",
-                  position:"relative",flexShrink:0}}>
-                {col.map((block,bi)=>(
-                  <motion.div key={`${ci}-${bi}`}
-                    initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}}
-                    transition={{type:"spring",stiffness:400,damping:25}}
-                    style={{width:"100%",height:blockSize-12,borderRadius:10,
-                      background:board.colors[block],
-                      boxShadow:`0 3px 10px ${board.colors[block]}60`,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:18,flexShrink:0}}>
-                    {bi===col.length-1&&isSelected&&"↑"}
-                  </motion.div>
-                ))}
-                {isSorted&&(
-                  <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}></div>
-                )}
+              <motion.div key={ci} onClick={()=>handleColClick(ci)} animate={isSelected?{y:-8}:{y:0}} transition={{type:"spring",stiffness:400,damping:25}}
+                style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(79,110,247,0.06)":"#F8F7F5",borderRadius:14,padding:6,border:`2px solid ${isSelected?"#4F6EF7":isSorted?"#22C55E":"#E2E8F0"}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
+                {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"↑"}</motion.div>))}
+                {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>✓</div>}
               </motion.div>
             );
           })}
         </div>
 
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100}
             onUseHint={()=>{
-              if(!board||!xpState||hintsUsed>=3||completed)return;
-              for(let fromCol=0;fromCol<blocks.length;fromCol++){
-                const col=blocks[fromCol];
-                if(col.length===0)continue;
-                const topBlock=col[col.length-1];
-                if(fromCol===topBlock)continue;
-                const toCol=topBlock;
-                if(blocks[toCol].length<board.rows){
-                  setSelected(fromCol);
-                  setTimeout(()=>{
-                    const nb=blocks.map((c:number[])=>[...c]);
-                    const block=nb[fromCol].pop()!;
-                    nb[toCol].push(block);
-                    setBlocks(nb);setSelected(null);setMoves(m=>m+1);
-                    playError();
-                  },600);
-                  setHintsUsed(h=>h+1);
-                  setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
-                  return;
-                }
-              }
-              setHintsUsed(h=>h+1);
-              setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+              if(!board||!xpState||hintsUsed>=3||completed||solutionRevealed)return;
+              for(let fromCol=0;fromCol<blocks.length;fromCol++){const col=blocks[fromCol];if(col.length===0)continue;const topBlock=col[col.length-1];if(fromCol===topBlock)continue;const toCol=topBlock;if(blocks[toCol].length<board.rows){setSelected(fromCol);setTimeout(()=>{const nb=blocks.map((c:number[])=>[...c]);const block=nb[fromCol].pop()!;nb[toCol].push(block);setBlocks(nb);setSelected(null);setMoves(m=>m+1);playError();},600);setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);return;}}
+              setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
             }}
-            disabled={completed}/>
+            disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -239,32 +165,12 @@ function GravitySortPageInner(){
         </div>
       </main>
 
-      <OutOfTokensModal
-        gameName="Gravity Sort"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Gravity Sort" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="gravity-sort" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={getDifficulty(stage)}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Gravity Sort Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Gravity Sort Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }
-
-export default function GravitySortPage() {
-  return (
-    <ErrorBoundary game="gravity-sort">
-      <GravitySortPageInner/>
-    </ErrorBoundary>
-  );
-}
+export default function GravitySortPage(){return<ErrorBoundary game="gravity-sort"><GravitySortPageInner/></ErrorBoundary>;}

@@ -1,84 +1,48 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
-import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy,RefreshCw}from"lucide-react";
+import{ArrowLeft,RotateCcw,ChevronRight,RefreshCw}from"lucide-react";
 import Link from"next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
-import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-
+import { ShowSolution } from "@/components/ui/ShowSolution";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
-function getDifficulty(s:number):Difficulty{
-  if(s===1)return"medium";
-  const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
-  return h<20?"easy":h<70?"medium":"hard";
-}
-
+function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
 type Suit="♥"|"♦"|"♣"|"♠";
 type Card={suit:Suit;value:number;label:string;faceUp:boolean};
-
 function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
-
-function makeDeck(seed:number):Card[]{
-  const suits:Suit[]=["♥","♦","♣","♠"];
-  const labels=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
-  const deck=suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+1,label,faceUp:false})));
-  const rng=mulberry32(seed);
-  for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
-  return deck;
-}
-
+function makeDeck(seed:number):Card[]{const suits:Suit[]=["♥","♦","♣","♠"];const labels=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];const deck=suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+1,label,faceUp:false})));const rng=mulberry32(seed);for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}return deck;}
 function isRed(suit:Suit){return suit==="♥"||suit==="♦";}
-function canStack(card:Card,onto:Card|null):boolean{
-  if(!onto)return card.value===13; // King on empty
-  return isRed(card.suit)!==isRed(onto.suit)&&card.value===onto.value-1;
-}
-function canFoundation(card:Card,top:Card|null):boolean{
-  if(!top)return card.value===1; // Ace
-  return card.suit===top.suit&&card.value===top.value+1;
-}
+function canStack(card:Card,onto:Card|null):boolean{if(!onto)return card.value===13;return isRed(card.suit)!==isRed(onto.suit)&&card.value===onto.value-1;}
+function canFoundation(card:Card,top:Card|null):boolean{if(!top)return card.value===1;return card.suit===top.suit&&card.value===top.value+1;}
 function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
-function XPBar({xpState}:{xpState:XPState}){
-  const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);
-}
+function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);}
 
 function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean}){
   const w=small?36:48,h=small?52:68;
-  if(!card.faceUp)return(
-    <div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>
-  );
-  return(
-    <motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}}
-      style={{width:w,height:h,borderRadius:6,background:selected?"#EEF2FF":"white",border:`1.5px solid ${selected?"#4F6EF7":"#E2E8F0"}`,
-        cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",
-        boxShadow:selected?"0 0 0 2px #4F6EF7":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
-      <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span>
-      <span style={{fontSize:small?14:16,color:cardColor(card.suit),lineHeight:1}}>{card.suit}</span>
-    </motion.div>
-  );
+  if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>);
+  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"#EEF2FF":"white",border:`1.5px solid ${selected?"#4F6EF7":"#E2E8F0"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px #4F6EF7":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
+    <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span>
+    <span style={{fontSize:small?14:16,color:cardColor(card.suit),lineHeight:1}}>{card.suit}</span>
+  </motion.div>);
 }
 
 function SolitairePageInner(){
@@ -93,239 +57,107 @@ function SolitairePageInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
-  const[showResume,setShowResume]=useState(false);
-  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
-  const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
+  const[solutionRevealed,setSolutionRevealed]=useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
   usePageVisibility(
-    () => { if (timerRef.current) clearInterval(timerRef.current); },
-    () => { if (xpState && !completed) {
-      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
-    }}
+    ()=>{if(timerRef.current)clearInterval(timerRef.current);},
+    ()=>{if(xpState&&!completed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("solitaire", {stage, savedAt: Date.now()});
+    saveGameState("solitaire",{stage,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const deck=makeDeck(seedToNum(`solitaire-${diff}-${s}`));
-    // Deal tableau
-    const tab:Card[][]=[];
-    let idx=0;
-    for(let col=0;col<7;col++){
-      const pile:Card[]=[];
-      for(let row=0;row<=col;row++){pile.push({...deck[idx++],faceUp:row===col});}
-      tab.push(pile);
-    }
-    setTableau(tab);
-    setStock(deck.slice(idx).map(c=>({...c,faceUp:false})));
+    const tab:Card[][]=[];let idx=0;
+    for(let col=0;col<7;col++){const pile:Card[]=[];for(let row=0;row<=col;row++){pile.push({...deck[idx++],faceUp:row===col});}tab.push(pile);}
+    setTableau(tab);setStock(deck.slice(idx).map(c=>({...c,faceUp:false})));
     setWaste([]);setFoundations([[],[],[],[]]);setSelected(null);setMoves(0);
     const xp=createXPState(diff);
-    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
+    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");setSolutionRevealed(false);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("solitaire");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
-  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  function drawCard(){
-    if(stock.length===0){setStock([...waste].reverse().map(c=>({...c,faceUp:false})));setWaste([]);return;}
-    const card={...stock[stock.length-1],faceUp:true};
-    setStock(s=>s.slice(0,-1));setWaste(w=>[...w,card]);
-    setSelected(null);playClick();
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  function handleRevealSolution(){
+    if(!xpState)return;
+    setSolutionRevealed(true);
+    setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
+    if(timerRef.current)clearInterval(timerRef.current);
   }
 
+  function drawCard(){
+    if(solutionRevealed)return;
+    if(stock.length===0){setStock([...waste].reverse().map(c=>({...c,faceUp:false})));setWaste([]);return;}
+    const card={...stock[stock.length-1],faceUp:true};
+    setStock(s=>s.slice(0,-1));setWaste(w=>[...w,card]);setSelected(null);playClick();
+  }
   function checkWin(f:Card[][]){return f.every(pile=>pile.length===13);}
 
   function handleFoundationClick(fi:number){
+    if(solutionRevealed)return;
     const top=foundations[fi][foundations[fi].length-1]??null;
     if(selected){
-      // Try to move selected card here
       let card:Card|null=null;
-      if(selected.pile==="waste"){card=waste[waste.length-1]??null;}
+      if(selected.pile==="waste")card=waste[waste.length-1]??null;
       else if(selected.pile==="tableau"){const pile=tableau[selected.col];card=pile[selected.idx]??null;}
       if(card&&canFoundation(card,top)){
         const nf=foundations.map((p,i)=>i===fi?[...p,card!]:p);
         if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));
         else setTableau(t=>{const nt=t.map(p=>[...p]);nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;return nt;});
         setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();
-        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);
-          markStageCompleted("solitaire",stage);if(user){updateStreak(user.id); saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
+        if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);markStageCompleted("solitaire",stage);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
         return;
       }
     }
-    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});
-    playClick();
+    setSelected({pile:"foundation",col:fi,idx:foundations[fi].length-1});playClick();
   }
 
-  function tryMoveToFoundation(card: Card, sourceType: "waste"|"tableau", sourceCol: number, sourceIdx: number): boolean {
-    for (let fi = 0; fi < 4; fi++) {
-      const top = foundations[fi][foundations[fi].length-1] ?? null;
-      if (canFoundation(card, top)) {
-        const nf = foundations.map((p,i) => i===fi ? [...p, card] : p);
-        if (sourceType === "waste") setWaste(w => w.slice(0,-1));
-        else setTableau(t => {
-          const nt = t.map(p => [...p]);
-          nt[sourceCol] = nt[sourceCol].slice(0, sourceIdx);
-          if (nt[sourceCol].length > 0) nt[sourceCol][nt[sourceCol].length-1].faceUp = true;
-          return nt;
-        });
-        setFoundations(nf);
-        setSelected(null);
-        setMoves(m => m+1);
-        playSuccess();
-        if (checkWin(nf) && xpState) {
-          const earned = finalizeXP(xpState);
-          setFinalXP(earned); setCompleted(true);
-          if (timerRef.current) clearInterval(timerRef.current);
-          setTimeout(() => triggerConfetti(), 80);
-          if (user) { updateStreak(user.id); saveScore({user_id:user.id, game_slug:"solitaire", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000)}); }
-        }
-        return true;
-      }
-    }
-    return false;
+  function tryMoveToFoundation(card:Card,sourceType:"waste"|"tableau",sourceCol:number,sourceIdx:number):boolean{
+    for(let fi=0;fi<4;fi++){const top=foundations[fi][foundations[fi].length-1]??null;if(canFoundation(card,top)){const nf=foundations.map((p,i)=>i===fi?[...p,card]:p);if(sourceType==="waste")setWaste(w=>w.slice(0,-1));else setTableau(t=>{const nt=t.map(p=>[...p]);nt[sourceCol]=nt[sourceCol].slice(0,sourceIdx);if(nt[sourceCol].length>0)nt[sourceCol][nt[sourceCol].length-1].faceUp=true;return nt;});setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}return true;}}return false;
   }
 
-  function handleTableauClick(col: number, idx: number) {
-    const pile = tableau[col];
-
-    // Click on empty pile — place king if selected
-    if (pile.length === 0) {
-      if (selected) {
-        const movingCards = selected.pile==="tableau" ? tableau[selected.col].slice(selected.idx)
-          : selected.pile==="waste" ? [waste[waste.length-1]] : [];
-        if (movingCards.length === 0) { setSelected(null); return; }
-        if (movingCards[0].value === 13) { // King
-          const nt = tableau.map(p => [...p]);
-          nt[col] = [...movingCards];
-          if (selected.pile==="tableau") {
-            nt[selected.col] = nt[selected.col].slice(0, selected.idx);
-            if (nt[selected.col].length > 0) nt[selected.col][nt[selected.col].length-1].faceUp = true;
-          } else if (selected.pile==="waste") setWaste(w => w.slice(0,-1));
-          setTableau(nt); setSelected(null); setMoves(m => m+1); playClick();
-        } else setSelected(null);
-      }
-      return;
-    }
-
-    const card = pile[idx];
-    if (!card) return;
-
-    // Flip face-down card
-    if (!card.faceUp) {
-      if (idx === pile.length-1) {
-        const nt = tableau.map(p => [...p]);
-        nt[col][idx] = {...nt[col][idx], faceUp:true};
-        setTableau(nt); setMoves(m => m+1); playClick();
-      }
-      return;
-    }
-
-    // Double-click: auto-move to foundation
-    if (selected?.pile === "tableau" && selected.col === col && selected.idx === idx) {
-      if (idx === pile.length-1 && tryMoveToFoundation(card, "tableau", col, idx)) return;
-      setSelected(null);
-      return;
-    }
-
-    // Has a selection — try to stack
-    if (selected) {
-      const onto = pile[pile.length-1];
-      const movingCards = selected.pile==="tableau" ? tableau[selected.col].slice(selected.idx)
-        : selected.pile==="waste" ? [waste[waste.length-1]] : [];
-      if (movingCards.length === 0) { setSelected(null); return; }
-      const topMoving = movingCards[0];
-      if (canStack(topMoving, onto)) {
-        const nt = tableau.map(p => [...p]);
-        nt[col] = [...nt[col], ...movingCards];
-        if (selected.pile==="tableau") {
-          nt[selected.col] = nt[selected.col].slice(0, selected.idx);
-          if (nt[selected.col].length > 0) nt[selected.col][nt[selected.col].length-1].faceUp = true;
-        } else if (selected.pile==="waste") setWaste(w => w.slice(0,-1));
-        setTableau(nt); setSelected(null); setMoves(m => m+1); playClick();
-        return;
-      }
-      setSelected(null);
-    }
-
-    setSelected({pile:"tableau", col, idx}); playClick();
+  function handleTableauClick(col:number,idx:number){
+    if(solutionRevealed)return;
+    const pile=tableau[col];
+    if(pile.length===0){if(selected){const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}if(movingCards[0].value===13){const nt=tableau.map(p=>[...p]);nt[col]=[...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();}else setSelected(null);}return;}
+    const card=pile[idx];if(!card)return;
+    if(!card.faceUp){if(idx===pile.length-1){const nt=tableau.map(p=>[...p]);nt[col][idx]={...nt[col][idx],faceUp:true};setTableau(nt);setMoves(m=>m+1);playClick();}return;}
+    if(selected?.pile==="tableau"&&selected.col===col&&selected.idx===idx){if(idx===pile.length-1&&tryMoveToFoundation(card,"tableau",col,idx))return;setSelected(null);return;}
+    if(selected){const onto=pile[pile.length-1];const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}const topMoving=movingCards[0];if(canStack(topMoving,onto)){const nt=tableau.map(p=>[...p]);nt[col]=[...nt[col],...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();return;}setSelected(null);}
+    setSelected({pile:"tableau",col,idx});playClick();
   }
 
-  function handleWasteClick() {
-    if (waste.length === 0) return;
-    const card = waste[waste.length-1];
-    // Double-click: auto-move to foundation
-    if (selected?.pile === "waste") {
-      if (tryMoveToFoundation(card, "waste", 0, waste.length-1)) return;
-      setSelected(null);
-      return;
-    }
-    setSelected({pile:"waste", col:0, idx:waste.length-1});
-    playClick();
+  function handleWasteClick(){
+    if(solutionRevealed||waste.length===0)return;
+    const card=waste[waste.length-1];
+    if(selected?.pile==="waste"){if(tryMoveToFoundation(card,"waste",0,waste.length-1))return;setSelected(null);return;}
+    setSelected({pile:"waste",col:0,idx:waste.length-1});playClick();
   }
 
-  function handleHint() {
-    if (!xpState || completed || hintsUsed >= 3) return;
-    // Try waste → foundation
-    if (waste.length > 0) {
-      const card = waste[waste.length - 1];
-      for (let fi = 0; fi < 4; fi++) {
-        const top = foundations[fi][foundations[fi].length - 1] ?? null;
-        if (canFoundation(card, top)) {
-          setSelected({pile:"waste", col:0, idx:waste.length-1});
-          setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-          playError();
-          return;
-        }
-      }
-      // Try waste → tableau
-      for (let col = 0; col < tableau.length; col++) {
-        const pile = tableau[col];
-        const onto = pile.length > 0 ? pile[pile.length-1] : null;
-        if (canStack(card, onto)) {
-          setSelected({pile:"waste", col:0, idx:waste.length-1});
-          setHintsUsed(h => h + 1);
-          setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-          playError();
-          return;
-        }
-      }
-    }
-    // Draw if no moves
-    drawCard();
-    setHintsUsed(h => h + 1);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-    playError();
+  function handleHint(){
+    if(!xpState||completed||hintsUsed>=3||solutionRevealed)return;
+    if(waste.length>0){const card=waste[waste.length-1];for(let fi=0;fi<4;fi++){const top=foundations[fi][foundations[fi].length-1]??null;if(canFoundation(card,top)){setSelected({pile:"waste",col:0,idx:waste.length-1});setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();return;}}for(let col=0;col<tableau.length;col++){const pile=tableau[col];const onto=pile.length>0?pile[pile.length-1]:null;if(canStack(card,onto)){setSelected({pile:"waste",col:0,idx:waste.length-1});setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();return;}}}
+    drawCard();setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();
   }
+
   if(!xpState)return(<div style={{minHeight:"100vh",background:"#0F4C2A",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"rgba(255,255,255,0.5)",fontSize:13}}>Dealing cards...</p></div>);
 
-  const diff=getDifficulty(stage);
+  const currentXP=calculateXP(xpState).currentXP;
 
   return(
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0F4C2A,#1A6B3A)",display:"flex",flexDirection:"column"}}>
       <Navbar/>
       <GamePageSchema slug="solitaire" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 8px 24px",gap:12}}>
-        {/* Header */}
         <div style={{width:"100%",maxWidth:600,background:"rgba(255,255,255,0.1)",borderRadius:16,border:"0.5px solid rgba(255,255,255,0.15)",padding:"12px 16px",backdropFilter:"blur(12px)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -342,54 +174,40 @@ function SolitairePageInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Top row: stock, waste, spacers, foundations */}
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.1)",border:"0.5px solid rgba(239,68,68,0.3)",fontSize:13,fontWeight:600,color:"#FCA5A5",textAlign:"center",maxWidth:500}}>
+            Strategy: Build foundations A→K · Expose face-down cards · Move Kings to empty columns · XP set to 1
+          </motion.div>
+        )}
+
         <div style={{display:"flex",gap:6,alignItems:"flex-start",width:"100%",maxWidth:600,padding:"0 4px"}}>
-          {/* Stock */}
-          <div onClick={drawCard} style={{width:48,height:68,borderRadius:6,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            {stock.length>0?<CardUI card={stock[stock.length-1]}/>:
-              <RefreshCw size={18} color="rgba(255,255,255,0.4)"/>}
+          <div onClick={drawCard} style={{width:48,height:68,borderRadius:6,cursor:solutionRevealed?"not-allowed":"pointer",border:"2px dashed rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:solutionRevealed?0.5:1}}>
+            {stock.length>0?<CardUI card={stock[stock.length-1]}/>:<RefreshCw size={18} color="rgba(255,255,255,0.4)"/>}
           </div>
-          {/* Waste */}
           <div onClick={handleWasteClick} style={{width:48,height:68,flexShrink:0}}>
-            {waste.length>0?<CardUI card={waste[waste.length-1]} selected={selected?.pile==="waste"} onClick={handleWasteClick}/>:
-              <div style={{width:48,height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)"}}/>}
+            {waste.length>0?<CardUI card={waste[waste.length-1]} selected={selected?.pile==="waste"} onClick={handleWasteClick}/>:<div style={{width:48,height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)"}}/>}
           </div>
           <div style={{flex:1}}/>
-          {/* Foundations */}
-          {foundations.map((pile,i)=>{
-            const top=pile[pile.length-1];
-            const suits:Suit[]=["♥","♦","♣","♠"];
-            return(
-              <div key={i} onClick={()=>handleFoundationClick(i)}
-                style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                {top?<CardUI card={top} onClick={()=>handleFoundationClick(i)}/>:
-                  <span style={{fontSize:20,color:"rgba(255,255,255,0.3)"}}>{suits[i]}</span>}
-              </div>
-            );
-          })}
+          {foundations.map((pile,i)=>{const top=pile[pile.length-1];const suits:Suit[]=["♥","♦","♣","♠"];return(<div key={i} onClick={()=>handleFoundationClick(i)} style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{top?<CardUI card={top} onClick={()=>handleFoundationClick(i)}/>:<span style={{fontSize:20,color:"rgba(255,255,255,0.3)"}}>{suits[i]}</span>}</div>);})}
         </div>
 
-        {/* Tableau */}
         <div style={{display:"flex",gap:4,alignItems:"flex-start",width:"100%",maxWidth:600,padding:"0 4px",overflowX:"auto"}}>
           {tableau.map((pile,col)=>(
             <div key={col} style={{flex:1,minWidth:44,position:"relative",minHeight:80}}>
-              {pile.length===0?(
-                <div onClick={()=>handleTableauClick(col,0)}
-                  style={{width:"100%",height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)",cursor:"pointer"}}/>
-              ):(
+              {pile.length===0?(<div onClick={()=>handleTableauClick(col,0)} style={{width:"100%",height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)",cursor:solutionRevealed?"not-allowed":"pointer"}}/>):(
                 <div style={{position:"relative"}}>
-                  {pile.map((card,i)=>(
-                    <div key={`${card.suit}${card.label}${i}`}
-                      style={{position:"absolute",top:i*18,left:0,right:0,zIndex:i}}>
-                      <CardUI card={card} small selected={selected?.pile==="tableau"&&selected.col===col&&selected.idx<=i&&card.faceUp}
-                        onClick={()=>handleTableauClick(col,i)}/>
-                    </div>
-                  ))}
+                  {pile.map((card,i)=>(<div key={`${card.suit}${card.label}${i}`} style={{position:"absolute",top:i*18,left:0,right:0,zIndex:i}}><CardUI card={card} small selected={selected?.pile==="tableau"&&selected.col===col&&selected.idx<=i&&card.faceUp} onClick={()=>handleTableauClick(col,i)}/></div>))}
                   <div style={{height:68+Math.max(0,pile.length-1)*18}}/>
                 </div>
               )}
             </div>
           ))}
+        </div>
+
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
@@ -399,32 +217,12 @@ function SolitairePageInner(){
         </div>
       </main>
 
-      <OutOfTokensModal
-        gameName="Solitaire"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Solitaire" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="solitaire" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={getDifficulty(stage)}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Solitaire Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Solitaire Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+    </div>
   );
 }
-
-export default function SolitairePage() {
-  return (
-    <ErrorBoundary game="solitaire">
-      <SolitairePageInner/>
-    </ErrorBoundary>
-  );
-}
+export default function SolitairePage(){return<ErrorBoundary game="solitaire"><SolitairePageInner/></ErrorBoundary>;}
