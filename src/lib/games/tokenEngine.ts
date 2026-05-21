@@ -88,7 +88,16 @@ export function msUntilReset(userId: string): number {
 }
 
 /**
- * Formats the time until reset as "Xh Ym".
+ * Returns seconds until next token reset.
+ * Alias kept for OutOfTokensModal compatibility.
+ */
+export function secondsUntilReset(userId: string): number {
+  return Math.ceil(msUntilReset(userId) / 1000);
+}
+
+/**
+ * Formats reset countdown as "Xh Ym" or "Xm Ys".
+ * Alias kept for OutOfTokensModal compatibility.
  */
 export function formatResetTime(userId: string): string {
   const ms = msUntilReset(userId);
@@ -97,4 +106,8 @@ export function formatResetTime(userId: string): string {
   const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
+}
+
+export function formatCountdown(userId: string): string {
+  return formatResetTime(userId);
 }
