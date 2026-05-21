@@ -1110,8 +1110,10 @@ export default function LandingPage() {
                   onClick={() => {
                     if (typeof window !== "undefined" && (window as any).Paddle) {
                       (window as any).Paddle.Checkout.open({
-                        items: [{ priceId: plan.paddlePriceId, quantity: 1 }],
-                      });
+  items: [{ priceId: plan.paddlePriceId, quantity: 1 }],
+  customer: user?.email ? { email: user.email } : undefined,
+  customData: { user_id: user?.id ?? "" },  // ← add this line
+});
                     }
                   }}
                   style={{ display:"block", width:"100%", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, cursor:"pointer", border:"none",

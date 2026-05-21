@@ -75,13 +75,14 @@ export default function PricingPage() {
   }, []);
 
   function openCheckout(priceId: string) {
-    if (typeof window !== "undefined" && (window as any).Paddle) {
-      (window as any).Paddle.Checkout.open({
-        items: [{ priceId, quantity: 1 }],
-        customer: user?.email ? { email: user.email } : undefined,
-      });
-    }
+  if (typeof window !== "undefined" && (window as any).Paddle) {
+    (window as any).Paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customer: user?.email ? { email: user.email } : undefined,
+      customData: { user_id: user?.id ?? "" },
+    });
   }
+}
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
