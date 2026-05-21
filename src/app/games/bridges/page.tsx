@@ -1,6 +1,5 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
-import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -8,7 +7,7 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2 } from "lucide-react";
+import { ArrowLeft, RotateCcw, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { generateBridges, checkBridges, type BridgesBoard, type Bridge } from "@/lib/games/bridgesGenerator";
@@ -20,17 +19,15 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
-import { GameInstructions } from "@/components/ui/GameInstructions";
-
+import { ShowSolution } from "@/components/ui/ShowSolution";
+import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
-
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function shareResult(stage:number,xp:number,elapsed:string){const text=` MindState · Bridges Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.vercel.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
 function BridgesGameInner(){
@@ -41,16 +38,13 @@ function BridgesGameInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
-  const[showResume,setShowResume]=useState(false);
-  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
-  const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
-  const [feedbackBridges, setFeedbackBridges] = useState<Set<string>>(new Set());
+  const[solutionRevealed,setSolutionRevealed]=useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -63,82 +57,73 @@ function BridgesGameInner(){
     const diff=getDifficulty(s);
     const b=generateBridges(`bridges-${diff}-${s}`,diff);
     const xp=createXPState(diff);
-    setBoard(b);setPlaced([]);setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
+    setBoard(b);setPlaced([]);setXpState(xp);setCompleted(false);setFinalXP(0);
+    setHintsUsed(0);setElapsed("00:00");setSolutionRevealed(false);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("bridges");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
-  },[]); // mount only
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  function handleRevealSolution(){
+    if(!board||!xpState)return;
+    setPlaced([...board.solution]);
+    setSolutionRevealed(true);
+    setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
+    if(timerRef.current)clearInterval(timerRef.current);
+  }
+
   function toggleBridge(fromId:number,toId:number){
-    if(!board||completed)return;
+    if(!board||completed||solutionRevealed)return;
     const existing=placed.find(b=>(b.from===fromId&&b.to===toId)||(b.from===toId&&b.to===fromId));
     let np:Bridge[];
     if(!existing) np=[...placed,{from:fromId,to:toId,count:1}];
     else if(existing.count===1) np=placed.map(b=>b===existing?{...b,count:2 as 2}:b);
     else np=placed.filter(b=>b!==existing);
-    setPlaced(np); playClick();
+    setPlaced(np);playClick();
     if(checkBridges(board,np)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
-          markStageCompleted("bridges",stage);
-          if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
+      markStageCompleted("bridges",stage);
+      if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user)saveScore({user_id:user.id,game_slug:"bridges",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+    }
+  }
+
+  function handleHint(){
+    if(!board||!xpState||completed||hintsUsed>=3||solutionRevealed)return;
+    for(const sol of board.solution){
+      const existing=placed.find(b=>(b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from));
+      if(!existing){
+        setPlaced(prev=>[...prev,{from:sol.from,to:sol.to,count:1}]);
+        setHintsUsed(h=>h+1);
+        setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+        playError();return;
+      }
+      if(existing.count<sol.count){
+        setPlaced(prev=>prev.map(b=>(b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from)?{...b,count:sol.count}:b));
+        setHintsUsed(h=>h+1);
+        setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+        playError();return;
+      }
     }
   }
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
 
-  const diff=getDifficulty(stage);const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diff=getDifficulty(stage);
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const cellSize=Math.floor(maxW/board.size);
+  const currentXP=calculateXP(xpState).currentXP;
 
   function getBridgeBetween(a:number,b:number){return placed.find(br=>(br.from===a&&br.to===b)||(br.from===b&&br.to===a));}
-
   function islandStatus(island:{required:number;id:number}){
     const total=placed.filter(b=>b.from===island.id||b.to===island.id).reduce((s,b)=>s+b.count,0);
     return total===island.required?"done":total>island.required?"over":"under";
-  }
-
-  function handleHint() {
-    if (!board || !xpState || completed || hintsUsed >= 3) return;
-    // Add one bridge from solution that isn't placed yet or needs upgrading
-    for (const sol of board.solution) {
-      const existing = placed.find(b =>
-        (b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from)
-      );
-      if (!existing) {
-        setPlaced(prev => [...prev, {from:sol.from, to:sol.to, count:1}]);
-        setHintsUsed(h => h+1);
-        setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-        playError();
-        return;
-      }
-      if (existing.count < sol.count) {
-        setPlaced(prev => prev.map(b =>
-          (b.from===sol.from&&b.to===sol.to)||(b.from===sol.to&&b.to===sol.from)
-            ? {...b, count:sol.count} : b
-        ));
-        setHintsUsed(h => h+1);
-        setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-        playError();
-        return;
-      }
-    }
   }
 
   return(
@@ -157,52 +142,51 @@ function BridgesGameInner(){
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
+
         <div style={{fontSize:11,color:"var(--text4)"}}>Click between islands to add bridges · Each island shows its required count</div>
 
-        {/* SVG Board */}
-        <svg width={board.size*cellSize} height={board.size*cellSize} style={{borderRadius:16,border:"1.5px solid #E2E8F0",background:"#FAFAF9",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
-          {/* Bridges */}
-          {board.islands.map(island=>
-            board.islands.map(other=>{
-              if(other.id<=island.id)return null;
-              const sameRow=island.r===other.r;
-              const sameCol=island.c===other.c;
-              if(!sameRow&&!sameCol)return null;
-              // Check no island in between
-              const blocked=board.islands.some(mid=>{
-                if(mid.id===island.id||mid.id===other.id)return false;
-                if(sameRow&&mid.r===island.r&&Math.min(island.c,other.c)<mid.c&&mid.c<Math.max(island.c,other.c))return true;
-                if(sameCol&&mid.c===island.c&&Math.min(island.r,other.r)<mid.r&&mid.r<Math.max(island.r,other.r))return true;
-                return false;
-              });
-              if(blocked)return null;
-              const bridge=getBridgeBetween(island.id,other.id);
-              const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
-              const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
-              const midX=(x1+x2)/2,midY=(y1+y2)/2;
-              return(
-                <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:"pointer"}}>
-                  {/* Clickable area */}
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
-                  {bridge&&(
-                    <>
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#374151" strokeWidth={bridge.count===2?3:2} opacity={0.7}
-                        strokeDasharray={bridge.count===2?"none":"none"}/>
-                      {bridge.count===2&&<line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FAFAF9" strokeWidth={1}/>}
-                    </>
-                  )}
-                  {!bridge&&(
-                    <circle cx={midX} cy={midY} r={cellSize*0.12} fill="#E2E8F0" opacity={0.6}/>
-                  )}
-                </g>
-              );
-            })
-          )}
-          {/* Islands */}
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            Solution revealed · XP set to 1 · Retry to score properly
+          </motion.div>
+        )}
+
+        <svg width={board.size*cellSize} height={board.size*cellSize}
+          style={{borderRadius:16,border:"1.5px solid #E2E8F0",background:"#FAFAF9",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
+          {board.islands.map(island=>board.islands.map(other=>{
+            if(other.id<=island.id)return null;
+            const sameRow=island.r===other.r,sameCol=island.c===other.c;
+            if(!sameRow&&!sameCol)return null;
+            const blocked=board.islands.some(mid=>{
+              if(mid.id===island.id||mid.id===other.id)return false;
+              if(sameRow&&mid.r===island.r&&Math.min(island.c,other.c)<mid.c&&mid.c<Math.max(island.c,other.c))return true;
+              if(sameCol&&mid.c===island.c&&Math.min(island.r,other.r)<mid.r&&mid.r<Math.max(island.r,other.r))return true;
+              return false;
+            });
+            if(blocked)return null;
+            const bridge=getBridgeBetween(island.id,other.id);
+            const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
+            const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
+            const midX=(x1+x2)/2,midY=(y1+y2)/2;
+            const bridgeColor=solutionRevealed?"#EF4444":"#374151";
+            return(
+              <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:solutionRevealed?"default":"pointer"}}>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
+                {bridge&&(
+                  <>
+                    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={bridgeColor} strokeWidth={bridge.count===2?3:2} opacity={0.7}/>
+                    {bridge.count===2&&<line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FAFAF9" strokeWidth={1}/>}
+                  </>
+                )}
+                {!bridge&&!solutionRevealed&&<circle cx={midX} cy={midY} r={cellSize*0.12} fill="#E2E8F0" opacity={0.6}/>}
+              </g>
+            );
+          }))}
           {board.islands.map(island=>{
             const status=islandStatus(island);
             const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
@@ -220,14 +204,10 @@ function BridgesGameInner(){
           })}
         </svg>
 
-        {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          </div>
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
+        </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
@@ -235,79 +215,13 @@ function BridgesGameInner(){
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
-      
+
       {showMap&&<StageMap gameSlug="bridges" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={getDifficulty(stage)}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Bridges Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Bridges Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+    </div>
   );
 }
 
-function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
-  open?: boolean; stage: number; elapsed: string; difficulty: string;
-  finalXP?: number; xpEarned?: number; onRetry: () => void; onNext: () => void; onShare?: () => void;
-}) {
-  const xp = finalXP ?? xpEarned ?? 0;
-  if (!open) return null;
-  return (
-    <AnimatePresence>
-      <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-        style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",
-          backdropFilter:"blur(14px)",display:"flex",alignItems:"center",
-          justifyContent:"center",zIndex:200,padding:24}}>
-        <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-          transition={{type:"spring",stiffness:380,damping:28}}
-          style={{background:"var(--surface)",borderRadius:28,padding:36,
-            maxWidth:340,width:"100%",textAlign:"center",
-            boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-          <div style={{fontSize:56,marginBottom:12}}>🎉</div>
-          <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",
-            fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete!</h2>
-          <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>
-            {elapsed} · {difficulty}
-          </p>
-          <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
-            <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4,
-              letterSpacing:"0.1em",textTransform:"uppercase"}}>XP Earned</p>
-            <p style={{fontSize:52,fontWeight:700,color:"#4F6EF7",
-              fontFamily:"Georgia,serif"}}>{xp}</p>
-          </div>
-          <div style={{display:"flex",gap:10}}>
-            <button onClick={onRetry}
-              style={{flex:1,padding:13,borderRadius:14,
-                border:"0.5px solid var(--border2)",background:"var(--surface)",
-                fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>
-              Retry
-            </button>
-            <button onClick={onNext}
-              style={{flex:2,padding:13,borderRadius:14,border:"none",
-                background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
-                fontSize:13,fontWeight:700,color:"white",cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              Next Stage →
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-export default function BridgesGame() {
-  return (
-    <ErrorBoundary game="bridges">
-      <BridgesGameInner/>
-    </ErrorBoundary>
-  );
-}
+export default function BridgesGame(){return<ErrorBoundary game="bridges"><BridgesGameInner/></ErrorBoundary>;}

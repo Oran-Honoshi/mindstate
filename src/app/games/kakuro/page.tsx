@@ -1,6 +1,5 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
-import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -8,7 +7,7 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, CheckCircle, ChevronRight, Share2, Delete } from "lucide-react";
+import { ArrowLeft, RotateCcw, ChevronRight, Delete } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { generateKakuro, checkKakuro, type KakuroBoard } from "@/lib/games/kakuroGenerator";
@@ -20,17 +19,11 @@ import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
-import { GameInstructions } from "@/components/ui/GameInstructions";
-
+import { ShowSolution } from "@/components/ui/ShowSolution";
+import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
-function getDifficulty(s: number): Difficulty { return s <= 300 ? "easy" : s <= 700 ? "medium" : "hard"; }
-function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = ` MindState · Kakuro Stage ${stage} · ${xp} XP · ${elapsed}`;
-  const url = "https://mindstate.vercel.app";
-  if (navigator.share) navigator.share({ title: "MindState", text, url }).catch(() => {});
-  else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + " " + url), "_blank");
-}
+function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"medium":"hard"; }
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
@@ -57,18 +50,13 @@ function KakuroGameInner() {
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
-  const [showResume, setShowResume] = useState(false);
-  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [showMap, setShowMap] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
-  const[hintsUsed,setHintsUsed]=useState(0);
-  const[showFeedback,setShowFeedback]=useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const [finalXP, setFinalXP] = useState(0);
-  const [solution, setSolution] = useState<(number|null)[][]>([]);
-  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
-  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -82,64 +70,100 @@ function KakuroGameInner() {
     const b = generateKakuro(`kakuro-${diff}-${s}`, diff);
     const xp = createXPState(diff);
     setBoard(b);
-    setUserGrid(Array.from({ length: b.size }, (_, r) =>
-      Array.from({ length: b.size }, (_, c) => b.grid[r][c]?.type === "white" ? null : null)
-    ));
+    setUserGrid(Array.from({length:b.size},()=>Array.from({length:b.size},()=>null)));
     setSelected(null); setErrors(new Set());
-    setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setShowFeedback(false); setElapsed("00:00");
+    setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setElapsed("00:00");
+    setSolutionRevealed(false);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   }, [user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("kakuro");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
-  },[]); // mount only
   useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
 
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  // Kakuro's generator stores solution in board.solution (a 2D array of numbers)
+  function handleRevealSolution() {
+    if (!board || !xpState) return;
+    // Build solution grid from board: for white cells, place the solution value
+    // board.solution should be a 2D grid matching board.grid dimensions
+    const ng = Array.from({length:board.size}, (_, r) =>
+      Array.from({length:board.size}, (_, c) => {
+        if (board.grid[r]?.[c]?.type === "white") {
+          return (board as any).solution?.[r]?.[c] ?? null;
+        }
+        return null;
+      })
+    );
+    setUserGrid(ng);
+    setSelected(null);
+    setErrors(new Set());
+    setSolutionRevealed(true);
+    setXpState(prev => prev ? { ...prev, startTime: Date.now() - prev.decayDuration * 1000 } : prev);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }
+
   function handleInput(num: number | null) {
-    if (!board || !selected || completed) return;
+    if (!board || !selected || completed || solutionRevealed) return;
     const [r, c] = selected;
     if (board.grid[r][c]?.type !== "white") return;
     const ng = userGrid.map(row => [...row]);
     ng[r][c] = num;
     setUserGrid(ng);
     playClick();
-
-    // Check errors in affected runs
+    // Check duplicates in runs
     const errs = new Set<string>();
-    // Simple: mark cells with duplicate values in same run
     const { size, grid } = board;
     for (let row = 0; row < size; row++) {
-      let run: [number, number][] = [];
+      let run: [number,number][] = [];
       for (let col = 0; col <= size; col++) {
-        if (col < size && grid[row][col]?.type === "white") run.push([row, col]);
+        if (col < size && grid[row][col]?.type === "white") run.push([row,col]);
         else {
-          const vals = run.map(([r2,c2]) => ng[r2][c2]).filter(v => v !== null);
-          if (new Set(vals).size !== vals.length) run.forEach(([r2,c2]) => errs.add(`${r2},${c2}`));
+          const vals = run.map(([r2,c2])=>ng[r2][c2]).filter(v=>v!==null);
+          if (new Set(vals).size !== vals.length) run.forEach(([r2,c2])=>errs.add(`${r2},${c2}`));
           run = [];
         }
       }
     }
     setErrors(errs);
     if (errs.size > 0) playError();
-
     if (checkKakuro(board, ng) && xpState) {
       const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
-          markStageCompleted("kakuro",stage);
-          if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
+      markStageCompleted("kakuro", stage);
+      if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if (user) saveScore({ user_id:user.id, game_slug:"kakuro", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) });
+    }
+  }
+
+  function handleHint() {
+    if (!board || !xpState || completed || hintsUsed >= 3 || solutionRevealed) return;
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (board.grid[r][c]?.type === "white" && !userGrid[r][c]) {
+          const ng = userGrid.map(row => [...row]);
+          for (let n = 1; n <= 9; n++) {
+            ng[r][c] = n;
+            let rowOk = true, colOk = true;
+            let runNums: number[] = [];
+            for (let cc = c-1; cc >= 0 && board.grid[r][cc]?.type === "white"; cc--) runNums.push(ng[r][cc] ?? 0);
+            for (let cc = c+1; cc < board.size && board.grid[r][cc]?.type === "white"; cc++) runNums.push(ng[r][cc] ?? 0);
+            if (runNums.filter(v=>v>0).includes(n)) rowOk = false;
+            runNums = [];
+            for (let rr = r-1; rr >= 0 && board.grid[rr][c]?.type === "white"; rr--) runNums.push(ng[rr][c] ?? 0);
+            for (let rr = r+1; rr < board.size && board.grid[rr][c]?.type === "white"; rr++) runNums.push(ng[rr][c] ?? 0);
+            if (runNums.filter(v=>v>0).includes(n)) colOk = false;
+            if (rowOk && colOk) {
+              setUserGrid(ng);
+              setHintsUsed(h => h+1);
+              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed+1, prev.maxHints)} : prev);
+              playError(); return;
+            }
+          }
+          break;
+        }
+      }
     }
   }
 
@@ -153,58 +177,8 @@ function KakuroGameInner() {
   const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
   const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 420) : 360;
   const cellSize = Math.floor(maxW / board.size);
+  const currentXP = calculateXP(xpState).currentXP;
 
-function handleHint() {
-    if (!board || !xpState || completed || hintsUsed >= 3) return;
-    // Fill one empty cell with a valid number (1-9 that doesn't conflict)
-    for (let r = 0; r < board.size; r++) {
-      for (let c = 0; c < board.size; c++) {
-        if (board.grid[r][c]?.type === 'white' && !userGrid[r][c]) {
-          // Try numbers 1-9 and pick first that doesn't create a duplicate in its run
-          const ng = userGrid.map(row => [...row]);
-          for (let n = 1; n <= 9; n++) {
-            ng[r][c] = n;
-            // Check no duplicate in row run
-            let rowOk = true, colOk = true;
-            let runNums: number[] = [];
-            for (let cc = c-1; cc >= 0 && board.grid[r][cc]?.type === 'white'; cc--) runNums.push(ng[r][cc] ?? 0);
-            for (let cc = c+1; cc < board.size && board.grid[r][cc]?.type === 'white'; cc++) runNums.push(ng[r][cc] ?? 0);
-            if (runNums.filter(v=>v>0).includes(n)) rowOk = false;
-            runNums = [];
-            for (let rr = r-1; rr >= 0 && board.grid[rr][c]?.type === 'white'; rr--) runNums.push(ng[rr][c] ?? 0);
-            for (let rr = r+1; rr < board.size && board.grid[rr][c]?.type === 'white'; rr++) runNums.push(ng[rr][c] ?? 0);
-            if (runNums.filter(v=>v>0).includes(n)) colOk = false;
-            if (rowOk && colOk) {
-              setUserGrid(ng);
-              setHintsUsed(h => h + 1);
-              setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
-              playError();
-              return;
-            }
-          }
-          // Fallback: just clear the cell
-          break;
-        }
-      }
-    }
-  }
-
-function handleCheck() {
-    if (!board || !xpState || completed) return;
-    const correct = new Set<string>();
-    const wrong = new Set<string>();
-    userGrid.forEach((row, r) => row.forEach((val, c) => {
-      if (val !== null && board.grid[r][c]?.type === 'white') {
-        if (val === solution[r]?.[c]) correct.add(`${r},${c}`);
-        else wrong.add(`${r},${c}`);
-      }
-    }));
-    setFeedbackCells(correct);
-    setWrongCells(wrong);
-    setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
-    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
-  }
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
@@ -221,12 +195,19 @@ function handleCheck() {
             <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
               <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
         <div style={{ fontSize:11, color:"var(--text4)" }}>Fill white cells · Each run must sum to its clue · No repeats in a run</div>
+
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            Solution revealed · XP set to 1 · Retry to score properly
+          </motion.div>
+        )}
 
         {/* Board */}
         <div style={{ border:"2px solid #374151", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 24px rgba(0,0,0,0.08)" }}>
@@ -239,30 +220,30 @@ function handleCheck() {
                 const clue = cell as { type:"clue"; right?:number; down?:number };
                 return (
                   <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:"#374151", borderRight:"0.5px solid #4B5563", borderBottom:"0.5px solid #4B5563", borderTop:"none", borderLeft:"none", position:"relative", overflow:"hidden" }}>
-                    <div style={{ position:"absolute", inset:0 }}>
-                      <svg width={cellSize} height={cellSize}>
-                        <line x1={0} y1={0} x2={cellSize} y2={cellSize} stroke="#4B5563" strokeWidth={1}/>
-                        {clue.down !== undefined && <text x={cellSize*0.25} y={cellSize*0.45} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:Math.min(cellSize*0.3,11), fontWeight:700, fill:"#F9FAFB" }}>{clue.down}</text>}
-                        {clue.right !== undefined && <text x={cellSize*0.75} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:Math.min(cellSize*0.3,11), fontWeight:700, fill:"#F9FAFB" }}>{clue.right}</text>}
-                      </svg>
-                    </div>
+                    <svg width={cellSize} height={cellSize}>
+                      <line x1={0} y1={0} x2={cellSize} y2={cellSize} stroke="#4B5563" strokeWidth={1}/>
+                      {clue.down!==undefined&&<text x={cellSize*0.25} y={cellSize*0.45} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"#F9FAFB"}}>{clue.down}</text>}
+                      {clue.right!==undefined&&<text x={cellSize*0.75} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"#F9FAFB"}}>{clue.right}</text>}
+                    </svg>
                   </div>
                 );
               }
-              // White cell
               const isSelected = selected?.[0]===r && selected?.[1]===c;
               const hasError = errors.has(`${r},${c}`);
               const val = userGrid[r]?.[c];
+              const isSolution = solutionRevealed && val !== null;
               return (
                 <motion.button key={`${r}-${c}`}
-                  onClick={() => setSelected([r, c])}
-                  animate={hasError ? { x:[-2,2,-2,2,0] } : {}}
+                  onClick={() => { if (!solutionRevealed) setSelected([r,c]); }}
+                  animate={hasError?{x:[-2,2,-2,2,0]}:{}}
                   transition={{ duration:0.25 }}
-                  style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center", fontSize:Math.round(cellSize*0.45), fontWeight:700, cursor:"pointer", outline:"none",
-                    background: showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--surface)",
-                    color: hasError ? "#EF4444" : val ? "#4F6EF7" : "#CBD5E1",
+                  style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:Math.round(cellSize*0.45), fontWeight:700,
+                    cursor: solutionRevealed ? "default" : "pointer", outline:"none",
+                    background: isSolution?"rgba(239,68,68,0.04)":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--surface)",
+                    color: isSolution?"#EF4444":hasError?"#EF4444":val?"#4F6EF7":"#CBD5E1",
                     borderRight:"0.5px solid #E2E8F0", borderBottom:"0.5px solid #E2E8F0", borderTop:"none", borderLeft:"none",
-                    boxShadow: isSelected ? "inset 0 0 0 2px #4F6EF7" : "none" }}>
+                    boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px #4F6EF7":"none" }}>
                   {val ?? ""}
                 </motion.button>
               );
@@ -270,108 +251,42 @@ function handleCheck() {
           </div>
         </div>
 
-        {/* Number pad */}
-        <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
-          {[1,2,3,4,5,6,7,8,9].map(n => (
-            <button key={n} onClick={() => handleInput(n)}
-              style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", fontSize:16, fontWeight:700, color:"var(--text2)", cursor:"pointer", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
-              {n}
+        {/* Number pad — hidden when solution revealed */}
+        {!solutionRevealed && (
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
+            {[1,2,3,4,5,6,7,8,9].map(n => (
+              <button key={n} onClick={() => handleInput(n)}
+                style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", fontSize:16, fontWeight:700, color:"var(--text2)", cursor:"pointer", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
+                {n}
+              </button>
+            ))}
+            <button onClick={() => handleInput(null)}
+              style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Delete size={16} color="#94A3B8"/>
             </button>
-          ))}
-          <button onClick={() => handleInput(null)}
-            style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Delete size={16} color="#94A3B8"/>
-          </button>
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
-        {/* Controls */}
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          </div>
-
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
+          <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
-          <button onClick={() => setStage(s=>s+1)} style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
+          <button onClick={() => setStage(s=>s+1)}
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
       {showMap&&<StageMap gameSlug="kakuro" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={getDifficulty(stage)}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Kakuro Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Kakuro Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+    </div>
   );
 }
 
-function CompletionPopup({ open, stage, elapsed, difficulty, finalXP, xpEarned, onRetry, onNext, onShare }: {
-  open?: boolean; stage: number; elapsed: string; difficulty: string;
-  finalXP?: number; xpEarned?: number; onRetry: () => void; onNext: () => void; onShare?: () => void;
-}) {
-  const xp = finalXP ?? xpEarned ?? 0;
-  if (!open) return null;
-  return (
-    <AnimatePresence>
-      <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-        style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",
-          backdropFilter:"blur(14px)",display:"flex",alignItems:"center",
-          justifyContent:"center",zIndex:200,padding:24}}>
-        <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-          transition={{type:"spring",stiffness:380,damping:28}}
-          style={{background:"var(--surface)",borderRadius:28,padding:36,
-            maxWidth:340,width:"100%",textAlign:"center",
-            boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-          <div style={{fontSize:56,marginBottom:12}}>🎉</div>
-          <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",
-            fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete!</h2>
-          <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>
-            {elapsed} · {difficulty}
-          </p>
-          <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
-            <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4,
-              letterSpacing:"0.1em",textTransform:"uppercase"}}>XP Earned</p>
-            <p style={{fontSize:52,fontWeight:700,color:"#4F6EF7",
-              fontFamily:"Georgia,serif"}}>{xp}</p>
-          </div>
-          <div style={{display:"flex",gap:10}}>
-            <button onClick={onRetry}
-              style={{flex:1,padding:13,borderRadius:14,
-                border:"0.5px solid var(--border2)",background:"var(--surface)",
-                fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>
-              Retry
-            </button>
-            <button onClick={onNext}
-              style={{flex:2,padding:13,borderRadius:14,border:"none",
-                background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
-                fontSize:13,fontWeight:700,color:"white",cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              Next Stage →
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-export default function KakuroGame() {
-  return (
-    <ErrorBoundary game="kakuro">
-      <KakuroGameInner/>
-    </ErrorBoundary>
-  );
-}
+export default function KakuroGame(){return<ErrorBoundary game="kakuro"><KakuroGameInner/></ErrorBoundary>;}
