@@ -8,16 +8,15 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,CheckCircle,ChevronRight,Share2}from"lucide-react";
+import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
 import Link from"next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
-import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{HintButton}from"@/components/ui/HintButton";
-
+import { ShowSolution } from "@/components/ui/ShowSolution";
 import{generateLightUp,computeLighting,checkLightUp,type LightBoard,type LightCell}from"@/lib/games/lightUpGenerator";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
@@ -25,7 +24,6 @@ import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
-
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s:number):Difficulty{
@@ -33,7 +31,6 @@ function getDifficulty(s:number):Difficulty{
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function shareResult(stage:number,xp:number,elapsed:string){const text=`● MindState · Light Up Stage ${stage} · ${xp} XP · ${elapsed}`;const url="https://mindstate.app";if(navigator.share)navigator.share({title:"MindState",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
 function LightUpPageInner(){
@@ -50,11 +47,11 @@ function LightUpPageInner(){
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
-  const[showFeedback,setShowFeedback]=useState(false);
   const[finalXP,setFinalXP]=useState(0);
   const [gridHistory, setGridHistory] = useState<typeof grid[]>([]);
-  const [solutionGrid, setSolutionGrid] = useState<string[][]>([]);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
@@ -70,32 +67,42 @@ function LightUpPageInner(){
     setBoard(b);setGrid(b.grid.map(row=>[...row]));
     setGridHistory([]);
     setLighting({lit:new Set(),conflicts:new Set(),blackErrors:new Set()});
-    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setShowFeedback(false);setElapsed("00:00");
+    setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");
+    setSolutionRevealed(false);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
   useEffect(()=>{
     const saved=loadGameState("lightup");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
+    if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);}
+    else loadStage(stage);
   },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  function handleRevealSolution() {
+    if (!board || !xpState) return;
+    // Place all bulbs from board.solution onto the grid
+    const ng = board.grid.map(row => [...row]) as LightCell[][];
+    for (const solKey of board.solution) {
+      const [sr, sc] = solKey.split(",").map(Number);
+      ng[sr][sc] = { type:"bulb" };
+    }
+    setGrid(ng);
+    const lt = computeLighting(ng);
+    setLighting(lt);
+    setSolutionRevealed(true);
+    setXpState(prev => prev ? { ...prev, startTime: Date.now() - prev.decayDuration * 1000 } : prev);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }
+
   function handleCell(r:number,c:number){
-    if(!board||completed)return;
+    if(!board||completed||solutionRevealed)return;
     const cell=grid[r][c];
     if(cell.type==="black")return;
     const ng=grid.map(row=>[...row]);
-    // Fix: white cell has no 'lit' property — just use type discriminant
     ng[r][c]=cell.type==="bulb"?{type:"white"}:{type:"bulb"};
     setGridHistory(h=>[...h.slice(-19),[...grid.map(r=>[...r])]]);
     setGrid(ng);
@@ -109,7 +116,8 @@ function LightUpPageInner(){
       playSuccess();setTimeout(()=>triggerConfetti(),80);
       markStageCompleted("lightup",stage);
       if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
-      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
+      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"lightup",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+    }
   }
 
   function handleUndo() {
@@ -121,15 +129,14 @@ function LightUpPageInner(){
   }
 
   function handleHint() {
-    if (!board || !xpState || hintsUsed >= 3) return;
+    if (!board || !xpState || hintsUsed >= 3 || solutionRevealed) return;
     for (const solKey of board.solution) {
       const [sr, sc] = solKey.split(",").map(Number);
       if (grid[sr][sc].type === "white") {
         const ng = grid.map(row => [...row]);
         ng[sr][sc] = {type:"bulb"};
         const lt = computeLighting(ng);
-        setGrid(ng);
-        setLighting(lt);
+        setGrid(ng); setLighting(lt);
         setHintsUsed(h => h + 1);
         setXpState(prev => prev ? {...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints)} : prev);
         playError();
@@ -146,6 +153,7 @@ function LightUpPageInner(){
   const cellSize=Math.floor(maxW/board.size);
   const totalWhite=grid.flat().filter(c=>c.type!=="black").length;
   const litCount=lighting.lit.size;
+  const currentXP = calculateXP(xpState).currentXP;
 
   return(
     <div className="game-page">
@@ -169,10 +177,18 @@ function LightUpPageInner(){
           </div>
           <XPBar xpState={xpState}/>
         </div>
+
         <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
           Click white cells to place ● bulbs · Light must reach every white cell<br/>
           Black numbers = required adjacent bulbs · Bulbs can't light each other
         </div>
+
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            Solution revealed · XP set to 1 · Retry to score properly
+          </motion.div>
+        )}
 
         <div style={{border:"2px solid #374151",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${cellSize}px)`}}>
@@ -181,6 +197,7 @@ function LightUpPageInner(){
               const isLit=lighting.lit.has(k);
               const isConflict=lighting.conflicts.has(k);
               const isBlackErr=lighting.blackErrors.has(k);
+              const isSolBulb=solutionRevealed&&cell.type==="bulb";
               if(cell.type==="black"){
                 const bc=cell as{type:"black";clue:number|null};
                 return(
@@ -192,13 +209,13 @@ function LightUpPageInner(){
               const isBulb=cell.type==="bulb";
               return(
                 <motion.button key={k} onClick={()=>handleCell(r,c)}
-                  whileTap={{scale:0.9}}
+                  whileTap={solutionRevealed?{}:{scale:0.9}}
                   style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                    background:isConflict?"#FEF2F2":isLit?"#FFFBEB":"#FAFAF9",
+                    background:isConflict?"#FEF2F2":isSolBulb?"rgba(239,68,68,0.08)":isLit?"#FFFBEB":"#FAFAF9",
                     borderRight:"0.5px solid #E8E4DE",borderBottom:"0.5px solid #E8E4DE",borderTop:"none",borderLeft:"none",
-                    cursor:"pointer",outline:"none",fontSize:Math.round(cellSize*0.5),
+                    cursor:solutionRevealed?"default":"pointer",outline:"none",fontSize:Math.round(cellSize*0.5),
                     boxShadow:isLit&&!isBulb?`inset 0 0 ${cellSize/2}px rgba(253,224,71,0.3)`:"none"}}>
-                  {isBulb&&<span style={{filter:isConflict?"grayscale(1)":"none"}}>●</span>}
+                  {isBulb&&<span style={{filter:isConflict?"grayscale(1)":"none",color:isSolBulb?"#EF4444":"inherit"}}>●</span>}
                 </motion.button>
               );
             }))}
@@ -206,12 +223,9 @@ function LightUpPageInner(){
         </div>
 
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
+          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed||solutionRevealed}/>
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -221,32 +235,13 @@ function LightUpPageInner(){
         </div>
       </main>
 
-      <OutOfTokensModal
-        gameName="Light Up"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Light Up" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="lightup" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={getDifficulty(stage)}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Light Up Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Light Up Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }
 
-export default function LightUpPage() {
-  return (
-    <ErrorBoundary game="lightup">
-      <LightUpPageInner/>
-    </ErrorBoundary>
-  );
-}
+export default function LightUpPage(){return<ErrorBoundary game="lightup"><LightUpPageInner/></ErrorBoundary>;}

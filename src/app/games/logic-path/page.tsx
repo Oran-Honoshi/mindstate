@@ -7,12 +7,12 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, ChevronRight, Share2, Lock } from "lucide-react";
+import { ArrowLeft, RotateCcw, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
-import { GameInstructions } from "@/components/ui/GameInstructions";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { HintButton } from "@/components/ui/HintButton";
+import { ShowSolution } from "@/components/ui/ShowSolution";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import {
   generateLogicPath, rotatePipe, checkLogicPath, isCellCorrect,
@@ -25,7 +25,6 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { updateStreak } from "@/lib/supabase/streaks";
-
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"medium":"hard"; }
@@ -39,23 +38,14 @@ function PipeSVG({ cell, size, isCorrect, showFeedback }: {
   const c = size / 2;
   const w = Math.max(4, size * 0.18);
   const color = showFeedback ? (isCorrect ? "#22C55E" : "#4F6EF7") : "#4F6EF7";
-
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {/* Background */}
-      {showFeedback && (
-        <rect x={0} y={0} width={size} height={size}
-          fill={isCorrect ? "rgba(34,197,94,0.08)" : "rgba(79,110,247,0.05)"}
-          rx={6}/>
-      )}
-      {/* Pipes */}
+      {showFeedback && <rect x={0} y={0} width={size} height={size} fill={isCorrect?"rgba(34,197,94,0.08)":"rgba(79,110,247,0.05)"} rx={6}/>}
       {cell.connections[0] && <rect x={c-w/2} y={0} width={w} height={c+w/2} fill={color} rx={w/3}/>}
       {cell.connections[1] && <rect x={c-w/2} y={c-w/2} width={size-c+w/2} height={w} fill={color} rx={w/3}/>}
       {cell.connections[2] && <rect x={c-w/2} y={c-w/2} width={w} height={size-c+w/2} fill={color} rx={w/3}/>}
       {cell.connections[3] && <rect x={0} y={c-w/2} width={c+w/2} height={w} fill={color} rx={w/3}/>}
-      {/* Center hub */}
       <circle cx={c} cy={c} r={w*0.85} fill={color}/>
-      {/* Connection dots at edges */}
       {cell.connections[0] && <circle cx={c} cy={2} r={w*0.4} fill={color} opacity={0.6}/>}
       {cell.connections[1] && <circle cx={size-2} cy={c} r={w*0.4} fill={color} opacity={0.6}/>}
       {cell.connections[2] && <circle cx={c} cy={size-2} r={w*0.4} fill={color} opacity={0.6}/>}
@@ -66,21 +56,15 @@ function PipeSVG({ cell, size, isCorrect, showFeedback }: {
 
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
-  useEffect(() => {
-    const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
-    return () => clearInterval(iv);
-  }, [xpState]);
+  useEffect(() => { const iv = setInterval(() => setSnap(calculateXP(xpState)), 500); return () => clearInterval(iv); }, [xpState]);
   const pct = snap.percentRemaining;
   const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
       <div style={{ flex:1, height:4, background:"var(--bg3)", borderRadius:2, overflow:"hidden" }}>
-        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }}
-          style={{ height:"100%", background:color, borderRadius:2 }}/>
+        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }} style={{ height:"100%", background:color, borderRadius:2 }}/>
       </div>
-      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>
-        {snap.currentXP}
-      </span>
+      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
       <span style={{ fontSize:11, color:"var(--text4)" }}>XP</span>
     </div>
   );
@@ -101,18 +85,16 @@ function LogicPathPageInner() {
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
-  const [feedbackCells, setFeedbackCells] = useState<Set<string>>(new Set());
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+  const pausedRef = useRef(false);
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
       timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
     }}
   );
-
-  const pausedRef = useRef(false);
 
   const loadStage = useCallback((s: number) => {
     saveGameState("logic-path", {stage, savedAt: Date.now()});
@@ -123,15 +105,13 @@ function LogicPathPageInner() {
     setGrid(b.grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] }))));
     setXpState(xp); setCompleted(false); setFinalXP(0);
     setElapsed("00:00"); setHintsUsed(0); setShowFeedback(false);
+    setSolutionRevealed(false);
     if (timerRef.current) clearInterval(timerRef.current);
     pausedRef.current = false;
     timerRef.current = setInterval(() => {
       if (!pausedRef.current) setElapsed(formatElapsed(xp.startTime));
     }, 1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
+    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   }, [user]);
 
   useEffect(() => {
@@ -139,67 +119,55 @@ function LogicPathPageInner() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  function handleRevealSolution() {
+    if (!board || !xpState) return;
+    // Copy solution grid with all cells locked so they can't be rotated
+    setGrid(board.solution.map(row =>
+      row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean], locked: true }))
+    ));
+    setShowFeedback(true);
+    setSolutionRevealed(true);
+    setXpState(prev => prev ? { ...prev, startTime: Date.now() - prev.decayDuration * 1000 } : prev);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }
+
   function handleRotate(r: number, c: number) {
-    if (!board || completed || grid[r][c].locked) return;
+    if (!board || completed || grid[r][c].locked || solutionRevealed) return;
     const ng = grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })));
     ng[r][c] = rotatePipe(ng[r][c]);
     setGrid(ng);
     playClick();
-
     if (checkLogicPath(ng) && xpState) {
       const earned = Math.max(1, finalizeXP(xpState) - hintsUsed * HINT_XP_COST);
       setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
-          markStageCompleted("logic-path",stage);
+      markStageCompleted("logic-path",stage);
       if (user) { updateStreak(user.id); saveScore({ user_id:user.id, game_slug:"logic-path", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) }); }
     }
   }
 
   function handleHint() {
-    if (!board || hintsUsed >= MAX_HINTS || !xpState) return;
-    // Find first wrong unlocked cell and fix it
+    if (!board || hintsUsed >= MAX_HINTS || !xpState || solutionRevealed) return;
     const ng = grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })));
     let fixed = false;
     outer: for (let r = 0; r < board.size; r++) {
       for (let c = 0; c < board.size; c++) {
         if (!ng[r][c].locked && !isCellCorrect(ng, board.solution, r, c)) {
           ng[r][c] = { ...board.solution[r][c], locked: true };
-          fixed = true;
-          break outer;
+          fixed = true; break outer;
         }
       }
     }
     if (!fixed) return;
-    setGrid(ng);
-    setHintsUsed(h => h + 1);
-    playClick();
-
+    setGrid(ng); setHintsUsed(h => h + 1); playClick();
     if (checkLogicPath(ng) && xpState) {
       const earned = Math.max(1, finalizeXP(xpState) - (hintsUsed+1) * HINT_XP_COST);
       setFinalXP(earned); setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
     }
-  }
-
-function handleCheck() {
-    if (!board || !xpState || completed) return;
-    const correct = new Set<string>();
-    const wrong = new Set<string>();
-    grid.forEach((row, r) => row.forEach((cell, c) => {
-      if (!cell.locked) {
-        const solCell = board.solution[r][c];
-        const matches = cell.connections.every((v, i) => v === solCell.connections[i]);
-        if (matches) correct.add(`${r},${c}`);
-        else wrong.add(`${r},${c}`);
-      }
-    }));
-    setFeedbackCells(correct);
-    setWrongCells(wrong);
-    setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
-    setTimeout(() => { setShowFeedback(false); setFeedbackCells(new Set()); setWrongCells(new Set()); }, 2000);
   }
 
   if (!board || !xpState) return (
@@ -212,6 +180,7 @@ function handleCheck() {
   const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
   const maxW = typeof window!=="undefined" ? Math.min(window.innerWidth-48, 400) : 340;
   const cellSize = Math.floor((maxW - (board.size-1)*8) / board.size);
+  const currentXP = calculateXP(xpState).currentXP;
 
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
@@ -219,36 +188,33 @@ function handleCheck() {
       <GamePageSchema slug="logic-path" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
-        {/* Header */}
         <div style={{ width:"100%", maxWidth:480, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}>
-                <ArrowLeft size={14}/> Games
-              </Link>
+              <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
               <div style={{ width:1, height:16, background:"var(--border)" }}/>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} · {board.size}×{board.size}
-              </span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)}
-                style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-                <RotateCcw size={13}/>
-              </button>
+              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        {/* Instructions */}
         <div style={{ fontSize:12, color:"var(--text3)", textAlign:"center", maxWidth:340, lineHeight:1.6 }}>
           Click any pipe to rotate it 90°. Make all connections match between neighbors. No open ends at borders.
         </div>
 
-        {/* Legend */}
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            Solution revealed · XP set to 1 · Retry to score properly
+          </motion.div>
+        )}
+
         <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--text4)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
             <div style={{ width:16, height:16, borderRadius:4, background:"rgba(79,110,247,0.1)", border:"1.5px solid #4F6EF7", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -258,112 +224,61 @@ function handleCheck() {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
             <div style={{ width:16, height:16, borderRadius:4, background:"rgba(34,197,94,0.1)", border:"1.5px solid #22C55E" }}/>
-            Correct 
+            Correct
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-            <Lock size={11}/>
-            Locked
-          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:5 }}><Lock size={11}/> Locked</div>
         </div>
 
-        {/* Board */}
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:`repeat(${board.size},${cellSize}px)`,
-          gap:8,
-          background:"var(--bg2)",
-          borderRadius:16,
-          padding:12,
-          border:"1.5px solid var(--border)",
-          boxShadow:"var(--shadow-md)",
-        }}>
+        <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)`, gap:8, background:"var(--bg2)", borderRadius:16, padding:12, border:"1.5px solid var(--border)", boxShadow:"var(--shadow-md)" }}>
           {grid.map((row, r) => row.map((cell, c) => {
             const correct = isCellCorrect(grid, board.solution, r, c);
             return (
               <motion.div key={`${r}-${c}`}
-                whileTap={!cell.locked ? { scale:0.88 } : {}}
+                whileTap={!cell.locked&&!solutionRevealed?{scale:0.88}:{}}
                 onClick={() => handleRotate(r, c)}
                 style={{
-                  width:cellSize, height:cellSize,
-                  borderRadius:10,
-                  background: cell.locked ? "var(--bg3)" :
-                    showFeedback && correct ? "rgba(34,197,94,0.08)" : "var(--surface)",
-                  border:`1.5px solid ${
-                    cell.locked ? "var(--border2)" :
-                    showFeedback && correct ? "#86EFAC" : "var(--border)"}`,
-                  cursor:cell.locked ? "not-allowed" : "pointer",
+                  width:cellSize, height:cellSize, borderRadius:10,
+                  background: cell.locked ? (solutionRevealed?"rgba(239,68,68,0.05)":"var(--bg3)")
+                    : showFeedback&&correct ? "rgba(34,197,94,0.08)" : "var(--surface)",
+                  border:`1.5px solid ${cell.locked?(solutionRevealed?"rgba(239,68,68,0.2)":"var(--border2)"):showFeedback&&correct?"#86EFAC":"var(--border)"}`,
+                  cursor: cell.locked||solutionRevealed ? "not-allowed" : "pointer",
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  position:"relative",
-                  boxShadow: showFeedback && correct ? "0 0 8px rgba(34,197,94,0.2)" : "none",
-                  transition:"all 0.15s",
+                  position:"relative", transition:"all 0.15s",
                 }}>
-                <PipeSVG cell={cell} size={cellSize-8}
-                  isCorrect={showFeedback ? correct : undefined}
-                  showFeedback={showFeedback}/>
-                {cell.locked && (
-                  <div style={{ position:"absolute", top:3, right:3 }}>
-                    <Lock size={8} color="var(--text4)"/>
-                  </div>
-                )}
+                <PipeSVG cell={cell} size={cellSize-8} isCorrect={showFeedback?correct:undefined} showFeedback={showFeedback}/>
+                {cell.locked && <div style={{ position:"absolute", top:3, right:3 }}><Lock size={8} color={solutionRevealed?"#EF4444":"var(--text4)"}/></div>}
               </motion.div>
             );
           }))}
         </div>
 
-        {/* Controls */}
         <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap", justifyContent:"center" }}>
-          <HintButton
-            hintsLeft={MAX_HINTS - hintsUsed}
-            xpCost={HINT_XP_COST}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          <button
-            onClick={() => setShowFeedback(f => !f)}
-            style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--border2)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--text3)", cursor:"pointer" }}>
-            {showFeedback ? " Feedback On" : "Check Progress"}
-          </button>
+          <HintButton hintsLeft={MAX_HINTS-hintsUsed} xpCost={HINT_XP_COST} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          {!solutionRevealed&&(
+            <button onClick={() => setShowFeedback(f => !f)}
+              style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--border2)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--text3)", cursor:"pointer" }}>
+              {showFeedback ? "Feedback On" : "Check Progress"}
+            </button>
+          )}
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
-        {/* Stage nav */}
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
-            ← Prev
-          </button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>
-            Next <ChevronRight size={13}/>
-          </button>
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
-      <OutOfTokensModal
-        gameName="Logic Path"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Logic Path" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="logic-path" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={diff}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={() => loadStage(stage)}
-        onNext={() => { setCompleted(false); setStage(s => s+1); }}
-        onShare={() => {
-          const text = ` MindState · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if (navigator.share) navigator.share({ title:"MindState", text, url:"https://mindstate.vercel.app" }).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+      <CompletionPopup open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={() => loadStage(stage)} onNext={() => { setCompleted(false); setStage(s => s+1); }}
+        onShare={() => { const text=`MindState · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`; if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
+    </div>
   );
 }
 
-export default function LogicPathPage() {
-  return (
-    <ErrorBoundary game="logic-path">
-      <LogicPathPageInner/>
-    </ErrorBoundary>
-  );
-}
+export default function LogicPathPage(){return<ErrorBoundary game="logic-path"><LogicPathPageInner/></ErrorBoundary>;}

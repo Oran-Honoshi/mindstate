@@ -15,7 +15,7 @@ import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import{UndoButton}from"@/components/ui/UndoButton";
 import{HintButton}from"@/components/ui/HintButton";
-
+import { ShowSolution } from "@/components/ui/ShowSolution";
 import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
@@ -24,7 +24,6 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
 import{generateQueensBoard,validateQueens,solveQueens,type QueensBoard}from"@/lib/games/queensGenerator";
-
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s:number):Difficulty{
@@ -63,7 +62,7 @@ function QueensGameInner(){
   const{user}=useAuthStore();
   const [stage, setStage] = useState(() => getLastStage("queens"));
   const[board,setBoard]=useState<QueensBoard|null>(null);
-  const[grid,setGrid]=useState<number[][]>([]);// 0=empty,1=mark,2=queen
+  const[grid,setGrid]=useState<number[][]>([]);
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[completed,setCompleted]=useState(false);
@@ -78,15 +77,15 @@ function QueensGameInner(){
   const[feedbackCells,setFeedbackCells]=useState<Set<string>>(new Set());
   const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
   const[errors,setErrors]=useState<Set<string>>(new Set());
+  const[solutionRevealed,setSolutionRevealed]=useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  // Freeze game when user leaves the app
+
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => { if (xpState && !completed) {
       timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
     }}
   );
-
   const pausedRef=useRef(false);
 
   const loadStage=useCallback((s:number)=>{
@@ -99,6 +98,7 @@ function QueensGameInner(){
     setGridHistory([]);
     setXpState(xp);setCompleted(false);setFinalXP(0);
     setElapsed("00:00");setHintsUsed(0);setShowFeedback(false);setErrors(new Set());
+    setSolutionRevealed(false);
     if(timerRef.current)clearInterval(timerRef.current);
     pausedRef.current=false;
     timerRef.current=setInterval(()=>{
@@ -112,44 +112,48 @@ function QueensGameInner(){
 
   useEffect(()=>{
     const saved=loadGameState("queens");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
-    }
-  },[]); // mount only
+    if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);}
+    else loadStage(stage);
+  },[]);
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
+  // ── Show Solution ────────────────────────────────────────────────────────
+  function handleRevealSolution(){
+    if(!board||!xpState)return;
+    const solution=solveQueens(board.size,board.regions);
+    if(!solution)return;
+    const ng=Array.from({length:board.size},()=>Array(board.size).fill(0));
+    solution.forEach(([r,c])=>{ng[r][c]=2;});
+    setGrid(ng);
+    setErrors(new Set());
+    setSolutionRevealed(true);
+    setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
+    if(timerRef.current)clearInterval(timerRef.current);
+  }
+
   function handleCellClick(r:number,c:number){
-    if(!board||completed)return;
+    if(!board||completed||solutionRevealed)return;
     setGridHistory(h=>[...h.slice(-19),grid.map(r=>[...r])]);
     const ng=grid.map(row=>[...row]);
-    ng[r][c]=(ng[r][c]+1)%3;// 0→1→2→0
+    ng[r][c]=(ng[r][c]+1)%3;
     setGrid(ng);
     playClick();
-
-    // Check for errors (queens touching)
-    const queens:[number,number][]=[];
-    ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)queens.push([ri,ci]);}));
-    // Highlight touching queens as errors
-    const errs=new Set<string>();
     const qlist:[number,number][]=[];
-    ng.forEach((row,r)=>row.forEach((v,c)=>{if(v===2)qlist.push([r,c]);}));
+    ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)qlist.push([ri,ci]);}));
+    const errs=new Set<string>();
     for(let i=0;i<qlist.length;i++)for(let j=i+1;j<qlist.length;j++){
       const[r1,c1]=qlist[i],[r2,c2]=qlist[j];
       if(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1){errs.add(`${r1},${c1}`);errs.add(`${r2},${c2}`);}
     }
     setErrors(errs);
     if(errs.size>0)playError();
-
     if(validateQueens(board,ng)&&xpState){
       const earned=Math.max(1,finalizeXP(xpState)-hintsUsed*100);
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
-          markStageCompleted("queens",stage);
-          if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
+      markStageCompleted("queens",stage);
+      if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"queens",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
     }
   }
@@ -162,44 +166,21 @@ function QueensGameInner(){
   }
 
   function handleHint(){
-    if(!board||hintsUsed>=3||!xpState)return;
+    if(!board||hintsUsed>=3||!xpState||solutionRevealed)return;
     const solution=solveQueens(board.size,board.regions);
     if(!solution)return;
     const ng=grid.map(row=>[...row]);
-    // Place the first row that doesn't have a correct queen yet
     for(const[sr,sc] of solution){
       if(ng[sr][sc]!==2){
-        // Clear the whole row first (remove wrong placements)
-        for(let c=0;c<board.size;c++) ng[sr][c]=0;
+        for(let c=0;c<board.size;c++)ng[sr][c]=0;
         ng[sr][sc]=2;
         setGrid(ng);
         setHintsUsed(h=>h+1);
-        // Deduct XP by pushing startTime back 3 minutes
-        setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
+        setXpState(prev=>prev?{...prev,hintsUsed:Math.min((prev.hintsUsed||0)+1,prev.maxHints)}:prev);
         playError();
         return;
       }
     }
-  }
-
-  function handleCheck(){
-    if(!board||!xpState)return;
-    const solution=solveQueens(board.size,board.regions);
-    if(!solution)return;
-    const solSet=new Set(solution.map(([r,c])=>`${r},${c}`));
-    const correct=new Set<string>();
-    const wrong=new Set<string>();
-    grid.forEach((row,r)=>row.forEach((v,c)=>{
-      if(v===2){
-        if(solSet.has(`${r},${c}`)) correct.add(`${r},${c}`);
-        else wrong.add(`${r},${c}`);
-      }
-    }));
-    setFeedbackCells(correct);
-    setWrongCells(wrong);
-    setShowFeedback(true);
-    setXpState(prev => prev ? {...prev, hintsUsed: Math.min((prev.hintsUsed||0)+1, prev.maxHints)} : prev);
-    setTimeout(()=>{setShowFeedback(false);setFeedbackCells(new Set());setWrongCells(new Set());},2000);
   }
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
@@ -208,6 +189,7 @@ function QueensGameInner(){
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const cellSize=Math.floor(maxW/board.size);
+  const currentXP=calculateXP(xpState).currentXP;
 
   return(
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column"}}>
@@ -215,7 +197,6 @@ function QueensGameInner(){
       <GamePageSchema slug="queens" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
 
-        {/* Header */}
         <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"var(--shadow-sm)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
@@ -229,7 +210,7 @@ function QueensGameInner(){
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
-              </div>
+            </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
@@ -238,7 +219,13 @@ function QueensGameInner(){
           Tap once = mark · Tap twice = queen · Tap three times = clear · One queen per row, column and region
         </div>
 
-        {/* Board */}
+        {solutionRevealed&&(
+          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            Solution revealed · XP set to 1 · Retry to score properly
+          </motion.div>
+        )}
+
         <div style={{border:"2px solid #374151",borderRadius:12,overflow:"hidden",boxShadow:"var(--shadow-md)"}}>
           {grid.map((row,r)=>(
             <div key={r} style={{display:"flex"}}>
@@ -248,30 +235,25 @@ function QueensGameInner(){
                 const isQueen=val===2;
                 const isMark=val===1;
                 const hasError=errors.has(`${r},${c}`);
+                const isSolution=solutionRevealed&&isQueen;
                 const rightBorder=c<board.size-1&&board.regions[r][c+1]!==rid;
                 const bottomBorder=r<board.size-1&&board.regions[r+1][c]!==rid;
                 return(
-                  <button
-                    key={c}
-                    onClick={()=>handleCellClick(r,c)}
+                  <button key={c} onClick={()=>handleCellClick(r,c)}
                     style={{
                       width:cellSize,height:cellSize,
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      background:showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":hasError?"rgba(239,68,68,0.2)":pal.fill,
-                      cursor:"pointer",outline:"none",
+                      background:isSolution?"rgba(239,68,68,0.08)":showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":hasError?"rgba(239,68,68,0.2)":pal.fill,
+                      cursor:solutionRevealed?"default":"pointer",outline:"none",
                       borderRight:rightBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
                       borderBottom:bottomBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
                       borderTop:"none",borderLeft:"none",
-                      fontSize:Math.round(cellSize*0.5),
-                      transition:"background 0.1s",
-                      position:"relative",
+                      transition:"background 0.1s",position:"relative",
                     }}>
                     {isMark&&<span style={{color:"#64748B",fontWeight:700,lineHeight:1,fontSize:Math.round(cellSize*0.4)}}>✕</span>}
                     {isQueen&&(
-                      <motion.span
-                        initial={{scale:0}}
-                        animate={{scale:1}}
-                        style={{color:hasError?"#EF4444":pal.queen,lineHeight:1,fontSize:Math.round(cellSize*0.5)}}>
+                      <motion.span initial={{scale:0}} animate={{scale:1}}
+                        style={{color:isSolution?"#EF4444":hasError?"#EF4444":pal.queen,lineHeight:1,fontSize:Math.round(cellSize*0.5)}}>
                         ♛
                       </motion.span>
                     )}
@@ -282,17 +264,12 @@ function QueensGameInner(){
           ))}
         </div>
 
-        {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed}/>
-          <HintButton
-            hintsLeft={3-hintsUsed}
-            xpCost={100}
-            onUseHint={handleHint}
-            disabled={completed}/>
-          </div>
+          <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed||solutionRevealed}/>
+          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
+          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
+        </div>
 
-        {/* Stage nav */}
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
@@ -300,31 +277,13 @@ function QueensGameInner(){
         </div>
       </main>
 
-      <OutOfTokensModal
-        gameName="Queens"
-        open={showTokenModal}
-        onClose={()=>setShowTokenModal(false)}/>
+      <OutOfTokensModal gameName="Queens" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showMap&&<StageMap gameSlug="queens" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
-        open={completed}
-        stage={stage}
-        difficulty={diff}
-        xpEarned={finalXP}
-        elapsed={elapsed}
-        onRetry={()=>loadStage(stage)}
-        onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{
-          const text=`MindState · Queens Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.vercel.app"}).catch(()=>{});
-          else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
-        }}/>
-</div>
+        open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
+        onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onShare={()=>{const text=`MindState · Queens Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+    </div>
   );
 }
-export default function QueensGame() {
-  return (
-    <ErrorBoundary game="queens">
-      <QueensGameInner/>
-    </ErrorBoundary>
-  );
-}
+export default function QueensGame(){return<ErrorBoundary game="queens"><QueensGameInner/></ErrorBoundary>;}
