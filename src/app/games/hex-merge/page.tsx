@@ -70,7 +70,7 @@ function HexMergePageInner(){
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
@@ -120,7 +120,7 @@ function HexMergePageInner(){
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>TARGET {target}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:12,color:"var(--text4)"}}>Best: {bestTile||"\u2014"}</span>
+              <span style={{fontSize:12,color:"var(--text4)"}}>Best: {bestTile||"—"}</span>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
               <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
@@ -128,12 +128,12 @@ function HexMergePageInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)"}}>Click a tile to select \u00b7 Click a matching neighbor to merge \u00b7 Reach {target}</div>}
+        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)"}}>Click a tile to select · Click a matching neighbor to merge · Reach {target}</div>}
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:380}}>
-            Target: {target} \u00b7 Strategy: merge equal tiles outward from center \u00b7 XP set to 1
+            Target: {target} · Strategy: merge equal tiles outward from center · XP set to 1
           </motion.div>
         )}
 
@@ -164,7 +164,7 @@ function HexMergePageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -174,7 +174,7 @@ function HexMergePageInner(){
       {showMap&&<StageMap gameSlug="hex-merge" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Hex Merge Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Hex Merge Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

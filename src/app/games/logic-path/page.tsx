@@ -126,7 +126,7 @@ function LogicPathPageInner() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution() {
     if (!board || !xpState) return;
     // Copy solution grid with all cells locked so they can't be rotated
@@ -202,7 +202,7 @@ function LogicPathPageInner() {
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
               <div style={{ width:1, height:16, background:"var(--border)" }}/>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -213,13 +213,13 @@ function LogicPathPageInner() {
         </div>
 
         <div style={{ fontSize:12, color:"var(--text3)", textAlign:"center", maxWidth:340, lineHeight:1.6 }}>
-          Click any pipe to rotate it 90\u00b0. Make all connections match between neighbors. No open ends at borders.
+          Click any pipe to rotate it 90°. Make all connections match between neighbors. No open ends at borders.
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
+            Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
@@ -273,7 +273,7 @@ function LogicPathPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -301,7 +301,7 @@ function LogicPathPageInner() {
       {showMap&&<StageMap gameSlug="logic-path" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
         onRetry={() => loadStage(stage)} onNext={() => { setCompleted(false); setStage(s => s+1); }}
-        onShare={() => { const text=`MindElement \u00b7 Logic Path Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`; if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
+        onShare={() => { const text=`MindElement · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`; if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
     </div>
   );
 }

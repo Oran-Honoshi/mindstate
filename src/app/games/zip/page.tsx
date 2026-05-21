@@ -154,7 +154,7 @@ function ZipGameInner() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution() {
     if (!board || !xpState) return;
     setUserPath([...board.path]);
@@ -261,7 +261,7 @@ function ZipGameInner() {
               <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
               <span style={{ fontSize:11, color:"var(--text4)" }}>Stage</span>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -272,13 +272,13 @@ function ZipGameInner() {
         </div>
 
         <div style={{ fontSize:12, color:"var(--text4)" }}>
-          {userPath.length} / {totalCells} cells \u00b7 visit waypoints 1\u2192{board.waypoints.size} in order
+          {userPath.length} / {totalCells} cells · visit waypoints 1→{board.waypoints.size} in order
         </div>
 
         {solutionRevealed && (
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
+            Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
@@ -329,10 +329,10 @@ function ZipGameInner() {
 
         <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--text4)" }}>
           <span>Drag or tap to trace</span>
-          <span>\u00b7</span>
+          <span>·</span>
           <span>Numbers = waypoints</span>
           {!solutionRevealed && <>
-            <span>\u00b7</span>
+            <span>·</span>
             <button onClick={() => board && setUserPath([board.path[0]])}
               style={{ color:"#4F6EF7", background:"none", border:"none", cursor:"pointer", fontSize:11, fontWeight:600 }}>
               Reset path
@@ -347,7 +347,7 @@ function ZipGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -374,7 +374,7 @@ function ZipGameInner() {
       {showMap&&<StageMap gameSlug="zip" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Zip Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Zip Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

@@ -28,7 +28,7 @@ function getDifficulty(s:number):Difficulty{
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function shareResult(stage:number,score:number,best:number){const text=` MindElement \u00b7 2048 Pro Stage ${stage} \u00b7 Score: ${score} \u00b7 Best tile: ${best}`;const url="https://mindelement.app";if(navigator.share)navigator.share({title:"MindElement",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
+function shareResult(stage:number,score:number,best:number){const text=` MindElement · 2048 Pro Stage ${stage} · Score: ${score} · Best tile: ${best}`;const url="https://mindelement.app";if(navigator.share)navigator.share({title:"MindElement",text,url}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text+" "+url),"_blank");}
 
 type Grid=number[][];
 const TILE_COLORS:Record<number,{bg:string;color:string}>={0:{bg:"#EDE0C8",color:"transparent"},2:{bg:"#EEE4DA",color:"#776E65"},4:{bg:"#EDE0C8",color:"#776E65"},8:{bg:"#F2B179",color:"white"},16:{bg:"#F59563",color:"white"},32:{bg:"#F67C5F",color:"white"},64:{bg:"#F65E3B",color:"white"},128:{bg:"#EDCF72",color:"white"},256:{bg:"#EDCC61",color:"white"},512:{bg:"#EDC850",color:"white"},1024:{bg:"#EDC53F",color:"white"},2048:{bg:"#EDC22E",color:"white"},4096:{bg:"#3C3A32",color:"white"},8192:{bg:"#3C3A32",color:"white"}};
@@ -99,8 +99,8 @@ function TwentyFortyEightProPageInner(){
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  // 2048 has no static solution \u2014 lock the board and show strategy tip
+  // ── Show Solution ──────────────────────────────────────────────────────────
+  // 2048 has no static solution — lock the board and show strategy tip
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
@@ -170,7 +170,7 @@ function TwentyFortyEightProPageInner(){
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:340}}>
-            Target: {target} \u00b7 Strategy: keep highest tile in a corner, build in rows \u00b7 XP set to 1
+            Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
           </motion.div>
         )}
 
@@ -201,11 +201,11 @@ function TwentyFortyEightProPageInner(){
         </div>
 
         <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
-          {solutionRevealed?"Board locked \u00b7 Retry to play properly":"Arrow keys or swipe to move \u00b7 Reach "+target+" to win"}
+          {solutionRevealed?"Board locked · Retry to play properly":"Arrow keys or swipe to move · Reach "+target+" to win"}
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,48px)",gridTemplateRows:"repeat(2,48px)",gap:6}}>
-          {[{dir:"up",label:"\u2191",col:2,row:1},{dir:"left",label:"\u2190",col:1,row:2},{dir:"down",label:"\u2193",col:2,row:2},{dir:"right",label:"\u2192",col:3,row:2}].map(btn=>(
+          {[{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}].map(btn=>(
             <button key={btn.dir} onClick={()=>handleMove(btn.dir as any)} disabled={solutionRevealed}
               style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
               {btn.label}
@@ -221,7 +221,7 @@ function TwentyFortyEightProPageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -233,9 +233,9 @@ function TwentyFortyEightProPageInner(){
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
               style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              {gameState==="won"?<Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>:<div style={{fontSize:48,marginBottom:16}}>\ud83d\ude14</div>}
+              {gameState==="won"?<Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>:<div style={{fontSize:48,marginBottom:16}}>😔</div>}
               <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{gameState==="won"?`${target} Reached!`:"Game Over"}</h2>
-              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Score: {score.toLocaleString()} \u00b7 Best: {bestTile}</p>
+              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Score: {score.toLocaleString()} · Best: {bestTile}</p>
               {gameState==="won"&&(
                 <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
                   <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p>

@@ -94,7 +94,7 @@ function KakuroGameInner() {
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   // Kakuro's generator stores solution in board.solution (a 2D array of numbers)
   function handleRevealSolution() {
     if (!board || !xpState) return;
@@ -204,7 +204,7 @@ function KakuroGameInner() {
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
               <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -214,12 +214,12 @@ function KakuroGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{ fontSize:11, color:"var(--text4)" }}>Fill white cells \u00b7 Each run must sum to its clue \u00b7 No repeats in a run</div>
+        <div style={{ fontSize:11, color:"var(--text4)" }}>Fill white cells · Each run must sum to its clue · No repeats in a run</div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
+            Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
@@ -265,7 +265,7 @@ function KakuroGameInner() {
           </div>
         </div>
 
-        {/* Number pad \u2014 hidden when solution revealed */}
+        {/* Number pad — hidden when solution revealed */}
         {!solutionRevealed && (
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
             {[1,2,3,4,5,6,7,8,9].map(n => (
@@ -288,7 +288,7 @@ function KakuroGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -315,7 +315,7 @@ function KakuroGameInner() {
       {showMap&&<StageMap gameSlug="kakuro" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Kakuro Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Kakuro Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

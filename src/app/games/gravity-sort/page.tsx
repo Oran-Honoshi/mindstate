@@ -66,7 +66,7 @@ function GravitySortPageInner(){
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
@@ -119,12 +119,12 @@ function GravitySortPageInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>Click a column to pick up its top block \u00b7 Click another to drop it<br/>Sort each color into its own column</div>}
+        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>Click a column to pick up its top block · Click another to drop it<br/>Sort each color into its own column</div>}
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:400}}>
-            Strategy: Move top block to its matching color column \u00b7 Use free columns as buffers \u00b7 XP set to 1
+            Strategy: Move top block to its matching color column · Use free columns as buffers · XP set to 1
           </motion.div>
         )}
 
@@ -140,8 +140,8 @@ function GravitySortPageInner(){
             return(
               <motion.div key={ci} onClick={()=>handleColClick(ci)} animate={isSelected?{y:-8}:{y:0}} transition={{type:"spring",stiffness:400,damping:25}}
                 style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(79,110,247,0.06)":"#F8F7F5",borderRadius:14,padding:6,border:`2px solid ${isSelected?"#4F6EF7":isSorted?"#22C55E":"#E2E8F0"}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
-                {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"\u2191"}</motion.div>))}
-                {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>\u2713</div>}
+                {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"↑"}</motion.div>))}
+                {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>✓</div>}
               </motion.div>
             );
           })}
@@ -159,7 +159,7 @@ function GravitySortPageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -169,7 +169,7 @@ function GravitySortPageInner(){
       {showMap&&<StageMap gameSlug="gravity-sort" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Gravity Sort Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Gravity Sort Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

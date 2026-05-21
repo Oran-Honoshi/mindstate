@@ -31,7 +31,7 @@ function getDifficulty(stage: number): Difficulty {
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = ` MindElement \u00b7 Flow Stage ${stage} \u00b7 ${xp} XP \u00b7 ${elapsed}`;
+  const text = ` MindElement · Flow Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindelement.app";
   if (navigator.share) navigator.share({ title:"MindElement", text, url }).catch(()=>{});
   else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + " " + url), "_blank");
@@ -237,9 +237,9 @@ function FlowGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{ fontSize:11, color:"var(--text4)" }}>Drag from dot to dot \u00b7 Fill every cell \u00b7 No crossings</div>
+        <div style={{ fontSize:11, color:"var(--text4)" }}>Drag from dot to dot · Fill every cell · No crossings</div>
 
-        {/* Board \u2014 single style object, touchAction merged in */}
+        {/* Board — single style object, touchAction merged in */}
         <div
           style={{
             border:"2px solid #E2E8F0",
@@ -248,7 +248,7 @@ function FlowGameInner() {
             boxShadow:"0 8px 32px rgba(0,0,0,0.08)",
             cursor:"crosshair",
             userSelect:"none",
-            touchAction:"none",   // \u2190 merged here, no duplicate style prop
+            touchAction:"none",   // ← merged here, no duplicate style prop
           }}
           onMouseLeave={endDraw}
           onTouchMove={(e) => {
@@ -316,7 +316,7 @@ function FlowGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -349,7 +349,7 @@ function FlowGameInner() {
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
-          const text=`MindElement \u00b7 Flow Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;
+          const text=`MindElement · Flow Stage ${stage} · ${finalXP} XP · ${elapsed}`;
           if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>

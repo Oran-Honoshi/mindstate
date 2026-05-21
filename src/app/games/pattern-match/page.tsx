@@ -89,13 +89,13 @@ function PatternMatchGameInner(){
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!board||!xpState)return;
     // Highlight the correct answer by selecting it
     const ansKey=`${board.answer.value}-${board.answer.color??""}`;
     setSelected(ansKey);
-    setCorrect(false); // show as "selected but not by player" \u2014 red border overridden below
+    setCorrect(false); // show as "selected but not by player" — red border overridden below
     setSolutionRevealed(true);
     setShowRule(true); // also reveal the rule
     setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
@@ -207,9 +207,9 @@ function PatternMatchGameInner(){
                 transition={{duration:0.3}}
                 style={{padding:"18px",borderRadius:16,border:`1.5px solid ${border}`,background:bg,cursor:solutionRevealed?"default":"pointer",outline:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"all 0.2s",opacity:solutionRevealed&&!isAnswer?0.45:1}}>
                 <span style={{fontSize:opt.color?32:20,fontWeight:700,color:opt.color??"#1C1917"}}>{opt.value}</span>
-                {solutionRevealed&&isAnswer&&<span style={{fontSize:16}}>\u2713</span>}
-                {!solutionRevealed&&isSelected&&correct&&<span style={{fontSize:16}}>\u2713</span>}
-                {!solutionRevealed&&isSelected&&!correct&&<span style={{fontSize:16}}>\u2717</span>}
+                {solutionRevealed&&isAnswer&&<span style={{fontSize:16}}>✓</span>}
+                {!solutionRevealed&&isSelected&&correct&&<span style={{fontSize:16}}>✓</span>}
+                {!solutionRevealed&&isSelected&&!correct&&<span style={{fontSize:16}}>✗</span>}
               </motion.button>
             );
           })}
@@ -221,13 +221,13 @@ function PatternMatchGameInner(){
             <Lightbulb size={14}/> Hint ({hintsLeft})
           </button>
           <AnimatePresence>
-            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>\u221225% XP</motion.span>}
+            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>−25% XP</motion.span>}
           </AnimatePresence>
           <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -253,7 +253,7 @@ function PatternMatchGameInner(){
       {showMap&&<StageMap gameSlug="pattern-match" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Pattern Match Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Pattern Match Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

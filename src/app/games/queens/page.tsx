@@ -122,7 +122,7 @@ function QueensGameInner(){
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!board||!xpState)return;
     const solution=solveQueens(board.size,board.regions);
@@ -211,7 +211,7 @@ function QueensGameInner(){
               <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Queens</span>
               <div style={{width:1,height:16,background:"var(--border)"}}/>
               <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
+              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
@@ -222,13 +222,13 @@ function QueensGameInner(){
         </div>
 
         <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
-          Tap once = mark \u00b7 Tap twice = queen \u00b7 Tap three times = clear \u00b7 One queen per row, column and region
+          Tap once = mark · Tap twice = queen · Tap three times = clear · One queen per row, column and region
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
+            Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
@@ -256,11 +256,11 @@ function QueensGameInner(){
                       borderTop:"none",borderLeft:"none",
                       transition:"background 0.1s",position:"relative",
                     }}>
-                    {isMark&&<span style={{color:"#64748B",fontWeight:700,lineHeight:1,fontSize:Math.round(cellSize*0.4)}}>\u2715</span>}
+                    {isMark&&<span style={{color:"#64748B",fontWeight:700,lineHeight:1,fontSize:Math.round(cellSize*0.4)}}>✕</span>}
                     {isQueen&&(
                       <motion.span initial={{scale:0}} animate={{scale:1}}
                         style={{color:isSolution?"#EF4444":hasError?"#EF4444":pal.queen,lineHeight:1,fontSize:Math.round(cellSize*0.5)}}>
-                        \u265b
+                        ♛
                       </motion.span>
                     )}
                   </button>
@@ -277,7 +277,7 @@ function QueensGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -305,7 +305,7 @@ function QueensGameInner(){
       <CompletionPopup
         open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Queens Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Queens Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

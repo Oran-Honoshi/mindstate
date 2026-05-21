@@ -39,7 +39,7 @@ const COLORS: Record<LetterResult, { bg: string; border: string; text: string }>
 const KEYBOARD_ROWS = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
   ["A","S","D","F","G","H","J","K","L"],
-  ["ENTER","Z","X","C","V","B","N","M","\u232b"],
+  ["ENTER","Z","X","C","V","B","N","M","⌫"],
 ];
 
 function XPBar({ xpState }: { xpState: XPState }) {
@@ -112,7 +112,7 @@ function WordSlingPageInner() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution() {
     if (!board || !xpState) return;
     setLost(true); // reuse the lost banner which already shows board.answer
@@ -135,7 +135,7 @@ function WordSlingPageInner() {
   function handleKey(key: string) {
     if (!board || completed || lost) return;
     if (key === "ENTER" || key === "Enter") { submitGuess(); return; }
-    if (key === "\u232b" || key === "Backspace") { setCurrent(c => c.slice(0, -1)); return; }
+    if (key === "⌫" || key === "Backspace") { setCurrent(c => c.slice(0, -1)); return; }
     if (/^[A-Za-z]$/.test(key) && current.length < board.wordLength) { setCurrent(c => c + key.toUpperCase()); playClick(); }
   }
 
@@ -207,7 +207,7 @@ function WordSlingPageInner() {
               <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Word Sling</span>
               <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
               <span style={{ fontSize:18, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.wordLength} letters</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.wordLength} letters</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -270,10 +270,10 @@ function WordSlingPageInner() {
               {row.map(key=>{
                 const state = letterStates.get(key);
                 const color = state?COLORS[state]:null;
-                const isWide = key==="ENTER"||key==="\u232b";
+                const isWide = key==="ENTER"||key==="⌫";
                 return (
                   <motion.button key={key} whileTap={{scale:0.9}}
-                    onClick={()=>handleKey(key==="\u232b"?"Backspace":key==="ENTER"?"Enter":key)}
+                    onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)}
                     style={{width:isWide?58:34,height:48,borderRadius:8,border:"none",background:color?color.bg:"var(--bg3)",color:color?color.text:"var(--text2)",fontSize:isWide?11:14,fontWeight:700,cursor:"pointer",outline:"none"}}>
                     {key}
                   </motion.button>
@@ -290,7 +290,7 @@ function WordSlingPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)}
             style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
@@ -318,7 +318,7 @@ function WordSlingPageInner() {
       {showMap&&<StageMap gameSlug="word-sling" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement \u00b7 Word Sling Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Word Sling Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

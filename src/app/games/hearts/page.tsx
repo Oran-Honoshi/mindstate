@@ -24,14 +24,14 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
-type Suit="\u2665"|"\u2666"|"\u2663"|"\u2660";
+type Suit="♥"|"♦"|"♣"|"♠";
 type Card={suit:Suit;value:number;label:string};
-function makeDecks():Card[]{const suits:Suit[]=["\u2665","\u2666","\u2663","\u2660"];const labels=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];return suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+2,label})));}
+function makeDecks():Card[]{const suits:Suit[]=["♥","♦","♣","♠"];const labels=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];return suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+2,label})));}
 function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
 function shuffleCards(cards:Card[],seed:number):Card[]{const rng=mulberry32(seed);const a=[...cards];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function cardPoints(card:Card):number{if(card.suit==="\u2665")return 1;if(card.suit==="\u2660"&&card.label==="Q")return 13;return 0;}
-function cardColor(suit:Suit):string{return suit==="\u2665"||suit==="\u2666"?"#DC2626":"#1C1917";}
+function cardPoints(card:Card):number{if(card.suit==="♥")return 1;if(card.suit==="♠"&&card.label==="Q")return 13;return 0;}
+function cardColor(suit:Suit):string{return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
 
@@ -83,13 +83,13 @@ function HeartsPageInner(){
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
     setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
     if(timerRef.current)clearInterval(timerRef.current);
-    setMessage("Strategy: Avoid \u2665 and Q\u2660. Lead low cards. Pass high \u2665 and Q\u2660 to CPU.");
+    setMessage("Strategy: Avoid ♥ and Q♠. Lead low cards. Pass high ♥ and Q♠ to CPU.");
   }
 
   function playCard(){
@@ -120,7 +120,7 @@ function HeartsPageInner(){
 
   function handleHint(){
     if(!xpState||hintsUsed>=3||phase!=="play"||solutionRevealed)return;
-    const safe=hand.filter(c=>c.suit!=="\u2665"&&!(c.suit==="\u2660"&&c.label==="Q"));
+    const safe=hand.filter(c=>c.suit!=="♥"&&!(c.suit==="♠"&&c.label==="Q"));
     const suggested=(safe.length>0?safe:hand).reduce((a,b)=>a.value<b.value?a:b);
     const idx=hand.findIndex(c=>c.suit===suggested.suit&&c.label===suggested.label);
     setSelected(idx);setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();
@@ -163,12 +163,12 @@ function HeartsPageInner(){
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.1)",border:"0.5px solid rgba(239,68,68,0.3)",fontSize:13,fontWeight:600,color:"#FCA5A5",textAlign:"center",maxWidth:400}}>
-            Strategy revealed \u00b7 XP set to 1 \u00b7 Avoid \u2665 and Q\u2660 \u00b7 Play low cards
+            Strategy revealed · XP set to 1 · Avoid ♥ and Q♠ · Play low cards
           </motion.div>
         )}
 
         <div style={{display:"flex",gap:-8,justifyContent:"center"}}>
-          {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(<div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}><CardUI card={{suit:"\u2660",value:0,label:""}} faceDown/></div>))}
+          {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(<div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}><CardUI card={{suit:"♠",value:0,label:""}} faceDown/></div>))}
           {cpuHand.length>7&&<span style={{color:"rgba(255,255,255,0.5)",fontSize:12,alignSelf:"center",marginLeft:8}}>+{cpuHand.length-7}</span>}
         </div>
 
@@ -196,7 +196,7 @@ function HeartsPageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:12,color:"rgba(255,255,255,0.7)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -205,9 +205,9 @@ function HeartsPageInner(){
       <AnimatePresence>
         {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
           <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
-            <div style={{fontSize:48,marginBottom:16}}>{won?"\ud83c\udfc6":"\ud83d\ude14"}</div>
+            <div style={{fontSize:48,marginBottom:16}}>{won?"🏆":"😔"}</div>
             <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
-            <p style={{fontSize:13,color:"var(--text3)",marginBottom:24}}>Your score: {playerScore} \u00b7 CPU: {cpuScore}</p>
+            <p style={{fontSize:13,color:"var(--text3)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
             {won&&<div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div>}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>

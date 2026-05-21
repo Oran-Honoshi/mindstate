@@ -252,7 +252,7 @@ function MemoryGameInner() {
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10,
                 background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} \u00b7 {total} pairs
+                {diff.toUpperCase()} · {total} pairs
               </span>
               <span style={{ fontSize:12, color:"var(--text4)" }}>{matched}/{total} found</span>
             </div>
@@ -276,11 +276,11 @@ function MemoryGameInner() {
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{ background:"var(--surface)", border:"0.5px solid var(--border)", borderRadius:12,
               padding:"8px 16px", fontSize:12, fontWeight:600, color:"var(--text2)" }}>
-            {matched}/{total} pairs found \u00b7 {total - matched} remaining
+            {matched}/{total} pairs found · {total - matched} remaining
           </motion.div>
         )}
 
-        {/* Card grid \u2014 responsive */}
+        {/* Card grid — responsive */}
         <div style={{
           display:"grid",
           gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
@@ -318,7 +318,7 @@ function MemoryGameInner() {
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)",
               background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed",
               fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
-            \u2190 Prev
+            ← Prev
           </button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s => s+1)}
@@ -341,11 +341,11 @@ function MemoryGameInner() {
               style={{ background:"var(--surface)", borderRadius:28, padding:36,
                 maxWidth:340, width:"100%", textAlign:"center",
                 boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
-              <div style={{ fontSize:56, marginBottom:12 }}>\ud83c\udf89</div>
+              <div style={{ fontSize:56, marginBottom:12 }}>🎉</div>
               <h2 style={{ fontSize:26, fontWeight:700, color:"var(--text1)",
                 fontFamily:"Georgia,serif", marginBottom:4 }}>All Pairs Found!</h2>
               <p style={{ fontSize:13, color:"var(--text4)", marginBottom:24 }}>
-                {elapsed} \u00b7 {total} pairs \u00b7 {diff}
+                {elapsed} · {total} pairs · {diff}
               </p>
               <div style={{ background:"var(--bg2)", borderRadius:16, padding:20, marginBottom:20 }}>
                 <p style={{ fontSize:11, color:"var(--text4)", fontWeight:600, marginBottom:4,
@@ -365,7 +365,7 @@ function MemoryGameInner() {
                     background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
                     fontSize:13, fontWeight:700, color:"white", cursor:"pointer",
                     display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                  Next Stage \u2192
+                  Next Stage →
                 </button>
               </div>
             </motion.div>
