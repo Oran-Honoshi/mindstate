@@ -11,7 +11,7 @@ import { RatingModal } from "@/components/modals/RatingModal";
 import { SuggestionButton } from "@/components/ui/SuggestionButton";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
+import { SharePrompt } from "@/components/ui/SharePrompt";
 
 
 
@@ -180,6 +180,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <SpeedInsights />
                 <WelcomeModal />
                 <RatingModal />
+                <SharePrompt />
                 <SuggestionButton />
               </RealtimeProvider>
             </AuthProvider>

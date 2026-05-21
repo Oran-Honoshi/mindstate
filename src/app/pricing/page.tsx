@@ -6,6 +6,8 @@ import { Check, Zap, Users, Crown } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
+import { triggerReviewAfterPurchase } from "@/components/modals/RatingModal";
+import { triggerShareAfterPurchase } from "@/hooks/useShareTrigger";
 
 const PLANS = [
   {
@@ -67,7 +69,16 @@ export default function PricingPage() {
     script.async = true;
     script.onload = () => {
       if ((window as any).Paddle) {
-        (window as any).Paddle.Setup({ token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN });
+        (window as any).Paddle.Setup({
+          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+          eventCallback: (event: any) => {
+            // Fires when checkout completes successfully
+            if (event.name === "checkout.completed") {
+              triggerReviewAfterPurchase();
+              triggerShareAfterPurchase();
+            }
+          },
+        });
       }
     };
     document.head.appendChild(script);
@@ -75,14 +86,14 @@ export default function PricingPage() {
   }, []);
 
   function openCheckout(priceId: string) {
-  if (typeof window !== "undefined" && (window as any).Paddle) {
-    (window as any).Paddle.Checkout.open({
-      items: [{ priceId, quantity: 1 }],
-      customer: user?.email ? { email: user.email } : undefined,
-      customData: { user_id: user?.id ?? "" },
-    });
+    if (typeof window !== "undefined" && (window as any).Paddle) {
+      (window as any).Paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customer: user?.email ? { email: user.email } : undefined,
+        customData: { user_id: user?.id ?? "" },
+      });
+    }
   }
-}
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
@@ -99,7 +110,7 @@ export default function PricingPage() {
             Simple, honest pricing
           </h1>
           <p style={{ fontSize: 17, color: "var(--text3)", maxWidth: 480, margin: "0 auto", lineHeight: 1.6 }}>
-            Start free. Upgrade when you're ready. Cancel anytime — no questions asked.
+            An investment in the sharpest version of your household. Cancel anytime.
           </p>
         </motion.div>
 
@@ -165,7 +176,7 @@ export default function PricingPage() {
 
                 {plan.free ? (
                   <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--surface)", color: "var(--text2)", border: "1.5px solid var(--border2)" }}>
-                    Start Free
+                    Start Training Free
                   </Link>
                 ) : (
                   <button onClick={() => openCheckout(plan.paddlePriceId!)}
@@ -185,12 +196,12 @@ export default function PricingPage() {
             Common questions
           </h2>
           {[
-            ["Do I need a credit card for the free plan?", "No. The free plan requires no credit card and never expires. You get 5 plays per day across all 24 games, forever."],
+            ["Do I need a credit card for the free plan?", "No. The free plan requires no credit card and never expires. You get 5 training sessions per day across the full vault, forever."],
             ["How does the 3-day free trial work?", "Enter your card to start the trial. You won't be charged for 3 days. Cancel any time before the trial ends and you pay nothing."],
             ["Can I cancel anytime?", "Yes — cancel with one click from your account settings. No cancellation fees, no questions asked. You keep access until the end of your billing period."],
             ["What's the refund policy?", "We offer a full refund within 7 days of being charged. Contact us at hello@mindelement.app and we'll process it immediately."],
             ["How does Family pricing work?", "One subscription covers 3 or 7 members. The account holder invites family members via a private link. Each member gets their own profile, scores, and streaks."],
-            ["What is Infinite Mode?", "Infinite Mode unlocks unlimited procedurally generated puzzles beyond the 100 stages — available on Individual and Family plans."],
+            ["What is Infinite Mode?", "Infinite Mode unlocks unlimited procedurally generated puzzles beyond the standard stages — available on Individual and Family plans."],
           ].map(([q, a], i) => (
             <FAQ key={i} q={q} a={a} />
           ))}
