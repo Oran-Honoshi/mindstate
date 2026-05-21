@@ -15,9 +15,10 @@ const PLANS = [
     paddlePriceId: null,
     trial: false,
     free: true,
+    highlight: false,
     icon: Zap,
     color: "#64748B",
-    features: ["All 24 games","All 100 stages","3 hints per stage","5 plays per day","Global leaderboard"],
+    features: ["Full vault access","Hints on every challenge","5 training sessions/day","Global leaderboard"],
   },
   {
     name: "Individual",
@@ -26,32 +27,34 @@ const PLANS = [
     paddlePriceId: "pri_01ks5tm2jqs69wrg92jxrc936b",
     trial: true,
     free: false,
+    highlight: false,
     icon: Crown,
     color: "#4F6EF7",
-    highlight: true,
-    features: ["All 24 games","100 stages each","Unlimited daily plays","3 hints per stage","Global leaderboard","Infinite mode","3-day free trial"],
+    features: ["1 member account","Thousands of algorithmic stages","Unlimited daily training","Full vault access","Infinite mode","3-day free trial"],
   },
   {
-    name: "Family · 3",
+    name: "Family Choice",
     price: "$5",
     period: "/mo",
     paddlePriceId: "pri_01ks5tnfpxvgdh2gkfm0k5pry8",
     trial: true,
     free: false,
+    highlight: true,
     icon: Users,
     color: "#9C6BE8",
-    features: ["3 family members","All Individual perks","Family leaderboard","Shared streaks","Priority support","3-day free trial"],
+    features: ["Up to 3 independent profiles","Dedicated child & senior UI","Shared family milestones","Unlimited daily training","Full vault access","3-day free trial"],
   },
   {
-    name: "Family · 7",
+    name: "Grand Family",
     price: "$10",
     period: "/mo",
     paddlePriceId: "pri_01ks5tpt6wsyn05gexnpade0a0",
     trial: true,
     free: false,
+    highlight: false,
     icon: Users,
     color: "#39FF14",
-    features: ["7 family members","All Individual perks","Family leaderboard","Shared streaks","Priority support","3-day free trial"],
+    features: ["Up to 7 independent profiles","Master billing dashboard","All Family Choice perks","Unlimited daily training","Full vault access","3-day free trial"],
   },
 ];
 
@@ -166,7 +169,7 @@ export default function PricingPage() {
                 ) : (
                   <button onClick={() => openCheckout(plan.paddlePriceId!)}
                     style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "#4F6EF7" : "var(--text2)", outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
-                    Start 3-day free trial
+                    {plan.highlight ? "Protect Your Household" : plan.name === "Grand Family" ? "Access Grand Vault" : "Start Free Trial"}
                   </button>
                 )}
               </motion.div>

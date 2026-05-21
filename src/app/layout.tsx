@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     default: "MindElement — Sharper Every Day",
     template: "%s | MindElement"
   },
-  description: "24 precision logic games for every mind. Tango, Queens, Sudoku, Nonogram and more. 100 stages each. Free to start — $2/mo for unlimited.",
+  description: "An evolving suite of elite brain-training logic games for every mind. Tango, Queens, Sudoku, Nonogram and more — thousands of algorithmic stages. Free to start, $2/mo unlimited.",
   keywords: [
     "brain training","logic games","puzzle games","mind games","cognitive training",
     "sudoku","nonogram","tango game","queens puzzle","daily brain games",
@@ -126,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
-              var s = JSON.parse(localStorage.getItem('mindstate-settings') || '{}');
+              var s = JSON.parse(localStorage.getItem('mindelement-settings') || '{}');
               var state = s && s.state;
               if (!state) return;
 
@@ -164,7 +164,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}}/>
       </head>
-      <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
+        <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative" }}>
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
@@ -177,6 +178,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </AuthProvider>
           </ThemeProvider>
         </I18nProvider>
+        </div>
       </body>
     </html>
   );

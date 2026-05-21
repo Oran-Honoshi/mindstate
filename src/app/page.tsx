@@ -39,10 +39,14 @@ const IMGS = {
 };
 
 const PLANS = [
-  { name:"Free", price:"$0", period:"/mo", paddlePriceId: null, trial: false, features:["All 24 games","All 100 stages","3 hints per stage","5 plays per day","Global leaderboard"], highlight:false, free:true },
-  { name:"Individual", price:"$2",  period:"/mo", paddlePriceId:"pri_01ks5tm2jqs69wrg92jxrc936b", trial: true, features:["All 24 games","100 stages each","Unlimited daily plays","3-day free trial","Global leaderboard","Infinite mode"], highlight:false, free:false },
-  { name:"Family · 3", price:"$5",  period:"/mo", paddlePriceId:"pri_01ks5tnfpxvgdh2gkfm0k5pry8", trial: true, features:["3 members","Family leaderboard","All individual perks","3-day free trial","Shared streaks","Priority support"], highlight:true, free:false },
-  { name:"Family · 7", price:"$10", period:"/mo", paddlePriceId:"pri_01ks5tpt6wsyn05gexnpade0a0", trial: true, features:["7 members","Family leaderboard","All individual perks","3-day free trial","Shared streaks","Priority support"], highlight:false, free:false },
+  { name:"Free", price:"$0", period:"/mo", paddlePriceId: null, trial: false, free:true, highlight:false,
+    features:["Full vault access","Hints on every challenge","5 training sessions/day","Global leaderboard"] },
+  { name:"Individual", price:"$2", period:"/mo", paddlePriceId:"pri_01ks5tm2jqs69wrg92jxrc936b", trial: true, free:false, highlight:false,
+    features:["1 member account","Thousands of algorithmic stages","Unlimited daily training","Full vault access","Infinite mode","3-day free trial"] },
+  { name:"Family Choice", price:"$5", period:"/mo", paddlePriceId:"pri_01ks5tnfpxvgdh2gkfm0k5pry8", trial: true, free:false, highlight:true,
+    features:["Up to 3 independent profiles","Dedicated child & senior UI","Shared family milestones","Unlimited daily training","Full vault access","3-day free trial"] },
+  { name:"Grand Family", price:"$10", period:"/mo", paddlePriceId:"pri_01ks5tpt6wsyn05gexnpade0a0", trial: true, free:false, highlight:false,
+    features:["Up to 7 independent profiles","Master billing dashboard","All Family Choice perks","Unlimited daily training","Full vault access","3-day free trial"] },
 ];
 
 // ── HERO CAROUSEL ─────────────────────────────────────────────────────────
@@ -592,24 +596,15 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
                     backdropFilter:"blur(4px)",
                   }}>
                   <span style={{ fontSize:13, fontWeight:700, color:"white" }}>
-                    {game.free ? "Play Stage 1" : "Play Now"}
+                    "Start Training"
                   </span>
                   <span style={{ fontSize:10, color:"rgba(255,255,255,0.7)" }}>
-                    {game.free ? "Free" : "Uses 1 daily play"}
+                    "Uses 1 daily session"
                   </span>
                 </motion.div>
               )}
             </AnimatePresence>
-            <div style={{ position:"absolute", top:8, right:8, display:"flex", gap:4 }}>
-              {game.free && (
-                <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:8, background:"rgba(79,110,247,0.15)", color:"#4F6EF7" }}>
-                  Free
-                </span>
-              )}
-              <span style={{ fontSize:9, fontWeight:600, padding:"2px 7px", borderRadius:8, background:"rgba(34,197,94,0.12)", color:"#15803D" }}>
-                Live
-              </span>
-            </div>
+
           </div>
           <div style={{ padding:"11px 14px 13px" }}>
             <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:3 }}>{game.name}</p>
@@ -793,22 +788,22 @@ export default function LandingPage() {
         <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 16px", borderRadius:20, background:"var(--surface)", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", marginBottom:28, fontSize:13, color:"var(--text3)", fontWeight:500 }}>
             <span style={{ width:8, height:8, borderRadius:"50%", background:"#22C55E", display:"block" }}/>
-            24 Games · 100 Stages Each · Free to Start
+            An evolving suite of elite logic experiences · Free to start
           </div>
 
           <h1 className="hero-h1" style={{ fontFamily:"Georgia,serif", fontWeight:700, lineHeight:1.06, marginBottom:24, fontSize:"clamp(52px,5.5vw,80px)" }}>
-            <span style={{ display:"block", color:"var(--text1)" }}>Sharper</span>
-            <span style={{ display:"block", fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8,#C4785A)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Every Day.</span>
+            <span style={{ display:"block", color:"var(--text1)" }}>One Playground</span>
+            <span style={{ display:"block", fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8,#C4785A)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>for Evolving Minds.</span>
           </h1>
 
           <p style={{ fontSize:20, color:"var(--text3)", lineHeight:1.65, marginBottom:36, maxWidth:460 }}>
-            24 logic disciplines. 100 stages each. An elegant training suite for every mind — children, professionals, and seniors alike.
+            Step into an elegant, ad-free world of structural logic and language play — crafted to spark foundational reasoning in kids, clear cognitive overload for busy professionals, and preserve sharp recall for active seniors.
           </p>
 
           <div style={{ display:"flex", gap:14, marginBottom:40, flexWrap:"wrap" }}>
             <Link href={user?"/games":"/auth/signup"}
               style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", color:"white", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 24px rgba(79,110,247,0.35)" }}>
-              Start Playing <ChevronRight size={16}/>
+              Start Training Free <ChevronRight size={16}/>
             </Link>
             <Link href="/games"
               style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--surface)", color:"var(--text2)", fontWeight:600, fontSize:16, textDecoration:"none", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)" }}>
@@ -865,8 +860,8 @@ export default function LandingPage() {
       <section style={{ background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", padding:"22px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-around", flexWrap:"wrap", gap:16 }}>
           {[
-            { icon:Trophy,   text:"24 Unique Disciplines" },
-            { icon:Star,     text:"2,400+ Expert Stages" },
+            { icon:Trophy,   text:"Dozens of Elite Disciplines" },
+            { icon:Star,     text:"Thousands of Logic Maps" },
             { icon:Infinity, text:"Infinite Daily Challenges" },
             { icon:Shield,   text:"Zero Ads. Ever." },
             { icon:Zap,      text:"5 Free Plays Daily" },
@@ -885,10 +880,10 @@ export default function LandingPage() {
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ marginBottom:36 }}>
           <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>How it works</p>
           <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12 }}>
-            Play every game, every day.
+            Train your mind, every day.
           </h2>
           <p style={{ fontSize:18, color:"var(--text3)", maxWidth:560 }}>
-            Free players get 5 daily plays across all 24 games. Pro subscribers play without limits.
+            Free players get 5 daily training sessions across the full vault. Pro subscribers train without limits.
           </p>
         </motion.div>
 
@@ -900,7 +895,7 @@ export default function LandingPage() {
             </div>
             <p style={{ fontSize:48, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>5</p>
             <p style={{ fontSize:16, fontWeight:600, color:"var(--text2)", marginBottom:6 }}>Free Daily Plays</p>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Play any of the 24 games. Tokens reset every 24 hours at midnight.</p>
+            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Access the full vault. Sessions reset every 24 hours at midnight.</p>
           </motion.div>
 
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.08 }}
@@ -920,11 +915,58 @@ export default function LandingPage() {
             </div>
             <p style={{ fontSize:48, fontWeight:700, color:"white", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>∞</p>
             <p style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Pro Unlimited</p>
-            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited plays, all 100 stages per game, Infinite Mode and Family leaderboards from $2/mo.</p>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited training, thousands of algorithmic stages, Infinite Mode and family leaderboards from $2/mo.</p>
             <Link href="/pricing" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 18px", borderRadius:12, background:"white", color:"#4F6EF7", fontSize:13, fontWeight:700, textDecoration:"none" }}>
               Upgrade <ChevronRight size={13}/>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── WHO IT'S FOR ── */}
+      <section style={{ maxWidth:1200, margin:"0 auto", padding:"72px 48px 0" }}>
+        <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ textAlign:"center", marginBottom:48 }}>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>Built for Every Stage of Life</p>
+          <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.1 }}>
+            One app. <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Every generation.</em>
+          </h2>
+        </motion.div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))", gap:20, marginBottom:72 }}>
+          {[
+            {
+              emoji:"🎯",
+              tag:"The Modern Parent",
+              heading:"Screen time you can finally feel good about.",
+              body:"Replace mindless feeds with structural logic games that foster spatial awareness and deep critical planning from an early age. MindElement grows with your child.",
+              gradient:"linear-gradient(135deg,rgba(79,110,247,0.08),rgba(156,107,232,0.08))",
+              border:"rgba(79,110,247,0.15)",
+            },
+            {
+              emoji:"⚡",
+              tag:"The High-Performing Professional",
+              heading:"The ultimate 3-minute cognitive reset.",
+              body:"Step away from your dashboard notifications to realign working memory and refresh focus with surgical geometric puzzles. Clarity on demand.",
+              gradient:"linear-gradient(135deg,rgba(0,255,255,0.06),rgba(57,255,20,0.04))",
+              border:"rgba(0,255,255,0.15)",
+            },
+            {
+              emoji:"🧠",
+              tag:"The Active Senior",
+              heading:"Age is a number. Agility is a choice.",
+              body:"Keep memory sharp and track pattern synchronization with clinical logic layouts built for multi-generational enjoyment. Accessibility Mode adapts every experience to you.",
+              gradient:"linear-gradient(135deg,rgba(245,158,11,0.08),rgba(234,88,12,0.06))",
+              border:"rgba(245,158,11,0.15)",
+            },
+          ].map((item,i) => (
+            <motion.div key={i}
+              initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
+              style={{ background:item.gradient, border:`0.5px solid ${item.border}`, borderRadius:24, padding:"32px 28px" }}>
+              <div style={{ fontSize:36, marginBottom:16 }}>{item.emoji}</div>
+              <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>{item.tag}</p>
+              <h3 style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.3 }}>{item.heading}</h3>
+              <p style={{ fontSize:15, color:"var(--text3)", lineHeight:1.7 }}>{item.body}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -959,7 +1001,7 @@ export default function LandingPage() {
           <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>The Collection</p>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
             <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1.1 }}>
-              Twenty-Four Games.<br/>
+              An Evolving Vault.<br/>
               <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>One Subscription.</em>
             </h2>
             <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 20px", borderRadius:14, border:"0.5px solid var(--border)", background:"var(--surface)", color:"var(--text2)", textDecoration:"none", fontSize:14, fontWeight:600 }}>
@@ -1011,11 +1053,11 @@ export default function LandingPage() {
               Your sharpest self<br/><em>starts here.</em>
             </h2>
             <p style={{ fontSize:18, color:"rgba(255,255,255,0.8)", marginBottom:32, maxWidth:440 }}>
-              Join thousands of players training their minds daily. 5 free plays, every day. No credit card needed.
+              Join a growing community of curious minds training daily. 5 free sessions every day. No credit card needed.
             </p>
             <Link href={user?"/games":"/auth/signup"}
               style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"16px 32px", borderRadius:18, background:"white", color:"#4F6EF7", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 28px rgba(0,0,0,0.2)" }}>
-              Start Playing — It's Free <ChevronRight size={16}/>
+              Start Training Free <ChevronRight size={16}/>
             </Link>
           </motion.div>
         </div>
@@ -1029,7 +1071,7 @@ export default function LandingPage() {
       <section style={{ maxWidth:1000, margin:"0 auto", padding:"80px 48px" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <h2 style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:40, color:"var(--text1)", marginBottom:10 }}>Simple, Honest Pricing</h2>
-          <p style={{ fontSize:18, color:"var(--text4)" }}>Less than a coffee. Sharper than ever.</p>
+          <p style={{ fontSize:18, color:"var(--text4)" }}>Less than a coffee. Invest in the sharpest version of your household.</p>
         </div>
         <div className="pricing-grid" style={{ alignItems:"start", maxWidth:860, margin:"0 auto" }}>
           {PLANS.map((plan,i)=>(
@@ -1061,7 +1103,7 @@ export default function LandingPage() {
               </ul>
               {plan.free ? (
                 <Link href="/auth/signup" style={{ display:"block", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, textDecoration:"none", background:"var(--surface)", color:"var(--text2)", border:"1.5px solid var(--border2)" }}>
-                  Start Free
+                  Start Training Free
                 </Link>
               ) : (
                 <button
@@ -1076,7 +1118,7 @@ export default function LandingPage() {
                     background: plan.highlight ? "white" : "transparent",
                     color: plan.highlight ? "#4F6EF7" : "var(--text2)",
                     outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
-                  {plan.trial ? "Start 3-day free trial" : "Get Started"}
+                  {plan.highlight ? "Protect Your Household" : plan.name === "Grand Family" ? "Access Grand Vault" : "Start Free Trial"}
                 </button>
               )}
             </motion.div>
@@ -1094,8 +1136,8 @@ export default function LandingPage() {
           </h2>
         </div>
         {[
-          ["Is MindElement free to use?", "Yes — free users get 5 plays per day across all 24 games. Daily challenges are always free. Subscribe for unlimited access at $2/month."],
-          ["What does Pro include?", "Unlimited plays across all 24 games, all 100 stages per game, family leaderboards for up to 7 members, and early access to new games."],
+          ["Is MindElement free to use?", "Yes — free users get 5 daily training sessions across the full vault. Subscribe for unlimited access from $2/month."],
+          ["What does Pro include?", "Unlimited daily training across the full vault, thousands of algorithmic stages, family leaderboards for up to 7 members, and early access to new experiences."],
           ["How much does Pro cost?", "Individual Pro is $2/month. Family plans start at $5/month for 3 members and $10/month for 7 members."],
           ["Is it appropriate for children?", "Yes. The puzzles build spatial reasoning and logical thinking without any ads, distractions, or inappropriate content."],
           ["Can it help older adults stay sharp?", "Yes. Accessibility Mode provides larger touch targets and optional timer-free play, designed for comfortable daily use at any age."],
@@ -1126,7 +1168,7 @@ export default function LandingPage() {
           </Link>
           <p style={{ fontSize:13, color:"var(--text4)" }}>&copy; {new Date().getFullYear()} MindElement. All rights reserved.</p>
           <div style={{ display:"flex", gap:24 }}>
-            {[["Games","/games"],["Pricing","/pricing"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h])=>(
+            {[["Games","/games"],["Pricing","/pricing"],["Privacy","/privacy"],["Terms","/terms"],["Refund","/refund"],["Contact","/contact"]].map(([l,h])=>(
               <Link key={l} href={h} style={{ fontSize:13, color:"var(--text4)", textDecoration:"none" }}>{l}</Link>
             ))}
           </div>
