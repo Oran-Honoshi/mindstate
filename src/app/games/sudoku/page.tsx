@@ -27,6 +27,8 @@ import { HintButton } from "@/components/ui/HintButton";
 import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 type SudokuCell = number | null;
 type SudokuBoard = SudokuCell[][];
 
@@ -274,6 +276,7 @@ function handleCheck() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="sudoku" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
         {/* Stage header */}
         <div style={{ width:"100%", maxWidth:520, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>

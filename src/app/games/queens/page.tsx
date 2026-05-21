@@ -25,6 +25,8 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
 import{generateQueensBoard,validateQueens,solveQueens,type QueensBoard}from"@/lib/games/queensGenerator";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
@@ -210,6 +212,7 @@ function QueensGameInner(){
   return(
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column"}}>
       <Navbar/>
+      <GamePageSchema slug="queens" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
 
         {/* Header */}

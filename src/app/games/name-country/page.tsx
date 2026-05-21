@@ -22,6 +22,8 @@ import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"easy";
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
@@ -148,6 +150,7 @@ function NameCountryInner(){
   return(
     <div className="game-page">
       <Navbar/>
+      <GamePageSchema slug="name-country" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
 
         <div style={{width:"100%",maxWidth:480,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>

@@ -24,6 +24,8 @@ import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
@@ -218,6 +220,7 @@ function HeartsPageInner(){
   return(
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0F4C2A,#1A6B3A)",display:"flex",flexDirection:"column"}}>
       <Navbar/>
+      <GamePageSchema slug="hearts" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
         {/* Header */}
         <div style={{width:"100%",maxWidth:540,background:"rgba(255,255,255,0.1)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.2)",padding:"16px 20px",backdropFilter:"blur(12px)"}}>

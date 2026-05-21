@@ -26,6 +26,8 @@ import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
   // Pseudo-random mix: 20% easy, 50% medium, 30% hard
@@ -282,6 +284,7 @@ function MinesweeperGameInner() {
   return(
     <div className="game-page">
       <Navbar/>
+      <GamePageSchema slug="minesweeper" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
 
         {/* Stage header */}

@@ -22,6 +22,8 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s: number): Difficulty { return s <= 300 ? "easy" : s <= 700 ? "medium" : "hard"; }
 function shareResult(stage: number, xp: number, elapsed: string) {
   const text = ` MindState · Kakuro Stage ${stage} · ${xp} XP · ${elapsed}`;
@@ -206,6 +208,7 @@ function handleCheck() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="kakuro" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
         <div style={{ width:"100%", maxWidth:500, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>

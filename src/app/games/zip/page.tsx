@@ -24,6 +24,8 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
   // Pseudo-random mix: 20% easy, 50% medium, 30% hard
@@ -323,6 +325,7 @@ function handleCheck() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="zip" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
 
         {/* Stage header */}

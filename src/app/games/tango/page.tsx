@@ -33,6 +33,8 @@ import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import{CompletionPopup}from"@/components/ui/CompletionPopup";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function shareResult(game: string, stage: number, xp: number, elapsed: string) {
   const text = ` MindState · ${game} Stage ${stage} · ${xp} XP · ${elapsed}`;
   const url = "https://mindstate.app";
@@ -260,6 +262,7 @@ function TangoGameInner() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="tango" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:20 }}>
 
         {/* Stage header */}

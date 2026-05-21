@@ -24,6 +24,8 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s: number): Difficulty {
   if (s === 1) return "medium";
   const h = Math.abs(Math.imul(s * 2654435761, s ^ 0x9e3779b9)) % 100;
@@ -202,6 +204,7 @@ function WordSlingPageInner() {
   return (
     <div className="game-page">
       <Navbar />
+      <GamePageSchema slug="word-sling" />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "76px 16px 32px", gap: 16 }}>
 
         {/* Header */}

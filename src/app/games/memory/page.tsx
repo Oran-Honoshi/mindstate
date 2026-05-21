@@ -25,6 +25,8 @@ import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
   const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
@@ -229,6 +231,7 @@ function MemoryGameInner() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="memory" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
         <div style={{ width:"100%", maxWidth:560, background:"var(--surface)", borderRadius:20,

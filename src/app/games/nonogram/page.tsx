@@ -25,6 +25,8 @@ import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
   const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
@@ -162,6 +164,7 @@ function NonogramGameInner() {
   return(
     <div className="game-page">
       <Navbar/>
+      <GamePageSchema slug="nonogram" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
         <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>

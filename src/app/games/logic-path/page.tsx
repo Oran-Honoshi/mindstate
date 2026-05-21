@@ -26,6 +26,8 @@ import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { updateStreak } from "@/lib/supabase/streaks";
 
+import { GamePageSchema } from "@/components/seo/GamePageSchema";
+
 function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"medium":"hard"; }
 
 const HINT_XP_COST = 100;
@@ -214,6 +216,7 @@ function handleCheck() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
+      <GamePageSchema slug="logic-path" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
         {/* Header */}
