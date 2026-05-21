@@ -1,49 +1,87 @@
-import type { Metadata } from "next";
+// src/app/terms/page.tsx
 import Link from "next/link";
-import { Brain } from "lucide-react";
+import { Navbar } from "@/components/nav/Navbar";
 
-export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "MindElement Terms of Service — rules and guidelines for using MindElement.",
+export const metadata = {
+  title: "Terms of Service — MindElement",
+  description: "Terms of Service for MindElement brain-training app.",
 };
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-      <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="squircle w-7 h-7 flex items-center justify-center" style={{background:"linear-gradient(135deg,#3B6FE8,#8B6FC0)"}}>
-            <Brain size={13} className="text-white"/>
-          </div>
-          <span className="font-semibold text-slate-800" style={{fontFamily:"var(--font-fraunces),serif"}}>MindElement</span>
-        </Link>
-      </nav>
-      <main className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold text-slate-900 mb-3" style={{fontFamily:"var(--font-fraunces),serif"}}>Terms of Service</h1>
-        <p className="text-sm text-slate-400 mb-10">Last updated: May 2026</p>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
+      <Navbar />
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "100px 24px 80px" }}>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", color: "var(--cyan)", textTransform: "uppercase", marginBottom: 16 }}>Legal</p>
+        <h1 style={{ fontSize: 42, fontWeight: 700, fontFamily: "Georgia,serif", marginBottom: 8 }}>Terms of Service</h1>
+        <p style={{ fontSize: 14, color: "var(--text4)", marginBottom: 48 }}>Last updated: May 2025</p>
 
-        {[
-          { title:"1. Acceptance of Terms", body:`By creating a MindElement account or using any part of the service, you agree to these Terms of Service. If you do not agree, please do not use MindElement.` },
-          { title:"2. Description of Service", body:`MindElement is a brain-training application offering logic puzzle games with subscription-based access to premium content. Free users receive access to Daily Challenges. Subscribers unlock all 100 stages per game, Infinite Mode, and leaderboards.` },
-          { title:"3. Account Registration", body:`You must provide accurate information when creating an account. You are responsible for maintaining the security of your password. You must be at least 13 years old to create an account. One person may not maintain multiple accounts.` },
-          { title:"4. Subscriptions & Billing", body:`Subscriptions are billed monthly via Paddle. You may cancel at any time; access continues until the end of the billing period. We do not offer refunds for partial months. Prices may change with 30 days notice. Family plan seats are non-transferable.` },
-          { title:"5. Acceptable Use", body:`You agree not to: reverse engineer or copy any part of MindElement, use automated tools to manipulate scores, share account credentials, upload harmful content, or use MindElement for any illegal purpose. Violations may result in account termination.` },
-          { title:"6. Intellectual Property", body:`All game designs, algorithms, visual assets, and content in MindElement are owned by MindElement and protected by copyright. You may not reproduce, distribute, or create derivative works without explicit written permission.` },
-          { title:"7. User Content", body:`Your username and any profile information you provide remain yours. By submitting this information, you grant MindElement a license to display it within the service (e.g., on leaderboards). We do not claim ownership of your personal data.` },
-          { title:"8. Disclaimers", body:`MindElement is provided "as is." We do not guarantee uninterrupted service. We are not liable for data loss, indirect damages, or lost profits. Brain-training benefits are based on general research and are not medical claims.` },
-          { title:"9. Termination", body:`We reserve the right to suspend or terminate accounts that violate these terms. You may delete your account at any time from your profile settings. Upon termination, your data will be deleted within 30 days.` },
-          { title:"10. Governing Law", body:`These terms are governed by the laws of Israel. Any disputes shall be resolved in the courts of Tel Aviv.` },
-          { title:"11. Contact", body:`For terms-related questions: legal@mindelement.app` },
-        ].map((section, i) => (
-          <div key={i} className="mb-8">
-            <h2 className="text-lg font-semibold text-slate-800 mb-3">{section.title}</h2>
-            <p className="text-slate-600 leading-relaxed text-sm">{section.body}</p>
-          </div>
-        ))}
+        <Legal title="1. Acceptance of Terms">
+          By accessing or using MindElement ("the Service") at mindelement.app, you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service.
+        </Legal>
+
+        <Legal title="2. Description of Service">
+          MindElement is a browser-based brain-training application offering 24 logic puzzle games with 100 stages each. The Service is available as a Progressive Web App (PWA) and is accessible via any modern web browser.
+        </Legal>
+
+        <Legal title="3. Accounts">
+          You must create an account to save progress and access subscription features. You are responsible for maintaining the confidentiality of your account credentials. You must provide accurate information when creating your account. You must be at least 13 years old to use the Service.
+        </Legal>
+
+        <Legal title="4. Subscriptions and Billing">
+          MindElement offers a free tier and paid subscription plans (Individual, Family · 3, Family · 7). Paid plans are billed monthly through Paddle, our payment processor. Subscriptions automatically renew unless cancelled before the renewal date. Prices are displayed in USD and may be subject to local taxes handled by Paddle. A 3-day free trial is available on all paid plans. You will not be charged during the trial period.
+        </Legal>
+
+        <Legal title="5. Refund Policy">
+          We offer a full refund within 7 days of any charge. To request a refund, contact us at hello@mindelement.app with your account email and we will process it within 2 business days. Refunds are not available after 7 days from the charge date.
+        </Legal>
+
+        <Legal title="6. Cancellation">
+          You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until that date. No partial refunds are issued for unused time beyond the 7-day refund window.
+        </Legal>
+
+        <Legal title="7. Acceptable Use">
+          You agree not to: use the Service for any unlawful purpose; attempt to reverse engineer, hack, or disrupt the Service; create multiple accounts to abuse the free tier; share your account credentials with others outside a Family plan; use automated tools or bots to interact with the Service.
+        </Legal>
+
+        <Legal title="8. Intellectual Property">
+          All content, game designs, graphics, and software in MindElement are owned by or licensed to MindElement and are protected by intellectual property laws. You may not copy, reproduce, or distribute any part of the Service without written permission.
+        </Legal>
+
+        <Legal title="9. User Data">
+          We collect and process personal data as described in our <Link href="/privacy" style={{ color: "var(--cyan)" }}>Privacy Policy</Link>. By using the Service you consent to that processing.
+        </Legal>
+
+        <Legal title="10. Disclaimers">
+          The Service is provided "as is" without warranties of any kind. We do not guarantee uninterrupted access or that the Service will be error-free. Brain-training games are for entertainment and cognitive engagement — we make no medical claims about cognitive improvement.
+        </Legal>
+
+        <Legal title="11. Limitation of Liability">
+          To the maximum extent permitted by law, MindElement shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Service. Our total liability shall not exceed the amount you paid us in the 12 months preceding the claim.
+        </Legal>
+
+        <Legal title="12. Changes to Terms">
+          We may update these Terms at any time. We will notify you of material changes via email or an in-app notice. Continued use of the Service after changes constitutes acceptance of the new Terms.
+        </Legal>
+
+        <Legal title="13. Governing Law">
+          These Terms are governed by the laws of Israel. Any disputes shall be resolved in the courts of Israel.
+        </Legal>
+
+        <Legal title="14. Contact">
+          For any questions about these Terms, contact us at <a href="mailto:hello@mindelement.app" style={{ color: "var(--cyan)" }}>hello@mindelement.app</a>.
+        </Legal>
+
       </main>
-      <footer className="border-t border-slate-100 bg-white px-6 py-8 text-center">
-        <p className="text-xs text-slate-400">&copy; {new Date().getFullYear()} MindElement. <Link href="/terms" className="hover:text-slate-700">Terms of Service</Link> · <Link href="/privacy" className="hover:text-slate-700">Privacy Policy</Link></p>
-      </footer>
     </div>
+  );
+}
+
+function Legal({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section style={{ marginBottom: 36 }}>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text1)", marginBottom: 12, fontFamily: "Georgia,serif" }}>{title}</h2>
+      <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.8 }}>{children}</p>
+    </section>
   );
 }

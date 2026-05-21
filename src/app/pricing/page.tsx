@@ -1,162 +1,227 @@
-import type { Metadata } from "next";
+// src/app/pricing/page.tsx
+"use client";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Check, Zap, Users, Crown } from "lucide-react";
 import Link from "next/link";
-import { Check, Brain } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Simple, honest pricing for MindElement. All 20 games from $2/mo.",
-};
+import { Navbar } from "@/components/nav/Navbar";
+import { useAuthStore } from "@/store/authStore";
 
 const PLANS = [
-  { name:"Individual", price:"$2", period:"/mo",
-    features:["All 20 games","100 stages per game","Daily challenges","Global leaderboard","Infinite mode"],
-    highlight:false, cta:"Start Free Trial" },
-  { name:"Family · 3", price:"$5", period:"/mo",
-    features:["3 members","Family leaderboard","All individual perks","Shared family streaks","Priority support"],
-    highlight:true, cta:"Start Free Trial" },
-  { name:"Family · 7", price:"$10", period:"/mo",
-    features:["7 members","Family leaderboard","All individual perks","Shared family streaks","Priority support"],
-    highlight:false, cta:"Start Free Trial" },
-];
-
-const FAQS = [
-  { q:"Is there a free trial?", a:"Yes — create an account and get 7 days free on any plan. No credit card required to start." },
-  { q:"Can I cancel anytime?", a:"Absolutely. Cancel from your profile settings at any time. You keep access until the end of your billing period." },
-  { q:"What's included in the Daily Challenge?", a:"Every game has one free Daily Challenge per day, playable without a subscription. It resets at midnight." },
-  { q:"How does the Family plan work?", a:"You invite family members via a unique link. Each member gets their own account, progress, and profile." },
-  { q:"What payment methods do you accept?", a:"All major credit/debit cards via Paddle. Apple Pay and Google Pay coming soon." },
+  {
+    name: "Free",
+    price: "$0",
+    period: "/mo",
+    paddlePriceId: null,
+    trial: false,
+    free: true,
+    icon: Zap,
+    color: "#64748B",
+    features: ["All 24 games","All 100 stages","3 hints per stage","5 plays per day","Global leaderboard"],
+  },
+  {
+    name: "Individual",
+    price: "$2",
+    period: "/mo",
+    paddlePriceId: "pri_01ks5cs61vggsqks3ns13sz34y",
+    trial: true,
+    free: false,
+    icon: Crown,
+    color: "#4F6EF7",
+    highlight: true,
+    features: ["All 24 games","100 stages each","Unlimited daily plays","3 hints per stage","Global leaderboard","Infinite mode","3-day free trial"],
+  },
+  {
+    name: "Family · 3",
+    price: "$5",
+    period: "/mo",
+    paddlePriceId: "pri_01ks5cw00w97cqjbe7c0mtjym0",
+    trial: true,
+    free: false,
+    icon: Users,
+    color: "#9C6BE8",
+    features: ["3 family members","All Individual perks","Family leaderboard","Shared streaks","Priority support","3-day free trial"],
+  },
+  {
+    name: "Family · 7",
+    price: "$10",
+    period: "/mo",
+    paddlePriceId: "pri_01ks5cy48rdb0qh8qsbxcbs1bd",
+    trial: true,
+    free: false,
+    icon: Users,
+    color: "#39FF14",
+    features: ["7 family members","All Individual perks","Family leaderboard","Shared streaks","Priority support","3-day free trial"],
+  },
 ];
 
 export default function PricingPage() {
-  const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    script.async = true;
+    script.onload = () => {
+      if ((window as any).Paddle) {
+        (window as any).Paddle.Setup({ token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN });
+      }
+    };
+    document.head.appendChild(script);
+    return () => { try { document.head.removeChild(script); } catch {} };
+  }, []);
+
+  function openCheckout(priceId: string) {
+    if (typeof window !== "undefined" && (window as any).Paddle) {
+      (window as any).Paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customer: user?.email ? { email: user.email } : undefined,
+      });
+    }
+  }
+
   return (
-    <div style={{minHeight:"100vh",background:"#FDFCFB",color:"#1C1917"}}>
-      {/* Nav */}
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",background:"rgba(253,252,251,0.9)",backdropFilter:"blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,0.07)",position:"sticky",top:0,zIndex:50}}>
-        <Link href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>
-          <div style={{width:28,height:28,borderRadius:"22.5%",background:ACCENT,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <Brain size={13} color="white"/>
-          </div>
-          <span style={{fontWeight:700,fontSize:15,color:"#1C1917",fontFamily:"Georgia,serif"}}>MindElement</span>
-        </Link>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <Link href="/games" style={{fontSize:13,color:"#64748B",padding:"6px 12px",borderRadius:10,textDecoration:"none"}}>Games</Link>
-          <Link href="/auth/signin" style={{fontSize:13,color:"#64748B",padding:"6px 12px",borderRadius:10,textDecoration:"none"}}>Sign in</Link>
-          <Link href="/auth/signup" style={{fontSize:13,fontWeight:600,color:"white",padding:"8px 16px",borderRadius:12,background:ACCENT,textDecoration:"none"}}>Start Free</Link>
-        </div>
-      </nav>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
+      <Navbar />
+      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 24px 80px" }}>
 
-      <main style={{maxWidth:960,margin:"0 auto",padding:"48px 20px"}}>
         {/* Header */}
-        <div style={{textAlign:"center",marginBottom:56}}>
-          <p style={{fontSize:11,fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",color:"#94A3B8",marginBottom:12}}>Pricing</p>
-          <h1 style={{fontSize:48,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",lineHeight:1.08,marginBottom:12}}>
-            Simple, Honest Pricing
-          </h1>
-          <p style={{fontSize:16,color:"#64748B",maxWidth:440,margin:"0 auto"}}>
-            Less than a coffee a month. Cancel anytime. No dark patterns.
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          style={{ textAlign: "center", marginBottom: 64 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", color: "var(--cyan)", textTransform: "uppercase", marginBottom: 16 }}>
+            Pricing
           </p>
-        </div>
+          <h1 style={{ fontSize: "clamp(36px,4vw,56px)", fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 16, lineHeight: 1.1 }}>
+            Simple, honest pricing
+          </h1>
+          <p style={{ fontSize: 17, color: "var(--text3)", maxWidth: 480, margin: "0 auto", lineHeight: 1.6 }}>
+            Start free. Upgrade when you're ready. Cancel anytime — no questions asked.
+          </p>
+        </motion.div>
 
-        {/* Plans */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:20,marginBottom:64,alignItems:"start"}}>
-          {PLANS.map((plan,i)=>(
-            <div key={i} style={{borderRadius:24,padding:28,position:"relative",
-              background:plan.highlight?ACCENT:"white",
-              border:plan.highlight?"none":"0.5px solid rgba(0,0,0,0.08)",
-              boxShadow:plan.highlight?"0 24px 60px rgba(79,110,247,0.28),0 4px 16px rgba(79,110,247,0.16)":"0 2px 8px rgba(0,0,0,0.04)",
-              color:plan.highlight?"white":"#1C1917"}}>
-              {plan.highlight&&(
-                <div style={{position:"absolute",top:-13,left:"50%",transform:"translateX(-50%)",
-                  fontSize:10,fontWeight:700,color:"#4F6EF7",background:"white",
-                  padding:"4px 14px",borderRadius:20,boxShadow:"0 2px 8px rgba(0,0,0,0.1)",whiteSpace:"nowrap"}}>
-                  Most Popular
-                </div>
-              )}
-              <p style={{fontSize:11,fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:12,
-                color:plan.highlight?"rgba(255,255,255,0.65)":"#94A3B8"}}>
-                {plan.name}
-              </p>
-              <div style={{display:"flex",alignItems:"flex-end",gap:4,marginBottom:24}}>
-                <span style={{fontSize:52,fontWeight:700,lineHeight:1,fontFamily:"Georgia,serif"}}>{plan.price}</span>
-                <span style={{fontSize:13,paddingBottom:8,opacity:0.6}}>{plan.period}</span>
-              </div>
-              <ul style={{listStyle:"none",marginBottom:24,display:"flex",flexDirection:"column",gap:10}}>
-                {plan.features.map((f,j)=>(
-                  <li key={j} style={{display:"flex",alignItems:"center",gap:10,fontSize:13,
-                    color:plan.highlight?"rgba(255,255,255,0.88)":"#374151"}}>
-                    <div style={{width:18,height:18,borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:plan.highlight?"rgba(255,255,255,0.2)":"#EEF2FF"}}>
-                      <Check size={10} color={plan.highlight?"white":"#4F6EF7"}/>
-                    </div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/auth/signup" style={{display:"block",textAlign:"center",padding:"13px",borderRadius:14,fontWeight:600,fontSize:13,textDecoration:"none",
-                background:plan.highlight?"white":"transparent",
-                color:plan.highlight?"#4F6EF7":"#374151",
-                border:plan.highlight?"none":"1.5px solid rgba(0,0,0,0.12)",
-                boxShadow:plan.highlight?"0 4px 12px rgba(0,0,0,0.12)":"none"}}>
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
+        {/* Plan cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 20, marginBottom: 64 }}>
+          {PLANS.map((plan, i) => {
+            const Icon = plan.icon;
+            return (
+              <motion.div key={plan.name}
+                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                style={{
+                  background: plan.highlight ? "linear-gradient(135deg,#4F6EF7,#9C6BE8)" : "var(--surface)",
+                  border: plan.highlight ? "none" : "0.5px solid var(--border)",
+                  borderRadius: 24, padding: "32px 28px",
+                  boxShadow: plan.highlight ? "0 24px 56px rgba(79,110,247,0.3)" : "var(--shadow-sm)",
+                  position: "relative", display: "flex", flexDirection: "column",
+                }}>
 
-        {/* All plans include */}
-        <div style={{background:"white",borderRadius:24,border:"0.5px solid rgba(0,0,0,0.08)",padding:32,marginBottom:64,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <h2 style={{fontSize:18,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:20,textAlign:"center"}}>All plans include</h2>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:16}}>
-            {[
-              { icon:"", title:"20 logic games", desc:"Tango, Queens, Memory, Sudoku, and 16 more" },
-              { icon:"", title:"Daily challenges", desc:"One free puzzle per game every day" },
-              { icon:"", title:"XP & leaderboards", desc:"Earn XP, climb global and family rankings" },
-              { icon:"🌍", title:"Hebrew RTL support", desc:"Full right-to-left layout for Hebrew speakers" },
-              { icon:"", title:"Silent mode", desc:"Disable sounds and haptics globally" },
-              { icon:"", title:"PWA support", desc:"Install on any device, works offline" },
-            ].map((item,i)=>(
-              <div key={i} style={{display:"flex",gap:12,padding:"12px 0"}}>
-                <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
-                <div>
-                  <p style={{fontSize:13,fontWeight:600,color:"#1C1917",marginBottom:2}}>{item.title}</p>
-                  <p style={{fontSize:12,color:"#64748B",lineHeight:1.5}}>{item.desc}</p>
+                {plan.highlight && (
+                  <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "#00FFFF", color: "#121212", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", padding: "4px 14px", borderRadius: 20, whiteSpace: "nowrap" }}>
+                    MOST POPULAR
+                  </div>
+                )}
+
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: plan.highlight ? "rgba(255,255,255,0.2)" : `${plan.color}18`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                  <Icon size={20} color={plan.highlight ? "white" : plan.color} />
                 </div>
-              </div>
-            ))}
-          </div>
+
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: plan.highlight ? "rgba(255,255,255,0.65)" : "var(--text4)", marginBottom: 8 }}>
+                  {plan.name}
+                </p>
+
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 48, fontWeight: 700, fontFamily: "Georgia,serif", color: plan.highlight ? "white" : "var(--text1)", lineHeight: 1 }}>
+                    {plan.price}
+                  </span>
+                  <span style={{ fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.6)" : "var(--text4)" }}>
+                    {plan.period}
+                  </span>
+                </div>
+
+                {plan.trial && (
+                  <p style={{ fontSize: 12, color: plan.highlight ? "rgba(255,255,255,0.55)" : "var(--text4)", marginBottom: 24 }}>
+                    3-day free trial · then billed monthly
+                  </p>
+                )}
+                {plan.free && (
+                  <p style={{ fontSize: 12, color: "var(--text4)", marginBottom: 24 }}>
+                    No credit card required
+                  </p>
+                )}
+
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+                  {plan.features.map((f, j) => (
+                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.88)" : "var(--text2)" }}>
+                      <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(255,255,255,0.2)" : "#EEF2FF" }}>
+                        <Check size={10} color={plan.highlight ? "white" : "#4F6EF7"} />
+                      </div>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {plan.free ? (
+                  <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--surface)", color: "var(--text2)", border: "1.5px solid var(--border2)" }}>
+                    Start Free
+                  </Link>
+                ) : (
+                  <button onClick={() => openCheckout(plan.paddlePriceId!)}
+                    style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "#4F6EF7" : "var(--text2)", outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
+                    Start 3-day free trial
+                  </button>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* FAQ */}
-        <div style={{maxWidth:640,margin:"0 auto"}}>
-          <h2 style={{fontSize:28,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",textAlign:"center",marginBottom:32}}>
-            Frequently Asked Questions
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          style={{ maxWidth: 640, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, fontFamily: "Georgia,serif", textAlign: "center", marginBottom: 32 }}>
+            Common questions
           </h2>
-          <div style={{display:"flex",flexDirection:"column",gap:1}}>
-            {FAQS.map((faq,i)=>(
-              <div key={i} style={{background:"white",borderRadius:16,border:"0.5px solid rgba(0,0,0,0.07)",padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.03)"}}>
-                <p style={{fontSize:14,fontWeight:600,color:"#1C1917",marginBottom:6}}>{faq.q}</p>
-                <p style={{fontSize:13,color:"#64748B",lineHeight:1.65}}>{faq.a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
+          {[
+            ["Do I need a credit card for the free plan?", "No. The free plan requires no credit card and never expires. You get 5 plays per day across all 24 games, forever."],
+            ["How does the 3-day free trial work?", "Enter your card to start the trial. You won't be charged for 3 days. Cancel any time before the trial ends and you pay nothing."],
+            ["Can I cancel anytime?", "Yes — cancel with one click from your account settings. No cancellation fees, no questions asked. You keep access until the end of your billing period."],
+            ["What's the refund policy?", "We offer a full refund within 7 days of being charged. Contact us at hello@mindelement.app and we'll process it immediately."],
+            ["How does Family pricing work?", "One subscription covers 3 or 7 members. The account holder invites family members via a private link. Each member gets their own profile, scores, and streaks."],
+            ["What is Infinite Mode?", "Infinite Mode unlocks unlimited procedurally generated puzzles beyond the 100 stages — available on Individual and Family plans."],
+          ].map(([q, a], i) => (
+            <FAQ key={i} q={q} a={a} />
+          ))}
+        </motion.div>
 
-      <footer style={{borderTop:"0.5px solid rgba(0,0,0,0.06)",background:"rgba(255,255,255,0.7)",padding:"28px 40px",marginTop:64}}>
-        <div style={{maxWidth:960,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:12}}>
-          <span style={{fontSize:12,color:"#CBD5E1"}}>&copy; {new Date().getFullYear()} MindElement</span>
-          <div style={{display:"flex",gap:20}}>
-            {[["Games","/games"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h])=>(
-              <Link key={l} href={h} style={{fontSize:12,color:"#94A3B8",textDecoration:"none"}}>{l}</Link>
-            ))}
-          </div>
-        </div>
-      </footer>
+        {/* Footer note */}
+        <p style={{ textAlign: "center", fontSize: 13, color: "var(--text4)", marginTop: 48 }}>
+          By subscribing you agree to our{" "}
+          <Link href="/terms" style={{ color: "var(--cyan)", textDecoration: "none" }}>Terms of Service</Link>
+          {" "}and{" "}
+          <Link href="/privacy" style={{ color: "var(--cyan)", textDecoration: "none" }}>Privacy Policy</Link>.
+          {" "}Payments processed securely by{" "}
+          <a href="https://paddle.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "none" }}>Paddle</a>.
+        </p>
+
+      </main>
     </div>
   );
 }
 
-// Note: Paddle checkout wired at bottom of pricing page
-// To activate: add your Paddle vendor ID and product IDs below
-// Get these from: vendors.paddle.com → Products
+function FAQ({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: "0.5px solid var(--border)", padding: "20px 0" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text1)" }}>{q}</span>
+        <span style={{ fontSize: 20, color: "var(--text4)", flexShrink: 0, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</span>
+      </button>
+      {open && (
+        <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+          style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.7, marginTop: 12, paddingRight: 32 }}>
+          {a}
+        </motion.p>
+      )}
+    </div>
+  );
+}
