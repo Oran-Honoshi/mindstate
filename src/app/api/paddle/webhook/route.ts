@@ -5,12 +5,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
-// Supabase admin client — bypasses RLS for server-side writes
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // service role, never expose client-side
-);
-
 // Paddle price ID → subscription_status mapping
 const PRICE_TO_STATUS: Record<string, string> = {
   "pri_01ks5tm2jqs69wrg92jxrc936b": "individual",   // $2/mo
@@ -54,6 +48,12 @@ async function verifyPaddleSignature(
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
+  // Supabase admin client — created here to avoid build-time env var access
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+
   const rawBody = await req.text();
   const signatureHeader = req.headers.get("paddle-signature");
   const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
