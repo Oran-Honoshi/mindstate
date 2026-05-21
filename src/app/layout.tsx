@@ -9,6 +9,11 @@ import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 import { WelcomeModal } from "@/components/modals/WelcomeModal";
 import { RatingModal } from "@/components/modals/RatingModal";
 import { SuggestionButton } from "@/components/ui/SuggestionButton";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+
+
 
 const fraunces = Fraunces({
   subsets: ["latin"], variable: "--font-fraunces",
@@ -171,6 +176,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthProvider>
               <RealtimeProvider>
                 {children}
+                <Analytics />
+                <SpeedInsights />
                 <WelcomeModal />
                 <RatingModal />
                 <SuggestionButton />
