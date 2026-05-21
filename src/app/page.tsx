@@ -39,10 +39,10 @@ const IMGS = {
 };
 
 const PLANS = [
-  { name:"Free", price:"$0", period:"/mo", features:["All 24 games","All 100 stages","3 hints per stage","5 plays per day","Global leaderboard"], highlight:false, free:true },
-  { name:"Individual", price:"$2",  period:"/mo", features:["All 24 games","100 stages each","Unlimited daily plays","Global leaderboard","Infinite mode"], highlight:false, free:false },
-  { name:"Family · 3", price:"$5",  period:"/mo", features:["3 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:true, free:false },
-  { name:"Family · 7", price:"$10", period:"/mo", features:["7 members","Family leaderboard","All individual perks","Shared streaks","Priority support"], highlight:false, free:false },
+  { name:"Free", price:"$0", period:"/mo", paddlePriceId: null, trial: false, features:["All 24 games","All 100 stages","3 hints per stage","5 plays per day","Global leaderboard"], highlight:false, free:true },
+  { name:"Individual", price:"$2",  period:"/mo", paddlePriceId:"pri_01ks5tm2jqs69wrg92jxrc936b", trial: true, features:["All 24 games","100 stages each","Unlimited daily plays","3-day free trial","Global leaderboard","Infinite mode"], highlight:false, free:false },
+  { name:"Family · 3", price:"$5",  period:"/mo", paddlePriceId:"pri_01ks5tnfpxvgdh2gkfm0k5pry8", trial: true, features:["3 members","Family leaderboard","All individual perks","3-day free trial","Shared streaks","Priority support"], highlight:true, free:false },
+  { name:"Family · 7", price:"$10", period:"/mo", paddlePriceId:"pri_01ks5tpt6wsyn05gexnpade0a0", trial: true, features:["7 members","Family leaderboard","All individual perks","3-day free trial","Shared streaks","Priority support"], highlight:false, free:false },
 ];
 
 // ── HERO CAROUSEL ─────────────────────────────────────────────────────────
@@ -667,6 +667,21 @@ export default function LandingPage() {
     return () => clearInterval(iv);
   }, [user, isPro]);
 
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    script.async = true;
+    script.onload = () => {
+      if ((window as any).Paddle) {
+        (window as any).Paddle.Setup({
+          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+        });
+      }
+    };
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, []);
+
   return (
     <div style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text1)" }}>
 
@@ -1044,12 +1059,26 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href={plan.free ? "/auth/signup" : "/pricing"} style={{ display:"block", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, textDecoration:"none",
-                background: plan.highlight?"white": plan.free?"var(--surface)":"transparent",
-                color: plan.highlight?"#4F6EF7": plan.free?"var(--text2)":"var(--text2)",
-                border: plan.highlight?"none":"1.5px solid var(--border2)" }}>
-                {plan.free ? "Start Free" : plan.highlight ? "Get Started" : "Subscribe"}
-              </Link>
+              {plan.free ? (
+                <Link href="/auth/signup" style={{ display:"block", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, textDecoration:"none", background:"var(--surface)", color:"var(--text2)", border:"1.5px solid var(--border2)" }}>
+                  Start Free
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (typeof window !== "undefined" && (window as any).Paddle) {
+                      (window as any).Paddle.Checkout.open({
+                        items: [{ priceId: plan.paddlePriceId, quantity: 1 }],
+                      });
+                    }
+                  }}
+                  style={{ display:"block", width:"100%", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, cursor:"pointer", border:"none",
+                    background: plan.highlight ? "white" : "transparent",
+                    color: plan.highlight ? "#4F6EF7" : "var(--text2)",
+                    outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
+                  {plan.trial ? "Start 3-day free trial" : "Get Started"}
+                </button>
+              )}
             </motion.div>
           ))}
         </div>
