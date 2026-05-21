@@ -16,6 +16,7 @@ import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { HintButton } from "@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import {
   generateLogicPath, rotatePipe, checkLogicPath, isCellCorrect,
   type LogicBoard, type PipeCell
@@ -307,9 +308,6 @@ function LogicPathPageInner() {
       <CompletionPopup open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
         onRetry={() => loadStage(stage)} onNext={() => { setCompleted(false); setStage(s => s+1); }}
         onShare={() => { const text=`MindElement · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`; if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Logic Path"
@@ -318,5 +316,7 @@ function LogicPathPageInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function LogicPathPage(){return<ErrorBoundary game="logic-path"><LogicPathPageInner/></ErrorBoundary>;}

@@ -22,6 +22,7 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(stage: number): Difficulty {
@@ -387,9 +388,6 @@ function MinesweeperGameInner() {
         />
       )}
       {showMap&&<StageMap gameSlug="minesweeper" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Minesweeper"
@@ -398,5 +396,7 @@ function MinesweeperGameInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function MinesweeperGame(){return<ErrorBoundary game="minesweeper"><MinesweeperGameInner/></ErrorBoundary>;}

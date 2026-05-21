@@ -4,6 +4,7 @@ const GAME_SLUG = "2048-pro";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -275,9 +276,6 @@ function TwentyFortyEightProPageInner(){
         />
       )}
       {showMap&&<StageMap gameSlug="2048-pro" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="2048 Pro"
@@ -286,5 +284,7 @@ function TwentyFortyEightProPageInner(){
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function TwentyFortyEightProPage(){return<ErrorBoundary game="2048-pro"><TwentyFortyEightProPageInner/></ErrorBoundary>;}

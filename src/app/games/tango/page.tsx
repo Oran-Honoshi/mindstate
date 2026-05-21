@@ -502,10 +502,17 @@ function TangoGameInner() {
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Tango"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
     </div>
   );
 }
-
 export default function TangoGame() {
   return (
     <ErrorBoundary game={GAME_SLUG}>

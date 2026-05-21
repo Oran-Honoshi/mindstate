@@ -427,13 +427,6 @@ function CompletionPopup({ open, stage, elapsed, difficulty, xpEarned, onRetry, 
     </AnimatePresence>
   );
 }
-      <GameCompleteModal
-        open={showGameComplete}
-        gameName="Mini Sudoku"
-        totalStages={TOTAL_STAGES}
-        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
-        onClose={() => setShowGameComplete(false)}
-      />
 
 
 export default function SudokuGame(){return<ErrorBoundary game="sudoku"><SudokuGameInner/></ErrorBoundary>;}

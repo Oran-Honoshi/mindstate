@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { Navbar } from "@/components/nav/Navbar";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { HintButton } from "@/components/ui/HintButton";
@@ -86,6 +87,8 @@ function XPBar({ xpState }: { xpState: XPState }) {
 function PinpointInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
+  const [showGameComplete, setShowGameComplete] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
@@ -315,9 +318,6 @@ function PinpointInner() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Pinpoint"
@@ -326,7 +326,9 @@ function PinpointInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function PinpointPage() {
   return (
     <ErrorBoundary game="pinpoint">

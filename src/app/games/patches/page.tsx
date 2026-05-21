@@ -15,7 +15,8 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import{HintButton}from"@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import{generatePatches,checkPatches,type PatchesBoard,type Piece}from"@/lib/games/patchesGenerator";
@@ -319,9 +320,6 @@ function PatchesGameInner(){
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Patches Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Patches"
@@ -330,5 +328,7 @@ function PatchesGameInner(){
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function PatchesGame(){return<ErrorBoundary game="patches"><PatchesGameInner/></ErrorBoundary>;}

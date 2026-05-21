@@ -16,7 +16,8 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{Navbar}from"@/components/nav/Navbar";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
-import{CompletionPopup}from"@/components/ui/CompletionPopup";
+import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import{HintButton}from"@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import{generateLightUp,computeLighting,checkLightUp,type LightBoard,type LightCell}from"@/lib/games/lightUpGenerator";
@@ -268,9 +269,6 @@ function LightUpPageInner(){
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Light Up Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Light Up"
@@ -279,5 +277,7 @@ function LightUpPageInner(){
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function LightUpPage(){return<ErrorBoundary game="lightup"><LightUpPageInner/></ErrorBoundary>;}

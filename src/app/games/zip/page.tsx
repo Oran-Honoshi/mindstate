@@ -23,6 +23,7 @@ import { HintButton } from "@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
@@ -380,9 +381,6 @@ function ZipGameInner() {
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Zip Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Zip"
@@ -391,5 +389,7 @@ function ZipGameInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function ZipGame(){return<ErrorBoundary game="zip"><ZipGameInner/></ErrorBoundary>;}

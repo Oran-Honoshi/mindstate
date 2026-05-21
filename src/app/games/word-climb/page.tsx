@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { Navbar } from "@/components/nav/Navbar";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { HintButton } from "@/components/ui/HintButton";
@@ -88,6 +89,8 @@ function XPBar({ xpState }: { xpState: XPState }) {
 function WordClimbInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
+  const [showGameComplete, setShowGameComplete] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
@@ -280,9 +283,6 @@ function WordClimbInner() {
           </motion.div>
         </div>
       )}
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Word Climb"
@@ -291,7 +291,9 @@ function WordClimbInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function WordClimbPage() {
   return (
     <ErrorBoundary game="word-climb">

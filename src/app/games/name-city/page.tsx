@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Navbar } from "@/components/nav/Navbar";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { HintButton } from "@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import { updateStreak } from "@/lib/supabase/streaks";

@@ -24,6 +24,7 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
 import { ShowSolution } from "@/components/ui/ShowSolution";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"medium":"hard"; }
@@ -321,9 +322,6 @@ function KakuroGameInner() {
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Kakuro Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Kakuro"
@@ -332,5 +330,7 @@ function KakuroGameInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function KakuroGame(){return<ErrorBoundary game="kakuro"><KakuroGameInner/></ErrorBoundary>;}

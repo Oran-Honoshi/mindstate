@@ -24,6 +24,7 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { HintButton } from "@/components/ui/HintButton";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(stage: number): Difficulty {
@@ -60,6 +61,8 @@ type PathState = { color: Color; cells: string[] };
 function FlowGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
+  const [showGameComplete, setShowGameComplete] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [board, setBoard] = useState<FlowBoard | null>(null);
   const [paths, setPaths] = useState<Map<string, PathState>>(new Map());
   const [cellColors, setCellColors] = useState<Map<string, Color>>(new Map());
@@ -355,9 +358,6 @@ function FlowGameInner() {
           if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
-    </div>
-  );
-}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Flow"
@@ -366,7 +366,9 @@ function FlowGameInner() {
         onClose={() => setShowGameComplete(false)}
       />
 
-
+    </div>
+  );
+}
 export default function FlowGame() {
   return (
     <ErrorBoundary game="flow">
