@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "flow";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -57,7 +59,7 @@ type PathState = { color: Color; cells: string[] };
 
 function FlowGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("flow"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<FlowBoard | null>(null);
   const [paths, setPaths] = useState<Map<string, PathState>>(new Map());
   const [cellColors, setCellColors] = useState<Map<string, Color>>(new Map());
@@ -356,6 +358,14 @@ function FlowGameInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Flow"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function FlowGame() {
   return (

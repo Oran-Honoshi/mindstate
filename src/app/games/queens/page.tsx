@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "queens";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
@@ -60,7 +62,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function QueensGameInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("queens"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<QueensBoard|null>(null);
   const[grid,setGrid]=useState<number[][]>([]);
   const[xpState,setXpState]=useState<XPState|null>(null);
@@ -77,7 +79,9 @@ function QueensGameInner(){
   const[feedbackCells,setFeedbackCells]=useState<Set<string>>(new Set());
   const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
   const[errors,setErrors]=useState<Set<string>>(new Set());
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -99,6 +103,7 @@ function QueensGameInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);
     setElapsed("00:00");setHintsUsed(0);setShowFeedback(false);setErrors(new Set());
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     pausedRef.current=false;
     timerRef.current=setInterval(()=>{

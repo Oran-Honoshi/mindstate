@@ -1,7 +1,9 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "hex-merge";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -33,7 +35,7 @@ function tileColor(v:number):{bg:string;text:string}{return TILE_COLORS[v]??{bg:
 
 function HexMergePageInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("hex-merge"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<HexBoard|null>(null);
   const[cells,setCells]=useState<Map<string,number>>(new Map());
   const[selected,setSelected]=useState<[number,number]|null>(null);
@@ -45,7 +47,9 @@ function HexMergePageInner(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
   const[bestTile,setBestTile]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -63,6 +67,7 @@ function HexMergePageInner(){
     setBoard(b);setCells(new Map(b.cells));setSelected(null);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");setBestTile(0);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}

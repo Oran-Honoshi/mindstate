@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "pattern-match";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -40,7 +42,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("pattern-match"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [hintsUsed, setHintsUsed] = useState(0);
   const[board,setBoard]=useState<PatternBoard|null>(null);
   const[selected,setSelected]=useState<string|null>(null);
@@ -53,7 +55,9 @@ function PatternMatchGameInner(){
   const[finalXP,setFinalXP]=useState(0);
   const[hintFlash,setHintFlash]=useState(false);
   const[showRule,setShowRule]=useState(false);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
@@ -72,6 +76,7 @@ function PatternMatchGameInner(){
     setBoard(b);setSelected(null);setCorrect(null);setShowRule(false);setHintsUsed(0);
     setXpState(xp);setCompleted(false);setFinalXP(0);setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
@@ -257,5 +262,13 @@ function PatternMatchGameInner(){
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Pattern Match"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function PatternMatchGame(){return<ErrorBoundary game="pattern-match"><PatternMatchGameInner/></ErrorBoundary>;}

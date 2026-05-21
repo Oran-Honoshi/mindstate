@@ -1,7 +1,9 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "hearts";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -44,7 +46,7 @@ function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;on
 
 function HeartsPageInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("hearts"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[completed,setCompleted]=useState(false);
   const[showMap,setShowMap]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
@@ -59,7 +61,9 @@ function HeartsPageInner(){
   const[elapsed,setElapsed]=useState("00:00");
   const[finalXP,setFinalXP]=useState(0);
   const[message,setMessage]=useState("");
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -76,6 +80,7 @@ function HeartsPageInner(){
     setTrick({player:null,cpu:null});setPlayerScore(0);setCpuScore(0);setSelected(null);setPhase("play");setMessage("");
     const xp=createXPState(diff);
     setXpState(xp);setFinalXP(0);setElapsed("00:00");setHintsUsed(0);setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user)consumeToken(user.id);

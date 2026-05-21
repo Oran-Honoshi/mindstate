@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "memory";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -110,7 +112,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MemoryGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("memory"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);

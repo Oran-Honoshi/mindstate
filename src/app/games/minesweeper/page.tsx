@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "minesweeper";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -103,7 +105,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MinesweeperGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("minesweeper"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<Board|null>(null);
   const [gameOver, setGameOver] = useState<"win"|"lose"|null>(null);
   const [xpState, setXpState] = useState<XPState|null>(null);
@@ -115,6 +117,8 @@ function MinesweeperGameInner() {
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
@@ -132,6 +136,7 @@ function MinesweeperGameInner() {
     setXpState(xp); setBoard(null); setGameOver(null);
     setElapsed("00:00"); setFinalXP(0); setFirstClick(true); setFlagCount(0);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
     const configs = { easy:{rows:8,cols:8,mines:10}, medium:{rows:10,cols:10,mines:20}, hard:{rows:12,cols:12,mines:35} };
@@ -385,5 +390,13 @@ function MinesweeperGameInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Minesweeper"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function MinesweeperGame(){return<ErrorBoundary game="minesweeper"><MinesweeperGameInner/></ErrorBoundary>;}

@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "zip";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -104,7 +106,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function ZipGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("zip"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<ZipBoard | null>(null);
   const [userPath, setUserPath] = useState<Pos[]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
@@ -115,6 +117,8 @@ function ZipGameInner() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [finalXP, setFinalXP] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const [showResume, setShowResume] = useState(false);
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
@@ -137,6 +141,7 @@ function ZipGameInner() {
     setBoard(b); setUserPath([b.path[0]]);
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
     if(user){ const ok=consumeToken(user.id); if(!ok){setShowTokenModal(true);return;} }
@@ -378,5 +383,13 @@ function ZipGameInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Zip"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function ZipGame(){return<ErrorBoundary game="zip"><ZipGameInner/></ErrorBoundary>;}

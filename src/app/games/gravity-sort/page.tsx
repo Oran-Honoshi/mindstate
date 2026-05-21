@@ -1,7 +1,9 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "gravity-sort";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -30,7 +32,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function GravitySortPageInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("gravity-sort"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<GravityBoard|null>(null);
   const[blocks,setBlocks]=useState<number[][]>([]);
   const[selected,setSelected]=useState<number|null>(null);
@@ -42,7 +44,9 @@ function GravitySortPageInner(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
   const[moves,setMoves]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -59,6 +63,7 @@ function GravitySortPageInner(){
     setBoard(b);setBlocks(b.blocks.map(col=>[...col]));setSelected(null);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");setMoves(0);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}

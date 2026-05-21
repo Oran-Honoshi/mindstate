@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "word-sling";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,7 +62,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function WordSlingPageInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("word-sling"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<WordleBoard | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [results, setResults] = useState<LetterResult[][]>([]);
@@ -79,6 +81,8 @@ function WordSlingPageInner() {
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [hintLetters, setHintLetters] = useState<Set<number>>(new Set());
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   usePageVisibility(
@@ -95,6 +99,7 @@ function WordSlingPageInner() {
     setXpState(xp); setCompleted(false); setLost(false); setFinalXP(0);
     setHintsUsed(0); setHintLetters(new Set()); setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
     if (user) { const ok = consumeToken(user.id); if (!ok) { setShowTokenModal(true); return; } }
@@ -322,5 +327,13 @@ function WordSlingPageInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Word Sling"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function WordSlingPage(){return<ErrorBoundary game="word-sling"><WordSlingPageInner/></ErrorBoundary>;}

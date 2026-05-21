@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "logic-path";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -72,7 +74,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function LogicPathPageInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("logic-path"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<LogicBoard | null>(null);
   const [grid, setGrid] = useState<PipeCell[][]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
@@ -86,6 +88,8 @@ function LogicPathPageInner() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const pausedRef = useRef(false);
 
@@ -106,6 +110,7 @@ function LogicPathPageInner() {
     setXpState(xp); setCompleted(false); setFinalXP(0);
     setElapsed("00:00"); setHintsUsed(0); setShowFeedback(false);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     pausedRef.current = false;
     timerRef.current = setInterval(() => {
@@ -305,5 +310,13 @@ function LogicPathPageInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Logic Path"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function LogicPathPage(){return<ErrorBoundary game="logic-path"><LogicPathPageInner/></ErrorBoundary>;}

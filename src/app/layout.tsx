@@ -8,12 +8,9 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 import { WelcomeModal } from "@/components/modals/WelcomeModal";
 import { RatingModal } from "@/components/modals/RatingModal";
-import { SuggestionButton } from "@/components/ui/SuggestionButton";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SharePrompt } from "@/components/ui/SharePrompt";
-
-
 
 const fraunces = Fraunces({
   subsets: ["latin"], variable: "--font-fraunces",
@@ -90,7 +87,6 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // PWA spec: theme_color matches manifest background for seamless chrome
   themeColor: "#121212",
   width: "device-width",
   initialScale: 1,
@@ -102,40 +98,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
-        {/* Favicon */}
         <link rel="icon" href="/favicon.ico" sizes="any"/>
         <link rel="icon" href="/icons/icon-192.png" type="image/png"/>
-
-        {/* Apple PWA */}
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png"/>
         <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png"/>
-
-        {/* Apple PWA fullscreen */}
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
         <meta name="apple-mobile-web-app-title" content="MindElement"/>
-
-        {/* MS tile */}
         <meta name="msapplication-TileImage" content="/icons/icon-192.png"/>
         <meta name="msapplication-TileColor" content="#121212"/>
-
-        {/*
-          INIT SCRIPT — runs before first paint, no flash.
-          Reads persisted Zustand state and applies:
-            1. dark/light class
-            2. RTL direction for Hebrew
-            3. accessibility-mode class (large print + no timer decay)
-          Runs synchronously in <head> to avoid layout shift.
-        */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
               var s = JSON.parse(localStorage.getItem('mindelement-settings') || '{}');
               var state = s && s.state;
               if (!state) return;
-
-              // Theme
               if (state.theme === 'dark') {
                 document.documentElement.classList.add('dark');
                 document.documentElement.style.colorScheme = 'dark';
@@ -143,14 +121,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 document.documentElement.classList.remove('dark');
                 document.documentElement.style.colorScheme = 'light';
               }
-
-              // Language / RTL
               if (state.language === 'he') {
                 document.documentElement.dir = 'rtl';
                 document.documentElement.lang = 'he';
               }
-
-              // Accessibility mode — larger targets, no XP timer pressure
               if (state.isAccessibilityMode) {
                 document.documentElement.classList.add('accessibility-mode');
               }
@@ -159,8 +133,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }
           })();
         `}}/>
-
-        {/* Service worker — registered after load to not block first paint */}
         <script dangerouslySetInnerHTML={{ __html: `
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
@@ -171,21 +143,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
         <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative" }}>
-        <I18nProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <RealtimeProvider>
-                {children}
-                <Analytics />
-                <SpeedInsights />
-                <WelcomeModal />
-                <RatingModal />
-                <SharePrompt />
-                <SuggestionButton />
-              </RealtimeProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </I18nProvider>
+          <I18nProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <RealtimeProvider>
+                  {children}
+                  <Analytics />
+                  <SpeedInsights />
+                  <WelcomeModal />
+                  <RatingModal />
+                  <SharePrompt />
+                  {/* SuggestionButton removed from global layout — lives in Settings page only */}
+                </RealtimeProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </I18nProvider>
         </div>
       </body>
     </html>

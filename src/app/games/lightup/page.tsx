@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "lightup";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -35,7 +37,7 @@ function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>cal
 
 function LightUpPageInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("lightup"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<LightBoard|null>(null);
   const[grid,setGrid]=useState<LightCell[][]>([]);
   const[lighting,setLighting]=useState<ReturnType<typeof computeLighting>>({lit:new Set(),conflicts:new Set(),blackErrors:new Set()});
@@ -50,6 +52,8 @@ function LightUpPageInner(){
   const[finalXP,setFinalXP]=useState(0);
   const [gridHistory, setGridHistory] = useState<typeof grid[]>([]);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -69,6 +73,7 @@ function LightUpPageInner(){
     setLighting({lit:new Set(),conflicts:new Set(),blackErrors:new Set()});
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
@@ -266,5 +271,13 @@ function LightUpPageInner(){
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Light Up"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function LightUpPage(){return<ErrorBoundary game="lightup"><LightUpPageInner/></ErrorBoundary>;}

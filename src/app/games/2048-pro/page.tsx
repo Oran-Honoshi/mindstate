@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "2048-pro";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -51,7 +53,7 @@ function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
-  const [stage, setStage] = useState(() => getLastStage("2048-pro"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[hintsUsed,setHintsUsed]=useState(0);
   const[grid,setGrid]=useState<Grid>(()=>initGrid(1));
   const[score,setScore]=useState(0);
@@ -60,7 +62,9 @@ function TwentyFortyEightProPageInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[finalXP,setFinalXP]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const touchStart=useRef<{x:number;y:number}|null>(null);
@@ -82,6 +86,7 @@ function TwentyFortyEightProPageInner(){
     setGrid(g);setScore(0);setBestTile(2);setGameState("playing");
     setXpState(xp);setFinalXP(0);setElapsed("00:00");setHintsUsed(0);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
@@ -273,5 +278,13 @@ function TwentyFortyEightProPageInner(){
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="2048 Pro"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function TwentyFortyEightProPage(){return<ErrorBoundary game="2048-pro"><TwentyFortyEightProPageInner/></ErrorBoundary>;}

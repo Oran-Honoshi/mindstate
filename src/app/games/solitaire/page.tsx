@@ -1,7 +1,9 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "solitaire";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -47,7 +49,7 @@ function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?
 
 function SolitairePageInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("solitaire"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[tableau,setTableau]=useState<Card[][]>([]);
   const[stock,setStock]=useState<Card[]>([]);
   const[waste,setWaste]=useState<Card[]>([]);
@@ -61,7 +63,9 @@ function SolitairePageInner(){
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -79,6 +83,7 @@ function SolitairePageInner(){
     setWaste([]);setFoundations([[],[],[],[]]);setSelected(null);setMoves(0);
     const xp=createXPState(diff);
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}

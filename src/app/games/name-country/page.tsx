@@ -1,7 +1,9 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "name-country";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +46,7 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function NameCountryInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("name-country"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<CountryGameBoard|null>(null);
   const[guesses,setGuesses]=useState<string[]>([]);
   const[results,setResults]=useState<LetterResult[][]>([]);
@@ -58,7 +60,9 @@ function NameCountryInner(){
   const[xpState,setXpState]=useState<XPState|null>(null);
   const[elapsed,setElapsed]=useState("00:00");
   const[finalXP,setFinalXP]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const gridAreaWidth=useBoardWidth(32,480);
 
@@ -76,6 +80,7 @@ function NameCountryInner(){
     setCompleted(false);setLost(false);setFinalXP(0);
     setHintsUsed(0);setShownHints([]);setElapsed("00:00");setXpState(xp);
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok)return;}

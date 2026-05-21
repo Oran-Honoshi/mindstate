@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "patches";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
@@ -57,7 +59,7 @@ function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:nu
 
 function PatchesGameInner(){
   const{user}=useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("patches"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<PatchesBoard|null>(null);
   const[placed,setPlaced]=useState<Map<string,number>>(new Map());
   const[placedPieces,setPlacedPieces]=useState<Set<number>>(new Set());
@@ -70,7 +72,9 @@ function PatchesGameInner(){
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
-  const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
@@ -89,6 +93,7 @@ function PatchesGameInner(){
     setSelectedPiece(null);setHoverCells(new Set());
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
@@ -317,5 +322,13 @@ function PatchesGameInner(){
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Patches"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function PatchesGame(){return<ErrorBoundary game="patches"><PatchesGameInner/></ErrorBoundary>;}

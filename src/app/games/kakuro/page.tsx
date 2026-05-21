@@ -1,8 +1,10 @@
 "use client";
+const TOTAL_STAGES = 1000;
+const GAME_SLUG = "kakuro";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -43,7 +45,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function KakuroGameInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("kakuro"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<KakuroBoard | null>(null);
   const [userGrid, setUserGrid] = useState<(number|null)[][]>([]);
   const [selected, setSelected] = useState<[number,number] | null>(null);
@@ -58,6 +60,8 @@ function KakuroGameInner() {
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [finalXP, setFinalXP] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
+  const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -77,6 +81,7 @@ function KakuroGameInner() {
     setSelected(null); setErrors(new Set());
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0); setElapsed("00:00");
     setSolutionRevealed(false);
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
@@ -319,5 +324,13 @@ function KakuroGameInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Kakuro"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function KakuroGame(){return<ErrorBoundary game="kakuro"><KakuroGameInner/></ErrorBoundary>;}

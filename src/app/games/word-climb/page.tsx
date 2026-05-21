@@ -1,4 +1,6 @@
 "use client";
+const TOTAL_STAGES = 100;
+const GAME_SLUG = "word-climb";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
@@ -7,7 +9,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Navbar } from "@/components/nav/Navbar";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { HintButton } from "@/components/ui/HintButton";
-import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
+import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
@@ -85,7 +87,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function WordClimbInner() {
   const { user } = useAuthStore();
-  const [stage, setStage] = useState(() => getLastStage("word-climb"));
+  const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsed, setElapsed] = useState("00:00");
   const [completed, setCompleted] = useState(false);
@@ -281,6 +283,14 @@ function WordClimbInner() {
     </div>
   );
 }
+      <GameCompleteModal
+        open={showGameComplete}
+        gameName="Word Climb"
+        totalStages={TOTAL_STAGES}
+        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
+        onClose={() => setShowGameComplete(false)}
+      />
+
 
 export default function WordClimbPage() {
   return (
