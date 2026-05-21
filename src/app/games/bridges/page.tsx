@@ -1,5 +1,6 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -41,6 +42,8 @@ function BridgesGameInner(){
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const[hintsUsed,setHintsUsed]=useState(0);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[finalXP,setFinalXP]=useState(0);
   const[solutionRevealed,setSolutionRevealed]=useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
@@ -53,7 +56,7 @@ function BridgesGameInner(){
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("bridges", {stage, savedAt: Date.now()});
+    saveGameState("bridges", {stage: s, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateBridges(`bridges-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -64,9 +67,19 @@ function BridgesGameInner(){
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
+  const resumeChecked = useRef(false);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  useEffect(()=>{
+    if(!resumeChecked.current){
+      resumeChecked.current=true;
+      const saved=loadGameState("bridges");
+      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+    }
+    loadStage(stage);
+    return()=>{if(timerRef.current)clearInterval(timerRef.current);};
+  },[stage,loadStage]);
+
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution(){
     if(!board||!xpState)return;
     setPlaced([...board.solution]);
@@ -82,7 +95,9 @@ function BridgesGameInner(){
     if(!existing) np=[...placed,{from:fromId,to:toId,count:1}];
     else if(existing.count===1) np=placed.map(b=>b===existing?{...b,count:2 as 2}:b);
     else np=placed.filter(b=>b!==existing);
-    setPlaced(np);playClick();
+    setPlaced(np);
+    saveGameState("bridges",{stage,placed:np,hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
+    playClick();
     if(checkBridges(board,np)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
@@ -147,12 +162,12 @@ function BridgesGameInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)"}}>Click between islands to add bridges · Each island shows its required count</div>
+        <div style={{fontSize:11,color:"var(--text4)"}}>Click between islands to add bridges \u00b7 Each island shows its required count</div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
@@ -210,16 +225,33 @@ function BridgesGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="bridges"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={()=>{
+            const s=resumeData!;
+            setShowResume(false);setResumeData(null);
+            setStage(s.stage as number);
+            if(s.placed)setTimeout(()=>setPlaced(s.placed as Bridge[]),150);
+          }}
+          onStartFresh={()=>{
+            clearGameState("bridges");setShowResume(false);setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="bridges" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Bridges Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Bridges Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

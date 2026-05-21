@@ -1,5 +1,6 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -70,6 +71,8 @@ function PatchesGameInner(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[finalXP,setFinalXP]=useState(0);
   const[solutionRevealed,setSolutionRevealed]=useState(false);
+  const[showResume,setShowResume]=useState(false);
+  const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -78,7 +81,7 @@ function PatchesGameInner(){
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("patches",{stage,savedAt:Date.now()});
+    saveGameState("patches",{stage:s,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const b=generatePatches(`patches-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -91,9 +94,19 @@ function PatchesGameInner(){
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
+  const resumeChecked = useRef(false);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  useEffect(()=>{
+    if(!resumeChecked.current){
+      resumeChecked.current=true;
+      const saved=loadGameState("patches");
+      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+    }
+    loadStage(stage);
+    return()=>{if(timerRef.current)clearInterval(timerRef.current);};
+  },[stage,loadStage]);
+
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution(){
     if(!board||!xpState)return;
     // Read board.solution grid to reconstruct placed map
@@ -150,6 +163,7 @@ function PatchesGameInner(){
     cells.forEach(([pr,pc])=>np.set(`${pr},${pc}`,selectedPiece));
     const npp=new Set(placedPieces);npp.add(selectedPiece);
     setPlaced(np);setPlacedPieces(npp);setSelectedPiece(null);setHoverCells(new Set());
+    saveGameState("patches",{stage,placed:Array.from(np.entries()),placedPieces:Array.from(npp),hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
     playClick();
     if(checkPatches(board,np)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
@@ -201,7 +215,7 @@ function PatchesGameInner(){
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
               <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Patches</span>
               <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} · {board.rows}×{board.cols}</span>
+              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} \u00b7 {board.rows}\u00d7{board.cols}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:11,color:"var(--text4)"}}>{remaining.length} left</span>
@@ -212,12 +226,12 @@ function PatchesGameInner(){
           <XPBar xpState={xpState}/>
         </div>
 
-        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>Select a piece below · Click the board to place it · Click placed piece to pick back up</div>}
+        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>Select a piece below \u00b7 Click the board to place it \u00b7 Click placed piece to pick back up</div>}
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
@@ -246,7 +260,7 @@ function PatchesGameInner(){
           </div>
         </div>
 
-        {/* Piece palette — hidden when solution revealed */}
+        {/* Piece palette \u2014 hidden when solution revealed */}
         {!solutionRevealed&&(
           <div style={{width:"100%",maxWidth:520}}>
             <p style={{fontSize:11,fontWeight:600,color:"var(--text4)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>Pieces</p>
@@ -269,17 +283,37 @@ function PatchesGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
       <OutOfTokensModal gameName="Patches" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="patches"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={()=>{
+            const s=resumeData!;
+            setShowResume(false);setResumeData(null);
+            setStage(s.stage as number);
+            if(s.placed)setTimeout(()=>{
+              setPlaced(new Map(s.placed as [string,number][]));
+              setPlacedPieces(new Set(s.placedPieces as number[]));
+            },150);
+          }}
+          onStartFresh={()=>{
+            clearGameState("patches");setShowResume(false);setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="patches" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Patches Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Patches Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

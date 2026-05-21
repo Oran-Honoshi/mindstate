@@ -53,11 +53,11 @@ export function Navbar() {
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
           <img
             src="/icons/icon-192.png"
-            alt="MindState"
+            alt="MindElement"
             style={{ width:32, height:32, borderRadius:"22.5%", objectFit:"cover" }}
           />
           <span style={{ fontWeight:700, fontSize:15, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
-            MindState
+            MindElement
           </span>
         </Link>
 

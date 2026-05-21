@@ -86,6 +86,7 @@ function TangoGameInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  const resumeChecked = useRef(false);
   const maxW = useBoardWidth(48, 560);
 
   usePageVisibility(
@@ -96,7 +97,7 @@ function TangoGameInner() {
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("tango", {stage, savedAt: Date.now()});
+    saveGameState("tango", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const seed = buildSeed("tango", diff, s);
     const b = generateTangoBoard(seed, diff);
@@ -118,11 +119,20 @@ function TangoGameInner() {
   }, []);
 
   useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("tango");
+      if (saved && (saved.stage as number) > 1) {
+        setResumeData(saved);
+        setShowResume(true);
+        return;
+      }
+    }
     loadStage(stage);
     return () => { if(timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // ── Show Solution handler ─────────────────────────────────────────────────
+  // \u2500\u2500 Show Solution handler \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!board || !xpState) return;
     // Fill complete solution into playerGrid
@@ -178,6 +188,7 @@ function TangoGameInner() {
     setHistory(h => [...h.slice(-19), playerGrid.map(r=>[...r])]);
     const ng = playerGrid.map((row,ri)=>row.map((cell,ci)=>ri===r&&ci===c?next:cell));
     setPlayerGrid(ng);
+    saveGameState("tango", {stage, playerGrid: ng, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
     checkRowColErrors(ng, board.size);
     playClick();
     const ns = validateBoard(board.puzzle, ng, board.solution);
@@ -248,7 +259,7 @@ function TangoGameInner() {
               <span style={{ fontSize:11, color:"var(--text4)" }}>Stage</span>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} · {board.size}×{board.size}
+                {diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}
               </span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
@@ -257,7 +268,7 @@ function TangoGameInner() {
                 <RotateCcw size={13}/>
               </button>
               <button onClick={()=>setShowMap(true)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex",fontSize:11,fontWeight:600,gap:3,alignItems:"center"}}>
-                ⊞ Map
+                \u229e Map
               </button>
               <button onClick={()=>{ const url=`${window.location.origin}/play/tango?seed=${board.seed}`; navigator.clipboard.writeText(url); }}
                 style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
@@ -272,14 +283,14 @@ function TangoGameInner() {
         {solutionRevealed && (
           <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }}
             style={{ padding:"8px 20px", borderRadius:12, background:"rgba(239,68,68,0.08)", border:"0.5px solid rgba(239,68,68,0.2)", fontSize:13, fontWeight:600, color:"#EF4444" }}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
         <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--text4)" }}>
           <span style={{ display:"flex", alignItems:"center", gap:4 }}><SunIcon size={13}/> Sun</span>
           <span style={{ display:"flex", alignItems:"center", gap:4 }}><MoonIcon size={13}/> Moon</span>
-          <span>· Equal per row & col · No 3 in a row</span>
+          <span>\u00b7 Equal per row & col \u00b7 No 3 in a row</span>
         </div>
 
         {/* Board */}
@@ -322,12 +333,12 @@ function TangoGameInner() {
                   </motion.button>
                   {rightC && c < board.size-1 && (
                     <div style={{ position:"absolute", right:-10, top:"50%", transform:"translateY(-50%)", zIndex:10, width:20, height:20, borderRadius:"50%", background:"var(--surface)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, border:`1.5px solid ${rightC==="same"?"#4F6EF7":"#F87171"}`, color:rightC==="same"?"#4F6EF7":"#F87171", boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
-                      {rightC==="same"?"=":"×"}
+                      {rightC==="same"?"=":"\u00d7"}
                     </div>
                   )}
                   {bottomC && r < board.size-1 && (
                     <div style={{ position:"absolute", bottom:-10, left:"50%", transform:"translateX(-50%)", zIndex:10, width:20, height:20, borderRadius:"50%", background:"var(--surface)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, border:`1.5px solid ${bottomC==="same"?"#4F6EF7":"#F87171"}`, color:bottomC==="same"?"#4F6EF7":"#F87171", boxShadow:"0 2px 6px rgba(0,0,0,0.1)" }}>
-                      {bottomC==="same"?"=":"×"}
+                      {bottomC==="same"?"=":"\u00d7"}
                     </div>
                   )}
                 </div>
@@ -352,7 +363,7 @@ function TangoGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>
@@ -362,6 +373,27 @@ function TangoGameInner() {
       </main>
 
       <OutOfTokensModal gameName="Tango" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="tango"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            const stageNum = s.stage as number;
+            setShowResume(false); setResumeData(null);
+            setStage(stageNum);
+            if (s.playerGrid) {
+              setTimeout(() => setPlayerGrid(s.playerGrid as Cell[][]), 150);
+            }
+          }}
+          onStartFresh={() => {
+            clearGameState("tango");
+            setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="tango" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
@@ -372,8 +404,8 @@ function TangoGameInner() {
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
-          const text=`MindState · Tango Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
+          const text=`MindElement \u00b7 Tango Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;
+          if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
     </div>

@@ -33,7 +33,7 @@ const TILE:Record<LetterResult,{bg:string;border:string;text:string}>={
   present:{bg:"#F59E0B",border:"#D97706",text:"white"},
   absent: {bg:"#4B5563",border:"#374151",text:"white"},
 };
-const KB=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["ENTER","Z","X","C","V","B","N","M","⌫"]];
+const KB=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["ENTER","Z","X","C","V","B","N","M","\u232b"]];
 
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
@@ -68,7 +68,7 @@ function NameCountryInner(){
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("name-country",{stage,savedAt:Date.now()});
+    saveGameState("name-country",{stage:s,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const b=generateCountryGame(`country-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -83,7 +83,7 @@ function NameCountryInner(){
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution(){
     if(!board||!xpState)return;
     setLost(true);
@@ -158,13 +158,13 @@ function NameCountryInner(){
         {lost&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}}
             style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(239,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(239,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"#EF4444",textAlign:"center"}}>
-            {solutionRevealed?"Solution: ":"It was: "}{board.flag} {board.answer} · Capital: {board.capital}
+            {solutionRevealed?"Solution: ":"It was: "}{board.flag} {board.answer} \u00b7 Capital: {board.capital}
           </motion.div>
         )}
 
         {shownHints.length>0&&!solutionRevealed&&(
           <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",gap:6}}>
-            {shownHints.map((hint,i)=>(<motion.div key={i} initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{padding:"8px 16px",borderRadius:12,background:"#FFFBEB",border:"1px solid #FDE68A",fontSize:13,fontWeight:600,color:"#92400E"}}>💡 {hint}</motion.div>))}
+            {shownHints.map((hint,i)=>(<motion.div key={i} initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{padding:"8px 16px",borderRadius:12,background:"#FFFBEB",border:"1px solid #FDE68A",fontSize:13,fontWeight:600,color:"#92400E"}}>\ud83d\udca1 {hint}</motion.div>))}
           </div>
         )}
 
@@ -187,7 +187,7 @@ function NameCountryInner(){
           <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%",maxWidth:480}}>
             {KB.map((row,ri)=>(
               <div key={ri} style={{display:"flex",justifyContent:"center",gap:5}}>
-                {row.map(key=>{const state=letterStates.get(key);const color=state?TILE[state]:null;const isWide=key==="ENTER"||key==="⌫";return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?color.bg:"var(--bg3)",color:color?color.text:"var(--text2)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);})}
+                {row.map(key=>{const state=letterStates.get(key);const color=state?TILE[state]:null;const isWide=key==="ENTER"||key==="\u232b";return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="\u232b"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?color.bg:"var(--bg3)",color:color?color.text:"var(--text2)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);})}
               </div>
             ))}
           </div>
@@ -199,7 +199,7 @@ function NameCountryInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
@@ -208,7 +208,7 @@ function NameCountryInner(){
       {showMap&&<StageMap gameSlug="name-country" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Name the Country Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Name the Country Stage ${stage} \u00b7 ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

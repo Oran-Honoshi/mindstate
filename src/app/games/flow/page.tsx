@@ -31,9 +31,9 @@ function getDifficulty(stage: number): Difficulty {
 }
 
 function shareResult(stage: number, xp: number, elapsed: string) {
-  const text = ` MindState · Flow Stage ${stage} · ${xp} XP · ${elapsed}`;
-  const url = "https://mindstate.app";
-  if (navigator.share) navigator.share({ title:"MindState", text, url }).catch(()=>{});
+  const text = ` MindElement \u00b7 Flow Stage ${stage} \u00b7 ${xp} XP \u00b7 ${elapsed}`;
+  const url = "https://mindelement.app";
+  if (navigator.share) navigator.share({ title:"MindElement", text, url }).catch(()=>{});
   else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + " " + url), "_blank");
 }
 
@@ -81,7 +81,7 @@ function FlowGameInner() {
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("flow", {stage, savedAt: Date.now()});
+    saveGameState("flow", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const b = generateFlowBoard(`flow-${diff}-${s}`, diff);
     const xp = createXPState(diff);
@@ -95,16 +95,17 @@ function FlowGameInner() {
     }
   }, [user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("flow");
-    if(saved&&(saved.stage as number)>1){
-      setResumeData(saved);
-      setShowResume(true);
-    } else {
-      loadStage(stage);
+  const resumeChecked = useRef(false);
+
+  useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("flow");
+      if (saved && (saved.stage as number) > 1) { setResumeData(saved); setShowResume(true); return; }
     }
-  },[]);
-  useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
+    loadStage(stage);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [stage, loadStage]);
 
   function key(r: number, c: number) { return `${r},${c}`; }
 
@@ -164,6 +165,7 @@ function FlowGameInner() {
       const nc = new Map(cellColors);
       drawing.cells.forEach(k2 => nc.set(k2, drawing.color));
       setPaths(np); setCellColors(nc);
+      saveGameState("flow", {stage, paths: Array.from(np.entries()).map(([k,v])=>[k,{color:v.color,cells:v.cells}]), hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
       if (checkFlowComplete(board, np) && xpState) {
         const earned = finalizeXP(xpState);
         setFinalXP(earned); setCompleted(true);
@@ -235,9 +237,9 @@ function FlowGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{ fontSize:11, color:"var(--text4)" }}>Drag from dot to dot · Fill every cell · No crossings</div>
+        <div style={{ fontSize:11, color:"var(--text4)" }}>Drag from dot to dot \u00b7 Fill every cell \u00b7 No crossings</div>
 
-        {/* Board — single style object, touchAction merged in */}
+        {/* Board \u2014 single style object, touchAction merged in */}
         <div
           style={{
             border:"2px solid #E2E8F0",
@@ -246,7 +248,7 @@ function FlowGameInner() {
             boxShadow:"0 8px 32px rgba(0,0,0,0.08)",
             cursor:"crosshair",
             userSelect:"none",
-            touchAction:"none",   // ← merged here, no duplicate style prop
+            touchAction:"none",   // \u2190 merged here, no duplicate style prop
           }}
           onMouseLeave={endDraw}
           onTouchMove={(e) => {
@@ -314,13 +316,29 @@ function FlowGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="flow"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            setShowResume(false); setResumeData(null);
+            setStage(s.stage as number);
+          }}
+          onStartFresh={() => {
+            clearGameState("flow"); setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="flow" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup
         open={completed}
@@ -331,8 +349,8 @@ function FlowGameInner() {
         onRetry={()=>loadStage(stage)}
         onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{
-          const text=`MindState · Flow Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});
+          const text=`MindElement \u00b7 Flow Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;
+          if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});
           else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");
         }}/>
     </div>

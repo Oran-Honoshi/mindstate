@@ -37,7 +37,7 @@ export default function SignInPage() {
           <div style={{ width:32, height:32, borderRadius:"22.5%", background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(79,110,247,0.3)" }}>
             <Brain size={16} color="white"/>
           </div>
-          <span style={{ fontWeight:700, fontSize:18, color:"#1C1917", fontFamily:"Georgia,serif" }}>MindState</span>
+          <span style={{ fontWeight:700, fontSize:18, color:"#1C1917", fontFamily:"Georgia,serif" }}>MindElement</span>
         </Link>
 
         <div style={{ background:"white", borderRadius:24, border:"0.5px solid rgba(0,0,0,0.08)", padding:"32px 28px", boxShadow:"0 4px 24px rgba(0,0,0,0.06)" }}>

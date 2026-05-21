@@ -26,7 +26,7 @@ export function WelcomeModal() {
       color: "#4F6EF7",
       bg: "#EEF2FF",
       title: `Welcome, ${profile?.username ?? "friend"}!`,
-      body: "You've joined MindState — an elegant brain-training suite designed for the modern mind. Here's what to expect.",
+      body: "You've joined MindElement — an elegant brain-training suite designed for the modern mind. Here's what to expect.",
       cta: "Let's go →",
     },
     {

@@ -64,7 +64,7 @@ function NonogramGameInner() {
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("nonogram", {stage, savedAt: Date.now()});
+    saveGameState("nonogram", {stage: s, savedAt: Date.now()});
     const diff=getDifficulty(s);
     const b=generateNonogram(`nono-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -77,17 +77,22 @@ function NonogramGameInner() {
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
-  useEffect(()=>{
-    const saved=loadGameState("nonogram");
-    if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);}
-    else loadStage(stage);
-  },[]);
-  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
+  const resumeChecked = useRef(false);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  useEffect(()=>{
+    if(!resumeChecked.current){
+      resumeChecked.current=true;
+      const saved=loadGameState("nonogram");
+      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+    }
+    loadStage(stage);
+    return()=>{if(timerRef.current)clearInterval(timerRef.current);};
+  },[stage,loadStage]);
+
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!board || !xpState) return;
-    // Fill in the complete solution — true = filled, false = empty marker
+    // Fill in the complete solution \u2014 true = filled, false = empty marker
     setGrid(board.solution.map(row => row.map(v => v)));
     setSolutionRevealed(true);
     setXpState(prev => prev ? { ...prev, startTime: Date.now() - prev.decayDuration * 1000 } : prev);
@@ -101,7 +106,9 @@ function NonogramGameInner() {
     else if(ng[r][c]===true) ng[r][c]=false;
     else ng[r][c]=null;
     setGridHistory(h=>[...h.slice(-19),grid.map(r=>[...r])]);
-    setGrid(ng); playClick();
+    setGrid(ng);
+    saveGameState("nonogram", {stage, grid: ng, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
+    playClick();
     if(checkNonogram(board,ng)&&xpState){
       const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
@@ -167,7 +174,7 @@ function NonogramGameInner() {
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
               <span style={{fontSize:11,color:"var(--text4)"}}>Stage</span>
               <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
+              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
               <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
@@ -180,7 +187,7 @@ function NonogramGameInner() {
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
@@ -212,7 +219,7 @@ function NonogramGameInner() {
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
                       cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.1s"}}>
                     {val===true&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"#EF4444":"#1C1917",borderRadius:1}}/>}
-                    {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"#EF4444",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
+                    {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"#EF4444",fontWeight:900,lineHeight:1,userSelect:"none"}}>\u2715</span>}
                   </motion.button>
                 );
               })}
@@ -227,16 +234,33 @@ function NonogramGameInner() {
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="nonogram"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={()=>{
+            const s=resumeData!;
+            setShowResume(false);setResumeData(null);
+            setStage(s.stage as number);
+            if(s.grid)setTimeout(()=>setGrid(s.grid as (boolean|null)[][]),150);
+          }}
+          onStartFresh={()=>{
+            clearGameState("nonogram");setShowResume(false);setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="nonogram" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Nonogram Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Nonogram Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

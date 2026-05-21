@@ -4,7 +4,7 @@ import { Check, Brain } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Simple, honest pricing for MindState. All 20 games from $2/mo.",
+  description: "Simple, honest pricing for MindElement. All 20 games from $2/mo.",
 };
 
 const PLANS = [
@@ -37,7 +37,7 @@ export default function PricingPage() {
           <div style={{width:28,height:28,borderRadius:"22.5%",background:ACCENT,display:"flex",alignItems:"center",justifyContent:"center"}}>
             <Brain size={13} color="white"/>
           </div>
-          <span style={{fontWeight:700,fontSize:15,color:"#1C1917",fontFamily:"Georgia,serif"}}>MindState</span>
+          <span style={{fontWeight:700,fontSize:15,color:"#1C1917",fontFamily:"Georgia,serif"}}>MindElement</span>
         </Link>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           <Link href="/games" style={{fontSize:13,color:"#64748B",padding:"6px 12px",borderRadius:10,textDecoration:"none"}}>Games</Link>
@@ -145,7 +145,7 @@ export default function PricingPage() {
 
       <footer style={{borderTop:"0.5px solid rgba(0,0,0,0.06)",background:"rgba(255,255,255,0.7)",padding:"28px 40px",marginTop:64}}>
         <div style={{maxWidth:960,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:12}}>
-          <span style={{fontSize:12,color:"#CBD5E1"}}>&copy; {new Date().getFullYear()} MindState</span>
+          <span style={{fontSize:12,color:"#CBD5E1"}}>&copy; {new Date().getFullYear()} MindElement</span>
           <div style={{display:"flex",gap:20}}>
             {[["Games","/games"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h])=>(
               <Link key={l} href={h} style={{fontSize:12,color:"#94A3B8",textDecoration:"none"}}>{l}</Link>

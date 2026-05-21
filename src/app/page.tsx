@@ -639,7 +639,7 @@ function TrustpilotBadge() {
       <p style={{fontSize:13,color:"#64748B",marginBottom:16,lineHeight:1.6}}>
         "Addictive, beautiful, and actually makes me feel sharper."
       </p>
-      <a href="https://www.trustpilot.com/review/mindstate.app" target="_blank"
+      <a href="https://www.trustpilot.com/review/mindelement.app" target="_blank"
         style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,
           color:"#00B67A",textDecoration:"none",
           padding:"10px 20px",borderRadius:12,border:"1.5px solid #00B67A"}}>
@@ -677,8 +677,8 @@ export default function LandingPage() {
       }}>
         {/* Logo */}
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-          <img src="/icons/icon-192.png" alt="MindState" style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover" }}/>
-          <span style={{ fontWeight:700, fontSize:18, color:"var(--text1)", fontFamily:"Georgia,serif" }}>MindState</span>
+          <img src="/icons/icon-192.png" alt="MindElement" style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover" }}/>
+          <span style={{ fontWeight:700, fontSize:18, color:"var(--text1)", fontFamily:"Georgia,serif" }}>MindElement</span>
         </Link>
 
         {/* Center nav */}
@@ -715,7 +715,7 @@ export default function LandingPage() {
               initial={{ opacity:0, scale:0.8 }}
               animate={{ opacity:1, scale:1 }}
               onClick={triggerInstall}
-              title="Install MindState app"
+              title="Install MindElement app"
               style={{
                 display:"flex", alignItems:"center", gap:5,
                 padding:"6px 12px", borderRadius:20,
@@ -1064,7 +1064,7 @@ export default function LandingPage() {
           </h2>
         </div>
         {[
-          ["Is MindState free to use?", "Yes — free users get 5 plays per day across all 24 games. Daily challenges are always free. Subscribe for unlimited access at $2/month."],
+          ["Is MindElement free to use?", "Yes — free users get 5 plays per day across all 24 games. Daily challenges are always free. Subscribe for unlimited access at $2/month."],
           ["What does Pro include?", "Unlimited plays across all 24 games, all 100 stages per game, family leaderboards for up to 7 members, and early access to new games."],
           ["How much does Pro cost?", "Individual Pro is $2/month. Family plans start at $5/month for 3 members and $10/month for 7 members."],
           ["Is it appropriate for children?", "Yes. The puzzles build spatial reasoning and logical thinking without any ads, distractions, or inappropriate content."],
@@ -1072,7 +1072,7 @@ export default function LandingPage() {
           ["How does family billing work?", "One monthly charge covers up to 3 or 7 independent player profiles, each with their own progress and scores, plus a shared family leaderboard."],
           ["Can I cancel anytime?", "Yes. Cancel from your profile settings at any time. You keep access until the end of your billing period."],
           ["Do I need an account?", "No — you can play as a guest. Creating a free account saves your progress, streaks, and XP scores to the leaderboard."],
-          ["Does it work offline?", "Yes. MindState is a Progressive Web App. Install it to your home screen and play without an internet connection."],
+          ["Does it work offline?", "Yes. MindElement is a Progressive Web App. Install it to your home screen and play without an internet connection."],
           ["What languages are supported?", "English, Spanish, German, French, Portuguese, Dutch, and Hebrew with full right-to-left layout."],
         ].map(([q, a], i) => (
           <details key={i} style={{ borderBottom:"0.5px solid var(--border)" }}>
@@ -1091,10 +1091,10 @@ export default function LandingPage() {
       <footer style={{ borderTop:"0.5px solid var(--border)", background:"var(--bg2)", padding:"32px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:16 }}>
           <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-            <img src="/icons/icon-192.png" alt="MindState" style={{ width:28, height:28, borderRadius:"22.5%", objectFit:"cover" }}/>
-            <span style={{ fontWeight:700, fontSize:15, color:"var(--text2)", fontFamily:"Georgia,serif" }}>MindState</span>
+            <img src="/icons/icon-192.png" alt="MindElement" style={{ width:28, height:28, borderRadius:"22.5%", objectFit:"cover" }}/>
+            <span style={{ fontWeight:700, fontSize:15, color:"var(--text2)", fontFamily:"Georgia,serif" }}>MindElement</span>
           </Link>
-          <p style={{ fontSize:13, color:"var(--text4)" }}>&copy; {new Date().getFullYear()} MindState. All rights reserved.</p>
+          <p style={{ fontSize:13, color:"var(--text4)" }}>&copy; {new Date().getFullYear()} MindElement. All rights reserved.</p>
           <div style={{ display:"flex", gap:24 }}>
             {[["Games","/games"],["Pricing","/pricing"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h])=>(
               <Link key={l} href={h} style={{ fontSize:13, color:"var(--text4)", textDecoration:"none" }}>{l}</Link>

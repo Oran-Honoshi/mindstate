@@ -1,5 +1,6 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -110,6 +111,8 @@ function MinesweeperGameInner() {
   const [finalXP, setFinalXP] = useState(0);
   const [firstClick, setFirstClick] = useState(true);
   const [flagCount, setFlagCount] = useState(0);
+  const [showResume, setShowResume] = useState(false);
+  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [showMap, setShowMap] = useState(false);
@@ -123,7 +126,7 @@ function MinesweeperGameInner() {
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("minesweeper", {stage, savedAt: Date.now()});
+    saveGameState("minesweeper", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const xp = createXPState(diff);
     setXpState(xp); setBoard(null); setGameOver(null);
@@ -137,9 +140,19 @@ function MinesweeperGameInner() {
     setBoard({rows,cols,mines:configs[diff].mines,cells:empty});
   },[]);
 
-  useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
+  const resumeChecked = useRef(false);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  useEffect(()=>{
+    if(!resumeChecked.current){
+      resumeChecked.current=true;
+      const saved=loadGameState("minesweeper");
+      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+    }
+    loadStage(stage);
+    return()=>{if(timerRef.current)clearInterval(timerRef.current);};
+  },[stage,loadStage]);
+
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!board || !xpState) return;
     // Reveal all mine positions by marking them flagged, reveal all safe cells
@@ -179,7 +192,9 @@ function MinesweeperGameInner() {
     }
 
     floodReveal(cells, r, c, board.rows, board.cols);
-    setBoard({...board,cells}); playClick();
+    setBoard({...board,cells});
+    saveGameState("minesweeper",{stage,cells,rows:board.rows,cols:board.cols,mines:board.mines,hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
+    playClick();
 
     const revealed = cells.flat().filter(c=>c.state==="revealed").length;
     if (revealed === board.rows*board.cols-board.mines && xpState) {
@@ -252,12 +267,12 @@ function MinesweeperGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)"}}>Left click = reveal · Right click = flag · First click is always safe</div>
+        <div style={{fontSize:11,color:"var(--text4)"}}>Left click = reveal \u00b7 Right click = flag \u00b7 First click is always safe</div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Mines flagged · Safe cells revealed · XP set to 1
+            Mines flagged \u00b7 Safe cells revealed \u00b7 XP set to 1
           </motion.div>
         )}
 
@@ -301,21 +316,21 @@ function MinesweeperGameInner() {
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)}
             style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
-      {/* Game over — lose */}
+      {/* Game over \u2014 lose */}
       <AnimatePresence>
         {gameOver==="lose"&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
               style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              <div style={{fontSize:48,marginBottom:16}}>💥</div>
+              <div style={{fontSize:48,marginBottom:16}}>\ud83d\udca5</div>
               <h2 style={{fontSize:24,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:6}}>Mine Hit</h2>
               <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Better luck next time.</p>
               <div style={{display:"flex",gap:10}}>
@@ -327,16 +342,16 @@ function MinesweeperGameInner() {
         )}
       </AnimatePresence>
 
-      {/* Game over — win */}
+      {/* Game over \u2014 win */}
       <AnimatePresence>
         {gameOver==="win"&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
               style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              <div style={{fontSize:48,marginBottom:16}}>✅</div>
+              <div style={{fontSize:48,marginBottom:16}}>\u2705</div>
               <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Clear</h2>
-              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} · {diff}</p>
+              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} \u00b7 {diff}</p>
               <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
                 <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
                 <p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p>
@@ -350,6 +365,22 @@ function MinesweeperGameInner() {
         )}
       </AnimatePresence>
 
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="minesweeper"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={()=>{
+            const s=resumeData!;
+            setShowResume(false);setResumeData(null);
+            setStage(s.stage as number);
+          }}
+          onStartFresh={()=>{
+            clearGameState("minesweeper");setShowResume(false);setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="minesweeper" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
     </div>
   );

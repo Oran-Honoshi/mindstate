@@ -129,6 +129,7 @@ function SudokuGameInner() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  const resumeChecked = useRef(false);
 
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
@@ -138,6 +139,7 @@ function SudokuGameInner() {
   );
 
   const loadStage = useCallback((s: number) => {
+    saveGameState("sudoku", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const seed = buildSeed("sudoku", diff, s);
     const data = generateSudoku(seed, diff);
@@ -153,9 +155,21 @@ function SudokuGameInner() {
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
   }, []);
 
-  useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
+  useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("sudoku");
+      if (saved && (saved.stage as number) > 1) {
+        setResumeData(saved);
+        setShowResume(true);
+        return;
+      }
+    }
+    loadStage(stage);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [stage, loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!puzzleData || !xpState) return;
     setPlayerBoard(puzzleData.solution.map(r => [...r]));
@@ -174,6 +188,7 @@ function SudokuGameInner() {
     const nb = playerBoard.map(row => [...row]);
     nb[r][c] = num;
     setPlayerBoard(nb);
+    saveGameState("sudoku", {stage, playerBoard: nb, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
     const errs = new Set<string>();
     nb.forEach((row, ri) => row.forEach((v, ci) => {
       if (puzzleData.puzzle[ri][ci] !== null || v === null) return;
@@ -256,7 +271,7 @@ function SudokuGameInner() {
               <span style={{ fontSize:11, color:"var(--text4)" }}>Stage</span>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} · {puzzleData.size}×{puzzleData.size}
+                {diff.toUpperCase()} \u00b7 {puzzleData.size}\u00d7{puzzleData.size}
               </span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -270,7 +285,7 @@ function SudokuGameInner() {
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
@@ -343,7 +358,7 @@ function SudokuGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -351,10 +366,31 @@ function SudokuGameInner() {
       </main>
 
       <OutOfTokensModal gameName="Sudoku" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="sudoku"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            const stageNum = s.stage as number;
+            setShowResume(false); setResumeData(null);
+            setStage(stageNum);
+            if (s.playerBoard) {
+              setTimeout(() => setPlayerBoard(s.playerBoard as (number|null)[][]), 150);
+            }
+          }}
+          onStartFresh={() => {
+            clearGameState("sudoku");
+            setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="sudoku" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Sudoku Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Sudoku Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }
@@ -370,16 +406,16 @@ function CompletionPopup({ open, stage, elapsed, difficulty, xpEarned, onRetry, 
         style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(14px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:24}}>
         <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} transition={{type:"spring",stiffness:380,damping:28}}
           style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-          <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+          <div style={{fontSize:56,marginBottom:12}}>\ud83c\udf89</div>
           <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Complete!</h2>
-          <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} · {difficulty}</p>
+          <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} \u00b7 {difficulty}</p>
           <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
             <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4,letterSpacing:"0.1em",textTransform:"uppercase"}}>XP Earned</p>
             <p style={{fontSize:52,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{xpEarned??0}</p>
           </div>
           <div style={{display:"flex",gap:10}}>
             <button onClick={onRetry} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
-            <button onClick={onNext} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage →</button>
+            <button onClick={onNext} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage \u2192</button>
           </div>
         </motion.div>
       </motion.div>

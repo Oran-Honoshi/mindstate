@@ -97,7 +97,7 @@ function LogicPathPageInner() {
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("logic-path", {stage, savedAt: Date.now()});
+    saveGameState("logic-path", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const b = generateLogicPath(`logic-${diff}-${s}`, diff);
     const xp = createXPState(diff);
@@ -114,12 +114,19 @@ function LogicPathPageInner() {
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   }, [user]);
 
+  const resumeChecked = useRef(false);
+
   useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("logic-path");
+      if (saved && (saved.stage as number) > 1) { setResumeData(saved); setShowResume(true); return; }
+    }
     loadStage(stage);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!board || !xpState) return;
     // Copy solution grid with all cells locked so they can't be rotated
@@ -137,6 +144,7 @@ function LogicPathPageInner() {
     const ng = grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })));
     ng[r][c] = rotatePipe(ng[r][c]);
     setGrid(ng);
+    saveGameState("logic-path", {stage, grid: ng, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
     playClick();
     if (checkLogicPath(ng) && xpState) {
       const earned = Math.max(1, finalizeXP(xpState) - hintsUsed * HINT_XP_COST);
@@ -194,7 +202,7 @@ function LogicPathPageInner() {
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
               <div style={{ width:1, height:16, background:"var(--border)" }}/>
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.size}\u00d7{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -205,13 +213,13 @@ function LogicPathPageInner() {
         </div>
 
         <div style={{ fontSize:12, color:"var(--text3)", textAlign:"center", maxWidth:340, lineHeight:1.6 }}>
-          Click any pipe to rotate it 90°. Make all connections match between neighbors. No open ends at borders.
+          Click any pipe to rotate it 90\u00b0. Make all connections match between neighbors. No open ends at borders.
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            Solution revealed \u00b7 XP set to 1 \u00b7 Retry to score properly
           </motion.div>
         )}
 
@@ -265,7 +273,7 @@ function LogicPathPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>\u2190 Prev</button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
@@ -273,10 +281,27 @@ function LogicPathPageInner() {
       </main>
 
       <OutOfTokensModal gameName="Logic Path" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="logic-path"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            setShowResume(false); setResumeData(null);
+            setStage(s.stage as number);
+            if (s.grid) setTimeout(() => setGrid(s.grid as typeof grid), 150);
+          }}
+          onStartFresh={() => {
+            clearGameState("logic-path"); setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="logic-path" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
         onRetry={() => loadStage(stage)} onNext={() => { setCompleted(false); setStage(s => s+1); }}
-        onShare={() => { const text=`MindState · Logic Path Stage ${stage} · ${finalXP} XP · ${elapsed}`; if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
+        onShare={() => { const text=`MindElement \u00b7 Logic Path Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`; if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{}); else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank"); }}/>
     </div>
   );
 }

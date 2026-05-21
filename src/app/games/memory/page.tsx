@@ -25,8 +25,6 @@ import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 
-import { GamePageSchema } from "@/components/seo/GamePageSchema";
-
 function getDifficulty(stage: number): Difficulty {
   if (stage === 1) return "medium";
   const h = Math.abs(Math.imul(stage * 2654435761, stage ^ 0x9e3779b9)) % 100;
@@ -131,7 +129,7 @@ function MemoryGameInner() {
   const boardWidth = useBoardWidth(32, 520);
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("memory", {stage, savedAt: Date.now()});
+    saveGameState("memory", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const xp = createXPState(diff);
     setCards(makeBoard(`memory-${diff}-${s}`, diff));
@@ -147,7 +145,14 @@ function MemoryGameInner() {
     if (user) consumeToken(user.id);
   }, [user]);
 
+  const resumeChecked = useRef(false);
+
   useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("memory");
+      if (saved && (saved.stage as number) > 1) { setResumeData(saved); setShowResume(true); return; }
+    }
     loadStage(stage);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
@@ -170,6 +175,7 @@ function MemoryGameInner() {
       if (a.iconIdx === b.iconIdx) {
         const matched = newCards.map(c => c.id === a.id || c.id === b.id ? {...c, matched: true} : c);
         setCards(matched);
+        saveGameState("memory", {stage, cards: matched, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
         setSelected([]);
         lockRef.current = false;
         playSuccess();
@@ -231,7 +237,6 @@ function MemoryGameInner() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
-      <GamePageSchema slug="memory" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
         <div style={{ width:"100%", maxWidth:560, background:"var(--surface)", borderRadius:20,
@@ -247,7 +252,7 @@ function MemoryGameInner() {
               <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10,
                 background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} · {total} pairs
+                {diff.toUpperCase()} \u00b7 {total} pairs
               </span>
               <span style={{ fontSize:12, color:"var(--text4)" }}>{matched}/{total} found</span>
             </div>
@@ -271,11 +276,11 @@ function MemoryGameInner() {
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{ background:"var(--surface)", border:"0.5px solid var(--border)", borderRadius:12,
               padding:"8px 16px", fontSize:12, fontWeight:600, color:"var(--text2)" }}>
-            {matched}/{total} pairs found · {total - matched} remaining
+            {matched}/{total} pairs found \u00b7 {total - matched} remaining
           </motion.div>
         )}
 
-        {/* Card grid — responsive */}
+        {/* Card grid \u2014 responsive */}
         <div style={{
           display:"grid",
           gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
@@ -313,7 +318,7 @@ function MemoryGameInner() {
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)",
               background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed",
               fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
-            ← Prev
+            \u2190 Prev
           </button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s => s+1)}
@@ -336,11 +341,11 @@ function MemoryGameInner() {
               style={{ background:"var(--surface)", borderRadius:28, padding:36,
                 maxWidth:340, width:"100%", textAlign:"center",
                 boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
-              <div style={{ fontSize:56, marginBottom:12 }}>🎉</div>
+              <div style={{ fontSize:56, marginBottom:12 }}>\ud83c\udf89</div>
               <h2 style={{ fontSize:26, fontWeight:700, color:"var(--text1)",
                 fontFamily:"Georgia,serif", marginBottom:4 }}>All Pairs Found!</h2>
               <p style={{ fontSize:13, color:"var(--text4)", marginBottom:24 }}>
-                {elapsed} · {total} pairs · {diff}
+                {elapsed} \u00b7 {total} pairs \u00b7 {diff}
               </p>
               <div style={{ background:"var(--bg2)", borderRadius:16, padding:20, marginBottom:20 }}>
                 <p style={{ fontSize:11, color:"var(--text4)", fontWeight:600, marginBottom:4,
@@ -360,13 +365,30 @@ function MemoryGameInner() {
                     background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
                     fontSize:13, fontWeight:700, color:"white", cursor:"pointer",
                     display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                  Next Stage →
+                  Next Stage \u2192
                 </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="memory"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            setShowResume(false); setResumeData(null);
+            setStage(s.stage as number);
+            if (s.cards) setTimeout(() => setCards(s.cards as Card[]), 150);
+          }}
+          onStartFresh={() => {
+            clearGameState("memory"); setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
     </div>
   );
 }

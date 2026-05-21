@@ -126,7 +126,7 @@ export function GamePageSchema({ slug }: { slug: string }) {
     "inLanguage": ["en", "es", "de", "fr", "pt", "nl", "he"],
     "isPartOf": {
       "@type": "WebApplication",
-      "name": "MindState",
+      "name": "MindElement",
       "url": "https://mindstate.vercel.app",
     },
     "offers": {

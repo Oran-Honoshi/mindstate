@@ -136,26 +136,26 @@ const GAME_META: Record<string, { name: string; description: string; keywords: s
 
 export function generateGameMetadata(slug: string): Metadata {
   const meta = GAME_META[slug];
-  if (!meta) return { title: "MindState" };
+  if (!meta) return { title: "MindElement" };
 
   return {
     title: meta.name,
     description: meta.description,
     keywords: [
       ...meta.keywords,
-      "MindState", "brain training", "logic puzzle", "free puzzle game",
+      "MindElement", "brain training", "logic puzzle", "free puzzle game",
     ],
     openGraph: {
-      title: `${meta.name} | MindState`,
+      title: `${meta.name} | MindElement`,
       description: meta.description,
-      url: `https://mindstate.app/games/${slug}`,
-      siteName: "MindState",
+      url: `https://mindelement.app/games/${slug}`,
+      siteName: "MindElement",
       images: [{ url: "/og-image.png", width: 1200, height: 630 }],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${meta.name} | MindState`,
+      title: `${meta.name} | MindElement`,
       description: meta.description,
       images: ["/og-image.png"],
     },

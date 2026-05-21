@@ -16,8 +16,8 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
   const [phase, setPhase] = useState<"rate"|"thanks"|"prompt">("rate");
 
   const titles = {
-    first_win: "Enjoying MindState?",
-    subscription: "Welcome to MindState Pro!",
+    first_win: "Enjoying MindElement?",
+    subscription: "Welcome to MindElement Pro!",
     milestone: "You're on a roll!",
   };
   const subtitles = {
@@ -36,7 +36,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
   }
 
   function copyAndOpen() {
-    const text = `Really enjoying MindState — the brain training games are addictive and beautifully designed. Highly recommend!`;
+    const text = `Really enjoying MindElement — the brain training games are addictive and beautifully designed. Highly recommend!`;
     navigator.clipboard?.writeText(text).catch(() => {});
     window.open(TRUSTPILOT_URL, "_blank");
     onClose();
@@ -125,7 +125,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                 Thanks for the feedback
               </h2>
               <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 24, lineHeight: 1.6 }}>
-                We really appreciate it. We're constantly working to make MindState better.
+                We really appreciate it. We're constantly working to make MindElement better.
               </p>
               <button
                 onClick={onClose}
@@ -147,7 +147,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                 You made our day!
               </h2>
               <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 20, lineHeight: 1.6 }}>
-                A quick review on Trustpilot would mean the world to us and help other brain-training fans discover MindState.
+                A quick review on Trustpilot would mean the world to us and help other brain-training fans discover MindElement.
               </p>
               <div style={{
                 background: "var(--bg2)", borderRadius: 14, padding: "12px 16px",
@@ -157,7 +157,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                   Ready-to-paste review
                 </p>
                 <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6, fontStyle: "italic" }}>
-                  "Really enjoying MindState — the brain training games are addictive and beautifully designed. Highly recommend!"
+                  "Really enjoying MindElement — the brain training games are addictive and beautifully designed. Highly recommend!"
                 </p>
               </div>
               <button

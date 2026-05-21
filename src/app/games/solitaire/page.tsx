@@ -24,15 +24,15 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
-type Suit="♥"|"♦"|"♣"|"♠";
+type Suit="\u2665"|"\u2666"|"\u2663"|"\u2660";
 type Card={suit:Suit;value:number;label:string;faceUp:boolean};
 function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
-function makeDeck(seed:number):Card[]{const suits:Suit[]=["♥","♦","♣","♠"];const labels=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];const deck=suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+1,label,faceUp:false})));const rng=mulberry32(seed);for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}return deck;}
-function isRed(suit:Suit){return suit==="♥"||suit==="♦";}
+function makeDeck(seed:number):Card[]{const suits:Suit[]=["\u2665","\u2666","\u2663","\u2660"];const labels=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];const deck=suits.flatMap(suit=>labels.map((label,i)=>({suit,value:i+1,label,faceUp:false})));const rng=mulberry32(seed);for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}return deck;}
+function isRed(suit:Suit){return suit==="\u2665"||suit==="\u2666";}
 function canStack(card:Card,onto:Card|null):boolean{if(!onto)return card.value===13;return isRed(card.suit)!==isRed(onto.suit)&&card.value===onto.value-1;}
 function canFoundation(card:Card,top:Card|null):boolean{if(!top)return card.value===1;return card.suit===top.suit&&card.value===top.value+1;}
-function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
+function cardColor(suit:Suit){return suit==="\u2665"||suit==="\u2666"?"#DC2626":"#1C1917";}
 
 function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);}
 
@@ -70,7 +70,7 @@ function SolitairePageInner(){
   );
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("solitaire",{stage,savedAt:Date.now()});
+    saveGameState("solitaire",{stage:s,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const deck=makeDeck(seedToNum(`solitaire-${diff}-${s}`));
     const tab:Card[][]=[];let idx=0;
@@ -86,7 +86,7 @@ function SolitairePageInner(){
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
@@ -177,7 +177,7 @@ function SolitairePageInner(){
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
             style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.1)",border:"0.5px solid rgba(239,68,68,0.3)",fontSize:13,fontWeight:600,color:"#FCA5A5",textAlign:"center",maxWidth:500}}>
-            Strategy: Build foundations A→K · Expose face-down cards · Move Kings to empty columns · XP set to 1
+            Strategy: Build foundations A\u2192K \u00b7 Expose face-down cards \u00b7 Move Kings to empty columns \u00b7 XP set to 1
           </motion.div>
         )}
 
@@ -189,7 +189,7 @@ function SolitairePageInner(){
             {waste.length>0?<CardUI card={waste[waste.length-1]} selected={selected?.pile==="waste"} onClick={handleWasteClick}/>:<div style={{width:48,height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)"}}/>}
           </div>
           <div style={{flex:1}}/>
-          {foundations.map((pile,i)=>{const top=pile[pile.length-1];const suits:Suit[]=["♥","♦","♣","♠"];return(<div key={i} onClick={()=>handleFoundationClick(i)} style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{top?<CardUI card={top} onClick={()=>handleFoundationClick(i)}/>:<span style={{fontSize:20,color:"rgba(255,255,255,0.3)"}}>{suits[i]}</span>}</div>);})}
+          {foundations.map((pile,i)=>{const top=pile[pile.length-1];const suits:Suit[]=["\u2665","\u2666","\u2663","\u2660"];return(<div key={i} onClick={()=>handleFoundationClick(i)} style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{top?<CardUI card={top} onClick={()=>handleFoundationClick(i)}/>:<span style={{fontSize:20,color:"rgba(255,255,255,0.3)"}}>{suits[i]}</span>}</div>);})}
         </div>
 
         <div style={{display:"flex",gap:4,alignItems:"flex-start",width:"100%",maxWidth:600,padding:"0 4px",overflowX:"auto"}}>
@@ -211,7 +211,7 @@ function SolitairePageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"7px 14px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"7px 14px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:3,padding:"7px 14px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:11,color:"rgba(255,255,255,0.6)",fontWeight:600}}>Next <ChevronRight size={12}/></button>
         </div>
@@ -221,7 +221,7 @@ function SolitairePageInner(){
       {showMap&&<StageMap gameSlug="solitaire" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Solitaire Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Solitaire Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

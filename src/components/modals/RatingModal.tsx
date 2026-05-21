@@ -91,7 +91,7 @@ export function RatingModal() {
             <>
               <p style={{ fontSize: 11, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Quick question</p>
               <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif", marginBottom: 6 }}>
-                Enjoying MindState?
+                Enjoying MindElement?
               </h2>
               <p style={{ fontSize: 13, color: "#64748B", marginBottom: 20 }}>
                 How would you rate your experience so far?

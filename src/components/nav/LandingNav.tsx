@@ -46,11 +46,11 @@ export function LandingNav() {
         display:"flex", alignItems:"center", justifyContent:"space-between" }}>
 
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-          <img src="/icons/icon-192.png" alt="MindState"
+          <img src="/icons/icon-192.png" alt="MindElement"
             style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover",
               boxShadow:"0 2px 8px rgba(79,110,247,0.2)" }}/>
           <span style={{ fontWeight:700, fontSize:18, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
-            MindState
+            MindElement
           </span>
         </Link>
 

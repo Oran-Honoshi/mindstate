@@ -1,5 +1,6 @@
 "use client";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
+import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
@@ -38,7 +39,7 @@ const COLORS: Record<LetterResult, { bg: string; border: string; text: string }>
 const KEYBOARD_ROWS = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
   ["A","S","D","F","G","H","J","K","L"],
-  ["ENTER","Z","X","C","V","B","N","M","⌫"],
+  ["ENTER","Z","X","C","V","B","N","M","\u232b"],
 ];
 
 function XPBar({ xpState }: { xpState: XPState }) {
@@ -74,6 +75,8 @@ function WordSlingPageInner() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [finalXP, setFinalXP] = useState(0);
+  const [showResume, setShowResume] = useState(false);
+  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [hintLetters, setHintLetters] = useState<Set<number>>(new Set());
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -84,7 +87,7 @@ function WordSlingPageInner() {
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("word-sling", {stage, savedAt: Date.now()});
+    saveGameState("word-sling", {stage: s, savedAt: Date.now()});
     const diff = getDifficulty(s);
     const b = generateWordleBoard(`wordle-${diff}-${s}`, diff);
     const xp = createXPState(diff);
@@ -97,9 +100,19 @@ function WordSlingPageInner() {
     if (user) { const ok = consumeToken(user.id); if (!ok) { setShowTokenModal(true); return; } }
   }, [user]);
 
-  useEffect(() => { loadStage(stage); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, [stage, loadStage]);
+  const resumeChecked = useRef(false);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("word-sling");
+      if (saved && (saved.stage as number) > 1) { setResumeData(saved); setShowResume(true); return; }
+    }
+    loadStage(stage);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [stage, loadStage]);
+
+  // \u2500\u2500 Show Solution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function handleRevealSolution() {
     if (!board || !xpState) return;
     setLost(true); // reuse the lost banner which already shows board.answer
@@ -122,7 +135,7 @@ function WordSlingPageInner() {
   function handleKey(key: string) {
     if (!board || completed || lost) return;
     if (key === "ENTER" || key === "Enter") { submitGuess(); return; }
-    if (key === "⌫" || key === "Backspace") { setCurrent(c => c.slice(0, -1)); return; }
+    if (key === "\u232b" || key === "Backspace") { setCurrent(c => c.slice(0, -1)); return; }
     if (/^[A-Za-z]$/.test(key) && current.length < board.wordLength) { setCurrent(c => c + key.toUpperCase()); playClick(); }
   }
 
@@ -139,6 +152,7 @@ function WordSlingPageInner() {
     const newGuesses = [...guesses, current];
     const newResults = [...results, res];
     setGuesses(newGuesses); setResults(newResults); setCurrent("");
+    saveGameState("word-sling", {stage, guesses: newGuesses, results: newResults, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
     setReveal(newGuesses.length - 1);
     setTimeout(() => setReveal(null), board.wordLength * 120 + 200);
     const won = res.every(r => r === "correct");
@@ -193,7 +207,7 @@ function WordSlingPageInner() {
               <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Word Sling</span>
               <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
               <span style={{ fontSize:18, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.wordLength} letters</span>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} \u00b7 {board.wordLength} letters</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
@@ -256,10 +270,10 @@ function WordSlingPageInner() {
               {row.map(key=>{
                 const state = letterStates.get(key);
                 const color = state?COLORS[state]:null;
-                const isWide = key==="ENTER"||key==="⌫";
+                const isWide = key==="ENTER"||key==="\u232b";
                 return (
                   <motion.button key={key} whileTap={{scale:0.9}}
-                    onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)}
+                    onClick={()=>handleKey(key==="\u232b"?"Backspace":key==="ENTER"?"Enter":key)}
                     style={{width:isWide?58:34,height:48,borderRadius:8,border:"none",background:color?color.bg:"var(--bg3)",color:color?color.text:"var(--text2)",fontSize:isWide?11:14,fontWeight:700,cursor:"pointer",outline:"none"}}>
                     {key}
                   </motion.button>
@@ -276,7 +290,7 @@ function WordSlingPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
+            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>\u2190 Prev</button>
           <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)}
             style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
@@ -284,10 +298,27 @@ function WordSlingPageInner() {
       </main>
 
       <OutOfTokensModal gameName="Word Sling" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
+      {showResume && resumeData && (
+        <ResumeModal
+          gameSlug="word-sling"
+          stageName={`Stage ${resumeData.stage}`}
+          savedAt={resumeData.savedAt as number}
+          onResume={() => {
+            const s = resumeData!;
+            setShowResume(false); setResumeData(null);
+            setStage(s.stage as number);
+            if (s.guesses) setTimeout(() => { setGuesses(s.guesses as string[]); setResults(s.results as LetterResult[][]); }, 150);
+          }}
+          onStartFresh={() => {
+            clearGameState("word-sling"); setShowResume(false); setResumeData(null);
+            loadStage(stage);
+          }}
+        />
+      )}
       {showMap&&<StageMap gameSlug="word-sling" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindState · Word Sling Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindState",text,url:"https://mindstate.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement \u00b7 Word Sling Stage ${stage} \u00b7 ${finalXP} XP \u00b7 ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </div>
   );
 }

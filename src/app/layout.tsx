@@ -25,8 +25,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "MindState — Sharper Every Day",
-    template: "%s | MindState"
+    default: "MindElement — Sharper Every Day",
+    template: "%s | MindElement"
   },
   description: "24 precision logic games for every mind. Tango, Queens, Sudoku, Nonogram and more. 100 stages each. Free to start — $2/mo for unlimited.",
   keywords: [
@@ -36,34 +36,34 @@ export const metadata: Metadata = {
     "brain training for kids","brain games for seniors","family brain games",
     "משחקי לוגיקה","juegos de lógica","Denkspiele","jeux de logique","jogos de lógica"
   ],
-  authors: [{ name:"MindState" }],
-  creator: "MindState",
-  metadataBase: new URL("https://mindstate.app"),
+  authors: [{ name:"MindElement" }],
+  creator: "MindElement",
+  metadataBase: new URL("https://mindelement.app"),
   alternates: {
     canonical: "/",
     languages: {
-      "en": "https://mindstate.app/en",
-      "es": "https://mindstate.app/es",
-      "de": "https://mindstate.app/de",
-      "fr": "https://mindstate.app/fr",
-      "pt": "https://mindstate.app/pt",
-      "nl": "https://mindstate.app/nl",
-      "he": "https://mindstate.app/he",
-      "x-default": "https://mindstate.app",
+      "en": "https://mindelement.app/en",
+      "es": "https://mindelement.app/es",
+      "de": "https://mindelement.app/de",
+      "fr": "https://mindelement.app/fr",
+      "pt": "https://mindelement.app/pt",
+      "nl": "https://mindelement.app/nl",
+      "he": "https://mindelement.app/he",
+      "x-default": "https://mindelement.app",
     }
   },
   openGraph: {
-    title: "MindState — Sharper Every Day",
+    title: "MindElement — Sharper Every Day",
     description: "24 precision logic games. 100 stages each. Free to start.",
-    url: "https://mindstate.app",
-    siteName: "MindState",
-    images: [{ url:"/og-image.png", width:1200, height:630, alt:"MindState brain training games" }],
+    url: "https://mindelement.app",
+    siteName: "MindElement",
+    images: [{ url:"/og-image.png", width:1200, height:630, alt:"MindElement brain training games" }],
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MindState — Sharper Every Day",
+    title: "MindElement — Sharper Every Day",
     description: "24 precision logic games. 100 stages each. Free to start.",
     images: ["/og-image.png"],
   },
@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Apple PWA fullscreen */}
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-        <meta name="apple-mobile-web-app-title" content="MindState"/>
+        <meta name="apple-mobile-web-app-title" content="MindElement"/>
 
         {/* MS tile */}
         <meta name="msapplication-TileImage" content="/icons/icon-192.png"/>
