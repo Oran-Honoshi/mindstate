@@ -326,33 +326,27 @@ function TangoGameInner() {
         {/* Header card */}
         <div style={{ width: "100%", maxWidth: 580, background: "var(--surface)", borderRadius: 20, border: "0.5px solid var(--border)", padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden", flexShrink: 1 }}>
-              <Link href="/games" style={{ color: "var(--text4)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
-                <ArrowLeft size={14} /> Games
-              </Link>
-              <div style={{ width: 1, height: 16, background: "#E2E8F0" }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif" }}>Tango</span>
-              <div style={{ width: 1, height: 16, background: "#E2E8F0" }} />
-              <span style={{ fontSize: 11, color: "var(--text4)" }}>Stage</span>
-              <span style={{ fontSize: 20, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif" }}>{stage}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: `${diffColor}15`, color: diffColor }}>
-                {diff.toUpperCase()} · {board.size}×{board.size}
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-              <span style={{ fontSize: 12, color: "var(--text4)", fontFamily: "monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding: 7, borderRadius: 9, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
-                <RotateCcw size={13} />
-              </button>
-              <button onClick={() => setShowMap(true)} style={{ padding: 7, borderRadius: 9, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex", fontSize: 11, fontWeight: 600, gap: 3, alignItems: "center" }}>
-                ⊞ Map
-              </button>
-              <button
-                onClick={() => { const url = `${window.location.origin}/play/tango?seed=${board.seed}`; navigator.clipboard.writeText(url); }}
-                style={{ padding: 7, borderRadius: 9, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
-                <Share2 size={13} />
-              </button>
-            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden", flexShrink: 1 }}>
+  <Link href="/games" style={{ color: "var(--text4)", textDecoration: "none", display: "flex", alignItems: "center", gap: 3, fontSize: 12, flexShrink: 0 }}>
+    <ArrowLeft size={13} /> Games
+  </Link>
+  <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
+  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", flexShrink: 0 }}>Tango</span>
+  <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
+  <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", flexShrink: 0 }}>{stage}</span>
+  <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: `${diffColor}15`, color: diffColor, flexShrink: 0, whiteSpace: "nowrap" }}>
+    {diff.toUpperCase()}
+  </span>
+</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+  <span style={{ fontSize: 11, color: "var(--text4)", fontFamily: "monospace", whiteSpace: "nowrap" }}>{elapsed}</span>
+  <button onClick={() => loadStage(stage)} style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
+    <RotateCcw size={12} />
+  </button>
+  <button onClick={() => setShowMap(true)} style={{ padding: "5px 8px", borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", fontSize: 10, fontWeight: 600 }}>
+    Map
+  </button>
+</div>
           </div>
           <XPBar xpState={xpState} />
         </div>
