@@ -152,18 +152,18 @@ function TangoGameInner() {
   }, []);
 
   useEffect(() => {
-    if (!resumeChecked.current) {
-      resumeChecked.current = true;
-      const saved = loadGameState(GAME_SLUG);
-      if (saved && (saved.stage as number) > 1) {
-        setResumeData(saved);
-        setShowResume(true);
-        return;
-      }
+  if (!resumeChecked.current) {
+    resumeChecked.current = true;
+    const saved = loadGameState(GAME_SLUG);
+    if (saved && (saved.stage as number) > 1) {
+      setResumeData(saved);
+      setShowResume(true);
+      // Still load the board so the screen isn't blank
     }
-    loadStage(stage);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [stage, loadStage]);
+  }
+  loadStage(stage);
+  return () => { if (timerRef.current) clearInterval(timerRef.current); };
+}, [stage, loadStage]);
 
   function handleRevealSolution() {
     if (!board || !xpState) return;
@@ -495,13 +495,6 @@ function TangoGameInner() {
       />
 
       {/* SMART ROUTING: Game-complete celebration (fires once ever) */}
-      <GameCompleteModal
-        open={showGameComplete}
-        gameName="Tango"
-        totalStages={TOTAL_STAGES}
-        onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
-        onClose={() => setShowGameComplete(false)}
-      />
       <GameCompleteModal
         open={showGameComplete}
         gameName="Tango"
