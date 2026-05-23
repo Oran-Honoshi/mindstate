@@ -142,9 +142,9 @@ function maskPuzzle(solution: Cell[][], size: number, rng: () => number, revealR
 }
 
 const SETTINGS = {
-  easy:   { size: 4, revealRatio: 0.50, constraintCount: 4 },
-  medium: { size: 6, revealRatio: 0.35, constraintCount: 6 },
-  hard:   { size: 8, revealRatio: 0.25, constraintCount: 8 },
+  easy:   { size: 4, revealRatio: 0.50, constraintCount: 6 },
+  medium: { size: 6, revealRatio: 0.40, constraintCount: 10 },
+  hard:   { size: 8, revealRatio: 0.35, constraintCount: 16 },
 };
 
 export function generateTangoBoard(seed: string, difficulty: "easy" | "medium" | "hard"): TangoBoard {
