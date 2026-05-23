@@ -943,7 +943,8 @@ export default function LandingPage() {
           </p>
         </motion.div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:72 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(1,1fr)", gap:16, marginBottom:72 }}
+  className="token-grid">
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0 }}
             style={{ background:"var(--surface)", borderRadius:24, border:"0.5px solid var(--border)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
