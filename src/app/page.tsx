@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, ArrowRight, Check,
   Volume2, VolumeX, Sun, Moon, Star, Zap,
-  Flame, Shield, Infinity, Trophy, Download, Accessibility
+  Flame, Shield, Infinity, Trophy, Download, Accessibility, Brain, Users
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -990,35 +990,35 @@ export default function LandingPage() {
         </motion.div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))", gap:20, marginBottom:72 }}>
           {[
-            {
-              emoji:"🎯",
-              tag:"The Modern Parent",
-              heading:"Screen time you can finally feel good about.",
-              body:"Replace mindless feeds with structural logic games that foster spatial awareness and deep critical planning from an early age. MindElement grows with your child.",
-              gradient:"linear-gradient(135deg,rgba(79,110,247,0.08),rgba(156,107,232,0.08))",
-              border:"rgba(79,110,247,0.15)",
-            },
-            {
-              emoji:"⚡",
-              tag:"The High-Performing Professional",
-              heading:"The ultimate 3-minute cognitive reset.",
-              body:"Step away from your dashboard notifications to realign working memory and refresh focus with surgical geometric puzzles. Clarity on demand.",
-              gradient:"linear-gradient(135deg,rgba(0,255,255,0.06),rgba(57,255,20,0.04))",
-              border:"rgba(0,255,255,0.15)",
-            },
-            {
-              emoji:"🧠",
-              tag:"The Active Senior",
-              heading:"Age is a number. Agility is a choice.",
-              body:"Keep memory sharp and track pattern synchronization with clinical logic layouts built for multi-generational enjoyment. Accessibility Mode adapts every experience to you.",
-              gradient:"linear-gradient(135deg,rgba(245,158,11,0.08),rgba(234,88,12,0.06))",
-              border:"rgba(245,158,11,0.15)",
-            },
+  {
+    icon:<Users size={22} color="#4F6EF7"/>,
+    tag:"The Modern Parent",
+    heading:"Screen time you can finally feel good about.",
+    body:"Replace mindless feeds with structural logic games that foster spatial awareness and deep critical planning from an early age. MindElement grows with your child.",
+    gradient:"linear-gradient(135deg,rgba(79,110,247,0.08),rgba(156,107,232,0.08))",
+    border:"rgba(79,110,247,0.15)",
+  },
+  {
+    icon:<Zap size={22} color="#00B4D8"/>,
+    tag:"The High-Performing Professional",
+    heading:"The ultimate 3-minute cognitive reset.",
+    body:"Step away from your dashboard to realign working memory and refresh focus with surgical geometric puzzles. Clarity on demand.",
+    gradient:"linear-gradient(135deg,rgba(0,180,216,0.06),rgba(57,255,20,0.04))",
+    border:"rgba(0,180,216,0.15)",
+  },
+  {
+    icon:<Brain size={22} color="#F59E0B"/>,
+    tag:"The Active Senior",
+    heading:"Age is a number. Agility is a choice.",
+    body:"Keep memory sharp with clinical logic layouts built for multi-generational enjoyment. Accessibility Mode adapts every experience to you.",
+    gradient:"linear-gradient(135deg,rgba(245,158,11,0.08),rgba(234,88,12,0.06))",
+    border:"rgba(245,158,11,0.15)",
+  },
           ].map((item,i) => (
             <motion.div key={i}
               initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
               style={{ background:item.gradient, border:`0.5px solid ${item.border}`, borderRadius:24, padding:"32px 28px" }}>
-              <div style={{ fontSize:36, marginBottom:16 }}>{item.emoji}</div>
+              <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>{item.icon}</div>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>{item.tag}</p>
               <h3 style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.3 }}>{item.heading}</h3>
               <p style={{ fontSize:15, color:"var(--text3)", lineHeight:1.7 }}>{item.body}</p>
