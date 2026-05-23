@@ -25,123 +25,93 @@ function seedToNumber(seed: string): number {
   return Math.abs(hash);
 }
 
-function isValid(board: Cell[][], size: number): boolean {
+function canPlace(board: Cell[][], size: number, r: number, c: number, sym: Cell): boolean {
   const half = size / 2;
-  for (let r = 0; r < size; r++) {
-    let s = 0, m = 0;
-    for (let c = 0; c < size; c++) {
-      if (board[r][c] === "S") s++; if (board[r][c] === "M") m++;
-    }
-    if (s > half || m > half) return false;
-    for (let c = 0; c < size - 2; c++)
-      if (board[r][c] !== null && board[r][c] === board[r][c+1] && board[r][c] === board[r][c+2]) return false;
+  board[r][c] = sym;
+
+  let s = 0, m = 0;
+  for (let cc = 0; cc < size; cc++) {
+    if (board[r][cc] === "S") s++;
+    if (board[r][cc] === "M") m++;
   }
-  for (let c = 0; c < size; c++) {
-    let s = 0, m = 0;
-    for (let r = 0; r < size; r++) {
-      if (board[r][c] === "S") s++; if (board[r][c] === "M") m++;
+  if (s > half || m > half) { board[r][c] = null; return false; }
+  for (let cc = Math.max(0, c - 2); cc <= Math.min(size - 3, c); cc++) {
+    if (board[r][cc] !== null && board[r][cc] === board[r][cc+1] && board[r][cc] === board[r][cc+2]) {
+      board[r][c] = null; return false;
     }
-    if (s > half || m > half) return false;
-    for (let r = 0; r < size - 2; r++)
-      if (board[r][c] !== null && board[r][c] === board[r+1][c] && board[r][c] === board[r+2][c]) return false;
   }
+
+  s = 0; m = 0;
+  for (let rr = 0; rr < size; rr++) {
+    if (board[rr][c] === "S") s++;
+    if (board[rr][c] === "M") m++;
+  }
+  if (s > half || m > half) { board[r][c] = null; return false; }
+  for (let rr = Math.max(0, r - 2); rr <= Math.min(size - 3, r); rr++) {
+    if (board[rr][c] !== null && board[rr][c] === board[rr+1][c] && board[rr][c] === board[rr+2][c]) {
+      board[r][c] = null; return false;
+    }
+  }
+
+  board[r][c] = null;
   return true;
 }
 
-function isSolved(board: Cell[][], size: number): boolean {
-  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (board[r][c] === null) return false;
-  return isValid(board, size);
-}
-
-// Solver with hard iteration cap — never hangs on mobile
-function solve(board: Cell[][], size: number, rng: () => number, maxIter = 50000): boolean {
+function solve(board: Cell[][], size: number, rng: () => number, maxIter = 200000): boolean {
   let iter = 0;
-
-  function bt(): boolean {
+  function bt(pos: number): boolean {
     if (++iter > maxIter) return false;
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        if (board[r][c] === null) {
-          const syms: Cell[] = rng() > 0.5 ? ["S", "M"] : ["M", "S"];
-          for (const sym of syms) {
-            board[r][c] = sym;
-            if (isValid(board, size) && bt()) return true;
-            board[r][c] = null;
-          }
-          return false;
-        }
+    if (pos === size * size) return true;
+    const r = Math.floor(pos / size);
+    const c = pos % size;
+    if (board[r][c] !== null) return bt(pos + 1);
+    const syms: Cell[] = rng() > 0.5 ? ["S", "M"] : ["M", "S"];
+    for (const sym of syms) {
+      if (canPlace(board, size, r, c, sym)) {
+        board[r][c] = sym;
+        if (bt(pos + 1)) return true;
+        board[r][c] = null;
       }
     }
-    return isSolved(board, size);
+    return false;
   }
-
-  return bt();
+  return bt(0);
 }
 
-/**
- * Build a valid Tango solution deterministically from a seed.
- * Strategy: fill row-by-row using a known-valid alternating pattern,
- * then apply seed-based row/col permutations to get variety.
- * This is O(n²) and never fails.
- */
-function buildSolution(size: number, rng: () => number): Cell[][] {
-  // Start with the base alternating pattern
-  // Row i: if i is even → SMSM..., if i is odd → MSMS...
-  // Then shuffle rows and columns in pairs to preserve validity
-
-  const board: Cell[][] = Array.from({ length: size }, (_, r) =>
-    Array.from({ length: size }, (_, c) =>
-      ((r + c) % 2 === 0 ? "S" : "M") as Cell
-    )
-  );
-
-  // Swap pairs of rows (within same parity group) to add variety
-  const evenRows = Array.from({ length: size / 2 }, (_, i) => i * 2);
-  const oddRows  = Array.from({ length: size / 2 }, (_, i) => i * 2 + 1);
-
-  function shufflePairs(indices: number[]) {
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      const a = indices[i], b = indices[j];
-      [board[a], board[b]] = [board[b], board[a]];
+function enumValidRows(size: number): Cell[][] {
+  const half = size / 2;
+  const results: Cell[][] = [];
+  function gen(row: Cell[], pos: number) {
+    if (pos === size) {
+      const s = row.filter(x => x === "S").length;
+      const m = row.filter(x => x === "M").length;
+      if (s !== half || m !== half) return;
+      for (let i = 0; i < size - 2; i++) {
+        if (row[i] === row[i+1] && row[i] === row[i+2]) return;
+      }
+      results.push([...row]);
+      return;
     }
+    gen([...row, "S"], pos + 1);
+    gen([...row, "M"], pos + 1);
   }
-
-  shufflePairs(evenRows);
-  shufflePairs(oddRows);
-
-  // Swap pairs of columns (within same parity group)
-  const evenCols = Array.from({ length: size / 2 }, (_, i) => i * 2);
-  const oddCols  = Array.from({ length: size / 2 }, (_, i) => i * 2 + 1);
-
-  function swapCols(a: number, b: number) {
-    for (let r = 0; r < size; r++) {
-      [board[r][a], board[r][b]] = [board[r][b], board[r][a]];
-    }
-  }
-
-  for (let i = evenCols.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    swapCols(evenCols[i], evenCols[j]);
-  }
-  for (let i = oddCols.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    swapCols(oddCols[i], oddCols[j]);
-  }
-
-  // Randomly flip S↔M globally (50% chance) for more variety
-  if (rng() > 0.5) {
-    for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++)
-        board[r][c] = board[r][c] === "S" ? "M" : "S";
-  }
-
-  return board;
+  gen([], 0);
+  return results;
 }
 
-function generateConstraints(
-  solution: Cell[][], size: number, rng: () => number, count: number
-): CellConstraint[] {
+function seedBoard(board: Cell[][], size: number, rng: () => number) {
+  const validRows = enumValidRows(size);
+  const shuffled = [...validRows].sort(() => rng() - 0.5);
+  if (shuffled.length === 0) return;
+  board[0] = [...shuffled[0]];
+  for (const candidate of shuffled.slice(1)) {
+    let diffs = 0;
+    for (let c = 0; c < size; c++) if (candidate[c] !== board[0][c]) diffs++;
+    if (diffs >= 2) { board[1] = [...candidate]; break; }
+  }
+}
+
+function generateConstraints(solution: Cell[][], size: number, rng: () => number, count: number): CellConstraint[] {
   const pairs: Array<[number,number,number,number]> = [];
   for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
     if (c + 1 < size) pairs.push([r, c, r, c+1]);
@@ -181,24 +151,26 @@ export function generateTangoBoard(seed: string, difficulty: "easy" | "medium" |
   const { size, revealRatio, constraintCount } = SETTINGS[difficulty];
   const rng = mulberry32(seedToNumber(seed));
 
-  // Use the fast deterministic builder — never hangs
-  const solution = buildSolution(size, rng);
+  const solution: Cell[][] = Array.from({ length: size }, () => Array(size).fill(null));
+  seedBoard(solution, size, rng);
+  const ok = solve(solution, size, rng);
+
+  if (!ok) {
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) solution[r][c] = null;
+    solve(solution, size, () => 0.3);
+  }
 
   return {
-    size,
-    solution,
+    size, solution,
     puzzle: maskPuzzle(solution, size, rng, revealRatio),
     constraints: generateConstraints(solution, size, rng, constraintCount),
-    seed,
-    difficulty,
+    seed, difficulty,
   };
 }
 
 export type CellStatus = "correct" | "incorrect" | "empty" | "given";
 
-export function validateBoard(
-  puzzle: Cell[][], playerBoard: Cell[][], solution: Cell[][]
-): CellStatus[][] {
+export function validateBoard(puzzle: Cell[][], playerBoard: Cell[][], solution: Cell[][]): CellStatus[][] {
   return puzzle.map((row, r) => row.map((given, c) => {
     if (given !== null) return "given";
     if (playerBoard[r][c] === null) return "empty";
