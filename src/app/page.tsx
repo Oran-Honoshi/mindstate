@@ -39,14 +39,51 @@ const IMGS = {
 };
 
 const PLANS = [
-  { name:"Free", price:"$0", period:"/mo", paddlePriceId: null, trial: false, free:true, highlight:false,
-    features:["Full vault access","Hints on every challenge","5 training sessions/day","Global leaderboard"] },
-  { name:"Individual", price:"$2", period:"/mo", paddlePriceId:"pri_01ks5tm2jqs69wrg92jxrc936b", trial: true, free:false, highlight:false,
-    features:["1 member account","Thousands of algorithmic stages","Unlimited daily training","Full vault access","Infinite mode","3-day free trial"] },
-  { name:"Family Choice", price:"$5", period:"/mo", paddlePriceId:"pri_01ks5tnfpxvgdh2gkfm0k5pry8", trial: true, free:false, highlight:true,
-    features:["Up to 3 independent profiles","Dedicated child & senior UI","Shared family milestones","Unlimited daily training","Full vault access","3-day free trial"] },
-  { name:"Grand Family", price:"$10", period:"/mo", paddlePriceId:"pri_01ks5tpt6wsyn05gexnpade0a0", trial: true, free:false, highlight:false,
-    features:["Up to 7 independent profiles","Master billing dashboard","All Family Choice perks","Unlimited daily training","Full vault access","3-day free trial"] },
+  {
+    name: "Free", price: "$0", period: "/mo",
+    paddlePriceId: null, trial: false, free: true, highlight: false,
+    features: [
+      "Full vault access — all 24 games",
+      "Hints on every challenge",
+      "5 training sessions per day",
+      "Global leaderboard",
+      "Accessibility mode for all ages",
+    ],
+  },
+  {
+    name: "Individual", price: "$2", period: "/mo",
+    paddlePriceId: "pri_01ks5tm2jqs69wrg92jxrc936b", trial: true, free: false, highlight: false,
+    features: [
+      "1 member account",
+      "Thousands of stages — never runs out",
+      "Unlimited daily training",
+      "Full vault access — all 24 games",
+      "3-day free trial",
+    ],
+  },
+  {
+    name: "Family Choice", price: "$5", period: "/mo",
+    paddlePriceId: "pri_01ks5tnfpxvgdh2gkfm0k5pry8", trial: true, free: false, highlight: true,
+    features: [
+      "Up to 3 independent profiles",
+      "Shared family leaderboard",
+      "Unlimited daily training",
+      "Full vault access — all 24 games",
+      "3-day free trial",
+    ],
+  },
+  {
+    name: "Grand Family", price: "$10", period: "/mo",
+    paddlePriceId: "pri_01ks5tpt6wsyn05gexnpade0a0", trial: true, free: false, highlight: false,
+    features: [
+      "Up to 7 independent profiles",
+      "Everything in Family Choice, plus 4 more seats",
+      "One bill covers all 7 members",
+      "Unlimited daily training",
+      "Full vault access — all 24 games",
+      "3-day free trial",
+    ],
+  },
 ];
 
 // ── HERO CAROUSEL ─────────────────────────────────────────────────────────
@@ -680,103 +717,122 @@ export default function LandingPage() {
   return (
     <div style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text1)" }}>
 
-      {/* ── NAV ── */}
-      <nav className="ms-nav" style={{
-        position:"fixed", top:0, left:0, right:0, zIndex:50,
-        padding:"0 48px", height:64,
-        display:"flex", alignItems:"center", justifyContent:"space-between",
-      }}>
-        {/* Logo */}
-        <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-          <img src="/icons/icon-192.png" alt="MindElement" style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover" }}/>
-          <span style={{ fontWeight:700, fontSize:18, color:"var(--text1)", fontFamily:"Georgia,serif" }}>MindElement</span>
+      {/* ── NAV ── */} 
+/*
+<nav className="ms-nav" style={{
+  position:"fixed", top:0, left:0, right:0, zIndex:50,
+  padding:"0 16px", height:56,
+  display:"flex", alignItems:"center", justifyContent:"space-between",
+  background:"color-mix(in srgb, var(--bg) 93%, transparent)",
+  backdropFilter:"blur(20px)",
+  borderBottom:"0.5px solid var(--border)",
+  boxShadow:"0 1px 3px rgba(0,0,0,0.04)",
+}}>
+  {/* Logo */}
+      <Link href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", flexShrink:0 }}>
+    <img src="/icons/icon-192.png" alt="MindElement" style={{ width:30, height:30, borderRadius:"22.5%", objectFit:"cover" }}/>
+    <span className="nav-logo-text" style={{ fontWeight:700, fontSize:16, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
+      MindElement
+    </span>
+  </Link>
+ 
+  {/* Center nav — desktop only */}
+  <div className="nav-links-desktop" style={{ gap:4 }}>
+    {[["Games","/games"],["Leaderboard","/leaderboard"],["Family","/family"],["Pricing","/pricing"]].map(([l,h])=>(
+      <Link key={l} href={h}
+        style={{ fontSize:14, color:"var(--text3)", padding:"7px 14px", borderRadius:10, textDecoration:"none", fontWeight:500 }}
+        onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text1)"}
+        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--text3)"}>
+        {l}
+      </Link>
+    ))}
+  </div>
+ 
+  {/* Right controls */}
+  <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
+ 
+    {/* Token counter — hide on mobile, too cramped */}
+    {user && !isPro && (
+      <div className="hide-mobile-flex" style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:20, background:"var(--bg2)", border:"0.5px solid var(--border)" }}>
+        <Zap size={12} color={tokens>0?"#4F6EF7":"#EF4444"} fill={tokens>0?"#4F6EF7":"#EF4444"}/>
+        <span style={{ fontSize:11, fontWeight:700, color:tokens>0?"#4F6EF7":"#EF4444" }}>{tokens}</span>
+        <span style={{ fontSize:10, color:"var(--text4)" }}>/ {FREE_DAILY_TOKENS}</span>
+      </div>
+    )}
+ 
+    {/* Pro badge — hide on mobile */}
+    {user && isPro && (
+      <div className="hide-mobile-flex" style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:20, background:"rgba(79,110,247,0.1)", border:"0.5px solid rgba(79,110,247,0.2)" }}>
+        <Infinity size={12} color="#4F6EF7"/>
+        <span style={{ fontSize:11, fontWeight:700, color:"#4F6EF7" }}>Pro</span>
+      </div>
+    )}
+ 
+    {/* Install App — desktop only */}
+    {isInstallable && (
+      <motion.button
+        initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }}
+        onClick={triggerInstall}
+        className="hide-mobile-flex"
+        style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20,
+          background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", border:"none", cursor:"pointer",
+          color:"white", fontSize:12, fontWeight:600 }}>
+        <Download size={13}/>
+        Install App
+      </motion.button>
+    )}
+ 
+    {/* Accessibility toggle — desktop only */}
+    <button onClick={toggleAccessibilityMode} title={isAccessibilityMode?"Accessibility on":"Accessibility off"}
+      className="hide-mobile-flex"
+      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer",
+        display:"flex", color:isAccessibilityMode?"#4F6EF7":"var(--text4)" }}>
+      <Accessibility size={15}/>
+    </button>
+ 
+    {/* Silent mode */}
+    <button onClick={toggleSilentMode}
+      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
+      {isSilentMode?<VolumeX size={15}/>:<Volume2 size={15}/>}
+    </button>
+ 
+    {/* Theme toggle */}
+    <button onClick={toggleTheme}
+      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
+      {theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}
+    </button>
+ 
+    {/* Auth */}
+    {user ? (
+      <Link href="/profile" style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 8px 5px 5px", borderRadius:13,
+        border:"0.5px solid rgba(0,0,0,0.09)", background:"var(--surface)", textDecoration:"none", cursor:"pointer" }}>
+        <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+          display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"white" }}>
+          {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
+        </div>
+        {/* Username — hide on mobile */}
+        <span className="hide-mobile-flex" style={{ fontSize:12, fontWeight:600, color:"var(--text2)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          {profile?.username ?? "Profile"}
+        </span>
+      </Link>
+    ) : (
+      <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+        {/* Sign in — desktop only */}
+        <Link href="/auth/signin" className="hide-mobile-flex"
+          style={{ fontSize:13, color:"var(--text3)", padding:"7px 12px", borderRadius:10, textDecoration:"none" }}>
+          Sign in
         </Link>
-
-        {/* Center nav */}
-        <div className="nav-links-desktop" style={{ gap:4 }}>
-          {[["Games","/games"],["Leaderboard","/leaderboard"],["Family","/family"],["Pricing","/pricing"]].map(([l,h])=>(
-            <Link key={l} href={h} style={{ fontSize:14, color:"var(--text3)", padding:"7px 14px", borderRadius:10, textDecoration:"none", fontWeight:500, transition:"color 0.15s" }}
-              onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text1)"}
-              onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--text3)"}>
-              {l}
-            </Link>
-          ))}
-        </div>
-
-        {/* Right controls */}
-        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          {/* Token counter */}
-          {user && !isPro && (
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:20, background:"var(--bg2)", border:"0.5px solid var(--border)" }}>
-              <Zap size={13} color={tokens>0?"#4F6EF7":"#EF4444"} fill={tokens>0?"#4F6EF7":"#EF4444"}/>
-              <span style={{ fontSize:12, fontWeight:700, color:tokens>0?"#4F6EF7":"#EF4444" }}>{tokens}</span>
-              <span style={{ fontSize:11, color:"var(--text4)" }}>/ {FREE_DAILY_TOKENS}</span>
-            </div>
-          )}
-          {user && isPro && (
-            <div style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:20, background:"rgba(79,110,247,0.1)", border:"0.5px solid rgba(79,110,247,0.2)" }}>
-              <Infinity size={12} color="#4F6EF7"/>
-              <span style={{ fontSize:11, fontWeight:700, color:"#4F6EF7" }}>Pro</span>
-            </div>
-          )}
-
-          {/* Install App — only shown when Chrome fires beforeinstallprompt */}
-          {isInstallable && (
-            <motion.button
-              initial={{ opacity:0, scale:0.8 }}
-              animate={{ opacity:1, scale:1 }}
-              onClick={triggerInstall}
-              title="Install MindElement app"
-              style={{
-                display:"flex", alignItems:"center", gap:5,
-                padding:"6px 12px", borderRadius:20,
-                background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
-                border:"none", cursor:"pointer", color:"white",
-                fontSize:12, fontWeight:600,
-              }}>
-              <Download size={13}/>
-              <span className="hide-mobile">Install App</span>
-            </motion.button>
-          )}
-
-          {/* Accessibility mode toggle */}
-          <button
-            onClick={toggleAccessibilityMode}
-            title={isAccessibilityMode ? "Accessibility mode on" : "Accessibility mode off"}
-            style={{
-              padding:8, borderRadius:10, background:"transparent", border:"none",
-              cursor:"pointer", display:"flex",
-              color: isAccessibilityMode ? "#4F6EF7" : "var(--text4)",
-            }}>
-            <Accessibility size={16}/>
-          </button>
-
-          <button onClick={toggleSilentMode} style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-            {isSilentMode?<VolumeX size={16}/>:<Volume2 size={16}/>}
-          </button>
-          <button onClick={toggleTheme} style={{ padding:8, borderRadius:10, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
-            {theme==="dark"?<Sun size={16}/>:<Moon size={16}/>}
-          </button>
-
-          {user ? (
-            <Link href="/profile" style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 10px 6px 6px", borderRadius:14, border:"0.5px solid var(--border)", background:"var(--surface)", textDecoration:"none", cursor:"pointer" }}>
-              <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"white" }}>
-                {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
-              </div>
-              <span className="hide-mobile" style={{ fontSize:12, fontWeight:600, color:"var(--text2)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                {profile?.username ?? "Profile"}
-              </span>
-            </Link>
-          ) : (
-            <div style={{ display:"flex", gap:6 }}>
-              <Link href="/auth/signin" style={{ fontSize:13, color:"var(--text3)", padding:"7px 12px", borderRadius:10, textDecoration:"none" }}>Sign in</Link>
-              <Link href="/auth/signup" style={{ fontSize:13, fontWeight:700, color:"white", padding:"8px 18px", borderRadius:12, background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", textDecoration:"none", boxShadow:"0 3px 10px rgba(79,110,247,0.3)" }}>
-                Start Playing
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
+        <Link href="/auth/signup"
+          style={{ fontSize:13, fontWeight:700, color:"white", padding:"8px 14px", borderRadius:12,
+            background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", textDecoration:"none",
+            boxShadow:"0 3px 10px rgba(79,110,247,0.3)", whiteSpace:"nowrap" }}>
+          Start Playing
+        </Link>
+      </div>
+    )}
+  </div>
+</nav>
+*/
 
       <FAQSchema/>
       <OrganizationSchema/>
@@ -915,7 +971,7 @@ export default function LandingPage() {
             </div>
             <p style={{ fontSize:48, fontWeight:700, color:"white", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>∞</p>
             <p style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Pro Unlimited</p>
-            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited training, thousands of algorithmic stages, Infinite Mode and family leaderboards from $2/mo.</p>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited training, thousands of stages across all games, and family leaderboards from $2/mo.</p>
             <Link href="/pricing" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 18px", borderRadius:12, background:"white", color:"#4F6EF7", fontSize:13, fontWeight:700, textDecoration:"none" }}>
               Upgrade <ChevronRight size={13}/>
             </Link>
@@ -1120,7 +1176,7 @@ export default function LandingPage() {
                     background: plan.highlight ? "white" : "transparent",
                     color: plan.highlight ? "#4F6EF7" : "var(--text2)",
                     outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
-                  {plan.highlight ? "Protect Your Household" : plan.name === "Grand Family" ? "Access Grand Vault" : "Start Free Trial"}
+                  Test your skills free now
                 </button>
               )}
             </motion.div>

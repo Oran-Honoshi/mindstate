@@ -402,3 +402,9 @@ button, a, [role="button"] {
     padding: 80px 20px 48px !important;
   }
 }
+
+
+@media (max-width: 640px) {
+   .hide-mobile-flex { display: none !important; }
+   .ms-nav { padding: 0 12px !important; }
+ }
