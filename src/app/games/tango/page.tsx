@@ -405,15 +405,35 @@ function TangoGameInner() {
                       {!value && <div style={{ width: Math.round(cellSize * 0.14), height: Math.round(cellSize * 0.14), borderRadius: "50%", background: isGiven ? "#CCC7BE" : "#E8E4DE" }} />}
                     </motion.button>
                     {rightC && c < board.size - 1 && (
-                      <div style={{ position: "absolute", right: -10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 20, height: 20, borderRadius: "50%", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, border: `1.5px solid ${rightC === "same" ? "#4F6EF7" : "#F87171"}`, color: rightC === "same" ? "#4F6EF7" : "#F87171", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-                        {rightC === "same" ? "=" : "×"}
-                      </div>
-                    )}
-                    {bottomC && r < board.size - 1 && (
-                      <div style={{ position: "absolute", bottom: -10, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: 20, height: 20, borderRadius: "50%", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, border: `1.5px solid ${bottomC === "same" ? "#4F6EF7" : "#F87171"}`, color: bottomC === "same" ? "#4F6EF7" : "#F87171", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-                        {bottomC === "same" ? "=" : "×"}
-                      </div>
-                    )}
+  <div style={{
+    position: "absolute",
+    right: -(Math.max(6, Math.round(cellSize * 0.2))),
+    top: "50%", transform: "translateY(-50%)",
+    zIndex: 10,
+    fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+    fontWeight: 800,
+    color: rightC === "same" ? "#4F6EF7" : "#F87171",
+    lineHeight: 1,
+    pointerEvents: "none",
+  }}>
+    {rightC === "same" ? "=" : "×"}
+  </div>
+)}
+{bottomC && r < board.size - 1 && (
+  <div style={{
+    position: "absolute",
+    bottom: -(Math.max(6, Math.round(cellSize * 0.2))),
+    left: "50%", transform: "translateX(-50%)",
+    zIndex: 10,
+    fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+    fontWeight: 800,
+    color: bottomC === "same" ? "#4F6EF7" : "#F87171",
+    lineHeight: 1,
+    pointerEvents: "none",
+  }}>
+    {bottomC === "same" ? "=" : "×"}
+  </div>
+)}
                   </div>
                 );
               })
