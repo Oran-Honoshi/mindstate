@@ -142,6 +142,76 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}}/>
       </head>
       <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
+
+        {/*
+          ── COSMIC BACKGROUND LAYER ──────────────────────────────────────────
+          Fixed behind all content. Only visible in dark mode via CSS.
+          Uses the uploaded cosmic arena artwork as base, with CSS nebula
+          glows layered on top for depth. Zero impact on light mode.
+          pointer-events:none so it never blocks any interaction.
+        */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: -50,
+            pointerEvents: "none",
+            display: "none", // hidden by default (light mode)
+          }}
+          className="cosmic-bg-layer"
+        >
+          {/* Base image */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url(/images/cosmic-bg.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+            backgroundRepeat: "no-repeat",
+            opacity: 0.55,
+          }}/>
+          {/* Dark overlay to deepen it */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to bottom, rgba(7,7,18,0.45) 0%, rgba(7,7,18,0.7) 100%)",
+          }}/>
+          {/* Purple nebula — top left */}
+          <div style={{
+            position: "absolute",
+            top: "-15%", left: "-10%",
+            width: "55vw", height: "55vh",
+            background: "radial-gradient(ellipse, rgba(126,34,206,0.18) 0%, transparent 70%)",
+            filter: "blur(60px)",
+          }}/>
+          {/* Emerald nebula — bottom right */}
+          <div style={{
+            position: "absolute",
+            bottom: "-10%", right: "-5%",
+            width: "50vw", height: "50vh",
+            background: "radial-gradient(ellipse, rgba(16,185,129,0.15) 0%, transparent 70%)",
+            filter: "blur(70px)",
+          }}/>
+          {/* Cyan accent — center top */}
+          <div style={{
+            position: "absolute",
+            top: "5%", left: "35%",
+            width: "30vw", height: "30vh",
+            background: "radial-gradient(ellipse, rgba(34,211,238,0.08) 0%, transparent 70%)",
+            filter: "blur(50px)",
+          }}/>
+          {/* Subtle grid overlay */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}/>
+        </div>
+
+        {/* Show cosmic layer only in dark mode */}
+        <style>{`
+          html.dark .cosmic-bg-layer { display: block !important; }
+        `}</style>
+
         <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative" }}>
           <I18nProvider>
             <ThemeProvider>
@@ -153,7 +223,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <WelcomeModal />
                   <RatingModal />
                   <SharePrompt />
-                  {/* SuggestionButton removed from global layout — lives in Settings page only */}
                 </RealtimeProvider>
               </AuthProvider>
             </ThemeProvider>

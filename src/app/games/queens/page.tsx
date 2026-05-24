@@ -12,7 +12,6 @@ import{ArrowLeft,RotateCcw,ChevronRight}from"lucide-react";
 import Link from"next/link";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import{Navbar}from"@/components/nav/Navbar";
-import{GameInstructions}from"@/components/ui/GameInstructions";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
@@ -35,7 +34,8 @@ function getDifficulty(s:number):Difficulty{
   return h<20?"easy":h<70?"medium":"hard";
 }
 
-const REGION_COLORS=[
+// Light mode colors (unchanged)
+const REGION_COLORS_LIGHT=[
   {fill:"#DBEAFE",border:"#1D4ED8",queen:"#1E3A8A"},
   {fill:"#FED7AA",border:"#C2410C",queen:"#7C2D12"},
   {fill:"#BBF7D0",border:"#15803D",queen:"#14532D"},
@@ -45,6 +45,30 @@ const REGION_COLORS=[
   {fill:"#CFFAFE",border:"#0E7490",queen:"#164E63"},
   {fill:"#D1FAE5",border:"#065F46",queen:"#064E3B"},
 ];
+
+// Dark mode colors — translucent cyber tones
+const REGION_COLORS_DARK=[
+  {fill:"rgba(59,130,246,0.12)",  border:"rgba(96,165,250,0.4)",  queen:"#60A5FA"},
+  {fill:"rgba(249,115,22,0.10)",  border:"rgba(251,146,60,0.4)",  queen:"#FB923C"},
+  {fill:"rgba(34,197,94,0.10)",   border:"rgba(74,222,128,0.4)",  queen:"#4ADE80"},
+  {fill:"rgba(168,85,247,0.12)",  border:"rgba(192,132,252,0.4)", queen:"#C084FC"},
+  {fill:"rgba(239,68,68,0.10)",   border:"rgba(252,165,165,0.4)", queen:"#FCA5A5"},
+  {fill:"rgba(234,179,8,0.10)",   border:"rgba(253,224,71,0.4)",  queen:"#FDE047"},
+  {fill:"rgba(6,182,212,0.10)",   border:"rgba(34,211,238,0.4)",  queen:"#22D3EE"},
+  {fill:"rgba(16,185,129,0.10)",  border:"rgba(52,211,153,0.4)",  queen:"#34D399"},
+];
+
+function useIsDark(){
+  const[dark,setDark]=useState(false);
+  useEffect(()=>{
+    const check=()=>setDark(document.documentElement.classList.contains("dark"));
+    check();
+    const obs=new MutationObserver(check);
+    obs.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
+    return()=>obs.disconnect();
+  },[]);
+  return dark;
+}
 
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
@@ -63,6 +87,9 @@ function XPBar({xpState}:{xpState:XPState}){
 
 function QueensGameInner(){
   const{user}=useAuthStore();
+  const isDark=useIsDark();
+  const REGION_COLORS=isDark?REGION_COLORS_DARK:REGION_COLORS_LIGHT;
+
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<QueensBoard|null>(null);
   const[grid,setGrid]=useState<number[][]>([]);
@@ -76,14 +103,12 @@ function QueensGameInner(){
   const[finalXP,setFinalXP]=useState(0);
   const[hintsUsed,setHintsUsed]=useState(0);
   const[gridHistory,setGridHistory]=useState<number[][][]>([]);
-  const[showFeedback,setShowFeedback]=useState(false);
-  const[feedbackCells,setFeedbackCells]=useState<Set<string>>(new Set());
-  const[wrongCells,setWrongCells]=useState<Set<string>>(new Set());
   const[errors,setErrors]=useState<Set<string>>(new Set());
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  const pausedRef=useRef(false);
 
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
@@ -91,10 +116,21 @@ function QueensGameInner(){
       timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
     }}
   );
-  const pausedRef=useRef(false);
+
+  useEffect(()=>{
+    let cancelled=false;
+    getLastStageRemote(GAME_SLUG).then(remote=>{
+      if(cancelled)return;
+      if(remote>0&&remote>stage)setStage(remote);
+    });
+    return()=>{cancelled=true;};
+  },[]);
 
   const loadStage=useCallback((s:number)=>{
-    saveGameState("queens", {stage: s, savedAt: Date.now()});
+    // Token check first
+    const currentUser=useAuthStore.getState().user;
+    if(currentUser){const ok=consumeToken(currentUser.id);if(!ok){setShowTokenModal(true);return;}}
+    saveGameState(GAME_SLUG,{stage:s,savedAt:Date.now()});
     const diff=getDifficulty(s);
     const b=generateQueensBoard(`queens-${diff}-${s}`,diff);
     const xp=createXPState(diff);
@@ -102,42 +138,33 @@ function QueensGameInner(){
     setGrid(Array.from({length:b.size},()=>Array(b.size).fill(0)));
     setGridHistory([]);
     setXpState(xp);setCompleted(false);setFinalXP(0);
-    setElapsed("00:00");setHintsUsed(0);setShowFeedback(false);setErrors(new Set());
-    setSolutionRevealed(false);
-    setNextUncompleted(null);
+    setElapsed("00:00");setHintsUsed(0);setErrors(new Set());
+    setSolutionRevealed(false);setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     pausedRef.current=false;
     timerRef.current=setInterval(()=>{
       if(!pausedRef.current)setElapsed(formatElapsed(xp.startTime));
     },1000);
-    if(user){
-      const ok=consumeToken(user.id);
-      if(!ok){setShowTokenModal(true);return;}
-    }
-  },[user]);
+  },[]);
 
-  const resumeChecked = useRef(false);
-
+  const resumeChecked=useRef(false);
   useEffect(()=>{
     if(!resumeChecked.current){
       resumeChecked.current=true;
-      const saved=loadGameState("queens");
-      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+      const saved=loadGameState(GAME_SLUG);
+      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);}
     }
     loadStage(stage);
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // ── Show Solution ────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!board||!xpState)return;
     const solution=solveQueens(board.size,board.regions);
     if(!solution)return;
     const ng=Array.from({length:board.size},()=>Array(board.size).fill(0));
     solution.forEach(([r,c])=>{ng[r][c]=2;});
-    setGrid(ng);
-    setErrors(new Set());
-    setSolutionRevealed(true);
+    setGrid(ng);setErrors(new Set());setSolutionRevealed(true);
     setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
     if(timerRef.current)clearInterval(timerRef.current);
   }
@@ -148,7 +175,7 @@ function QueensGameInner(){
     const ng=grid.map(row=>[...row]);
     ng[r][c]=(ng[r][c]+1)%3;
     setGrid(ng);
-    saveGameState("queens", {stage, grid: ng, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
+    saveGameState(GAME_SLUG,{stage,grid:ng,hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
     playClick();
     const qlist:[number,number][]=[];
     ng.forEach((row,ri)=>row.forEach((v,ci)=>{if(v===2)qlist.push([ri,ci]);}));
@@ -164,9 +191,12 @@ function QueensGameInner(){
       setFinalXP(earned);setCompleted(true);
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
-      markStageCompleted("queens",stage);
+      markStageCompleted(GAME_SLUG,stage);
+      const next=getNextUncompletedStage(GAME_SLUG,TOTAL_STAGES);
+      setNextUncompleted(next);
+      if(shouldShowGameCompleteModal(GAME_SLUG,TOTAL_STAGES))setTimeout(()=>setShowGameComplete(true),1800);
       if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
-      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"queens",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:GAME_SLUG,stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
     }
   }
 
@@ -189,13 +219,16 @@ function QueensGameInner(){
         setGrid(ng);
         setHintsUsed(h=>h+1);
         setXpState(prev=>prev?{...prev,hintsUsed:Math.min((prev.hintsUsed||0)+1,prev.maxHints)}:prev);
-        playError();
-        return;
+        playError();return;
       }
     }
   }
 
-  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
+  if(!board||!xpState)return(
+    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p>
+    </div>
+  );
 
   const diff=getDifficulty(stage);
   const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
@@ -206,39 +239,82 @@ function QueensGameInner(){
   return(
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column"}}>
       <Navbar/>
-      <GamePageSchema slug="queens" />
+      <GamePageSchema slug={GAME_SLUG}/>
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
 
-        <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"var(--shadow-sm)"}}>
+        {/* Header */}
+        <div style={{
+          width:"100%",maxWidth:540,
+          background:"var(--surface)",
+          borderRadius:20,border:"0.5px solid var(--border)",
+          padding:"16px 20px",boxShadow:"var(--shadow-sm)",
+          ...(isDark?{
+            background:"rgba(20,20,42,0.6)",
+            backdropFilter:"blur(18px)",
+            WebkitBackdropFilter:"blur(18px)",
+            border:"1px solid rgba(34,211,238,0.12)",
+            boxShadow:"0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }:{}),
+        }}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
-              <div style={{width:1,height:16,background:"var(--border)"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Queens</span>
-              <div style={{width:1,height:16,background:"var(--border)"}}/>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6,minWidth:0,overflow:"hidden",flexShrink:1}}>
+              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:3,fontSize:12,flexShrink:0}}>
+                <ArrowLeft size={13}/> Games
+              </Link>
+              <div style={{width:1,height:14,background:"var(--border)",flexShrink:0}}/>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",flexShrink:0,
+                ...(isDark?{color:"#E2E8F0"}:{})}}>Queens</span>
+              <div style={{width:1,height:14,background:"var(--border)",flexShrink:0}}/>
+              <span style={{fontSize:18,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",flexShrink:0}}>{stage}</span>
+              <span style={{fontSize:10,fontWeight:600,padding:"2px 7px",borderRadius:10,
+                background:`${diffColor}15`,color:diffColor,flexShrink:0,whiteSpace:"nowrap",
+                ...(isDark?{background:`${diffColor}25`,boxShadow:`0 0 8px ${diffColor}40`}:{})}}>
+                {diff.toUpperCase()}
+              </span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+            <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+              <span style={{fontSize:11,color:"var(--text4)",fontFamily:"monospace",whiteSpace:"nowrap",
+                ...(isDark?{color:"rgba(34,211,238,0.7)"}:{})}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{
+                padding:6,borderRadius:8,border:"0.5px solid var(--border2)",
+                background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex",
+                ...(isDark?{
+                  background:"rgba(255,255,255,0.06)",
+                  border:"1px solid rgba(255,255,255,0.1)",
+                  color:"rgba(34,211,238,0.7)",
+                }:{}),
+              }}><RotateCcw size={12}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
-          Tap once = mark · Tap twice = queen · Tap three times = clear · One queen per row, column and region
+        <div style={{fontSize:11,color:"var(--text4)",textAlign:"center",
+          ...(isDark?{color:"rgba(148,163,184,0.7)"}:{})}}>
+          Tap once = mark · Tap twice = queen · Tap three = clear · One queen per row, column and region
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",
+              border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{border:"2px solid #374151",borderRadius:12,overflow:"hidden",boxShadow:"var(--shadow-md)"}}>
+        {/* Board */}
+        <div style={{
+          border:isDark?"1px solid rgba(34,211,238,0.15)":"2px solid #374151",
+          borderRadius:14,overflow:"hidden",
+          boxShadow:isDark
+            ?"0 0 40px rgba(34,211,238,0.08), 0 8px 32px rgba(0,0,0,0.6)"
+            :"var(--shadow-md)",
+          ...(isDark?{
+            background:"rgba(10,10,22,0.4)",
+            backdropFilter:"blur(8px)",
+            WebkitBackdropFilter:"blur(8px)",
+          }:{}),
+        }}>
           {grid.map((row,r)=>(
             <div key={r} style={{display:"flex"}}>
               {row.map((val,c)=>{
@@ -255,17 +331,45 @@ function QueensGameInner(){
                     style={{
                       width:cellSize,height:cellSize,
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      background:isSolution?"rgba(239,68,68,0.08)":showFeedback&&feedbackCells.has(`${r},${c}`)?"#DCFCE7":showFeedback&&wrongCells.has(`${r},${c}`)?"#FEF2F2":hasError?"rgba(239,68,68,0.2)":pal.fill,
+                      background:hasError
+                        ?(isDark?"rgba(239,68,68,0.2)":"rgba(239,68,68,0.2)")
+                        :pal.fill,
                       cursor:solutionRevealed?"default":"pointer",outline:"none",
-                      borderRight:rightBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
-                      borderBottom:bottomBorder?`2px solid ${pal.border}`:"0.5px solid rgba(0,0,0,0.1)",
+                      borderRight:rightBorder
+                        ?`${isDark?"1.5":"2"}px solid ${pal.border}`
+                        :`0.5px solid ${isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.1)"}`,
+                      borderBottom:bottomBorder
+                        ?`${isDark?"1.5":"2"}px solid ${pal.border}`
+                        :`0.5px solid ${isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.1)"}`,
                       borderTop:"none",borderLeft:"none",
-                      transition:"background 0.1s",position:"relative",
+                      transition:"background 0.15s",position:"relative",
                     }}>
-                    {isMark&&<span style={{color:"#64748B",fontWeight:700,lineHeight:1,fontSize:Math.round(cellSize*0.4)}}>✕</span>}
+                    {isMark&&(
+                      <span style={{
+                        color:isDark?"rgba(148,163,184,0.5)":"#64748B",
+                        fontWeight:700,lineHeight:1,
+                        fontSize:Math.round(cellSize*0.35),
+                        ...(isDark?{
+                          color:"rgba(239,68,68,0.45)",
+                          textShadow:"0 0 6px rgba(239,68,68,0.3)",
+                        }:{}),
+                      }}>✕</span>
+                    )}
                     {isQueen&&(
-                      <motion.span initial={{scale:0}} animate={{scale:1}}
-                        style={{color:isSolution?"#EF4444":hasError?"#EF4444":pal.queen,lineHeight:1,fontSize:Math.round(cellSize*0.5)}}>
+                      <motion.span
+                        initial={{scale:0}} animate={{scale:1}}
+                        style={{
+                          color:isSolution?"#EF4444":hasError?"#EF4444":pal.queen,
+                          lineHeight:1,
+                          fontSize:Math.round(cellSize*0.5),
+                          ...(isDark&&!hasError&&!isSolution?{
+                            filter:`drop-shadow(0 0 6px ${pal.queen})`,
+                          }:{}),
+                          ...(isDark&&hasError?{
+                            color:"#EF4444",
+                            filter:"drop-shadow(0 0 8px rgba(239,68,68,0.8))",
+                          }:{}),
+                        }}>
                         ♛
                       </motion.span>
                     )}
@@ -276,6 +380,7 @@ function QueensGameInner(){
           ))}
         </div>
 
+        {/* Controls */}
         <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
           <UndoButton onUndo={handleUndo} canUndo={gridHistory.length>0} disabled={completed||solutionRevealed}/>
           <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
@@ -283,36 +388,46 @@ function QueensGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
+            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",
+              background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",
+              fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1,
+              ...(isDark?{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}:{})}}>
+            ← Prev
+          </button>
+          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of {TOTAL_STAGES}</span>
+          <button onClick={()=>setStage(s=>s+1)}
+            style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,
+              border:"0.5px solid var(--border2)",background:"var(--surface)",
+              cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600,
+              ...(isDark?{
+                background:"rgba(34,211,238,0.1)",
+                border:"1px solid rgba(34,211,238,0.25)",
+                color:"rgba(34,211,238,0.9)",
+              }:{})}}>
+            Next <ChevronRight size={13}/>
+          </button>
         </div>
       </main>
 
       <OutOfTokensModal gameName="Queens" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
-      {showResume && resumeData && (
-        <ResumeModal
-          gameSlug="queens"
-          stageName={`Stage ${resumeData.stage}`}
-          savedAt={resumeData.savedAt as number}
-          onResume={()=>{
-            const s=resumeData!;
-            setShowResume(false);setResumeData(null);
-            setStage(s.stage as number);
-            if(s.grid)setTimeout(()=>setGrid(s.grid as number[][]),150);
-          }}
-          onStartFresh={()=>{
-            clearGameState("queens");setShowResume(false);setResumeData(null);
-            loadStage(stage);
-          }}
-        />
+      {showResume&&resumeData&&(
+        <ResumeModal gameSlug={GAME_SLUG} stageName={`Stage ${resumeData.stage}`} savedAt={resumeData.savedAt as number}
+          onResume={()=>{const s=resumeData!;setShowResume(false);setResumeData(null);setStage(s.stage as number);if(s.grid)setTimeout(()=>setGrid(s.grid as number[][]),150);}}
+          onStartFresh={()=>{clearGameState(GAME_SLUG);setShowResume(false);setResumeData(null);loadStage(stage);}}/>
       )}
-      {showMap&&<StageMap gameSlug="queens" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup
-        open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
+      {showMap&&<StageMap gameSlug={GAME_SLUG} totalStages={TOTAL_STAGES} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+
+      <CompletionPopup open={completed} stage={stage} difficulty={diff} xpEarned={finalXP} elapsed={elapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
+        onGoToLatest={nextUncompleted!=null?()=>{setCompleted(false);setStage(nextUncompleted!);}:undefined}
+        nextUncompletedStage={nextUncompleted??undefined}
         onShare={()=>{const text=`MindElement · Queens Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+
+      <GameCompleteModal open={showGameComplete} gameName="Queens" totalStages={TOTAL_STAGES}
+        onPlayAgain={()=>{setShowGameComplete(false);setStage(1);}}
+        onClose={()=>setShowGameComplete(false)}/>
     </div>
   );
 }
-export default function QueensGame(){return<ErrorBoundary game="queens"><QueensGameInner/></ErrorBoundary>;}
+export default function QueensGame(){return<ErrorBoundary game={GAME_SLUG}><QueensGameInner/></ErrorBoundary>;}

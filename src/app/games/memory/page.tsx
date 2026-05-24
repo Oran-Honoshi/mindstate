@@ -32,27 +32,27 @@ function getDifficulty(stage: number): Difficulty {
 }
 
 const ICONS = [
-  { icon: Leaf,      color:"#16A34A", bg:"#DCFCE7" },
-  { icon: Flame,     color:"#EA580C", bg:"#FED7AA" },
-  { icon: Droplets,  color:"#0284C7", bg:"#E0F2FE" },
-  { icon: Star,      color:"#CA8A04", bg:"#FEF9C3" },
-  { icon: Moon,      color:"#7C3AED", bg:"#EDE9FE" },
-  { icon: Sun,       color:"#D97706", bg:"#FEF3C7" },
-  { icon: Cloud,     color:"#475569", bg:"#F1F5F9" },
-  { icon: Zap,       color:"#CA8A04", bg:"#FFFBEB" },
-  { icon: Heart,     color:"#E11D48", bg:"#FFE4E6" },
-  { icon: Crown,     color:"#B45309", bg:"#FEF3C7" },
-  { icon: Gem,       color:"#0891B2", bg:"#CFFAFE" },
-  { icon: Snowflake, color:"#0284C7", bg:"#DBEAFE" },
-  { icon: Feather,   color:"#059669", bg:"#D1FAE5" },
-  { icon: Fish,      color:"#0369A1", bg:"#E0F2FE" },
-  { icon: Bird,      color:"#0891B2", bg:"#CFFAFE" },
-  { icon: Music,     color:"#7C3AED", bg:"#EDE9FE" },
-  { icon: Palette,   color:"#BE185D", bg:"#FCE7F3" },
-  { icon: Coffee,    color:"#92400E", bg:"#FEF3C7" },
-  { icon: Globe,     color:"#0369A1", bg:"#DBEAFE" },
-  { icon: Compass,   color:"#065F46", bg:"#D1FAE5" },
-  { icon: Atom,      color:"#6D28D9", bg:"#EDE9FE" },
+  { icon: Leaf,      color:"#16A34A", bg:"#DCFCE7", darkColor:"#4ADE80", darkBg:"rgba(34,197,94,0.15)" },
+  { icon: Flame,     color:"#EA580C", bg:"#FED7AA", darkColor:"#FB923C", darkBg:"rgba(249,115,22,0.15)" },
+  { icon: Droplets,  color:"#0284C7", bg:"#E0F2FE", darkColor:"#38BDF8", darkBg:"rgba(14,165,233,0.15)" },
+  { icon: Star,      color:"#CA8A04", bg:"#FEF9C3", darkColor:"#FDE047", darkBg:"rgba(234,179,8,0.15)"  },
+  { icon: Moon,      color:"#7C3AED", bg:"#EDE9FE", darkColor:"#C084FC", darkBg:"rgba(168,85,247,0.15)" },
+  { icon: Sun,       color:"#D97706", bg:"#FEF3C7", darkColor:"#FBBF24", darkBg:"rgba(245,158,11,0.15)" },
+  { icon: Cloud,     color:"#475569", bg:"#F1F5F9", darkColor:"#94A3B8", darkBg:"rgba(71,85,105,0.2)"   },
+  { icon: Zap,       color:"#CA8A04", bg:"#FFFBEB", darkColor:"#FDE047", darkBg:"rgba(234,179,8,0.15)"  },
+  { icon: Heart,     color:"#E11D48", bg:"#FFE4E6", darkColor:"#FB7185", darkBg:"rgba(244,63,94,0.15)"  },
+  { icon: Crown,     color:"#B45309", bg:"#FEF3C7", darkColor:"#FCD34D", darkBg:"rgba(245,158,11,0.15)" },
+  { icon: Gem,       color:"#0891B2", bg:"#CFFAFE", darkColor:"#22D3EE", darkBg:"rgba(6,182,212,0.15)"  },
+  { icon: Snowflake, color:"#0284C7", bg:"#DBEAFE", darkColor:"#60A5FA", darkBg:"rgba(59,130,246,0.15)" },
+  { icon: Feather,   color:"#059669", bg:"#D1FAE5", darkColor:"#34D399", darkBg:"rgba(16,185,129,0.15)" },
+  { icon: Fish,      color:"#0369A1", bg:"#E0F2FE", darkColor:"#38BDF8", darkBg:"rgba(14,165,233,0.15)" },
+  { icon: Bird,      color:"#0891B2", bg:"#CFFAFE", darkColor:"#22D3EE", darkBg:"rgba(6,182,212,0.15)"  },
+  { icon: Music,     color:"#7C3AED", bg:"#EDE9FE", darkColor:"#A78BFA", darkBg:"rgba(139,92,246,0.15)" },
+  { icon: Palette,   color:"#BE185D", bg:"#FCE7F3", darkColor:"#F472B6", darkBg:"rgba(236,72,153,0.15)" },
+  { icon: Coffee,    color:"#92400E", bg:"#FEF3C7", darkColor:"#D97706", darkBg:"rgba(180,83,9,0.15)"   },
+  { icon: Globe,     color:"#0369A1", bg:"#DBEAFE", darkColor:"#60A5FA", darkBg:"rgba(59,130,246,0.15)" },
+  { icon: Compass,   color:"#065F46", bg:"#D1FAE5", darkColor:"#34D399", darkBg:"rgba(16,185,129,0.15)" },
+  { icon: Atom,      color:"#6D28D9", bg:"#EDE9FE", darkColor:"#A78BFA", darkBg:"rgba(139,92,246,0.15)" },
 ];
 
 type Card = { id: number; iconIdx: number; flipped: boolean; matched: boolean };
@@ -88,6 +88,18 @@ function makeBoard(seed: string, diff: Difficulty): Card[] {
   return arr.map((iconIdx, id) => ({ id, iconIdx, flipped: false, matched: false }));
 }
 
+function useIsDark(){
+  const[dark,setDark]=useState(false);
+  useEffect(()=>{
+    const check=()=>setDark(document.documentElement.classList.contains("dark"));
+    check();
+    const obs=new MutationObserver(check);
+    obs.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
+    return()=>obs.disconnect();
+  },[]);
+  return dark;
+}
+
 function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
   useEffect(() => {
@@ -110,6 +122,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
 
 function MemoryGameInner() {
   const { user } = useAuthStore();
+  const isDark = useIsDark();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -143,9 +156,9 @@ function MemoryGameInner() {
   }, []);
 
   const loadStage = useCallback((s: number) => {
-    // Token check first
-    if (user) {
-      const ok = consumeToken(user.id);
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser) {
+      const ok = consumeToken(currentUser.id);
       if (!ok) { setShowTokenModal(true); return; }
     }
     saveGameState(GAME_SLUG, { stage: s, savedAt: Date.now() });
@@ -162,7 +175,7 @@ function MemoryGameInner() {
     lockRef.current = false;
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
-  }, [user]);
+  }, []);
 
   const resumeChecked = useRef(false);
   useEffect(() => {
@@ -172,7 +185,6 @@ function MemoryGameInner() {
       if (saved && (saved.stage as number) > 1) {
         setResumeData(saved);
         setShowResume(true);
-        // Still load board so screen isn't blank
       }
     }
     loadStage(stage);
@@ -247,8 +259,7 @@ function MemoryGameInner() {
     Math.floor((boardWidth - (cols - 1) * gap) / cols)
   );
 
-  // Show loading only if truly not ready
-  if (!xpState || cards.length === 0) return (
+  if (!xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <p style={{ color:"var(--text4)", fontSize:13 }}>Generating board...</p>
     </div>
@@ -259,7 +270,18 @@ function MemoryGameInner() {
       <Navbar/>
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
-        <div style={{ width:"100%", maxWidth:560, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
+        {/* Header */}
+        <div style={{
+          width:"100%", maxWidth:560,
+          background:"var(--surface)", borderRadius:20,
+          border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)",
+          ...(isDark ? {
+            background:"rgba(20,20,42,0.6)",
+            backdropFilter:"blur(18px)", WebkitBackdropFilter:"blur(18px)",
+            border:"1px solid rgba(34,211,238,0.12)",
+            boxShadow:"0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          } : {}),
+        }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"nowrap", minWidth:0, overflow:"hidden", flexShrink:1 }}>
               <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:3, fontSize:12, flexShrink:0 }}>
@@ -269,15 +291,25 @@ function MemoryGameInner() {
               <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", flexShrink:0 }}>Memory</span>
               <div style={{ width:1, height:14, background:"var(--border2)", flexShrink:0 }}/>
               <span style={{ fontSize:18, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", flexShrink:0 }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:10, background:`${diffColor}15`, color:diffColor, flexShrink:0, whiteSpace:"nowrap" }}>
+              <span style={{ fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:10,
+                background:`${diffColor}15`, color:diffColor, flexShrink:0, whiteSpace:"nowrap",
+                ...(isDark ? { background:`${diffColor}25`, boxShadow:`0 0 8px ${diffColor}40` } : {})}}>
                 {diff.toUpperCase()}
               </span>
               <span style={{ fontSize:11, color:"var(--text4)", flexShrink:0, whiteSpace:"nowrap" }}>{matched}/{total}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
-              <span style={{ fontSize:11, color:"var(--text4)", fontFamily:"monospace", whiteSpace:"nowrap" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)}
-                style={{ padding:6, borderRadius:8, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
+              <span style={{ fontSize:11, color:"var(--text4)", fontFamily:"monospace", whiteSpace:"nowrap",
+                ...(isDark ? { color:"rgba(34,211,238,0.7)" } : {}) }}>{elapsed}</span>
+              <button onClick={() => loadStage(stage)} style={{
+                padding:6, borderRadius:8, border:"0.5px solid var(--border2)",
+                background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex",
+                ...(isDark ? {
+                  background:"rgba(255,255,255,0.06)",
+                  border:"1px solid rgba(255,255,255,0.1)",
+                  color:"rgba(34,211,238,0.7)",
+                } : {}),
+              }}>
                 <RotateCcw size={12}/>
               </button>
             </div>
@@ -289,24 +321,62 @@ function MemoryGameInner() {
           <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed}/>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`, gap, width:"100%", maxWidth: cols * cellSize + (cols - 1) * gap, overflow:"hidden" }}>
+        {/* Card grid */}
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
+          gap,
+          width:"100%",
+          maxWidth: cols * cellSize + (cols - 1) * gap,
+          overflow:"hidden",
+        }}>
           {cards.map(card => {
             const iconData = ICONS[card.iconIdx];
             const Icon = iconData.icon;
+            const cardColor = isDark ? iconData.darkColor : iconData.color;
+            const cardBg = isDark ? iconData.darkBg : iconData.bg;
+            const isRevealed = card.flipped || card.matched;
             return (
               <motion.button key={card.id}
                 onClick={() => handleFlip(card.id)}
                 whileTap={!card.flipped && !card.matched ? {scale: 0.92} : {}}
                 style={{
                   width: cellSize, height: cellSize, borderRadius: 12,
-                  border: `2px solid ${card.matched ? "#86EFAC" : card.flipped ? iconData.bg : "transparent"}`,
-                  background: card.flipped || card.matched ? iconData.bg : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                  border: card.matched
+                    ? `2px solid ${isDark ? "rgba(16,244,160,0.5)" : "#86EFAC"}`
+                    : card.flipped
+                      ? `2px solid ${isDark ? `${cardColor}40` : iconData.bg}`
+                      : isDark ? "1px solid rgba(34,211,238,0.15)" : "2px solid transparent",
+                  background: isRevealed
+                    ? (isDark ? `rgba(20,20,42,0.7)` : cardBg)
+                    : isDark
+                      ? "linear-gradient(135deg,rgba(79,110,247,0.5),rgba(156,107,232,0.5))"
+                      : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
                   cursor: card.matched ? "default" : "pointer",
                   outline: "none", display:"flex", alignItems:"center", justifyContent:"center",
-                  boxShadow: card.matched ? "0 0 0 2px #86EFAC" : "0 2px 8px rgba(0,0,0,0.15)",
+                  boxShadow: card.matched
+                    ? (isDark ? `0 0 16px rgba(16,244,160,0.2), 0 0 0 2px rgba(16,244,160,0.3)` : "0 0 0 2px #86EFAC")
+                    : isDark
+                      ? "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)"
+                      : "0 2px 8px rgba(0,0,0,0.15)",
+                  ...(isDark && !isRevealed ? {
+                    backdropFilter:"blur(4px)",
+                    WebkitBackdropFilter:"blur(4px)",
+                  } : {}),
+                  ...(isDark && isRevealed ? {
+                    backdropFilter:"blur(8px)",
+                    WebkitBackdropFilter:"blur(8px)",
+                  } : {}),
                 }}>
-                {(card.flipped || card.matched) && (
-                  <Icon size={Math.round(cellSize * 0.45)} color={iconData.color} strokeWidth={1.8}/>
+                {isRevealed && (
+                  <Icon
+                    size={Math.round(cellSize * 0.45)}
+                    color={cardColor}
+                    strokeWidth={isDark ? 1.5 : 1.8}
+                    style={isDark ? {
+                      filter: `drop-shadow(0 0 ${card.matched ? "8px" : "4px"} ${cardColor}80)`,
+                    } : {}}
+                  />
                 )}
               </motion.button>
             );
@@ -315,12 +385,21 @@ function MemoryGameInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s-1)} disabled={stage === 1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)",
+              background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1,
+              ...(isDark ? { background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" } : {}) }}>
             ← Prev
           </button>
           <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of {TOTAL_STAGES}</span>
           <button onClick={() => setStage(s => s+1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12,
+              border:"0.5px solid var(--border2)", background:"var(--surface)",
+              cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600,
+              ...(isDark ? {
+                background:"rgba(34,211,238,0.1)",
+                border:"1px solid rgba(34,211,238,0.25)",
+                color:"rgba(34,211,238,0.9)",
+              } : {}) }}>
             Next <ChevronRight size={13}/>
           </button>
         </div>
@@ -329,21 +408,9 @@ function MemoryGameInner() {
       <OutOfTokensModal gameName="Memory" open={showTokenModal} onClose={() => setShowTokenModal(false)}/>
 
       {showResume && resumeData && (
-        <ResumeModal
-          gameSlug={GAME_SLUG}
-          stageName={`Stage ${resumeData.stage}`}
-          savedAt={resumeData.savedAt as number}
-          onResume={() => {
-            const s = resumeData!;
-            setShowResume(false); setResumeData(null);
-            setStage(s.stage as number);
-            if (s.cards) setTimeout(() => setCards(s.cards as Card[]), 150);
-          }}
-          onStartFresh={() => {
-            clearGameState(GAME_SLUG); setShowResume(false); setResumeData(null);
-            loadStage(stage);
-          }}
-        />
+        <ResumeModal gameSlug={GAME_SLUG} stageName={`Stage ${resumeData.stage}`} savedAt={resumeData.savedAt as number}
+          onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); if (s.cards) setTimeout(() => setCards(s.cards as Card[]), 150); }}
+          onStartFresh={() => { clearGameState(GAME_SLUG); setShowResume(false); setResumeData(null); loadStage(stage); }}/>
       )}
 
       {showMap && (
@@ -351,8 +418,7 @@ function MemoryGameInner() {
           onSelectStage={s => setStage(s)} onClose={() => setShowMap(false)}/>
       )}
 
-      <CompletionPopup
-        open={completed} stage={stage} difficulty={getDifficulty(stage)}
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)}
         xpEarned={finalXP} elapsed={elapsed}
         onRetry={() => loadStage(stage)}
         onNext={() => { setCompleted(false); setStage(s => s+1); }}
@@ -372,9 +438,5 @@ function MemoryGameInner() {
 }
 
 export default function MemoryGame() {
-  return (
-    <ErrorBoundary game={GAME_SLUG}>
-      <MemoryGameInner/>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary game={GAME_SLUG}><MemoryGameInner/></ErrorBoundary>;
 }
