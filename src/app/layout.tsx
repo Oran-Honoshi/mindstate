@@ -155,7 +155,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   style={{
     position: "fixed",
     inset: 0,
-    zIndex: -50,
+    zIndex: 0,
     pointerEvents: "none",
   }}
   className="cosmic-bg-layer"
@@ -207,7 +207,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
 
-        <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative" }}>
+        <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative", zIndex: 1 }}>
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>
