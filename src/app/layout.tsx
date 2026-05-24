@@ -164,7 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Base image */}
           <div style={{
             position: "absolute", inset: 0,
-            backgroundImage: "url(/images/cosmic-bg.jpg)",
+            backgroundImage: "url(/images/cosmic-bg.png)",
             backgroundSize: "cover",
             backgroundPosition: "center top",
             backgroundRepeat: "no-repeat",
