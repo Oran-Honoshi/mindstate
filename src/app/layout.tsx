@@ -151,16 +151,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           pointer-events:none so it never blocks any interaction.
         */}
         <div
-          aria-hidden="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: -50,
-            pointerEvents: "none",
-            display: "none", // hidden by default (light mode)
-          }}
-          className="cosmic-bg-layer"
-        >
+  aria-hidden="true"
+  style={{
+    position: "fixed",
+    inset: 0,
+    zIndex: -50,
+    pointerEvents: "none",
+  }}
+  className="cosmic-bg-layer"
+>
           {/* Base image */}
           <div style={{
             position: "absolute", inset: 0,

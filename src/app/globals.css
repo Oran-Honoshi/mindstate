@@ -361,3 +361,7 @@ button, a, [role="button"] { min-height: 44px; touch-action: manipulation; }
 .token-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 @media (max-width: 768px) { .token-grid { grid-template-columns: 1fr; } }
 @media (min-width: 769px) { .token-grid { grid-template-columns: repeat(3,1fr) !important; gap: 16px !important; } }
+
+
+.cosmic-bg-layer { display: none; }
+html.dark .cosmic-bg-layer { display: block; }
