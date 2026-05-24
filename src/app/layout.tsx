@@ -206,10 +206,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}/>
         </div>
 
-        {/* Show cosmic layer only in dark mode */}
-        <style>{`
-          html.dark .cosmic-bg-layer { display: block !important; }
-        `}</style>
 
         <div style={{ width:"100%", maxWidth:"100vw", overflowX:"hidden", position:"relative" }}>
           <I18nProvider>
