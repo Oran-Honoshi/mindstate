@@ -36,7 +36,7 @@ const ACHIEVEMENTS = [
 
 function StatCard({ icon:Icon, label, value, color }: { icon:any; label:string; value:string; color:string }) {
   return (
-    <div style={{ background:"var(--surface)", borderRadius:18, border:"0.5px solid var(--border)", padding:"16px 18px", boxShadow:"var(--shadow-sm)" }}>
+    <div className="ms-card" style={{ padding:"16px 18px" }}>
       <div style={{ width:32, height:32, borderRadius:10, background:`${color}18`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
         <Icon size={16} color={color}/>
       </div>
@@ -68,10 +68,10 @@ export default function ProfilePage() {
   }, [user]);
 
   if (!user) return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
       <Navbar/>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"80vh", gap:20, textAlign:"center", padding:24 }}>
-        <div style={{ width:64, height:64, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <LogIn size={28} color="#4F6EF7"/>
         </div>
         <div>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
   const longestStreak = streakData?.longest_streak ?? 0;
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
       <Navbar/>
       <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 20px 60px" }}>
 
@@ -129,7 +129,7 @@ export default function ProfilePage() {
             <p style={{ fontSize:12, color:"var(--text4)", marginBottom:8 }}>{user.email}</p>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10,
-                background: isPro ? "#EEF2FF" : "#F1F5F9",
+                background: isPro ? "rgba(79,110,247,0.12)" : "var(--bg3)",
                 color: isPro ? "#4F6EF7" : "var(--text4)" }}>
                 {isPro ? " Pro Subscriber" : "Free Plan"}
               </span>
@@ -155,7 +155,7 @@ export default function ProfilePage() {
 
         {/* Streak card */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }}
-          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          className="ms-card" style={{ padding:"20px 24px", marginBottom:16 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <Flame size={18} color="#F59E0B" fill="#F59E0B"/>
@@ -192,7 +192,7 @@ export default function ProfilePage() {
 
         {/* Achievements */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.12 }}
-          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          className="ms-card" style={{ padding:"20px 24px", marginBottom:16 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
             <Crown size={16} color="#F59E0B"/>
             <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)" }}>Achievements</h2>
@@ -219,7 +219,7 @@ export default function ProfilePage() {
 
         {/* By game */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.16 }}
-          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+          className="ms-card" style={{ padding:"20px 24px", marginBottom:16 }}>
           <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>By Game</h2>
           {loading ? (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
@@ -252,7 +252,7 @@ export default function ProfilePage() {
 
         {/* Recent */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
-          style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:20, boxShadow:"var(--shadow-sm)" }}>
+          className="ms-card" style={{ padding:"20px 24px", marginBottom:20 }}>
           <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>Recent Activity</h2>
           {scores.slice(0,8).map(s=>(
             <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--border)" }}>

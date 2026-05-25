@@ -368,6 +368,10 @@ html.dark .cosmic-bg-layer { display: block; }
 html.dark body { background: transparent !important; }
 html.dark .game-page { background: transparent; }
 html.dark .home-page  { background: transparent; }
+html.dark .auth-page        { background: transparent; }
+html.dark .profile-page    { background: transparent; }
+html.dark .settings-page   { background: transparent; }
+html.dark .leaderboard-page { background: transparent; }
 
 /* ── Search input — dark mode ── */
 html.dark input[type="text"], html.dark input:not([type]) {
