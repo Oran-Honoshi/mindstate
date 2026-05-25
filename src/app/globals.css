@@ -367,3 +367,12 @@ button, a, [role="button"] { min-height: 44px; touch-action: manipulation; }
 html.dark .cosmic-bg-layer { display: block; }
 html.dark body { background: transparent !important; }
 html.dark .game-page { background: transparent; }
+html.dark .home-page  { background: transparent; }
+
+/* ── Search input — dark mode ── */
+html.dark input[type="text"], html.dark input:not([type]) {
+  background: var(--surface) !important;
+  color: var(--text1) !important;
+  border-color: var(--border2) !important;
+}
+html.dark input::placeholder { color: var(--text4) !important; }

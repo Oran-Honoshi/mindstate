@@ -124,7 +124,7 @@ function MiniMemoryHero() {
   const matched=state.filter(c=>c.matched).length/2;
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>All pairs found!</motion.div>}
+      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>All pairs found!</motion.div>}
       <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`,gap:6}}>
         {state.map(card=>(
           <motion.button key={card.id} onClick={()=>flip(card.id)} whileTap={{scale:0.88}}
@@ -185,7 +185,7 @@ function MiniQueensHero() {
   const won=checkWon(grid);
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:10}}>Solved!</motion.div>}
+      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>Solved!</motion.div>}
       <div style={{border:"2px solid #374151",borderRadius:10,overflow:"hidden"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
           {REGIONS.map((row,r)=>row.map((rid,c)=>{
@@ -293,7 +293,7 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
           <p style={{fontSize:13,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Tango</p>
         </div>
         <AnimatePresence>
-          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#F0FDF4",border:"1px solid #86EFAC",padding:"2px 10px",borderRadius:20}}>Solved!</motion.span>}
+          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:20}}>Solved!</motion.span>}
         </AnimatePresence>
       </div>
       <div style={{height:3,background:"var(--bg3)",borderRadius:2,marginBottom:12}}>
@@ -598,17 +598,10 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
       transition={{ delay:(i%4)*0.05 }}>
       <Link href={`/games/${game.slug}`} style={{ display:"block", textDecoration:"none" }}>
         <div
+          className="ms-card"
           onMouseEnter={()=>setHovered(true)}
           onMouseLeave={()=>setHovered(false)}
-          style={{
-            background:"var(--surface)",
-            borderRadius:20,
-            border:`0.5px solid ${hovered?"rgba(79,110,247,0.3)":"var(--border)"}`,
-            overflow:"hidden", cursor:"pointer",
-            boxShadow:hovered?"0 20px 48px rgba(79,110,247,0.14)":"var(--shadow-sm)",
-            transform:hovered?"translateY(-4px) scale(1.01)":"translateY(0) scale(1)",
-            transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
-          }}>
+          style={{ overflow:"hidden", cursor:"pointer" }}>
           <div style={{
             height:110,
             background:hovered
@@ -632,16 +625,11 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
                     flexDirection:"column", gap:4,
                     backdropFilter:"blur(4px)",
                   }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:"white" }}>
-                    "Start Training"
-                  </span>
-                  <span style={{ fontSize:10, color:"rgba(255,255,255,0.7)" }}>
-                    "Uses 1 daily session"
-                  </span>
+                  <span style={{ fontSize:13, fontWeight:700, color:"white" }}>Start Training</span>
+                  <span style={{ fontSize:10, color:"rgba(255,255,255,0.7)" }}>Uses 1 daily session</span>
                 </motion.div>
               )}
             </AnimatePresence>
-
           </div>
           <div style={{ padding:"11px 14px 13px" }}>
             <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:3 }}>{game.name}</p>
@@ -656,20 +644,16 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
 // ── Trustpilot Badge ──────────────────────────────────────────────────────────
 function TrustpilotBadge() {
   return (
-    <div style={{
-      background:"white", borderRadius:20, padding:"28px 32px",
-      border:"0.5px solid rgba(0,0,0,0.07)", textAlign:"center",
-      boxShadow:"0 2px 8px rgba(0,0,0,0.04)", maxWidth:480, margin:"0 auto",
-    }}>
+    <div className="ms-card" style={{ padding:"28px 32px", textAlign:"center", maxWidth:480, margin:"0 auto" }}>
       <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:12}}>
         {[1,2,3,4,5].map(s=>(
           <span key={s} style={{fontSize:28,color:"#F59E0B"}}>★</span>
         ))}
       </div>
-      <p style={{fontSize:16,fontWeight:700,color:"#1C1917",fontFamily:"Georgia,serif",marginBottom:6}}>
+      <p style={{fontSize:16,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:6}}>
         Loved by brain-training fans
       </p>
-      <p style={{fontSize:13,color:"#64748B",marginBottom:16,lineHeight:1.6}}>
+      <p style={{fontSize:13,color:"var(--text3)",marginBottom:16,lineHeight:1.6}}>
         "Addictive, beautiful, and actually makes me feel sharper."
       </p>
       <a href="https://www.trustpilot.com/review/mindelement.app" target="_blank"
@@ -715,7 +699,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text1)" }}>
+    <div className="home-page" style={{ minHeight:"100vh", color:"var(--text1)" }}>
 
       {/* ── NAV ── */} 
 /*
@@ -946,7 +930,7 @@ export default function LandingPage() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(1,1fr)", gap:16, marginBottom:72 }}
   className="token-grid">
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0 }}
-            style={{ background:"var(--surface)", borderRadius:24, border:"0.5px solid var(--border)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
+            className="ms-card" style={{ padding:"28px" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Zap size={22} color="#4F6EF7"/>
             </div>
@@ -956,7 +940,7 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.08 }}
-            style={{ background:"linear-gradient(135deg,rgba(245,158,11,0.1),rgba(234,88,12,0.08))", borderRadius:24, border:"0.5px solid rgba(245,158,11,0.2)", padding:"28px 28px", boxShadow:"var(--shadow-sm)" }}>
+            className="ms-card" style={{ padding:"28px" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(245,158,11,0.15)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Flame size={22} color="#F59E0B" className="streak-fire"/>
             </div>
@@ -1017,7 +1001,7 @@ export default function LandingPage() {
           ].map((item,i) => (
             <motion.div key={i}
               initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
-              style={{ background:item.gradient, border:`0.5px solid ${item.border}`, borderRadius:24, padding:"32px 28px" }}>
+              className="ms-card" style={{ padding:"32px 28px" }}>
               <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>{item.icon}</div>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>{item.tag}</p>
               <h3 style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.3 }}>{item.heading}</h3>
@@ -1088,7 +1072,7 @@ export default function LandingPage() {
               { from:"#7C9E87", to:"#4A7C59", num:"03", title:"Master and compete",   body:"Family leaderboards, shareable challenge links, and real-time celebrations when records fall." },
             ].map((s,i)=>(
               <motion.div key={i} initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
-                style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:28, boxShadow:"var(--shadow-sm)" }}>
+                className="ms-card" style={{ padding:28 }}>
                 <div style={{ width:44, height:44, borderRadius:"22.5%", background:`linear-gradient(135deg,${s.from},${s.to})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:"white", fontFamily:"Georgia,serif", marginBottom:16 }}>
                   {s.num}
                 </div>
