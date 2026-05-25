@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Game Boards & Path Styles · Cup Clash</title>
+<link rel="icon" type="image/png" href="mind-element-logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Outfit:wght@400..800&family=JetBrains+Mono:wght@500;700&family=Special+Elite&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Outfit", system-ui, sans-serif;
+    background: #E8E4DD; color: #1C1917;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
+  /* Paper grain texture (reused from MindState Games Revisions) */
+  .newsprint {
+    background-color: #EFE5C9;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(0,0,0,0.04) 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at 35% 80%, rgba(0,0,0,0.025) 1px, transparent 1px),
+      linear-gradient(180deg, #F1E8CE 0%, #ECE0BF 100%);
+    background-size: 5px 5px, 7px 7px, 11px 11px, 100% 100%;
+  }
+  .newsprint-stain {
+    background: radial-gradient(ellipse at 80% 12%, rgba(168,90,40,0.10), transparent 28%),
+                radial-gradient(ellipse at 18% 88%, rgba(110,80,30,0.08), transparent 32%);
+    position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
+  }
+
+  @keyframes twinkle { 0%,100% { opacity:0.35 } 50% { opacity: 0.95 } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="games-revisions-frames.jsx"></script>
+<script type="text/babel" src="memory-icons.jsx"></script>
+<script type="text/babel" src="game-board-themes.jsx"></script>
+<script type="text/babel" src="path-difficulty.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  const Canvas = window.DesignCanvas;
+  const Sec    = window.DCSection;
+  const AB     = window.DCArtboard;
+  const F      = window.GR_FRAMES;
+  const G      = window.GameBoards;
+  const P      = window.PathStyles;
+
+  // Helpers that return arrays of <AB> elements — called inline so React sees
+  // them as direct children of <Sec> (DesignCanvas only unwraps Fragments).
+  const themeRow = (idPrefix, Light, Dark, Paper) => [
+    <AB key="l" id={`${idPrefix}-light`} label="Light · Refined" width={400} height={820}>
+      <F.PhoneLight><Light/></F.PhoneLight>
+    </AB>,
+    <AB key="d" id={`${idPrefix}-dark`} label="Dark · Cosmic" width={400} height={820}>
+      <F.PhoneDark><Dark/></F.PhoneDark>
+    </AB>,
+    <AB key="p" id={`${idPrefix}-paper`} label="Paper · Gazette" width={400} height={820}>
+      <F.PhonePaper><Paper/></F.PhonePaper>
+    </AB>,
+  ];
+
+  const pathRow = (id, label, Comp) => [
+    <AB key="l" id={`${id}-light`} label={`${label} · Light`} width={400} height={820}>
+      <F.PhoneLight><Comp theme="light"/></F.PhoneLight>
+    </AB>,
+    <AB key="d" id={`${id}-dark`} label={`${label} · Dark`} width={400} height={820}>
+      <F.PhoneDark><Comp theme="dark"/></F.PhoneDark>
+    </AB>,
+    <AB key="p" id={`${id}-paper`} label={`${label} · Paper`} width={400} height={820}>
+      <F.PhonePaper><Comp theme="paper"/></F.PhonePaper>
+    </AB>,
+  ];
+
+  function App() {
+    return (
+      <Canvas
+        title="Game Boards & Path Styles"
+        subtitle="Three game boards rendered in each of the three screen views — then four stage-map path treatments and a difficulty-progression picker."
+      >
+        {/* ─── GAME BOARDS × THEMES ──────────────────────────────────── */}
+        <Sec id="tango" title="Tango — Sun & Moon" subtitle="6×6 balance puzzle. Same board, three screen views.">
+          {themeRow("tango", G.TangoLight, G.TangoDark, G.TangoPaper)}
+        </Sec>
+
+        <Sec id="memory" title="Memory — Find the pairs" subtitle="4×4 matching grid. Same board, three screen views.">
+          {themeRow("mem", G.MemoryLight, G.MemoryDark, G.MemoryPaper)}
+        </Sec>
+
+        <Sec id="queens" title="Queens — One per region" subtitle="Original metaphors per theme: lanterns / stars / ink markers. Not chess.">
+          {themeRow("queens", G.QueensLight, G.QueensDark, G.QueensPaper)}
+        </Sec>
+
+        {/* ─── PATH STYLES ───────────────────────────────────────────── */}
+        <Sec
+          id="path-squares"
+          title="Path A — Squares grid"
+          subtitle="The current style, refined. 10×10 density grid. Pragmatic and scannable; fits all 100 stages in one screen."
+        >
+          {pathRow("psq", "Squares", P.Squares)}
+        </Sec>
+
+        <Sec
+          id="path-winding"
+          title="Path B — The Winding Way"
+          subtitle="A snaking river of stages — completion fills the line, current stage glows. Feels like a journey; works for landscape themes."
+        >
+          {pathRow("pwd", "Winding", P.Winding)}
+        </Sec>
+
+        <Sec
+          id="path-constellation"
+          title="Path C — Star chart"
+          subtitle="Stages as a constellation; completed connections draw the lines. Especially strong in the dark theme."
+        >
+          {pathRow("pcn", "Constellation", P.Constellation)}
+        </Sec>
+
+        <Sec
+          id="path-topo"
+          title="Path D — The Ascent"
+          subtitle="Stages stacked into terraced elevations. Easy at the base, hard at the summit. Difficulty is the structure of the map itself."
+        >
+          {pathRow("ptp", "Ascent", P.Topo)}
+        </Sec>
+
+        {/* ─── DIFFICULTY PICKER ─────────────────────────────────────── */}
+        <Sec
+          id="difficulty"
+          title="Difficulty progression"
+          subtitle="Let players choose how the 100 stages are sequenced: a steady climb (easy → medium → hard) or a mixed bag with breathers between tough ones."
+        >
+          <AB id="diff-straight" label="Straight selected · Light" width={400} height={820}>
+            <F.PhoneLight><P.Difficulty theme="light" selected="straight"/></F.PhoneLight>
+          </AB>
+          <AB id="diff-mix" label="Mix selected · Light" width={400} height={820}>
+            <F.PhoneLight><P.Difficulty theme="light" selected="mix"/></F.PhoneLight>
+          </AB>
+          <AB id="diff-dark" label="Straight selected · Dark" width={400} height={820}>
+            <F.PhoneDark><P.Difficulty theme="dark" selected="straight"/></F.PhoneDark>
+          </AB>
+          <AB id="diff-mix-dark" label="Mix selected · Dark" width={400} height={820}>
+            <F.PhoneDark><P.Difficulty theme="dark" selected="mix"/></F.PhoneDark>
+          </AB>
+          <AB id="diff-paper" label="Straight selected · Paper" width={400} height={820}>
+            <F.PhonePaper><P.Difficulty theme="paper" selected="straight"/></F.PhonePaper>
+          </AB>
+          <AB id="diff-mix-paper" label="Mix selected · Paper" width={400} height={820}>
+            <F.PhonePaper><P.Difficulty theme="paper" selected="mix"/></F.PhonePaper>
+          </AB>
+        </Sec>
+      </Canvas>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

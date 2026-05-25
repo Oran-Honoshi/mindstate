@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cup Clash · All screens for approval</title>
+<link rel="icon" type="image/png" href="mind-element-logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Outfit:wght@400..800&family=JetBrains+Mono:wght@500;700&family=Special+Elite&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Outfit", system-ui, sans-serif;
+    background: #E8E4DD; color: #1C1917;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
+  .newsprint {
+    background-color: #EFE5C9;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(0,0,0,0.04) 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at 35% 80%, rgba(0,0,0,0.025) 1px, transparent 1px),
+      linear-gradient(180deg, #F1E8CE 0%, #ECE0BF 100%);
+    background-size: 5px 5px, 7px 7px, 11px 11px, 100% 100%;
+  }
+  .newsprint-stain {
+    background: radial-gradient(ellipse at 80% 12%, rgba(168,90,40,0.10), transparent 28%),
+                radial-gradient(ellipse at 18% 88%, rgba(110,80,30,0.08), transparent 32%);
+    position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
+  }
+  @keyframes twinkle { 0%,100% { opacity:0.35 } 50% { opacity: 0.95 } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="games-revisions-frames.jsx"></script>
+<script type="text/babel" src="memory-icons.jsx"></script>
+<script type="text/babel" src="game-board-themes.jsx"></script>
+<script type="text/babel" src="path-difficulty.jsx"></script>
+<script type="text/babel" src="approval-screens.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  const Canvas = window.DesignCanvas;
+  const Sec    = window.DCSection;
+  const AB     = window.DCArtboard;
+  const F      = window.GR_FRAMES;
+  const S      = window.ApvScreens;
+  const G      = window.GameBoards;
+  const P      = window.PathStyles;
+
+  const FRAME = { light: F.PhoneLight, dark: F.PhoneDark, paper: F.PhonePaper };
+  const LABEL = { light: "Light · Refined", dark: "Dark · Cosmic", paper: "Paper · Gazette" };
+  const THEMES = ["light", "dark", "paper"];
+
+  // Returns a flat array of three <AB> — one per theme — for a given Screen component.
+  const themeTrio = (id, Screen, props = {}) => THEMES.map(theme => {
+    const Phone = FRAME[theme];
+    return (
+      <AB key={`${id}-${theme}`} id={`${id}-${theme}`} label={LABEL[theme]} width={400} height={820}>
+        <Phone><Screen theme={theme} {...props}/></Phone>
+      </AB>
+    );
+  });
+
+  function App() {
+    return (
+      <Canvas
+        title="Cup Clash · All Screens"
+        subtitle="Every screen in every theme — Light, Dark Cosmic, and Paper Gazette. Approve any sections by leaving a comment on the artboard."
+      >
+        {/* ─── MARKETING ─────────────────────────────────────────────── */}
+        <Sec id="landing" title="01 · Landing" subtitle="The marketing front door. Same proposition, three voices.">
+          {themeTrio("ld", S.Landing)}
+        </Sec>
+
+        {/* ─── ONBOARDING ────────────────────────────────────────────── */}
+        <Sec id="onboarding" title="02 · Onboarding" subtitle="Step 2 of 4 — the intent question. Other steps follow the same pattern.">
+          {themeTrio("ob", S.Onboarding, { step: 2 })}
+        </Sec>
+
+        {/* ─── HOME ──────────────────────────────────────────────────── */}
+        <Sec id="home" title="03 · Home · Games hub" subtitle="Daily challenge banner + full list of games, sorted by progress.">
+          {themeTrio("hm", S.Home)}
+        </Sec>
+
+        {/* ─── STAGE MAP (PATH D — THE ASCENT) ──────────────────────── */}
+        <Sec id="stagemap" title="04 · Stage Map · The Ascent" subtitle="Per your selection — terraced elevations, easy at the base, hard at the summit. Difficulty becomes the structure of the map.">
+          {themeTrio("sm", P.Topo)}
+        </Sec>
+
+        {/* ─── DIFFICULTY PICKER ─────────────────────────────────────── */}
+        <Sec id="difficulty" title="05 · Difficulty progression picker" subtitle="Player chooses straight climb (easy→hard) or mixed bag. Both options shown selected.">
+          {themeTrio("df-st", P.Difficulty, { selected: "straight" })}
+          {themeTrio("df-mx", P.Difficulty, { selected: "mix" }).map((el, i) =>
+            React.cloneElement(el, { key: `mx-${i}`, label: `Mix · ${LABEL[THEMES[i]].split(" · ")[0]}` })
+          )}
+        </Sec>
+
+        {/* ─── TANGO ─────────────────────────────────────────────────── */}
+        <Sec id="tango" title="06 · Game · Tango" subtitle="Sun-and-moon balance. 6×6 with same-row and same-column constraint chips.">
+          <AB id="tg-l" label="Light · Refined" width={400} height={820}><F.PhoneLight><G.TangoLight/></F.PhoneLight></AB>
+          <AB id="tg-d" label="Dark · Cosmic"   width={400} height={820}><F.PhoneDark><G.TangoDark/></F.PhoneDark></AB>
+          <AB id="tg-p" label="Paper · Gazette" width={400} height={820}><F.PhonePaper><G.TangoPaper/></F.PhonePaper></AB>
+        </Sec>
+
+        {/* ─── MEMORY ────────────────────────────────────────────────── */}
+        <Sec id="memory" title="07 · Game · Memory" subtitle="Colorful icon set across all themes (see Memory Icon Library for the full set).">
+          <AB id="mm-l" label="Light · Refined" width={400} height={820}><F.PhoneLight><G.MemoryLight/></F.PhoneLight></AB>
+          <AB id="mm-d" label="Dark · Cosmic"   width={400} height={820}><F.PhoneDark><G.MemoryDark/></F.PhoneDark></AB>
+          <AB id="mm-p" label="Paper · Gazette" width={400} height={820}><F.PhonePaper><G.MemoryPaper/></F.PhonePaper></AB>
+        </Sec>
+
+        {/* ─── CROWNS ────────────────────────────────────────────────── */}
+        <Sec id="crowns" title="08 · Game · Crowns" subtitle="Crown markers in every theme. Paper uses hatch patterns (none/dots/diag/crosshatch/horiz/diag-reverse) instead of color to distinguish the six regions.">
+          <AB id="qn-l" label="Light · Refined" width={400} height={820}><F.PhoneLight><G.QueensLight/></F.PhoneLight></AB>
+          <AB id="qn-d" label="Dark · Cosmic"   width={400} height={820}><F.PhoneDark><G.QueensDark/></F.PhoneDark></AB>
+          <AB id="qn-p" label="Paper · Gazette" width={400} height={820}><F.PhonePaper><G.QueensPaper/></F.PhonePaper></AB>
+        </Sec>
+
+        {/* ─── COMPLETE ──────────────────────────────────────────────── */}
+        <Sec id="complete" title="09 · Stage complete" subtitle="Stats card + medal callout + 'up next' surface to keep momentum.">
+          {themeTrio("cp", S.Complete)}
+        </Sec>
+
+        {/* ─── PAYWALL ───────────────────────────────────────────────── */}
+        <Sec id="paywall" title="10 · Paywall · Cup Clash+" subtitle="4 benefit rows, 2 plans, 7-day free trial entry. Yearly is preselected.">
+          {themeTrio("pw", S.Paywall)}
+        </Sec>
+
+        {/* ─── LEADERBOARD ───────────────────────────────────────────── */}
+        <Sec id="leaderboard" title="11 · Leaderboard · League" subtitle="Podium for top 3, list for 4-50. Your row highlighted.">
+          {themeTrio("lb", S.Leaderboard)}
+        </Sec>
+
+        {/* ─── PROFILE ───────────────────────────────────────────────── */}
+        <Sec id="profile" title="12 · Profile · You" subtitle="Identity card, 3 hero stats, XP ring, and settings list (incl. screen-view, map style, difficulty).">
+          {themeTrio("pr", S.Profile)}
+        </Sec>
+      </Canvas>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Memory Icon Library · Cup Clash</title>
+<link rel="icon" type="image/png" href="mind-element-logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Outfit:wght@400..800&family=JetBrains+Mono:wght@500;700&family=Special+Elite&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Outfit", system-ui, sans-serif;
+    background: #F0EDE6; color: #1C1917;
+    -webkit-font-smoothing: antialiased;
+    padding: 56px 48px 80px;
+  }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  .newsprint {
+    background-color: #EFE5C9;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(0,0,0,0.04) 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at 35% 80%, rgba(0,0,0,0.025) 1px, transparent 1px),
+      linear-gradient(180deg, #F1E8CE 0%, #ECE0BF 100%);
+    background-size: 5px 5px, 7px 7px, 11px 11px, 100% 100%;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="memory-icons.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  const DISPLAY = `"Fraunces","Georgia",serif`;
+  const SANS    = `"Outfit","Inter",system-ui,sans-serif`;
+  const MONO    = `"JetBrains Mono",ui-monospace,monospace`;
+  const NEWS    = `"Old Standard TT","Fraunces","Georgia",serif`;
+  const TYPER   = `"Special Elite","JetBrains Mono",monospace`;
+
+  function Tile({ name, color, deep, light, dark, paper }) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", borderRadius: 16, overflow: "hidden",
+        border: "1px solid rgba(28,25,23,0.08)", background: "#fff",
+        boxShadow: "0 4px 14px rgba(28,25,23,0.04)" }}>
+        {/* meta */}
+        <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 600, color: "#1C1917", letterSpacing: -0.2 }}>
+              {name}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: "#78706A", fontWeight: 600, marginTop: 1 }}>
+              {color.toUpperCase()}
+            </div>
+          </div>
+          <div style={{ width: 16, height: 16, borderRadius: 99, background: color, boxShadow: `0 0 0 1px ${deep}40` }}/>
+        </div>
+
+        {/* three variants */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: "1px solid rgba(28,25,23,0.06)" }}>
+          {/* Light */}
+          <div style={{ background: "#F8F4ED", padding: "22px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            {light(40)}
+            <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: 1.4, color: "#78706A", fontWeight: 700 }}>LIGHT</span>
+          </div>
+          {/* Dark */}
+          <div style={{ background: "#07070E", padding: "22px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+            borderLeft: "1px solid rgba(28,25,23,0.06)", borderRight: "1px solid rgba(28,25,23,0.06)", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0,
+              background: "radial-gradient(circle at 50% 50%, rgba(168,85,247,0.18), transparent 70%)" }}/>
+            <div style={{ position: "relative", zIndex: 1 }}>{dark(40)}</div>
+            <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: 1.4, color: "rgba(255,255,255,0.5)", fontWeight: 700, position: "relative", zIndex: 1 }}>DARK</span>
+          </div>
+          {/* Paper */}
+          <div className="newsprint" style={{ padding: "22px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            {paper(40)}
+            <span style={{ fontFamily: TYPER, fontSize: 9, letterSpacing: 1.5, color: "#5C4F38", fontWeight: 700 }}>PAPER</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function App() {
+    const icons = window.MEM_ICONS;
+    return (
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        {/* header */}
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.8, color: "#78706A", fontWeight: 700, marginBottom: 8 }}>
+            CUP CLASH · COMPONENT LIBRARY
+          </div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 600, color: "#1C1917", letterSpacing: -0.8, lineHeight: 1.1, marginBottom: 8 }}>
+            Memory icons
+          </div>
+          <div style={{ fontSize: 14, color: "#3C3633", maxWidth: 620, lineHeight: 1.55 }}>
+            Each card pair uses one icon from this set. Every icon has a <strong>distinct shape AND a distinct color</strong>, so pairs read easily even with reduced color sensitivity. Three theme treatments per icon: <em>colorful flat</em> for Light, <em>glowing</em> for Dark Cosmic, and <em>woodcut ink</em> for Paper.
+          </div>
+
+          {/* legend strip */}
+          <div style={{ marginTop: 24, padding: 16, background: "#fff", borderRadius: 12, border: "1px solid rgba(28,25,23,0.08)" }}>
+            <div style={{ display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: "#78706A", marginBottom: 4 }}>SET SIZE</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 600, color: "#1C1917" }}>8 icons</div>
+                <div style={{ fontSize: 11, color: "#78706A" }}>= 4×4 grid (8 pairs)</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: "#78706A", marginBottom: 4 }}>VIEWBOX</div>
+                <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: "#1C1917" }}>24 × 24</div>
+                <div style={{ fontSize: 11, color: "#78706A" }}>renders cleanly at 16–64 px</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: "#78706A", marginBottom: 4 }}>EXPANSION</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 600, color: "#1C1917" }}>Themed decks</div>
+                <div style={{ fontSize: 11, color: "#78706A" }}>(Galaxies, Fruit, Cities…) plug into the same shape contract</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          {icons.map(ic => (
+            <Tile key={ic.id}
+              name={ic.name} color={ic.color} deep={ic.deep}
+              light={ic.light} dark={ic.dark} paper={ic.paper}/>
+          ))}
+        </div>
+
+        {/* roadmap */}
+        <div style={{ marginTop: 40, padding: 24, background: "#fff", borderRadius: 16, border: "1px solid rgba(28,25,23,0.08)" }}>
+          <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 600, color: "#1C1917", marginBottom: 10, letterSpacing: -0.3 }}>
+            Themed decks (next)
+          </div>
+          <div style={{ fontSize: 13, color: "#3C3633", lineHeight: 1.6, marginBottom: 16 }}>
+            The 8-icon base is the trainer set. Once players clear a few stages of Memory, they unlock themed decks — same 8 slots, different artwork. Three suggested directions:
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            {[
+              { name: "Galaxies", desc: "Constellation glyphs (Orion, Lyra, Vega…). Pairs with Dark Cosmic." },
+              { name: "Fruit",    desc: "Lemon, fig, plum, cherry. Pairs with Light · warm and inviting." },
+              { name: "Almanac",  desc: "Anchors, keys, compasses. Pairs with Paper · woodcut ink." },
+            ].map(d => (
+              <div key={d.name} style={{ padding: 14, background: "#F8F4ED", borderRadius: 10, border: "1px solid rgba(28,25,23,0.06)" }}>
+                <div style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 700, color: "#1C1917", marginBottom: 4 }}>{d.name}</div>
+                <div style={{ fontSize: 11.5, color: "#3C3633", lineHeight: 1.5 }}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
