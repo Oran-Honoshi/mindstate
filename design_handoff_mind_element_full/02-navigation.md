@@ -32,7 +32,7 @@ The user explicitly wants a **3-line hamburger menu at the top** on both the **l
 
 ```
 ┌─ Drawer ────────────────────────────┐
-│  Wordmark · "Cup Clash"             │
+│  Wordmark · "Mind Element"          │
 │  ─────────────────────              │
 │  PRIMARY NAV (link list)            │
 │                                     │

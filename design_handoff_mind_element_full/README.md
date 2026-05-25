@@ -1,10 +1,10 @@
-# Cup Clash — Implementation Handoff
+# Mind Element — Implementation Handoff
 
-> **For Claude Code (or any developer).** Build the Cup Clash mobile-first web app from this design package.
+> **For Claude Code (or any developer).** Build the Mind Element mobile-first web app from this design package.
 
 ## What this is
 
-Cup Clash is a daily-puzzle web app — three free games (Tango, Memory, Crowns) plus more behind a subscription. The app supports **three "screen views"** (visual themes) the user can switch at any time:
+Mind Element is a daily-puzzle web app — three free games (Tango, Memory, Crowns) plus more behind a subscription. The app supports **three "screen views"** (visual themes) the user can switch at any time:
 
 1. **Light · Refined** — warm minimal, indigo/violet accent
 2. **Dark · Cosmic** — deep navy + neon glow, purple accent
@@ -36,7 +36,7 @@ If a backend exists, wire progress, leaderboard, and subscriptions to it. If not
 ## File map
 
 ```
-design_handoff_cup_clash_full/
+design_handoff_mind_element_full/
 ├── README.md                  ← you are here
 ├── BUILD_PLAN.md              ← phased build steps (start here after this)
 ├── 01-design-system.md        ← tokens, theming, type, spacing, motion
@@ -49,7 +49,7 @@ design_handoff_cup_clash_full/
 ├── 08-data-model.md           ← state shape + persistence
 ├── 09-mobile-first.md         ← responsive guidance
 └── prototypes/
-    ├── Cup Clash Approval.html        ← every screen × every theme
+    ├── Mind Element Approval.html        ← every screen × every theme
     ├── Game Boards & Paths.html       ← boards + 4 path styles
     ├── Memory Icon Library.html       ← icon set
     ├── memory-icons.jsx
@@ -62,7 +62,7 @@ design_handoff_cup_clash_full/
 
 ## How to use this package
 
-1. **Open the prototypes first.** Run `python -m http.server` in `prototypes/` and open `Cup Clash Approval.html` to see every screen in every theme. This is the source of truth for what to build.
+1. **Open the prototypes first.** Run `python -m http.server` in `prototypes/` and open `Mind Element Approval.html` to see every screen in every theme. This is the source of truth for what to build.
 2. **Read `BUILD_PLAN.md`** for a phased approach (foundations → screens → polish).
 3. **Use the numbered specs as you go.** Each screen in `03-screens.md` references the prototype file and the JSX function that renders it. Open that JSX and copy-adapt the layout into a real React component using your theme tokens.
 
@@ -80,4 +80,4 @@ These are **high-fidelity mockups**. Every color, type size, radius, and shadow 
 ## Brand naming notes
 
 - The third game is called **"Crowns"**, not Queens. The marker is a crown SVG. Don't use chess imagery — the mechanic (one per row/col/region, no adjacency) is generic and our visual treatment is original.
-- The app is **Cup Clash**. The wordmark is set in Fraunces (serif) for Light/Dark themes; in Old Standard TT for Paper.
+- The app is **Mind Element**. The wordmark is set in Fraunces (serif) for Light/Dark themes; in Old Standard TT for Paper.

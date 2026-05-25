@@ -1,6 +1,6 @@
 # 03 · Screens
 
-Every screen, with layout details. Open `prototypes/Cup Clash Approval.html` alongside this doc — each section here references the JSX renderer in `prototypes/approval-screens.jsx` (and `path-difficulty.jsx` / `game-board-themes.jsx` for stage map / games).
+Every screen, with layout details. Open `prototypes/Mind Element Approval.html` alongside this doc — each section here references the JSX renderer in `prototypes/approval-screens.jsx` (and `path-difficulty.jsx` / `game-board-themes.jsx` for stage map / games).
 
 > **Mobile width**: design width is 400px (phone frame interior is 382px). Use that as your reference. See `09-mobile-first.md` for desktop behavior.
 
@@ -14,7 +14,7 @@ Every screen, with layout details. Open `prototypes/Cup Clash Approval.html` alo
 
 ```
 ┌─────────────────────────────────────┐
-│  ☰   Cup Clash      [Sign in]       │  ← top nav (hamburger LEFT)
+│  ☰   Mind  Element [Sign in]        │  ← top nav (hamburger LEFT)
 ├─────────────────────────────────────┤
 │                                     │
 │  EST. 2026 · DAILY EDITION          │  ← (paper only)
@@ -68,7 +68,7 @@ A 4-step flow. The prototype shows **step 2 of 4 — "What brings you here?"** a
 
 | Step | Title                       | Body                                     | Input                          |
 |------|-----------------------------|------------------------------------------|--------------------------------|
-| 1    | Welcome to Cup Clash        | Three games to start. More to unlock.    | Just a CTA "Begin"             |
+| 1    | Welcome to Mind Element     | Three games to start. More to unlock.    | Just a CTA "Begin"             |
 | 2    | What brings you here?       | Pick one. We'll calibrate your daily set.| 3 radio options (see below)    |
 | 3    | What should we call you?    | Choose a display name.                   | Text input + avatar picker     |
 | 4    | How should it look?         | Pick a screen view. Change anytime.      | 3-up theme segmented control   |
@@ -117,7 +117,7 @@ Persist after step 4: `useSettings = { name, avatar, intent, theme }`. Then redi
 
 ```
 ┌─────────────────────────────────────┐
-│  ☰  Cup Clash       [847 XP] [YK]   │  ← top nav + xp pill + avatar
+│  ☰  Mind Element   [847 XP] [YK]   │  ← top nav + xp pill + avatar
 ├─────────────────────────────────────┤
 │  MONDAY · MAY 25                    │  ← label, ink-3
 │  Welcome back, Yael.                │  ← display M, serif
@@ -243,7 +243,7 @@ On win: store result, navigate to `/complete/<slug>/<stage>`.
 ```
 ┌─────────────────────────────────────┐
 │                              [✕]    │
-│  CUP CLASH +                        │  ← accent pill
+│  Mind Element +                     │  ← accent pill
 │  Unlock the full collection.        │  ← display L
 │  All games. No ads. Unlimited hints.│  ← body S
 │                                     │
@@ -280,7 +280,7 @@ Pre-select yearly. On CTA tap: stub for v1 — log the event and route to `/payw
 
 ```
 ┌─────────────────────────────────────┐
-│  ☰  Cup Clash         [SEASON 4]    │
+│  ☰  Mind Element     [SEASON 4]    │
 │                                     │
 │  League                             │  ← display M
 │  Top 5 promote on Sunday.           │

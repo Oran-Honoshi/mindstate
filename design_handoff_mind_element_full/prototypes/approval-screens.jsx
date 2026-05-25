@@ -145,13 +145,13 @@ function Section({ theme, kicker, title, sub, children }) {
   );
 }
 
-// "Cup Clash" mark — title rendered per theme
+// "Mind Element" mark — title rendered per theme
 function Wordmark({ theme, size = 22 }) {
   const t = T_[theme];
   if (theme === "paper") {
     return (
       <span style={{ fontFamily: AF.F_NEWS, fontSize: size, fontWeight: 700, letterSpacing: -0.3, color: t.ink }}>
-        Cup<span style={{ fontStyle: "italic", fontWeight: 700 }}>·</span>Clash
+        Mind<span style={{ fontStyle: "italic", fontWeight: 700 }}>·</span>Element
       </span>
     );
   }
@@ -165,7 +165,7 @@ function Wordmark({ theme, size = 22 }) {
         background: `linear-gradient(135deg, ${t.accent}, ${t.accent2})`,
         boxShadow: theme === "dark" ? `0 0 10px ${t.accent}` : "none",
       }}/>
-      Cup&nbsp;Clash
+      Mind&nbsp;Element
     </span>
   );
 }
@@ -636,7 +636,7 @@ function PaywallScreen({ theme }) {
       </div>
 
       <div style={{ padding: "12px 24px 16px" }}>
-        <Pill theme={theme} accent>{isPaper ? "PREMIUM SUBSCRIPTION" : "CUP CLASH +"}</Pill>
+        <Pill theme={theme} accent>{isPaper ? "PREMIUM SUBSCRIPTION" : "Mind Element +"}</Pill>
         <div style={{
           fontFamily: t.serif, fontSize: 30, fontWeight: 600,
           color: t.ink, letterSpacing: -0.7, lineHeight: 1.05, marginTop: 12, marginBottom: 8,

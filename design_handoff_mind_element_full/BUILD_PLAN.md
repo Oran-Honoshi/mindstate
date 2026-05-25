@@ -1,14 +1,14 @@
 # Build Plan
 
-A phased build for Cup Clash. Each phase ends with something working you can demo.
+A phased build for Mind Element. Each phase ends with something working you can demo.
 
 ## Phase 0 · Scaffolding (1 day)
 
 Set up the project:
 
 ```bash
-npm create vite@latest cup-clash -- --template react-ts
-cd cup-clash
+npm create vite@latest mind-element -- --template react-ts
+cd mind-element
 npm i react-router-dom zustand
 ```
 
@@ -79,13 +79,13 @@ Build each non-game screen as a static React component. No interactivity yet; ju
 2. **Home / Games hub** (§3) — daily challenge banner + games list. Hamburger + bottom nav.
 3. **Stage Map · The Ascent** (`05-stage-map.md`) — terraced elevations 1-100.
 4. **Stage Complete** (§9) — stats card + medal + "up next".
-5. **Paywall** (§10) — Cup Clash+ benefits + 2 plans.
+5. **Paywall** (§10) — Mind Element+ benefits + 2 plans.
 6. **Leaderboard** (§11) — podium + list.
 7. **Profile** (§12) — identity + stats + settings list.
 8. **Difficulty picker** (`06-difficulty.md`) — Straight vs Mix.
 9. **Onboarding** (§2) — 4 steps, modeled on the prototype's step 2.
 
-Each screen must render correctly in **all 3 themes**. Use the prototype's `Cup Clash Approval.html` as your visual reference — open it side-by-side with your code.
+Each screen must render correctly in **all 3 themes**. Use the prototype's `Mind Element Approval.html` as your visual reference — open it side-by-side with your code.
 
 ## Phase 3 · Games (4-6 days)
 

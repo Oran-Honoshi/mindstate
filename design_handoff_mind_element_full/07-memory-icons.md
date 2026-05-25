@@ -83,7 +83,7 @@ The 8-icon base is the trainer set. Themed decks (Galaxies, Fruit, Almanac) plug
 | Fruit     | Lemon / Fig / Plum / Cherry / Peach / Pear / Berry / Grape | Light           |
 | Almanac   | Anchor / Key / Compass / Lantern / Pen / Pocketwatch / Bell / Wheel | Paper          |
 
-Locked decks live behind Cup Clash+. Show them as locked tiles in a "Decks" sub-screen reachable from Memory's stage map.
+Locked decks live behind Mind Element+. Show them as locked tiles in a "Decks" sub-screen reachable from Memory's stage map.
 
 ## Files to copy
 

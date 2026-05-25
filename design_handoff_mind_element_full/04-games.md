@@ -147,4 +147,4 @@ A region is a contiguous polyomino. Use a deterministic seeded generator. Each r
 
 ### Hint quota
 
-Players get 3 hints per stage on Free. Cup Clash+ → unlimited. The Hint button shows a small badge `2` (remaining) in the top-right corner of the button.
+Players get 3 hints per stage on Free. Mind Element+ → unlimited. The Hint button shows a small badge `2` (remaining) in the top-right corner of the button.

@@ -62,8 +62,8 @@ Make it installable:
 ```json
 // public/manifest.json
 {
-  "name": "Cup Clash",
-  "short_name": "Cup Clash",
+  "name": "Mind Element",
+  "short_name": "Mind Element",
   "start_url": "/home",
   "display": "standalone",
   "orientation": "portrait-primary",
