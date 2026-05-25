@@ -366,3 +366,4 @@ button, a, [role="button"] { min-height: 44px; touch-action: manipulation; }
 .cosmic-bg-layer { display: none; }
 html.dark .cosmic-bg-layer { display: block; }
 html.dark body { background: transparent !important; }
+html.dark .game-page { background: transparent; }

@@ -109,13 +109,17 @@ function XPBar({ xpState }: { xpState: XPState }) {
   const pct = snap.percentRemaining;
   const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--bg3)", borderRadius:2, overflow:"hidden" }}>
-        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }}
-          style={{ height:"100%", background:color, borderRadius:2 }}/>
+    <div className="flex items-center gap-2.5">
+      <div className="flex-1 h-1 rounded-sm overflow-hidden" style={{ background: "var(--bg3)" }}>
+        <motion.div
+          animate={{ width: `${pct * 100}%` }}
+          transition={{ duration: 0.5 }}
+          className="h-full rounded-sm"
+          style={{ background: color }}
+        />
       </div>
-      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--text4)" }}>XP</span>
+      <span className="text-[13px] font-bold font-mono min-w-[36px]" style={{ color }}>{snap.currentXP}</span>
+      <span className="text-[11px]" style={{ color: "var(--text4)" }}>XP</span>
     </div>
   );
 }
@@ -260,56 +264,47 @@ function MemoryGameInner() {
   );
 
   if (!xpState) return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <p style={{ color:"var(--text4)", fontSize:13 }}>Generating board...</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <p className="text-[13px]" style={{ color: "var(--text4)" }}>Generating board...</p>
     </div>
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
+    <div className="game-page">
       <Navbar/>
-      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
+      <main className="flex-1 flex flex-col items-center gap-4" style={{ padding: "76px 16px 32px" }}>
 
-        {/* Header */}
-        <div style={{
-          width:"100%", maxWidth:560,
-          background:"var(--surface)", borderRadius:20,
-          border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)",
-          ...(isDark ? {
-            background:"rgba(20,20,42,0.6)",
-            backdropFilter:"blur(18px)", WebkitBackdropFilter:"blur(18px)",
-            border:"1px solid rgba(34,211,238,0.12)",
-            boxShadow:"0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
-          } : {}),
-        }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"nowrap", minWidth:0, overflow:"hidden", flexShrink:1 }}>
-              <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:3, fontSize:12, flexShrink:0 }}>
+        {/* HUD Header — glassmorphic in dark mode via .game-header CSS class */}
+        <div className="game-header w-full max-w-[560px]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center flex-shrink min-w-0 overflow-hidden" style={{ gap: 6, flexWrap: "nowrap" }}>
+              <Link href="/games" className="flex items-center no-underline flex-shrink-0" style={{ color: "var(--text4)", gap: 3, fontSize: 12 }}>
                 <ArrowLeft size={13}/> Games
               </Link>
-              <div style={{ width:1, height:14, background:"var(--border2)", flexShrink:0 }}/>
-              <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", flexShrink:0 }}>Memory</span>
-              <div style={{ width:1, height:14, background:"var(--border2)", flexShrink:0 }}/>
-              <span style={{ fontSize:18, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", flexShrink:0 }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:10,
-                background:`${diffColor}15`, color:diffColor, flexShrink:0, whiteSpace:"nowrap",
-                ...(isDark ? { background:`${diffColor}25`, boxShadow:`0 0 8px ${diffColor}40` } : {})}}>
+              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--border2)" }}/>
+              <span className="text-[12px] font-bold flex-shrink-0" style={{ color: "var(--text1)", fontFamily: "Georgia,serif" }}>Memory</span>
+              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--border2)" }}/>
+              <span className="text-[18px] font-bold flex-shrink-0" style={{ color: "var(--text1)", fontFamily: "Georgia,serif" }}>{stage}</span>
+              <span className="flex-shrink-0 whitespace-nowrap" style={{
+                fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10,
+                background: isDark ? `${diffColor}25` : `${diffColor}15`,
+                color: diffColor,
+                ...(isDark ? { boxShadow: `0 0 8px ${diffColor}40` } : {}),
+              }}>
                 {diff.toUpperCase()}
               </span>
-              <span style={{ fontSize:11, color:"var(--text4)", flexShrink:0, whiteSpace:"nowrap" }}>{matched}/{total}</span>
+              <span className="text-[11px] flex-shrink-0 whitespace-nowrap" style={{ color: "var(--text4)" }}>{matched}/{total}</span>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
-              <span style={{ fontSize:11, color:"var(--text4)", fontFamily:"monospace", whiteSpace:"nowrap",
-                ...(isDark ? { color:"rgba(34,211,238,0.7)" } : {}) }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{
-                padding:6, borderRadius:8, border:"0.5px solid var(--border2)",
-                background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex",
-                ...(isDark ? {
-                  background:"rgba(255,255,255,0.06)",
-                  border:"1px solid rgba(255,255,255,0.1)",
-                  color:"rgba(34,211,238,0.7)",
-                } : {}),
-              }}>
+            <div className="flex items-center flex-shrink-0" style={{ gap: 4 }}>
+              <span
+                className={`text-[11px] font-mono whitespace-nowrap${isDark ? " neon-cyan" : ""}`}
+                style={!isDark ? { color: "var(--text4)" } : undefined}
+              >{elapsed}</span>
+              <button
+                onClick={() => loadStage(stage)}
+                className="game-control-btn flex items-center justify-center cursor-pointer"
+                style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", color: "var(--text4)" }}
+              >
                 <RotateCcw size={12}/>
               </button>
             </div>
@@ -317,18 +312,18 @@ function MemoryGameInner() {
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+        <div className="flex items-center" style={{ gap: 10 }}>
           <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed}/>
         </div>
 
-        {/* Card grid */}
+        {/* Card grid — dynamic column/size values stay as inline style */}
         <div style={{
-          display:"grid",
-          gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
           gap,
-          width:"100%",
+          width: "100%",
           maxWidth: cols * cellSize + (cols - 1) * gap,
-          overflow:"hidden",
+          overflow: "hidden",
         }}>
           {cards.map(card => {
             const iconData = ICONS[card.iconIdx];
@@ -337,44 +332,45 @@ function MemoryGameInner() {
             const cardBg = isDark ? iconData.darkBg : iconData.bg;
             const isRevealed = card.flipped || card.matched;
             return (
-              <motion.button key={card.id}
+              <motion.button
+                key={card.id}
                 onClick={() => handleFlip(card.id)}
-                whileTap={!card.flipped && !card.matched ? {scale: 0.92} : {}}
+                whileTap={!card.flipped && !card.matched ? { scale: 0.92 } : {}}
+                className={[
+                  "flex items-center justify-center outline-none",
+                  card.matched ? "cursor-default" : "cursor-pointer",
+                  // Dark mode: CSS classes handle bg / border / blur / shadow via html.dark selectors
+                  isDark && !isRevealed              ? "memory-card-back"                        : "",
+                  isDark && isRevealed && !card.matched ? "memory-card-front"                   : "",
+                  isDark && card.matched             ? "memory-card-matched memory-card-front"  : "",
+                ].filter(Boolean).join(" ")}
                 style={{
-                  width: cellSize, height: cellSize, borderRadius: 12,
-                  border: card.matched
-                    ? `2px solid ${isDark ? "rgba(16,244,160,0.5)" : "#86EFAC"}`
-                    : card.flipped
-                      ? `2px solid ${isDark ? `${cardColor}40` : iconData.bg}`
-                      : isDark ? "1px solid rgba(34,211,238,0.15)" : "2px solid transparent",
-                  background: isRevealed
-                    ? (isDark ? `rgba(20,20,42,0.7)` : cardBg)
-                    : isDark
-                      ? "linear-gradient(135deg,rgba(79,110,247,0.5),rgba(156,107,232,0.5))"
+                  width: cellSize,
+                  height: cellSize,
+                  borderRadius: 12,
+                  // Light-mode visual styles only; dark mode is handled entirely by CSS classes above
+                  ...(!isDark && {
+                    border: card.matched
+                      ? "2px solid #86EFAC"
+                      : card.flipped
+                        ? `2px solid ${iconData.bg}`
+                        : "2px solid transparent",
+                    background: isRevealed
+                      ? cardBg
                       : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
-                  cursor: card.matched ? "default" : "pointer",
-                  outline: "none", display:"flex", alignItems:"center", justifyContent:"center",
-                  boxShadow: card.matched
-                    ? (isDark ? `0 0 16px rgba(16,244,160,0.2), 0 0 0 2px rgba(16,244,160,0.3)` : "0 0 0 2px #86EFAC")
-                    : isDark
-                      ? "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)"
-                      : "0 2px 8px rgba(0,0,0,0.15)",
-                  ...(isDark && !isRevealed ? {
-                    backdropFilter:"blur(4px)",
-                    WebkitBackdropFilter:"blur(4px)",
-                  } : {}),
-                  ...(isDark && isRevealed ? {
-                    backdropFilter:"blur(8px)",
-                    WebkitBackdropFilter:"blur(8px)",
-                  } : {}),
-                }}>
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }),
+                }}
+              >
                 {isRevealed && (
                   <Icon
                     size={Math.round(cellSize * 0.45)}
                     color={cardColor}
                     strokeWidth={isDark ? 1.5 : 1.8}
                     style={isDark ? {
-                      filter: `drop-shadow(0 0 ${card.matched ? "8px" : "4px"} ${cardColor}80)`,
+                      filter: card.matched
+                        ? `drop-shadow(0 0 10px ${cardColor}) drop-shadow(0 0 20px ${cardColor}60)`
+                        : `drop-shadow(0 0 6px ${cardColor}A0)`,
                     } : {}}
                   />
                 )}
@@ -383,23 +379,34 @@ function MemoryGameInner() {
           })}
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button onClick={() => stage > 1 && setStage(s => s-1)} disabled={stage === 1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)",
-              background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1,
-              ...(isDark ? { background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" } : {}) }}>
+        {/* Stage navigation */}
+        <div className="flex items-center" style={{ gap: 12 }}>
+          <button
+            onClick={() => stage > 1 && setStage(s => s - 1)}
+            disabled={stage === 1}
+            className="text-[12px] rounded-xl"
+            style={{
+              padding: "8px 16px",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "0.5px solid var(--border2)",
+              background: isDark ? "rgba(255,255,255,0.05)" : "var(--surface)",
+              cursor: stage > 1 ? "pointer" : "not-allowed",
+              color: "var(--text3)",
+              opacity: stage === 1 ? 0.4 : 1,
+            }}
+          >
             ← Prev
           </button>
-          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of {TOTAL_STAGES}</span>
-          <button onClick={() => setStage(s => s+1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12,
-              border:"0.5px solid var(--border2)", background:"var(--surface)",
-              cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600,
-              ...(isDark ? {
-                background:"rgba(34,211,238,0.1)",
-                border:"1px solid rgba(34,211,238,0.25)",
-                color:"rgba(34,211,238,0.9)",
-              } : {}) }}>
+          <span className="text-[12px]" style={{ color: "var(--text4)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+          <button
+            onClick={() => setStage(s => s + 1)}
+            className="flex items-center gap-1 text-[12px] font-semibold rounded-xl cursor-pointer"
+            style={{
+              padding: "8px 16px",
+              border: isDark ? "1px solid rgba(34,211,238,0.25)" : "0.5px solid var(--border2)",
+              background: isDark ? "rgba(34,211,238,0.1)" : "var(--surface)",
+              color: isDark ? "rgba(34,211,238,0.9)" : "var(--text2)",
+            }}
+          >
             Next <ChevronRight size={13}/>
           </button>
         </div>
