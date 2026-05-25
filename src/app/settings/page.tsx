@@ -31,7 +31,7 @@ function Toggle({ value, onChange }: { value:boolean; onChange:()=>void }) {
 function SectionCard({ title, icon:Icon, children }: { title:string; icon:any; children:React.ReactNode }) {
   return (
     <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-      style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"18px 20px", marginBottom:14, boxShadow:"var(--shadow-sm)" }}>
+      className="ms-card" style={{ padding:"18px 20px", marginBottom:14 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
         <div style={{ width:30, height:30, borderRadius:9, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <Icon size={14} color="#4F6EF7"/>
@@ -85,7 +85,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div className="settings-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
       <Navbar/>
       <main style={{ maxWidth:560, margin:"0 auto", padding:"76px 16px 60px" }}>
 
@@ -180,7 +180,7 @@ export default function SettingsPage() {
               </p>
             </div>
             {isPro ? (
-              <span style={{ fontSize:11, fontWeight:700, color:"#22C55E", background:"#F0FDF4", border:"0.5px solid #86EFAC", padding:"5px 12px", borderRadius:10 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"var(--neon-green)", background:"rgba(16,244,160,0.08)", border:"0.5px solid rgba(16,244,160,0.3)", padding:"5px 12px", borderRadius:10 }}>
                 Active
               </span>
             ) : (
@@ -203,7 +203,7 @@ export default function SettingsPage() {
 
         {/* Danger zone */}
         {user && (
-          <div style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid rgba(239,68,68,0.2)", padding:"18px 20px", boxShadow:"var(--shadow-sm)" }}>
+          <div className="ms-card" style={{ padding:"18px 20px", borderColor:"rgba(239,68,68,0.2)" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
               <div>
                 <p style={{ fontSize:13, fontWeight:600, color:"#EF4444", marginBottom:2 }}>Sign Out</p>

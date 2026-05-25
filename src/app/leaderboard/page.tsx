@@ -8,7 +8,8 @@ import { Navbar } from "@/components/nav/Navbar";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { GameIcon } from "@/components/icons/GameIcons";
-import type { Metadata } from "next";
+
+const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
 
 const GAMES = [
   { slug:"all",          name:"All Games"   },
@@ -37,15 +38,6 @@ interface LeaderboardEntry {
   is_current_user: boolean;
 }
 
-interface FamilyEntry {
-  rank: number;
-  user_id: string;
-  username: string;
-  total_xp: number;
-  avatar_initial: string;
-  is_current_user: boolean;
-}
-
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) return (
     <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#FDE68A,#F59E0B)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(245,158,11,0.35)" }}>
@@ -53,7 +45,7 @@ function RankBadge({ rank }: { rank: number }) {
     </div>
   );
   if (rank === 2) return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#E2E8F0,#94A3B8)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#CBD5E1,#94A3B8)", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <Medal size={15} color="white"/>
     </div>
   );
@@ -63,8 +55,8 @@ function RankBadge({ rank }: { rank: number }) {
     </div>
   );
   return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"#F8F7F5", display:"flex", alignItems:"center", justifyContent:"center", border:"0.5px solid #EDE9E4" }}>
-      <span style={{ fontSize:12, fontWeight:700, color:"#94A3B8" }}>{rank}</span>
+    <div style={{ width:32, height:32, borderRadius:"50%", background:"var(--bg2)", display:"flex", alignItems:"center", justifyContent:"center", border:"0.5px solid var(--border2)" }}>
+      <span style={{ fontSize:12, fontWeight:700, color:"var(--text4)" }}>{rank}</span>
     </div>
   );
 }
@@ -84,7 +76,6 @@ export default function LeaderboardPage() {
   const [selectedGame, setSelectedGame] = useState("all");
   const [period, setPeriod] = useState("all");
   const [globalEntries, setGlobalEntries] = useState<LeaderboardEntry[]>([]);
-  const [familyEntries, setFamilyEntries] = useState<FamilyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [userXP, setUserXP] = useState<number>(0);
@@ -102,25 +93,19 @@ export default function LeaderboardPage() {
         .from("scores")
         .select("user_id, xp_earned, game_slug, stage_number, completed_at");
 
-      if (selectedGame !== "all") {
-        query = query.eq("game_slug", selectedGame);
-      }
+      if (selectedGame !== "all") query = query.eq("game_slug", selectedGame);
 
       if (period === "today") {
-        const today = new Date();
-        today.setHours(0,0,0,0);
+        const today = new Date(); today.setHours(0,0,0,0);
         query = query.gte("completed_at", today.toISOString());
       } else if (period === "week") {
-        const week = new Date();
-        week.setDate(week.getDate() - 7);
+        const week = new Date(); week.setDate(week.getDate() - 7);
         query = query.gte("completed_at", week.toISOString());
       }
 
       const { data: scores } = await query;
-
       if (!scores) { setLoading(false); return; }
 
-      // Aggregate by user
       const userMap = new Map<string, { total_xp:number; games:Set<string>; best_game:string; best_xp:number }>();
       scores.forEach(s => {
         const existing = userMap.get(s.user_id) ?? { total_xp:0, games:new Set(), best_game:s.game_slug, best_xp:0 };
@@ -166,20 +151,18 @@ export default function LeaderboardPage() {
     setLoading(false);
   }
 
-  const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
-
   return (
-    <div style={{ minHeight:"100vh", background:"#FDFCFB" }}>
+    <div className="leaderboard-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
       <Navbar/>
       <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 16px 48px" }}>
 
         {/* Header */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:28 }}>
-          <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"#94A3B8", marginBottom:8 }}>Rankings</p>
-          <h1 style={{ fontSize:36, fontWeight:700, color:"#1C1917", fontFamily:"Georgia,serif", marginBottom:6 }}>
+          <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:8 }}>Rankings</p>
+          <h1 style={{ fontSize:36, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:6 }}>
             Leaderboard
           </h1>
-          <p style={{ fontSize:14, color:"#64748B" }}>See how you stack up against players worldwide.</p>
+          <p style={{ fontSize:14, color:"var(--text3)" }}>See how you stack up against players worldwide.</p>
         </motion.div>
 
         {/* User's own rank card */}
@@ -209,7 +192,7 @@ export default function LeaderboardPage() {
         )}
 
         {/* Tabs */}
-        <div style={{ display:"flex", gap:4, marginBottom:20, background:"#F1EDE8", padding:4, borderRadius:14 }}>
+        <div style={{ display:"flex", gap:4, marginBottom:20, background:"var(--bg3)", padding:4, borderRadius:14 }}>
           {[
             { key:"global", label:"Global", icon:Globe },
             { key:"family", label:"Family", icon:Users },
@@ -217,9 +200,9 @@ export default function LeaderboardPage() {
             <button key={t.key} onClick={()=>setTab(t.key as any)}
               style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6,
                 padding:"10px 16px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600,
-                background:tab===t.key?"white":"transparent",
-                color:tab===t.key?"#1C1917":"#94A3B8",
-                boxShadow:tab===t.key?"0 2px 8px rgba(0,0,0,0.08)":"none",
+                background:tab===t.key?"var(--surface)":"transparent",
+                color:tab===t.key?"var(--text1)":"var(--text4)",
+                boxShadow:tab===t.key?"0 2px 8px rgba(0,0,0,0.12)":"none",
                 transition:"all 0.2s",
               }}>
               <t.icon size={14}/> {t.label}
@@ -229,30 +212,28 @@ export default function LeaderboardPage() {
 
         {/* Filters */}
         <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
-          {/* Game filter */}
           <div style={{ display:"flex", gap:6, overflowX:"auto", flex:1 }}>
             {GAMES.map(g => (
               <button key={g.slug} onClick={()=>setSelectedGame(g.slug)}
                 style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", borderRadius:10,
                   border:"0.5px solid", cursor:"pointer", fontSize:12, fontWeight:500, whiteSpace:"nowrap",
-                  background:selectedGame===g.slug?"white":"transparent",
-                  borderColor:selectedGame===g.slug?"rgba(79,110,247,0.3)":"#EDE9E4",
-                  color:selectedGame===g.slug?"#4F6EF7":"#64748B",
-                  boxShadow:selectedGame===g.slug?"0 2px 6px rgba(79,110,247,0.1)":"none",
+                  background:selectedGame===g.slug?"var(--surface)":"transparent",
+                  borderColor:selectedGame===g.slug?"rgba(79,110,247,0.3)":"var(--border2)",
+                  color:selectedGame===g.slug?"#4F6EF7":"var(--text3)",
+                  boxShadow:selectedGame===g.slug?"0 2px 6px rgba(79,110,247,0.12)":"none",
                 }}>
                 {g.slug!=="all"&&<GameIcon slug={g.slug} size={16}/>}
                 {g.name}
               </button>
             ))}
           </div>
-          {/* Period filter */}
-          <div style={{ display:"flex", gap:4, background:"#F1EDE8", padding:3, borderRadius:10 }}>
+          <div style={{ display:"flex", gap:4, background:"var(--bg3)", padding:3, borderRadius:10 }}>
             {PERIODS.map(p => (
               <button key={p.key} onClick={()=>setPeriod(p.key)}
                 style={{ padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer",
                   fontSize:11, fontWeight:600,
-                  background:period===p.key?"white":"transparent",
-                  color:period===p.key?"#1C1917":"#94A3B8",
+                  background:period===p.key?"var(--surface)":"transparent",
+                  color:period===p.key?"var(--text1)":"var(--text4)",
                   transition:"all 0.15s",
                 }}>
                 {p.label}
@@ -262,22 +243,22 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Leaderboard list */}
-        <div style={{ background:"white", borderRadius:20, border:"0.5px solid rgba(0,0,0,0.07)", overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
+        <div className="ms-card" style={{ overflow:"hidden", padding:0 }}>
           {loading ? (
             <div style={{ padding:"48px 24px", textAlign:"center" }}>
               <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:8 }}>
                 {[1,2,3,4,5].map(i=>(
-                  <div key={i} style={{ height:60, width:680, maxWidth:"100%", background:"#F8F7F5", borderRadius:12, animation:"pulse 1.5s ease-in-out infinite" }}/>
+                  <div key={i} style={{ height:60, width:680, maxWidth:"100%", background:"var(--bg2)", borderRadius:12 }}/>
                 ))}
               </div>
             </div>
           ) : tab === "family" ? (
             <div style={{ padding:"48px 24px", textAlign:"center" }}>
-              <div style={{ width:56, height:56, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+              <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
                 <Users size={24} color="#4F6EF7"/>
               </div>
-              <p style={{ fontSize:16, fontWeight:600, color:"#1C1917", marginBottom:6 }}>Family Leaderboard</p>
-              <p style={{ fontSize:13, color:"#64748B", marginBottom:20, maxWidth:320, margin:"0 auto 20px" }}>
+              <p style={{ fontSize:16, fontWeight:600, color:"var(--text1)", marginBottom:6 }}>Family Leaderboard</p>
+              <p style={{ fontSize:13, color:"var(--text3)", marginBottom:20, maxWidth:320, margin:"0 auto 20px" }}>
                 Create or join a family group to see how you rank against your family members.
               </p>
               <Link href="/settings" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
@@ -286,9 +267,9 @@ export default function LeaderboardPage() {
             </div>
           ) : globalEntries.length === 0 ? (
             <div style={{ padding:"48px 24px", textAlign:"center" }}>
-              <Trophy size={40} color="#E2E8F0" style={{ margin:"0 auto 16px", display:"block" }}/>
-              <p style={{ fontSize:15, fontWeight:600, color:"#94A3B8", marginBottom:4 }}>No scores yet</p>
-              <p style={{ fontSize:13, color:"#CBD5E1" }}>Be the first to complete a stage!</p>
+              <Trophy size={40} color="var(--border2)" style={{ margin:"0 auto 16px", display:"block" }}/>
+              <p style={{ fontSize:15, fontWeight:600, color:"var(--text4)", marginBottom:4 }}>No scores yet</p>
+              <p style={{ fontSize:13, color:"var(--text4)" }}>Be the first to complete a stage!</p>
               <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
                 Play Now <ArrowRight size={14}/>
               </Link>
@@ -296,9 +277,9 @@ export default function LeaderboardPage() {
           ) : (
             <div>
               {/* Header row */}
-              <div style={{ display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px", gap:0, padding:"12px 20px", borderBottom:"0.5px solid #F1EDE8" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px", gap:0, padding:"12px 20px", borderBottom:"0.5px solid var(--border)" }}>
                 {["#","Player","Best Game","XP","Stages"].map((h,i)=>(
-                  <p key={i} style={{ fontSize:10, fontWeight:700, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase", textAlign:i>1?"center":"left" }}>{h}</p>
+                  <p key={i} style={{ fontSize:10, fontWeight:700, color:"var(--text4)", letterSpacing:"0.1em", textTransform:"uppercase", textAlign:i>1?"center":"left" }}>{h}</p>
                 ))}
               </div>
               {globalEntries.map((entry, i) => (
@@ -308,14 +289,14 @@ export default function LeaderboardPage() {
                   style={{
                     display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px",
                     alignItems:"center", padding:"14px 20px",
-                    borderBottom:"0.5px solid #FAFAF9",
-                    background:entry.is_current_user?"linear-gradient(90deg,rgba(79,110,247,0.04),transparent)":"transparent",
+                    borderBottom:"0.5px solid var(--border)",
+                    background:entry.is_current_user?"linear-gradient(90deg,rgba(79,110,247,0.06),transparent)":"transparent",
                   }}>
                   <RankBadge rank={entry.rank}/>
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                     <Avatar initial={entry.avatar_initial} index={i}/>
                     <div>
-                      <p style={{ fontSize:13, fontWeight:600, color:"#1C1917" }}>
+                      <p style={{ fontSize:13, fontWeight:600, color:"var(--text1)" }}>
                         {entry.username}
                         {entry.is_current_user&&<span style={{ fontSize:10, color:"#4F6EF7", marginLeft:6, fontWeight:500 }}>you</span>}
                       </p>
@@ -328,7 +309,7 @@ export default function LeaderboardPage() {
                     <p style={{ fontSize:13, fontWeight:700, color:"#4F6EF7" }}>{entry.total_xp.toLocaleString()}</p>
                   </div>
                   <div style={{ textAlign:"center" }}>
-                    <p style={{ fontSize:13, fontWeight:500, color:"#64748B" }}>{entry.games_played}</p>
+                    <p style={{ fontSize:13, fontWeight:500, color:"var(--text3)" }}>{entry.games_played}</p>
                   </div>
                 </motion.div>
               ))}
