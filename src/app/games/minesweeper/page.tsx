@@ -111,6 +111,8 @@ function MinesweeperGameInner() {
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [history, setHistory] = useState<{board: Board; firstClick: boolean; flagCount: number}[]>([]);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -132,6 +134,8 @@ function MinesweeperGameInner() {
     setFinalXP(0); setFirstClick(true); setFlagCount(0);
     setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -231,6 +235,20 @@ function MinesweeperGameInner() {
     playClick();
   }
 
+  function handleCheck() {
+    if (!board || gameOver || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    board.cells.forEach((row, r) => row.forEach((cell, c) => {
+      if (cell.state === "flagged") {
+        result.set(`${r},${c}`, cell.isMine ? "correct" : "incorrect");
+      }
+    }));
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3 || gameOver || solutionRevealed) return;
     const safeCells: [number,number][] = [];
@@ -268,7 +286,7 @@ function MinesweeperGameInner() {
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
@@ -290,6 +308,7 @@ function MinesweeperGameInner() {
                 const isRevealed = cell.state==="revealed";
                 const isFlagged = cell.state==="flagged";
                 const isSolFlag = solutionRevealed && isFlagged && cell.isMine;
+                const check = checkState?.get(`${r},${c}`);
                 return (
                   <motion.button key={`${r},${c}`}
                     onClick={()=>handleClick(r,c)}
@@ -299,16 +318,19 @@ function MinesweeperGameInner() {
                       display:"flex", alignItems:"center", justifyContent:"center",
                       fontSize:Math.round(cellSize*0.45), fontWeight:700,
                       cursor: isRevealed||solutionRevealed ? "default" : "pointer", outline:"none",
-                      background: isRevealed
-                        ? (cell.isMine&&gameOver==="lose")?"#FEF2F2":"#F8F7F5"
-                        : isSolFlag ? "rgba(255,68,68,0.08)"
-                        : isFlagged ? "#FFFBEB" : "white",
+                      background: check==="correct" ? "var(--color-accent-secondary)"
+                        : check==="incorrect" ? "var(--color-error)"
+                        : isRevealed
+                          ? (cell.isMine&&gameOver==="lose")?"#FEF2F2":"#F8F7F5"
+                          : isSolFlag ? "rgba(255,68,68,0.08)"
+                          : isFlagged ? "#FFFBEB" : "white",
                       borderRight:"0.5px solid #E8E4DE", borderBottom:"0.5px solid #E8E4DE",
                       borderTop:"none", borderLeft:"none",
                       color: cell.isMine?"#DC2626":NUM_COLORS[cell.adjacent]??"transparent",
                       boxShadow:!isRevealed&&!isFlagged&&!solutionRevealed?"inset 0 2px 0 rgba(255,255,255,0.8),inset 0 -1px 0 rgba(0,0,0,0.06)":"none",
+                      transition: "background 0.2s",
                     }}>
-                    {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={isSolFlag?"var(--color-error)":"#F59E0B"}/>}
+                    {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={check?"var(--color-bg)":isSolFlag?"var(--color-error)":"#F59E0B"}/>}
                     {isRevealed&&cell.isMine&&<Bomb size={Math.round(cellSize*0.45)} color="#DC2626"/>}
                     {isRevealed&&!cell.isMine&&(cell.adjacent>0?cell.adjacent:"")}
                   </motion.button>

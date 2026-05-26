@@ -185,7 +185,6 @@ function PatternMatchGameInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
       >
         <GamePageSchema slug="pattern-match" />
 

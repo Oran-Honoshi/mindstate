@@ -166,7 +166,6 @@ function HeartsPageInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{background:"linear-gradient(135deg,#0F4C2A,#1A6B3A)",minHeight:"100%",padding:"16px 16px 32px",display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>

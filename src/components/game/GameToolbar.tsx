@@ -6,7 +6,7 @@ import { Undo2, Lightbulb, CheckCircle2 } from "lucide-react";
 interface GameToolbarProps {
   onUndo: () => void;
   onHint: () => void;
-  onCheck: () => void;
+  onCheck?: () => void;
   hintsRemaining: number;
 }
 
@@ -93,11 +93,13 @@ export function GameToolbar({ onUndo, onHint, onCheck, hintsRemaining }: GameToo
         </button>
       </div>
 
-      {/* Check */}
-      <button onClick={onCheck} style={btnBase} aria-label="Check current state">
-        <CheckCircle2 size={13} />
-        Check
-      </button>
+      {/* Check — only shown if game provides onCheck */}
+      {onCheck && (
+        <button onClick={onCheck} style={btnBase} aria-label="Check current state">
+          <CheckCircle2 size={13} />
+          Check
+        </button>
+      )}
     </div>
   );
 }

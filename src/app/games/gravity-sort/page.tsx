@@ -53,6 +53,8 @@ function GravitySortPageInner(){
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[history,setHistory]=useState<{blocks:number[][];moves:number}[]>([]);
+  const[checkState,setCheckState]=useState<Map<number,"correct"|"incorrect">|null>(null);
+  const checkTimerRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -71,6 +73,8 @@ function GravitySortPageInner(){
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setMoves(0);
     setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if(checkTimerRef.current){clearTimeout(checkTimerRef.current);checkTimerRef.current=null;}
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
@@ -120,6 +124,23 @@ function GravitySortPageInner(){
     playClick();
   }
 
+  function handleCheck(){
+    if(!board||completed||solutionRevealed)return;
+    const result=new Map<number,"correct"|"incorrect">();
+    blocks.forEach((col,ci)=>{
+      if(ci>=board.colors.length){
+        result.set(ci,col.length===0?"correct":"incorrect");
+        return;
+      }
+      const sorted=col.length>0&&col.every(b=>b===ci);
+      result.set(ci,sorted?"correct":"incorrect");
+    });
+    setCheckState(result);
+    playClick();
+    if(checkTimerRef.current)clearTimeout(checkTimerRef.current);
+    checkTimerRef.current=setTimeout(()=>setCheckState(null),2000);
+  }
+
   function handleColClick(col:number){
     if(!board||completed||solutionRevealed)return;
     if(selected===null){if(blocks[col].length===0)return;setSelected(col);playClick();}
@@ -157,7 +178,7 @@ function GravitySortPageInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20,padding:"16px 16px 32px"}}>
@@ -181,9 +202,11 @@ function GravitySortPageInner(){
             {blocks.map((col,ci)=>{
               const isSelected=selected===ci;
               const isSorted=col.length>0&&col.every(b=>b===ci)&&ci<board.colors.length;
+              const check=checkState?.get(ci);
+              const borderColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSelected?"var(--color-accent-primary)":isSorted?"#22C55E":"#E2E8F0";
               return(
                 <motion.div key={ci} onClick={()=>handleColClick(ci)} animate={isSelected?{y:-8}:{y:0}} transition={{type:"spring",stiffness:400,damping:25}}
-                  style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(0,255,255,0.06)":"#F8F7F5",borderRadius:14,padding:6,border:`2px solid ${isSelected?"var(--color-accent-primary)":isSorted?"#22C55E":"#E2E8F0"}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
+                  style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(0,255,255,0.06)":"#F8F7F5",borderRadius:14,padding:6,border:`2px solid ${borderColor}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
                   {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"↑"}</motion.div>))}
                   {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>✓</div>}
                 </motion.div>

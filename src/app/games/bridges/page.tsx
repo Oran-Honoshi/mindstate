@@ -56,6 +56,8 @@ function BridgesGameInner(){
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[history,setHistory]=useState<Bridge[][]>([]);
+  const[checkState,setCheckState]=useState<Map<number,"correct"|"incorrect">|null>(null);
+  const checkTimerRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -76,6 +78,8 @@ function BridgesGameInner(){
     setBoard(b);setPlaced([]);setXpState(xp);setCompleted(false);setFinalXP(0);
     setHintsUsed(0);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if(checkTimerRef.current){clearTimeout(checkTimerRef.current);checkTimerRef.current=null;}
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -134,6 +138,19 @@ function BridgesGameInner(){
     playClick();
   }
 
+  function handleCheck(){
+    if(!board||completed||solutionRevealed)return;
+    const result=new Map<number,"correct"|"incorrect">();
+    board.islands.forEach(island=>{
+      const total=placed.filter(b=>b.from===island.id||b.to===island.id).reduce((s,b)=>s+b.count,0);
+      result.set(island.id,total===island.required?"correct":"incorrect");
+    });
+    setCheckState(result);
+    playClick();
+    if(checkTimerRef.current)clearTimeout(checkTimerRef.current);
+    checkTimerRef.current=setTimeout(()=>setCheckState(null),2000);
+  }
+
   function handleHint(){
     if(!board||!xpState||completed||hintsUsed>=3||solutionRevealed)return;
     for(const sol of board.solution){
@@ -176,7 +193,7 @@ function BridgesGameInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
@@ -224,10 +241,11 @@ function BridgesGameInner(){
               const status=islandStatus(island);
               const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
               const r=cellSize*0.3;
-              const bgColor=status==="done"?"#22C55E":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
+              const check=checkState?.get(island.id);
+              const bgColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":status==="done"?"#22C55E":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
               return(
                 <g key={island.id}>
-                  <circle cx={x} cy={y} r={r} fill={bgColor} opacity={status==="done"?1:0.85}/>
+                  <circle cx={x} cy={y} r={r} fill={bgColor} opacity={status==="done"?1:0.85} stroke={check?"var(--color-text-primary)":"none"} strokeWidth={check?2:0}/>
                   <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
                     style={{fontSize:Math.round(r*1.1),fontWeight:700,fill:"white",userSelect:"none"}}>
                     {island.required}

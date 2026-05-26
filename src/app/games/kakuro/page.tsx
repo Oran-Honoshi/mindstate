@@ -54,6 +54,8 @@ function KakuroGameInner() {
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [history, setHistory] = useState<(number|null)[][][]>([]);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -78,6 +80,8 @@ function KakuroGameInner() {
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -161,6 +165,65 @@ function KakuroGameInner() {
     playClick();
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    const { size, grid } = board;
+    // Each "run" is a horizontal or vertical sequence of white cells terminated by black/clue
+    // Find runs and their target sum from preceding clue cell
+    type Run = { cells: [number, number][]; target: number };
+    const horizRuns: Run[] = [];
+    const vertRuns: Run[] = [];
+    for (let r = 0; r < size; r++) {
+      let run: [number, number][] = [];
+      let target = 0;
+      for (let c = 0; c <= size; c++) {
+        const cell = c < size ? grid[r][c] : null;
+        if (cell && cell.type === "white") run.push([r, c]);
+        else {
+          if (run.length > 0) horizRuns.push({ cells: run, target });
+          run = [];
+          if (cell && cell.type === "clue") {
+            const clue = cell as { type: "clue"; right?: number; down?: number };
+            target = clue.right ?? 0;
+          } else target = 0;
+        }
+      }
+    }
+    for (let c = 0; c < size; c++) {
+      let run: [number, number][] = [];
+      let target = 0;
+      for (let r = 0; r <= size; r++) {
+        const cell = r < size ? grid[r][c] : null;
+        if (cell && cell.type === "white") run.push([r, c]);
+        else {
+          if (run.length > 0) vertRuns.push({ cells: run, target });
+          run = [];
+          if (cell && cell.type === "clue") {
+            const clue = cell as { type: "clue"; right?: number; down?: number };
+            target = clue.down ?? 0;
+          } else target = 0;
+        }
+      }
+    }
+    for (const run of [...horizRuns, ...vertRuns]) {
+      const vals = run.cells.map(([r, c]) => userGrid[r][c]);
+      if (vals.some(v => v === null)) continue; // incomplete run — no verdict
+      const sum = vals.reduce<number>((s, v) => s + (v ?? 0), 0);
+      const hasDup = new Set(vals).size !== vals.length;
+      const status: "correct" | "incorrect" = sum === run.target && !hasDup ? "correct" : "incorrect";
+      run.cells.forEach(([r, c]) => {
+        const k = `${r},${c}`;
+        // If any run marks a cell incorrect, prefer that
+        if (status === "incorrect" || !result.has(k)) result.set(k, status);
+      });
+    }
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3 || solutionRevealed) return;
     for (let r = 0; r < board.size; r++) {
@@ -212,7 +275,7 @@ function KakuroGameInner() {
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="kakuro" />
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, padding:"16px 16px 32px" }}>
@@ -247,6 +310,7 @@ function KakuroGameInner() {
                 const hasError = errors.has(`${r},${c}`);
                 const val = userGrid[r]?.[c];
                 const isSolution = solutionRevealed && val !== null;
+                const check = checkState?.get(`${r},${c}`);
                 return (
                   <motion.button key={`${r}-${c}`}
                     onClick={() => { if (!solutionRevealed) setSelected([r,c]); }}
@@ -255,10 +319,11 @@ function KakuroGameInner() {
                     style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center",
                       fontSize:Math.round(cellSize*0.45), fontWeight:700,
                       cursor: solutionRevealed ? "default" : "pointer", outline:"none",
-                      background: isSolution?"rgba(255,68,68,0.04)":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--color-surface)",
-                      color: isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"#CBD5E1",
+                      background: check==="correct" ? "var(--color-accent-secondary)" : check==="incorrect" ? "var(--color-error)" : isSolution?"rgba(255,68,68,0.04)":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--color-surface)",
+                      color: check ? "var(--color-bg)" : isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"#CBD5E1",
                       borderRight:"0.5px solid #E2E8F0", borderBottom:"0.5px solid #E2E8F0", borderTop:"none", borderLeft:"none",
-                      boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px #4F6EF7":"none" }}>
+                      boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px #4F6EF7":"none",
+                      transition: "background 0.2s" }}>
                     {val ?? ""}
                   </motion.button>
                 );

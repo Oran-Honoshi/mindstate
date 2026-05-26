@@ -120,6 +120,8 @@ function SudokuGameInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const resumeChecked = useRef(false);
 
@@ -149,6 +151,8 @@ function SudokuGameInner() {
     setHintsUsed(0); setShowFeedback(false);
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -247,6 +251,22 @@ function SudokuGameInner() {
     }
   }
 
+  function handleCheck() {
+    if (!puzzleData || completed || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    for (let r = 0; r < puzzleData.size; r++) {
+      for (let c = 0; c < puzzleData.size; c++) {
+        if (puzzleData.puzzle[r][c] === null && playerBoard[r][c] !== null) {
+          result.set(`${r},${c}`, playerBoard[r][c] === puzzleData.solution[r][c] ? "correct" : "incorrect");
+        }
+      }
+    }
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   if (!puzzleData || !xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <p style={{ color:"var(--color-text-secondary)", fontSize:13 }}>Generating puzzle...</p>
@@ -269,7 +289,7 @@ function SudokuGameInner() {
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="sudoku" />
 
@@ -291,6 +311,7 @@ function SudokuGameInner() {
               const sameVal = selected && value !== null && playerBoard[selected[0]][selected[1]]===value && !isSelected;
               const rightBox = (c+1)%puzzleData.bc===0 && c<puzzleData.size-1;
               const bottomBox = (r+1)%puzzleData.br===0 && r<puzzleData.size-1;
+              const check = checkState?.get(`${r},${c}`);
               return (
                 <motion.button key={`${r}-${c}`}
                   onClick={() => { if (!isGiven && !solutionRevealed) { setSelected([r,c]); playClick(); } }}
@@ -301,14 +322,18 @@ function SudokuGameInner() {
                     display:"flex", alignItems:"center", justifyContent:"center",
                     fontSize: puzzleData.size===6 ? 18 : 14, fontWeight:700,
                     outline:"none", cursor: isGiven || solutionRevealed ? "default" : "pointer",
-                    background: isSolution ? "rgba(255,68,68,0.04)"
+                    transition:"background 0.2s",
+                    background: check==="correct" ? "var(--color-accent-secondary)"
+                      : check==="incorrect" ? "var(--color-error)"
+                      : isSolution ? "rgba(255,68,68,0.04)"
                       : showFeedback&&feedbackCells.has(`${r}-${c}`) ? "#DCFCE7"
                       : showFeedback&&wrongCells.has(`${r}-${c}`) ? "#FEF2F2"
                       : isSelected ? "#EEF2FF"
                       : isError ? "#FEF2F2"
                       : sameVal ? "#F5F7FF"
                       : isGiven ? "var(--color-surface-2)" : "var(--color-surface)",
-                    color: isSolution ? "var(--color-error)"
+                    color: check ? "var(--color-on-accent)"
+                      : isSolution ? "var(--color-error)"
                       : isGiven ? "#1C1917"
                       : isError ? "var(--color-error)"
                       : value ? "var(--color-accent-primary)" : "#CBD5E1",

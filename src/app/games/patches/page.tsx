@@ -78,6 +78,8 @@ function PatchesGameInner(){
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
   const[history,setHistory]=useState<{placed:Map<string,number>;placedPieces:Set<number>}[]>([]);
+  const[checkState,setCheckState]=useState<Map<string,"correct"|"incorrect">|null>(null);
+  const checkTimerRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -103,6 +105,8 @@ function PatchesGameInner(){
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if(checkTimerRef.current){clearTimeout(checkTimerRef.current);checkTimerRef.current=null;}
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -203,6 +207,26 @@ function PatchesGameInner(){
     playClick();
   }
 
+  function handleCheck(){
+    if(!board||completed||solutionRevealed)return;
+    const result=new Map<string,"correct"|"incorrect">();
+    // For each placed piece, check if every cell it occupies matches the solution
+    placedPieces.forEach(pid=>{
+      const pieceCells:string[]=[];
+      placed.forEach((v,k)=>{if(v===pid)pieceCells.push(k);});
+      const allMatch=pieceCells.every(k=>{
+        const[r,c]=k.split(",").map(Number);
+        return board.solution[r][c]===pid;
+      });
+      const verdict:"correct"|"incorrect"=allMatch?"correct":"incorrect";
+      pieceCells.forEach(k=>result.set(k,verdict));
+    });
+    setCheckState(result);
+    playClick();
+    if(checkTimerRef.current)clearTimeout(checkTimerRef.current);
+    checkTimerRef.current=setTimeout(()=>setCheckState(null),2000);
+  }
+
   function handleHint(){
     if(!board||!xpState||hintsUsed>=3||completed||solutionRevealed)return;
     for(const piece of board.pieces){
@@ -240,7 +264,7 @@ function PatchesGameInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="patches" />
 
@@ -262,15 +286,16 @@ function PatchesGameInner(){
               const piece=pid!==undefined?board.pieces.find(p=>p.id===pid):null;
               const isHover=hoverCells.has(k);
               const selPiece=selectedPiece!==null?board.pieces.find(p=>p.id===selectedPiece):null;
+              const check=checkState?.get(k);
               return(
                 <div key={k}
                   onClick={()=>handleCellClick(r,c)}
                   onMouseEnter={()=>handleCellHover(r,c)}
                   style={{width:cellSize,height:cellSize,
                     cursor:solutionRevealed?"default":selectedPiece!==null||pid!==undefined?"pointer":"default",
-                    background:piece?(solutionRevealed?`${piece.color}cc`:piece.color):isHover&&selPiece?`${selPiece.color}50`:"#F8F7F5",
+                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":piece?(solutionRevealed?`${piece.color}cc`:piece.color):isHover&&selPiece?`${selPiece.color}50`:"#F8F7F5",
                     borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",
-                    borderTop:"none",borderLeft:"none",transition:"background 0.1s"}}>
+                    borderTop:"none",borderLeft:"none",transition:"background 0.2s"}}>
                 </div>
               );
             }))}

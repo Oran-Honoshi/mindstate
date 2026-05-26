@@ -176,7 +176,6 @@ function NameCityInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
       >
         <GamePageSchema slug="name-city" />
 

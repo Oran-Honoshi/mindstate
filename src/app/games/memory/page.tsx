@@ -284,7 +284,6 @@ function MemoryGameInner() {
         hintsRemaining={3 - hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={() => {}}
       >
         <div style={{
           display:"grid",

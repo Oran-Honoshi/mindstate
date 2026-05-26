@@ -56,6 +56,8 @@ function NonogramGameInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -80,6 +82,8 @@ function NonogramGameInner() {
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -137,6 +141,22 @@ function NonogramGameInner() {
     setGridHistory(h => h.slice(0,-1));
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (grid[r][c] === true) {
+          result.set(`${r},${c}`, board.solution[r][c] === true ? "correct" : "incorrect");
+        }
+      }
+    }
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3 || solutionRevealed) return;
     for (let r = 0; r < board.size; r++) {
@@ -184,7 +204,7 @@ function NonogramGameInner() {
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="nonogram" />
 
@@ -215,13 +235,14 @@ function NonogramGameInner() {
               {board.solution[r].map((_,c)=>{
                 const val=grid[r]?.[c];
                 const isSol = solutionRevealed && board.solution[r][c] === true;
+                const check = checkState?.get(`${r},${c}`);
                 return(
                   <motion.button key={c} onClick={()=>handleCell(r,c)} whileTap={solutionRevealed?{}:{scale:0.9}}
                     style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:isSol?"rgba(255,68,68,0.15)":val===true?"#1C1917":val===false?"#FEF2F2":"white",
+                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSol?"rgba(255,68,68,0.15)":val===true?"#1C1917":val===false?"#FEF2F2":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
-                      cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.1s"}}>
-                    {val===true&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"#1C1917",borderRadius:1}}/>}
+                      cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.2s"}}>
+                    {val===true&&!check&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"#1C1917",borderRadius:1}}/>}
                     {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"var(--color-error)",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
                   </motion.button>
                 );

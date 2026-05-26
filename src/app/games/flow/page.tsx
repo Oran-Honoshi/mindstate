@@ -64,6 +64,8 @@ function FlowGameInner() {
   const [finalXP, setFinalXP] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [history, setHistory] = useState<{ paths: Map<string, PathState>; cellColors: Map<string, Color> }[]>([]);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   usePageVisibility(
@@ -111,6 +113,8 @@ function FlowGameInner() {
     setFinalElapsed("0:00");
     setSolutionRevealed(false);
     setHistory([]);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -243,6 +247,24 @@ function FlowGameInner() {
     playClick();
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    const solutionByColor = new Map<Color, string[]>();
+    for (const [color, cells] of board.solution) solutionByColor.set(color, cells);
+    for (const [color, path] of paths) {
+      const sol = solutionByColor.get(color);
+      if (!sol) { path.cells.forEach(k => result.set(k, "incorrect")); continue; }
+      const solSet = new Set(sol);
+      const matches = path.cells.length === sol.length && path.cells.every(k => solSet.has(k));
+      path.cells.forEach(k => result.set(k, matches ? "correct" : "incorrect"));
+    }
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   function handleHint() {
     if (!board || !xpState || completed || hintsUsed >= 3 || solutionRevealed) return;
 
@@ -318,7 +340,7 @@ function FlowGameInner() {
         hintsRemaining={3 - hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={() => {}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "16px 16px 32px" }}>
@@ -358,6 +380,7 @@ function FlowGameInner() {
                   const k = cellKey(r, c);
                   const dotColor = board.dots.get(k);
                   const cellColor = drawing?.cells.includes(k) ? drawing.color : cellColors.get(k);
+                  const check = checkState?.get(k);
                   return (
                     <div key={k}
                       data-cellkey={k}
@@ -368,9 +391,10 @@ function FlowGameInner() {
                       style={{
                         width: cellSize, height: cellSize,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        background: cellColor ? cellColor + "30" : "#FAFAF9",
+                        background: check === "correct" ? "var(--color-accent-secondary)" : check === "incorrect" ? "var(--color-error)" : cellColor ? cellColor + "30" : "#FAFAF9",
                         borderRight: "0.5px solid #F0EDE8", borderBottom: "0.5px solid #F0EDE8",
                         borderTop: "none", borderLeft: "none", position: "relative",
+                        transition: "background 0.2s",
                       }}>
                       {cellColor && !dotColor && (
                         <div style={{ position: "absolute", inset: 4, borderRadius: 4, background: cellColor, opacity: 0.7 }} />

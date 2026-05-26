@@ -81,6 +81,7 @@ function LogicPathPageInner() {
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [history, setHistory] = useState<PipeCell[][][]>([]);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const pausedRef = useRef(false);
 
@@ -106,6 +107,7 @@ function LogicPathPageInner() {
     setHintsUsed(0); setShowFeedback(false);
     setSolutionRevealed(false);
     setHistory([]);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     pausedRef.current = false;
@@ -165,6 +167,14 @@ function LogicPathPageInner() {
     playClick();
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    setShowFeedback(true);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setShowFeedback(false), 2000);
+  }
+
   function handleHint() {
     if (!board || hintsUsed >= MAX_HINTS || !xpState || solutionRevealed) return;
     const ng = grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })));
@@ -210,7 +220,7 @@ function LogicPathPageInner() {
         hintsRemaining={MAX_HINTS-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="logic-path" />
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, padding:"16px 16px 32px" }}>

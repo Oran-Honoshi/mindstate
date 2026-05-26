@@ -15,7 +15,7 @@ interface GameShellProps {
   hintsRemaining: number;
   onUndo: () => void;
   onHint: () => void;
-  onCheck: () => void;
+  onCheck?: () => void;
   children: ReactNode;
 }
 

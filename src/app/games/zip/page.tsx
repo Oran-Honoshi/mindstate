@@ -112,6 +112,8 @@ function ZipGameInner() {
   const [showResume, setShowResume] = useState(false);
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
   const [history, setHistory] = useState<Pos[][]>([]);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -138,6 +140,8 @@ function ZipGameInner() {
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0);
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -246,6 +250,19 @@ function ZipGameInner() {
     }
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    const result = new Map<string, "correct" | "incorrect">();
+    userPath.forEach(([r, c], i) => {
+      const [er, ec] = board.path[i] ?? [-1, -1];
+      result.set(`${r},${c}`, er === r && ec === c ? "correct" : "incorrect");
+    });
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   if (!board || !xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <p style={{ color:"var(--color-text-secondary)", fontSize:13 }}>Generating board...</p>
@@ -272,7 +289,7 @@ function ZipGameInner() {
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug="zip" />
 
@@ -309,6 +326,7 @@ function ZipGameInner() {
               const isLast=last[0]===r&&last[1]===c;
               const wp=board.waypoints.get(key);
               const isVisitedWp=wp!==undefined&&pathSet.has(key);
+              const check=checkState?.get(key);
               return(
                 <motion.div key={key}
                   onMouseDown={()=>{isDragging.current=true;handleCellInteraction(r,c);}}
@@ -318,11 +336,12 @@ function ZipGameInner() {
                   style={{
                     width:cellSize,height:cellSize,borderRadius:Math.round(cellSize*0.22),
                     display:"flex",alignItems:"center",justifyContent:"center",border:"1.5px solid",
-                    background:isLast?(solutionRevealed?"#FEF2F2":"#EEF2FF"):isVisitedWp?"#F0FDF4":inPath?(solutionRevealed?"rgba(255,68,68,0.05)":"#F5F7FF"):"white",
-                    borderColor:isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#86EFAC":inPath?(solutionRevealed?"rgba(255,68,68,0.3)":"#C7D2FE"):"#E2E8F0",
+                    transition:"background 0.2s",
+                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isLast?(solutionRevealed?"#FEF2F2":"#EEF2FF"):isVisitedWp?"#F0FDF4":inPath?(solutionRevealed?"rgba(255,68,68,0.05)":"#F5F7FF"):"white",
+                    borderColor:check?"transparent":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#86EFAC":inPath?(solutionRevealed?"rgba(255,68,68,0.3)":"#C7D2FE"):"#E2E8F0",
                     cursor:solutionRevealed?"default":"pointer",
                     fontSize:Math.round(cellSize*0.34),fontWeight:700,
-                    color:isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#16A34A":wp?"var(--color-accent-primary)":"#94A3B8",
+                    color:check?"var(--color-on-accent)":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#16A34A":wp?"var(--color-accent-primary)":"#94A3B8",
                     userSelect:"none",WebkitUserSelect:"none",
                   }}>
                   {wp ?? ""}

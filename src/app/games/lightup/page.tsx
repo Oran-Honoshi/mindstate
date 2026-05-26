@@ -58,6 +58,8 @@ function LightUpPageInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -81,6 +83,8 @@ function LightUpPageInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setCheckState(null);
+    if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -166,6 +170,24 @@ function LightUpPageInner(){
     }
   }
 
+  function handleCheck() {
+    if (!board || completed || solutionRevealed) return;
+    const solSet = new Set(board.solution);
+    const result = new Map<string, "correct" | "incorrect">();
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (grid[r][c].type === "bulb") {
+          const k = `${r},${c}`;
+          result.set(k, solSet.has(k) ? "correct" : "incorrect");
+        }
+      }
+    }
+    setCheckState(result);
+    playClick();
+    if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    checkTimerRef.current = setTimeout(() => setCheckState(null), 2000);
+  }
+
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p></div>);
 
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
@@ -185,7 +207,7 @@ function LightUpPageInner(){
         hintsRemaining={3-hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
-        onCheck={()=>{}}
+        onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
@@ -209,6 +231,7 @@ function LightUpPageInner(){
                 const isConflict=lighting.conflicts.has(k);
                 const isBlackErr=lighting.blackErrors.has(k);
                 const isSolBulb=solutionRevealed&&cell.type==="bulb";
+                const check=checkState?.get(k);
                 if(cell.type==="black"){
                   const bc=cell as{type:"black";clue:number|null};
                   return(
@@ -222,11 +245,13 @@ function LightUpPageInner(){
                   <motion.button key={k} onClick={()=>handleCell(r,c)}
                     whileTap={solutionRevealed?{}:{scale:0.9}}
                     style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:isConflict?"#FEF2F2":isSolBulb?"rgba(255,68,68,0.08)":isLit?"#FFFBEB":"#FAFAF9",
+                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isConflict?"#FEF2F2":isSolBulb?"rgba(255,68,68,0.08)":isLit?"#FFFBEB":"#FAFAF9",
                       borderRight:"0.5px solid #E8E4DE",borderBottom:"0.5px solid #E8E4DE",borderTop:"none",borderLeft:"none",
                       cursor:solutionRevealed?"default":"pointer",outline:"none",fontSize:Math.round(cellSize*0.5),
+                      transition:"background 0.2s",
                       boxShadow:isLit&&!isBulb?`inset 0 0 ${cellSize/2}px rgba(253,224,71,0.3)`:"none"}}>
-                    {isBulb&&<span style={{filter:isConflict?"grayscale(1)":"none",color:isSolBulb?"var(--color-error)":"inherit"}}>●</span>}
+                    {isBulb&&!check&&<span style={{filter:isConflict?"grayscale(1)":"none",color:isSolBulb?"var(--color-error)":"inherit"}}>●</span>}
+                    {isBulb&&check&&<span style={{color:check==="correct"?"var(--color-on-accent)":"white"}}>●</span>}
                   </motion.button>
                 );
               }))}
