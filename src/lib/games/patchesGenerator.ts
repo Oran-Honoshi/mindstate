@@ -8,7 +8,7 @@ export type PatchesBoard = {
 };
 
 const PIECE_COLORS = [
-  "#EF4444","#3B82F6","#22C55E","#F59E0B","#A855F7",
+  "var(--color-error)","#3B82F6","#22C55E","#F59E0B","#A855F7",
   "#EC4899","#14B8A6","#F97316","#6366F1","#84CC16",
 ];
 

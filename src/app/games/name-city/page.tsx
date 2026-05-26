@@ -41,8 +41,8 @@ const KB=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J"
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
+  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
 }
 
 function NameCityInner(){
@@ -130,7 +130,7 @@ function NameCityInner(){
   if(!board||!xpState)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><p>Loading...</p></div>);
 
   const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const cellSize=Math.min(52,Math.floor((gridAreaWidth-(board.wordLength-1)*6)/board.wordLength));
   const currentXP=calculateXP(xpState).currentXP;
 
@@ -139,19 +139,19 @@ function NameCityInner(){
       <Navbar/>
       <GamePageSchema slug="name-city" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
-        <div style={{width:"100%",maxWidth:480,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:480,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Name the City</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>Name the City</span>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:18,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:18,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
@@ -166,7 +166,7 @@ function NameCityInner(){
 
         {lost&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}}
-            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(239,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(239,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"#EF4444",textAlign:"center"}}>
+            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(239,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(239,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"var(--color-error)",textAlign:"center"}}>
             {solutionRevealed?"Solution: ":"It was: "}{board.flag} {board.answer} · {(board as any).country}
           </motion.div>
         )}
@@ -194,7 +194,7 @@ function NameCityInner(){
                   const color=result?TILE[result]:null;
                   return(
                     <motion.div key={li} animate={result?{rotateX:[0,-90,0]}:{}} transition={{delay:li*0.1,duration:0.3}}
-                      style={{width:cellSize,height:cellSize,borderRadius:7,border:`2px solid ${color?color.border:letter?"#4F6EF7":"var(--border2)"}`,background:color?color.bg:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(cellSize*0.4),fontWeight:700,color:color?color.text:"var(--text1)",fontFamily:"Georgia,serif"}}>
+                      style={{width:cellSize,height:cellSize,borderRadius:7,border:`2px solid ${color?color.border:letter?"var(--color-accent-primary)":"var(--color-border)"}`,background:color?color.bg:"var(--color-surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(cellSize*0.4),fontWeight:700,color:color?color.text:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>
                       {letter}
                     </motion.div>
                   );
@@ -210,7 +210,7 @@ function NameCityInner(){
               <div key={ri} style={{display:"flex",justifyContent:"center",gap:5}}>
                 {row.map(key=>{
                   const state=letterStates.get(key);const color=state?TILE[state]:null;const isWide=key==="ENTER"||key==="⌫";
-                  return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?color.bg:"var(--bg3)",color:color?color.text:"var(--text2)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);
+                  return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?color.bg:"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);
                 })}
               </div>
             ))}
@@ -223,9 +223,9 @@ function NameCityInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 

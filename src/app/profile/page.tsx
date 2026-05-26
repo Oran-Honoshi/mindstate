@@ -12,7 +12,7 @@ import { GameIcon } from "@/components/icons/GameIcons";
 import type { Score } from "@/lib/supabase/types";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 
-const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
+const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
 const GAME_NAMES: Record<string,string> = {
   tango:"Tango", memory:"Memory", queens:"Queens",
   sudoku:"Mini Sudoku", zip:"Zip", minesweeper:"Minesweeper",
@@ -40,8 +40,8 @@ function StatCard({ icon:Icon, label, value, color }: { icon:any; label:string; 
       <div style={{ width:32, height:32, borderRadius:10, background:`${color}18`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
         <Icon size={16} color={color}/>
       </div>
-      <p style={{ fontSize:22, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:2 }}>{value}</p>
-      <p style={{ fontSize:11, color:"var(--text4)" }}>{label}</p>
+      <p style={{ fontSize:22, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:2 }}>{value}</p>
+      <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>{label}</p>
     </div>
   );
 }
@@ -68,18 +68,18 @@ export default function ProfilePage() {
   }, [user]);
 
   if (!user) return (
-    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--color-bg)" }}>
       <Navbar/>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"80vh", gap:20, textAlign:"center", padding:24 }}>
         <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <LogIn size={28} color="#4F6EF7"/>
+          <LogIn size={28} color="var(--color-accent-primary)"/>
         </div>
         <div>
-          <h2 style={{ fontSize:22, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:6 }}>Sign in to view your profile</h2>
-          <p style={{ fontSize:14, color:"var(--text3)" }}>Track your progress, scores, and streaks.</p>
+          <h2 style={{ fontSize:22, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:6 }}>Sign in to view your profile</h2>
+          <p style={{ fontSize:14, color:"var(--color-text-secondary)" }}>Track your progress, scores, and streaks.</p>
         </div>
         <div style={{ display:"flex", gap:12 }}>
-          <Link href="/auth/signin" style={{ padding:"11px 22px", borderRadius:14, border:"1.5px solid var(--border2)", color:"var(--text2)", fontWeight:600, fontSize:13, textDecoration:"none" }}>Sign In</Link>
+          <Link href="/auth/signin" style={{ padding:"11px 22px", borderRadius:14, border:"1.5px solid var(--color-border)", color:"var(--color-text-secondary)", fontWeight:600, fontSize:13, textDecoration:"none" }}>Sign In</Link>
           <Link href="/auth/signup" style={{ padding:"11px 22px", borderRadius:14, background:ACCENT, color:"white", fontWeight:700, fontSize:13, textDecoration:"none" }}>Create Account</Link>
         </div>
       </div>
@@ -104,19 +104,19 @@ export default function ProfilePage() {
   const longestStreak = streakData?.longest_streak ?? 0;
 
   return (
-    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div className="profile-page" style={{ minHeight:"100vh", background:"var(--color-bg)" }}>
       <Navbar/>
       <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 20px 60px" }}>
 
         {/* Profile header */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
           style={{ display:"flex", alignItems:"center", gap:20, marginBottom:28, marginTop:12, flexWrap:"wrap" }}>
-          <div style={{ width:72, height:72, borderRadius:22, background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, fontWeight:700, color:"white", fontFamily:"Georgia,serif", boxShadow:"0 8px 24px rgba(79,110,247,0.3)", flexShrink:0 }}>
+          <div style={{ width:72, height:72, borderRadius:22, background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, fontWeight:700, color:"white", fontFamily:"var(--font-sans)", boxShadow:"0 8px 24px rgba(79,110,247,0.3)", flexShrink:0 }}>
             {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
           </div>
           <div style={{ flex:1, minWidth:200 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4, flexWrap:"wrap" }}>
-              <h1 style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
+              <h1 style={{ fontSize:24, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>
                 {profile?.username ?? "Player"}
               </h1>
               {currentStreak >= 3 && (
@@ -126,15 +126,15 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-            <p style={{ fontSize:12, color:"var(--text4)", marginBottom:8 }}>{user.email}</p>
+            <p style={{ fontSize:12, color:"var(--color-text-secondary)", marginBottom:8 }}>{user.email}</p>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10,
-                background: isPro ? "rgba(79,110,247,0.12)" : "var(--bg3)",
-                color: isPro ? "#4F6EF7" : "var(--text4)" }}>
+                background: isPro ? "rgba(79,110,247,0.12)" : "var(--color-surface-2)",
+                color: isPro ? "var(--color-accent-primary)" : "var(--color-text-secondary)" }}>
                 {isPro ? " Pro Subscriber" : "Free Plan"}
               </span>
               {!isPro && (
-                <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10, background:"rgba(79,110,247,0.08)", color:"#4F6EF7" }}>
+                <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:10, background:"rgba(79,110,247,0.08)", color:"var(--color-accent-primary)" }}>
                   <Zap size={9} style={{ display:"inline", marginRight:3 }}/>{tokens}/{FREE_DAILY_TOKENS} plays today
                 </span>
               )}
@@ -147,8 +147,8 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12, marginBottom:20 }}>
-          <StatCard icon={Zap}      label="Total XP"       value={totalXP.toLocaleString()} color="#4F6EF7"/>
-          <StatCard icon={Target}   label="Stages Played"  value={scores.length.toString()}  color="#9C6BE8"/>
+          <StatCard icon={Zap}      label="Total XP"       value={totalXP.toLocaleString()} color="var(--color-accent-primary)"/>
+          <StatCard icon={Target}   label="Stages Played"  value={scores.length.toString()}  color="var(--color-accent-primary)"/>
           <StatCard icon={Trophy}   label="Best Score"     value={bestScore.toString()}       color="#F59E0B"/>
           <StatCard icon={Star}     label="Games Tried"    value={`${uniqueGames}/20`}        color="#22C55E"/>
         </div>
@@ -159,16 +159,16 @@ export default function ProfilePage() {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <Flame size={18} color="#F59E0B" fill="#F59E0B"/>
-              <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)" }}>Streak</h2>
+              <h2 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)" }}>Streak</h2>
             </div>
             <div style={{ display:"flex", gap:20 }}>
               <div style={{ textAlign:"center" }}>
-                <p style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{currentStreak}</p>
-                <p style={{ fontSize:10, color:"var(--text4)" }}>Current</p>
+                <p style={{ fontSize:24, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{currentStreak}</p>
+                <p style={{ fontSize:10, color:"var(--color-text-secondary)" }}>Current</p>
               </div>
               <div style={{ textAlign:"center" }}>
-                <p style={{ fontSize:24, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{longestStreak}</p>
-                <p style={{ fontSize:10, color:"var(--text4)" }}>Best</p>
+                <p style={{ fontSize:24, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{longestStreak}</p>
+                <p style={{ fontSize:10, color:"var(--color-text-secondary)" }}>Best</p>
               </div>
             </div>
           </div>
@@ -178,12 +178,12 @@ export default function ProfilePage() {
               const filled = currentStreak > 0 && i < (currentStreak%7||7);
               return(
                 <div key={i} style={{ flex:1, height:8, borderRadius:4,
-                  background:filled?"linear-gradient(90deg,#F97316,#F59E0B)":"var(--bg3)",
+                  background:filled?"linear-gradient(90deg,#F97316,#F59E0B)":"var(--color-surface-2)",
                   transition:"background 0.3s" }}/>
               );
             })}
           </div>
-          <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
+          <p style={{ fontSize:11, color:"var(--color-text-secondary)", marginTop:8 }}>
             {currentStreak%7===0&&currentStreak>0
               ? " 7-day streak! +10 bonus plays awarded!"
               : `${7-(currentStreak%7||7)} more days for +10 bonus plays`}
@@ -195,21 +195,21 @@ export default function ProfilePage() {
           className="ms-card" style={{ padding:"20px 24px", marginBottom:16 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
             <Crown size={16} color="#F59E0B"/>
-            <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)" }}>Achievements</h2>
-            <span style={{ fontSize:11, color:"var(--text4)", marginLeft:"auto" }}>{earned.length}/{ACHIEVEMENTS.length} earned</span>
+            <h2 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)" }}>Achievements</h2>
+            <span style={{ fontSize:11, color:"var(--color-text-secondary)", marginLeft:"auto" }}>{earned.length}/{ACHIEVEMENTS.length} earned</span>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
             {ACHIEVEMENTS.map(a=>{
               const done = a.check(scores);
               return(
                 <div key={a.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:14,
-                  background:done?"rgba(79,110,247,0.06)":"var(--bg2)",
-                  border:`0.5px solid ${done?"rgba(79,110,247,0.2)":"var(--border)"}`,
+                  background:done?"rgba(79,110,247,0.06)":"var(--color-surface-2)",
+                  border:`0.5px solid ${done?"rgba(79,110,247,0.2)":"var(--color-border)"}`,
                   opacity:done?1:0.5 }}>
                   <span style={{ fontSize:20, flexShrink:0 }}>{a.icon}</span>
                   <div style={{ minWidth:0 }}>
-                    <p style={{ fontSize:12, fontWeight:700, color:"var(--text1)", marginBottom:1 }}>{a.name}</p>
-                    <p style={{ fontSize:10, color:"var(--text4)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.desc}</p>
+                    <p style={{ fontSize:12, fontWeight:700, color:"var(--color-text-primary)", marginBottom:1 }}>{a.name}</p>
+                    <p style={{ fontSize:10, color:"var(--color-text-secondary)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.desc}</p>
                   </div>
                 </div>
               );
@@ -220,29 +220,29 @@ export default function ProfilePage() {
         {/* By game */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.16 }}
           className="ms-card" style={{ padding:"20px 24px", marginBottom:16 }}>
-          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>By Game</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)", marginBottom:16 }}>By Game</h2>
           {loading ? (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[1,2,3].map(i=><div key={i} style={{ height:48, borderRadius:12, background:"var(--bg2)" }}/>)}
+              {[1,2,3].map(i=><div key={i} style={{ height:48, borderRadius:12, background:"var(--color-surface-2)" }}/>)}
             </div>
           ) : byGame.length===0 ? (
             <div style={{ textAlign:"center", padding:"24px 0" }}>
-              <p style={{ color:"var(--text4)", fontSize:13, marginBottom:12 }}>No games played yet.</p>
-              <Link href="/games" style={{ fontSize:13, fontWeight:600, color:"#4F6EF7", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}>
+              <p style={{ color:"var(--color-text-secondary)", fontSize:13, marginBottom:12 }}>No games played yet.</p>
+              <Link href="/games" style={{ fontSize:13, fontWeight:600, color:"var(--color-accent-primary)", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}>
                 Start playing <ArrowRight size={13}/>
               </Link>
             </div>
           ) : byGame.map(([slug,data])=>(
-            <Link key={slug} href={`/games/${slug}`} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--border)", textDecoration:"none" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"var(--bg2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Link key={slug} href={`/games/${slug}`} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--color-border)", textDecoration:"none" }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"var(--color-surface-2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <GameIcon slug={slug} size={22}/>
               </div>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                  <p style={{ fontSize:13, fontWeight:600, color:"var(--text1)" }}>{GAME_NAMES[slug]??slug}</p>
-                  <p style={{ fontSize:12, fontWeight:700, color:"#4F6EF7" }}>{data.totalXP.toLocaleString()} XP</p>
+                  <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>{GAME_NAMES[slug]??slug}</p>
+                  <p style={{ fontSize:12, fontWeight:700, color:"var(--color-accent-primary)" }}>{data.totalXP.toLocaleString()} XP</p>
                 </div>
-                <div style={{ height:3, background:"var(--bg3)", borderRadius:2 }}>
+                <div style={{ height:3, background:"var(--color-surface-2)", borderRadius:2 }}>
                   <div style={{ height:3, borderRadius:2, background:ACCENT, width:`${Math.min((data.totalXP/Math.max(totalXP,1))*100,100)}%` }}/>
                 </div>
               </div>
@@ -253,20 +253,20 @@ export default function ProfilePage() {
         {/* Recent */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
           className="ms-card" style={{ padding:"20px 24px", marginBottom:20 }}>
-          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:16 }}>Recent Activity</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)", marginBottom:16 }}>Recent Activity</h2>
           {scores.slice(0,8).map(s=>(
-            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--border)" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"var(--bg2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"0.5px solid var(--color-border)" }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"var(--color-surface-2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <GameIcon slug={s.game_slug} size={20}/>
               </div>
               <div style={{ flex:1 }}>
-                <p style={{ fontSize:13, fontWeight:600, color:"var(--text1)" }}>{GAME_NAMES[s.game_slug]??s.game_slug} · Stage {s.stage_number}</p>
-                <p style={{ fontSize:11, color:"var(--text4)", textTransform:"capitalize" }}>{s.difficulty} · {new Date(s.completed_at).toLocaleDateString()}</p>
+                <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>{GAME_NAMES[s.game_slug]??s.game_slug} · Stage {s.stage_number}</p>
+                <p style={{ fontSize:11, color:"var(--color-text-secondary)", textTransform:"capitalize" }}>{s.difficulty} · {new Date(s.completed_at).toLocaleDateString()}</p>
               </div>
-              <p style={{ fontSize:13, fontWeight:700, color:"#4F6EF7", flexShrink:0 }}>{s.xp_earned} XP</p>
+              <p style={{ fontSize:13, fontWeight:700, color:"var(--color-accent-primary)", flexShrink:0 }}>{s.xp_earned} XP</p>
             </div>
           ))}
-          {scores.length===0&&<p style={{ color:"var(--text4)", fontSize:13, textAlign:"center", padding:"16px 0" }}>No activity yet.</p>}
+          {scores.length===0&&<p style={{ color:"var(--color-text-secondary)", fontSize:13, textAlign:"center", padding:"16px 0" }}>No activity yet.</p>}
         </motion.div>
 
         {!isPro && (
@@ -276,7 +276,7 @@ export default function ProfilePage() {
               <p style={{ fontSize:15, fontWeight:700, marginBottom:3 }}>Unlock Unlimited Plays</p>
               <p style={{ fontSize:12, color:"rgba(255,255,255,0.75)" }}>1,000 stages each · Infinite Mode · Family Leaderboards — $2/mo.</p>
             </div>
-            <Link href="/pricing" style={{ padding:"10px 20px", borderRadius:14, background:"white", color:"#4F6EF7", fontWeight:700, fontSize:13, textDecoration:"none", flexShrink:0 }}>
+            <Link href="/pricing" style={{ padding:"10px 20px", borderRadius:14, background:"white", color:"var(--color-accent-primary)", fontWeight:700, fontSize:13, textDecoration:"none", flexShrink:0 }}>
               Upgrade
             </Link>
           </motion.div>

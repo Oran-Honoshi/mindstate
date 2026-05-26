@@ -124,13 +124,13 @@ function MiniMemoryHero() {
   const matched=state.filter(c=>c.matched).length/2;
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>All pairs found!</motion.div>}
+      {matched===8&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--color-accent-secondary)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>All pairs found!</motion.div>}
       <div style={{display:"grid",gridTemplateColumns:`repeat(4,${CELL}px)`,gap:6}}>
         {state.map(card=>(
           <motion.button key={card.id} onClick={()=>flip(card.id)} whileTap={{scale:0.88}}
             style={{width:CELL,height:CELL,borderRadius:10,border:"1.5px solid",outline:"none",
               cursor:card.matched?"default":"pointer",
-              background:card.flipped||card.matched?"var(--surface)":"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              background:card.flipped||card.matched?"var(--color-surface)":"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
               borderColor:card.matched?"#86EFAC":card.flipped?"#DDD6F8":"transparent",
               fontSize:card.flipped||card.matched?22:0,
               display:"flex",alignItems:"center",justifyContent:"center",
@@ -139,7 +139,7 @@ function MiniMemoryHero() {
           </motion.button>
         ))}
       </div>
-      <p style={{fontSize:10,color:"var(--text4)"}}>{matched}/8 pairs found · tap to flip</p>
+      <p style={{fontSize:10,color:"var(--color-text-secondary)"}}>{matched}/8 pairs found · tap to flip</p>
     </div>
   );
 }
@@ -185,7 +185,7 @@ function MiniQueensHero() {
   const won=checkWon(grid);
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>Solved!</motion.div>}
+      {won&&<motion.div initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--color-accent-secondary)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:10}}>Solved!</motion.div>}
       <div style={{border:"2px solid #374151",borderRadius:10,overflow:"hidden"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
           {REGIONS.map((row,r)=>row.map((rid,c)=>{
@@ -207,7 +207,7 @@ function MiniQueensHero() {
           }))}
         </div>
       </div>
-      <p style={{fontSize:10,color:"var(--text4)"}}>tap once=✕ twice=♛ · one queen per region</p>
+      <p style={{fontSize:10,color:"var(--color-text-secondary)"}}>tap once=✕ twice=♛ · one queen per region</p>
     </div>
   );
 }
@@ -222,9 +222,9 @@ function HeroCarousel() {
           <button key={g.key} onClick={()=>setActive(i)}
             style={{padding:"5px 14px",borderRadius:20,border:"1.5px solid",fontSize:11,fontWeight:700,
               cursor:"pointer",outline:"none",transition:"all 0.15s",
-              background:active===i?"linear-gradient(135deg,#4F6EF7,#9C6BE8)":"var(--surface)",
-              color:active===i?"white":"var(--text3)",
-              borderColor:active===i?"transparent":"var(--border2)"}}>
+              background:active===i?"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))":"var(--color-surface)",
+              color:active===i?"white":"var(--color-text-secondary)",
+              borderColor:active===i?"transparent":"var(--color-border)"}}>
             {g.label}
           </button>
         ))}
@@ -239,8 +239,8 @@ function HeroCarousel() {
         </motion.div>
       </AnimatePresence>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
-        <span style={{fontSize:10,color:"var(--text4)"}}>{game.desc}</span>
-        <Link href={game.href} style={{fontSize:11,fontWeight:600,color:"#4F6EF7",display:"flex",alignItems:"center",gap:3,textDecoration:"none"}}>
+        <span style={{fontSize:10,color:"var(--color-text-secondary)"}}>{game.desc}</span>
+        <Link href={game.href} style={{fontSize:11,fontWeight:600,color:"var(--color-accent-primary)",display:"flex",alignItems:"center",gap:3,textDecoration:"none"}}>
           Full game <ArrowRight size={10}/>
         </Link>
       </div>
@@ -289,15 +289,15 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
         <div>
-          <p style={{fontSize:9,color:"var(--text4)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:1}}>Hard · {board.size}×{board.size} · Free Play</p>
-          <p style={{fontSize:13,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Tango</p>
+          <p style={{fontSize:9,color:"var(--color-text-secondary)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:1}}>Hard · {board.size}×{board.size} · Free Play</p>
+          <p style={{fontSize:13,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>Tango</p>
         </div>
         <AnimatePresence>
-          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--neon-green)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:20}}>Solved!</motion.span>}
+          {solved&&<motion.span initial={{scale:0}} animate={{scale:1}} style={{fontSize:10,fontWeight:700,color:"var(--color-accent-secondary)",background:"rgba(16,244,160,0.08)",border:"1px solid rgba(16,244,160,0.3)",padding:"2px 10px",borderRadius:20}}>Solved!</motion.span>}
         </AnimatePresence>
       </div>
-      <div style={{height:3,background:"var(--bg3)",borderRadius:2,marginBottom:12}}>
-        <motion.div style={{height:3,background:"linear-gradient(90deg,#4F6EF7,#9C6BE8)",borderRadius:2}} animate={{width:solved?"100%":"28%"}} transition={{duration:0.8}}/>
+      <div style={{height:3,background:"var(--color-surface-2)",borderRadius:2,marginBottom:12}}>
+        <motion.div style={{height:3,background:"linear-gradient(90deg,var(--color-accent-primary),var(--color-accent-primary))",borderRadius:2}} animate={{width:solved?"100%":"28%"}} transition={{duration:0.8}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${cellSize}px)`,gap:6,marginBottom:10}}>
         {board.puzzle.map((_,r)=>board.puzzle[r].map((_,c)=>{
@@ -314,20 +314,20 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
                 animate={squish===key?{scaleX:[1,0.86,1.08,1],scaleY:[1,1.1,0.94,1]}:{}}
                 transition={{duration:0.32}}
                 style={{width:"100%",height:"100%",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",border:"1.5px solid",
-                  background:hasError?"rgba(239,68,68,0.07)":isGiven?"var(--bg2)":"var(--surface)",
-                  borderColor:isGiven?"var(--border)":value?"#DDD6F8":"var(--border)",
+                  background:hasError?"rgba(239,68,68,0.07)":isGiven?"var(--color-surface-2)":"var(--color-surface)",
+                  borderColor:isGiven?"var(--color-border)":value?"#DDD6F8":"var(--color-border)",
                   cursor:isGiven?"default":"pointer",outline:"none"}}>
                 {value==="S"&&<SunIcon size={cellSize*0.48}/>}
                 {value==="M"&&<MoonIcon size={cellSize*0.48}/>}
-                {!value&&<div style={{width:6,height:6,borderRadius:"50%",background:"var(--border2)"}}/>}
+                {!value&&<div style={{width:6,height:6,borderRadius:"50%",background:"var(--color-border)"}}/>}
               </motion.button>
               {rightC&&c<board.size-1&&(
-                <div style={{position:"absolute",right:-6,top:"50%",transform:"translateY(-50%)",zIndex:10,width:12,height:12,borderRadius:"50%",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,border:`1.5px solid ${rightC==="same"?"#4F6EF7":"#F87171"}`,color:rightC==="same"?"#4F6EF7":"#F87171"}}>
+                <div style={{position:"absolute",right:-6,top:"50%",transform:"translateY(-50%)",zIndex:10,width:12,height:12,borderRadius:"50%",background:"var(--color-surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,border:`1.5px solid ${rightC==="same"?"var(--color-accent-primary)":"#F87171"}`,color:rightC==="same"?"var(--color-accent-primary)":"#F87171"}}>
                   {rightC==="same"?"=":"×"}
                 </div>
               )}
               {bottomC&&r<board.size-1&&(
-                <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",zIndex:10,width:12,height:12,borderRadius:"50%",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,border:`1.5px solid ${bottomC==="same"?"#4F6EF7":"#F87171"}`,color:bottomC==="same"?"#4F6EF7":"#F87171"}}>
+                <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",zIndex:10,width:12,height:12,borderRadius:"50%",background:"var(--color-surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,border:`1.5px solid ${bottomC==="same"?"var(--color-accent-primary)":"#F87171"}`,color:bottomC==="same"?"var(--color-accent-primary)":"#F87171"}}>
                   {bottomC==="same"?"=":"×"}
                 </div>
               )}
@@ -336,12 +336,12 @@ function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
         }))}
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-        <span style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"var(--text4)"}}><SunIcon size={11}/> Sun</span>
-        <span style={{color:"var(--border2)"}}>·</span>
-        <span style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"var(--text4)"}}><MoonIcon size={11}/> Moon</span>
-        <span style={{color:"var(--border2)"}}>·</span>
+        <span style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"var(--color-text-secondary)"}}><SunIcon size={11}/> Sun</span>
+        <span style={{color:"var(--color-border)"}}>·</span>
+        <span style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"var(--color-text-secondary)"}}><MoonIcon size={11}/> Moon</span>
+        <span style={{color:"var(--color-border)"}}>·</span>
         <button onClick={()=>{setPlayerGrid(board.puzzle.map(r=>[...r]));setStatuses(board.puzzle.map(r=>r.map(c=>c!==null?"given":"empty")));setSolved(false);setErrorRows(new Set());setErrorCols(new Set());}}
-          style={{fontSize:10,color:"#4F6EF7",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Reset</button>
+          style={{fontSize:10,color:"var(--color-accent-primary)",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Reset</button>
       </div>
     </div>
   );
@@ -382,7 +382,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
     "flow": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(79,110,247,0.04)" rx={8}/>
-        {([ ["#EF4444","0,0","0,3"],[" #3B82F6","3,0","3,3"],["#22C55E","0,2","2,0"],["#F59E0B","1,3","3,2"] ] as [string,string,string][]).map(([c,s,e],i)=>(
+        {([ ["var(--color-error)","0,0","0,3"],[" #3B82F6","3,0","3,3"],["#22C55E","0,2","2,0"],["#F59E0B","1,3","3,2"] ] as [string,string,string][]).map(([c,s,e],i)=>(
           <g key={i}>
             <circle cx={parseInt(s.split(",")[1])*20+10} cy={parseInt(s.split(",")[0])*20+10} r={8} fill={c}/>
             <circle cx={parseInt(e.split(",")[1])*20+10} cy={parseInt(e.split(",")[0])*20+10} r={8} fill={c}/>
@@ -405,7 +405,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
           [65, 65, 3],
         ] as [number, number, number][]).map(([x, y, n], i) => (
           <g key={i}>
-            <circle cx={x} cy={y} r={10} fill="#4F6EF7"/>
+            <circle cx={x} cy={y} r={10} fill="var(--color-accent-primary)"/>
             <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
               style={{fontSize:9,fontWeight:700,fill:"white"}}>{n}</text>
           </g>
@@ -485,7 +485,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
               <text
                 x={c * 22 + 22} y={r * 22 + 22}
                 textAnchor="middle" dominantBaseline="middle"
-                style={{fontSize:9, fontWeight:700, fill:"#4F6EF7"}}
+                style={{fontSize:9, fontWeight:700, fill:"var(--color-accent-primary)"}}
               >4</text>
             )}
           </g>
@@ -496,7 +496,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
     "gravity-sort": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(194,65,12,0.04)" rx={8}/>
-        {([["#EF4444","#3B82F6","#22C55E"],["#3B82F6","#22C55E","#EF4444"],["#22C55E","#EF4444","#3B82F6"]] as string[][]).map((col,c)=>col.map((color,r)=>(
+        {([["var(--color-error)","#3B82F6","#22C55E"],["#3B82F6","#22C55E","var(--color-error)"],["#22C55E","var(--color-error)","#3B82F6"]] as string[][]).map((col,c)=>col.map((color,r)=>(
           <rect key={`${c}-${r}`} x={c*22+12} y={r*18+14} width={18} height={15} rx={4} fill={color} opacity={0.85}/>
         )))}
         <text x={40} y={74} textAnchor="middle" style={{fontSize:8,fill:"#94A3B8"}}>Sort by color</text>
@@ -519,7 +519,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(8,145,178,0.04)" rx={8}/>
         {([[false,true,false,true],[true,false,true,false],[false,true,false,true],[true,true,false,false],[false,false,true,true],[true,false,true,false],[false,true,true,false],[false,false,false,true],[true,false,false,false]] as boolean[][]).map((pipe,i)=>{
-          const r=Math.floor(i/3),c=i%3,cx=c*22+22,cy=r*22+22,w=3;const color="#4F6EF7";
+          const r=Math.floor(i/3),c=i%3,cx=c*22+22,cy=r*22+22,w=3;const color="var(--color-accent-primary)";
           return<g key={i}>{pipe[0]&&<rect x={cx-w/2} y={cy-11} width={w} height={11} fill={color} rx={1}/>}{pipe[1]&&<rect x={cx} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}{pipe[2]&&<rect x={cx-w/2} y={cy} width={w} height={11} fill={color} rx={1}/>}{pipe[3]&&<rect x={cx-11} y={cy-w/2} width={11} height={w} fill={color} rx={1}/>}<circle cx={cx} cy={cy} r={w*0.9} fill={color}/></g>;
         })}
       </svg>
@@ -538,7 +538,7 @@ function LandingSnapshot({ slug }: { slug: string }) {
     "patches": (
       <svg width={80} height={80} viewBox="0 0 80 80">
         <rect width={80} height={80} fill="rgba(245,158,11,0.04)" rx={8}/>
-        {([[0,"#EF4444"],[0,"#EF4444"],[1,"#3B82F6"],[1,"#3B82F6"],[0,"#EF4444"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[3,"#F59E0B"],[2,"#22C55E"],[3,"#F59E0B"]] as [number,string][]).map(([,color],i)=>{
+        {([[0,"var(--color-error)"],[0,"var(--color-error)"],[1,"#3B82F6"],[1,"#3B82F6"],[0,"var(--color-error)"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[2,"#22C55E"],[2,"#22C55E"],[1,"#3B82F6"],[3,"#F59E0B"],[3,"#F59E0B"],[2,"#22C55E"],[3,"#F59E0B"]] as [number,string][]).map(([,color],i)=>{
           const r=Math.floor(i/4),c=i%4;
           return<rect key={i} x={c*16+8} y={r*16+8} width={15} height={15} fill={color} opacity={0.8} rx={2}/>;
         })}
@@ -632,8 +632,8 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
             </AnimatePresence>
           </div>
           <div style={{ padding:"11px 14px 13px" }}>
-            <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:3 }}>{game.name}</p>
-            <p style={{ fontSize:11, color:"var(--text3)", lineHeight:1.5 }}>{game.desc}</p>
+            <p style={{ fontSize:13, fontWeight:700, color:"var(--color-text-primary)", marginBottom:3 }}>{game.name}</p>
+            <p style={{ fontSize:11, color:"var(--color-text-secondary)", lineHeight:1.5 }}>{game.desc}</p>
           </div>
         </div>
       </Link>
@@ -650,10 +650,10 @@ function TrustpilotBadge() {
           <span key={s} style={{fontSize:28,color:"#F59E0B"}}>★</span>
         ))}
       </div>
-      <p style={{fontSize:16,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:6}}>
+      <p style={{fontSize:16,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:6}}>
         Loved by brain-training fans
       </p>
-      <p style={{fontSize:13,color:"var(--text3)",marginBottom:16,lineHeight:1.6}}>
+      <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:16,lineHeight:1.6}}>
         "Addictive, beautiful, and actually makes me feel sharper."
       </p>
       <a href="https://www.trustpilot.com/review/mindelement.app" target="_blank"
@@ -699,7 +699,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="home-page" style={{ minHeight:"100vh", color:"var(--text1)" }}>
+    <div className="home-page" style={{ minHeight:"100vh", color:"var(--color-text-primary)" }}>
 
       {/* ── NAV ── */} 
 /*
@@ -707,15 +707,15 @@ export default function LandingPage() {
   position:"fixed", top:0, left:0, right:0, zIndex:50,
   padding:"0 16px", height:56,
   display:"flex", alignItems:"center", justifyContent:"space-between",
-  background:"color-mix(in srgb, var(--bg) 93%, transparent)",
+  background:"color-mix(in srgb, var(--color-bg) 93%, transparent)",
   backdropFilter:"blur(20px)",
-  borderBottom:"0.5px solid var(--border)",
+  borderBottom:"0.5px solid var(--color-border)",
   boxShadow:"0 1px 3px rgba(0,0,0,0.04)",
 }}>
   {/* Logo */}
       <Link href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", flexShrink:0 }}>
     <img src="/icons/icon-192.png" alt="MindElement" style={{ width:30, height:30, borderRadius:"22.5%", objectFit:"cover" }}/>
-    <span className="nav-logo-text" style={{ fontWeight:700, fontSize:16, color:"var(--text1)", fontFamily:"Georgia,serif" }}>
+    <span className="nav-logo-text" style={{ fontWeight:700, fontSize:16, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>
       MindElement
     </span>
   </Link>
@@ -724,9 +724,9 @@ export default function LandingPage() {
   <div className="nav-links-desktop" style={{ gap:4 }}>
     {[["Games","/games"],["Leaderboard","/leaderboard"],["Family","/family"],["Pricing","/pricing"]].map(([l,h])=>(
       <Link key={l} href={h}
-        style={{ fontSize:14, color:"var(--text3)", padding:"7px 14px", borderRadius:10, textDecoration:"none", fontWeight:500 }}
-        onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text1)"}
-        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--text3)"}>
+        style={{ fontSize:14, color:"var(--color-text-secondary)", padding:"7px 14px", borderRadius:10, textDecoration:"none", fontWeight:500 }}
+        onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--color-text-primary)"}
+        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--color-text-secondary)"}>
         {l}
       </Link>
     ))}
@@ -737,18 +737,18 @@ export default function LandingPage() {
  
     {/* Token counter — hide on mobile, too cramped */}
     {user && !isPro && (
-      <div className="hide-mobile-flex" style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:20, background:"var(--bg2)", border:"0.5px solid var(--border)" }}>
-        <Zap size={12} color={tokens>0?"#4F6EF7":"#EF4444"} fill={tokens>0?"#4F6EF7":"#EF4444"}/>
-        <span style={{ fontSize:11, fontWeight:700, color:tokens>0?"#4F6EF7":"#EF4444" }}>{tokens}</span>
-        <span style={{ fontSize:10, color:"var(--text4)" }}>/ {FREE_DAILY_TOKENS}</span>
+      <div className="hide-mobile-flex" style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:20, background:"var(--color-surface-2)", border:"0.5px solid var(--color-border)" }}>
+        <Zap size={12} color={tokens>0?"var(--color-accent-primary)":"var(--color-error)"} fill={tokens>0?"var(--color-accent-primary)":"var(--color-error)"}/>
+        <span style={{ fontSize:11, fontWeight:700, color:tokens>0?"var(--color-accent-primary)":"var(--color-error)" }}>{tokens}</span>
+        <span style={{ fontSize:10, color:"var(--color-text-secondary)" }}>/ {FREE_DAILY_TOKENS}</span>
       </div>
     )}
  
     {/* Pro badge — hide on mobile */}
     {user && isPro && (
       <div className="hide-mobile-flex" style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:20, background:"rgba(79,110,247,0.1)", border:"0.5px solid rgba(79,110,247,0.2)" }}>
-        <Infinity size={12} color="#4F6EF7"/>
-        <span style={{ fontSize:11, fontWeight:700, color:"#4F6EF7" }}>Pro</span>
+        <Infinity size={12} color="var(--color-accent-primary)"/>
+        <span style={{ fontSize:11, fontWeight:700, color:"var(--color-accent-primary)" }}>Pro</span>
       </div>
     )}
  
@@ -759,7 +759,7 @@ export default function LandingPage() {
         onClick={triggerInstall}
         className="hide-mobile-flex"
         style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20,
-          background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", border:"none", cursor:"pointer",
+          background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", border:"none", cursor:"pointer",
           color:"white", fontSize:12, fontWeight:600 }}>
         <Download size={13}/>
         Install App
@@ -770,32 +770,32 @@ export default function LandingPage() {
     <button onClick={toggleAccessibilityMode} title={isAccessibilityMode?"Accessibility on":"Accessibility off"}
       className="hide-mobile-flex"
       style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer",
-        display:"flex", color:isAccessibilityMode?"#4F6EF7":"var(--text4)" }}>
+        display:"flex", color:isAccessibilityMode?"var(--color-accent-primary)":"var(--color-text-secondary)" }}>
       <Accessibility size={15}/>
     </button>
  
     {/* Silent mode */}
     <button onClick={toggleSilentMode}
-      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
+      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}>
       {isSilentMode?<VolumeX size={15}/>:<Volume2 size={15}/>}
     </button>
  
     {/* Theme toggle */}
     <button onClick={toggleTheme}
-      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--text4)", display:"flex" }}>
+      style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}>
       {theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}
     </button>
  
     {/* Auth */}
     {user ? (
       <Link href="/profile" style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 8px 5px 5px", borderRadius:13,
-        border:"0.5px solid rgba(0,0,0,0.09)", background:"var(--surface)", textDecoration:"none", cursor:"pointer" }}>
-        <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+        border:"0.5px solid rgba(0,0,0,0.09)", background:"var(--color-surface)", textDecoration:"none", cursor:"pointer" }}>
+        <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
           display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"white" }}>
           {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
         </div>
         {/* Username — hide on mobile */}
-        <span className="hide-mobile-flex" style={{ fontSize:12, fontWeight:600, color:"var(--text2)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+        <span className="hide-mobile-flex" style={{ fontSize:12, fontWeight:600, color:"var(--color-text-secondary)", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
           {profile?.username ?? "Profile"}
         </span>
       </Link>
@@ -803,12 +803,12 @@ export default function LandingPage() {
       <div style={{ display:"flex", gap:6, alignItems:"center" }}>
         {/* Sign in — desktop only */}
         <Link href="/auth/signin" className="hide-mobile-flex"
-          style={{ fontSize:13, color:"var(--text3)", padding:"7px 12px", borderRadius:10, textDecoration:"none" }}>
+          style={{ fontSize:13, color:"var(--color-text-secondary)", padding:"7px 12px", borderRadius:10, textDecoration:"none" }}>
           Sign in
         </Link>
         <Link href="/auth/signup"
           style={{ fontSize:13, fontWeight:700, color:"white", padding:"8px 14px", borderRadius:12,
-            background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", textDecoration:"none",
+            background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", textDecoration:"none",
             boxShadow:"0 3px 10px rgba(79,110,247,0.3)", whiteSpace:"nowrap" }}>
           Start Playing
         </Link>
@@ -826,27 +826,27 @@ export default function LandingPage() {
       {/* ── HERO ── */}
       <section className="hero-grid" style={{ maxWidth:1200, margin:"0 auto", padding:"100px 48px 80px", minHeight:"100vh" }}>
         <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6 }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 16px", borderRadius:20, background:"var(--surface)", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", marginBottom:28, fontSize:13, color:"var(--text3)", fontWeight:500 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 16px", borderRadius:20, background:"var(--color-surface)", border:"0.5px solid var(--color-border)", boxShadow:"var(--shadow-sm)", marginBottom:28, fontSize:13, color:"var(--color-text-secondary)", fontWeight:500 }}>
             <span style={{ width:8, height:8, borderRadius:"50%", background:"#22C55E", display:"block" }}/>
             An evolving suite of elite logic experiences · Free to start
           </div>
 
-          <h1 className="hero-h1" style={{ fontFamily:"Georgia,serif", fontWeight:700, lineHeight:1.06, marginBottom:24, fontSize:"clamp(52px,5.5vw,80px)" }}>
-            <span style={{ display:"block", color:"var(--text1)" }}>One Playground</span>
-            <span style={{ display:"block", fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8,#C4785A)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>for Evolving Minds.</span>
+          <h1 className="hero-h1" style={{ fontFamily:"var(--font-sans)", fontWeight:700, lineHeight:1.06, marginBottom:24, fontSize:"clamp(52px,5.5vw,80px)" }}>
+            <span style={{ display:"block", color:"var(--color-text-primary)" }}>One Playground</span>
+            <span style={{ display:"block", fontStyle:"italic", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary),#C4785A)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>for Evolving Minds.</span>
           </h1>
 
-          <p style={{ fontSize:20, color:"var(--text3)", lineHeight:1.65, marginBottom:36, maxWidth:460 }}>
+          <p style={{ fontSize:20, color:"var(--color-text-secondary)", lineHeight:1.65, marginBottom:36, maxWidth:460 }}>
             Step into an elegant, ad-free world of structural logic and language play — crafted to spark foundational reasoning in kids, clear cognitive overload for busy professionals, and preserve sharp recall for active seniors.
           </p>
 
           <div style={{ display:"flex", gap:14, marginBottom:40, flexWrap:"wrap" }}>
             <Link href={user?"/games":"/auth/signup"}
-              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", color:"white", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 24px rgba(79,110,247,0.35)" }}>
+              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color:"white", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 24px rgba(79,110,247,0.35)" }}>
               Start Training Free <ChevronRight size={16}/>
             </Link>
             <Link href="/games"
-              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--surface)", color:"var(--text2)", fontWeight:600, fontSize:16, textDecoration:"none", border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)" }}>
+              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--color-surface)", color:"var(--color-text-secondary)", fontWeight:600, fontSize:16, textDecoration:"none", border:"0.5px solid var(--color-border)", boxShadow:"var(--shadow-sm)" }}>
               Explore Games <ArrowRight size={15}/>
             </Link>
             {/* Hero-level install CTA — only on mobile when installable */}
@@ -855,7 +855,7 @@ export default function LandingPage() {
                 initial={{ opacity:0, y:8 }}
                 animate={{ opacity:1, y:0 }}
                 onClick={triggerInstall}
-                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--surface)", color:"var(--text2)", fontWeight:600, fontSize:16, border:"0.5px solid var(--border)", boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"15px 28px", borderRadius:16, background:"var(--color-surface)", color:"var(--color-text-secondary)", fontWeight:600, fontSize:16, border:"0.5px solid var(--color-border)", boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
                 <Download size={15}/> Install App
               </motion.button>
             )}
@@ -865,7 +865,7 @@ export default function LandingPage() {
           <div style={{ display:"flex", alignItems:"center", gap:14 }}>
             <div style={{ display:"flex" }}>
               {[IMGS.cafe,IMGS.park,IMGS.work_w,IMGS.subway,IMGS.dining].map((img,i)=>(
-                <div key={i} style={{ width:34, height:34, borderRadius:"50%", border:"2.5px solid var(--bg)", marginLeft:i>0?-10:0, position:"relative", zIndex:5-i, overflow:"hidden", boxShadow:"0 2px 6px rgba(0,0,0,0.15)" }}>
+                <div key={i} style={{ width:34, height:34, borderRadius:"50%", border:"2.5px solid var(--color-bg)", marginLeft:i>0?-10:0, position:"relative", zIndex:5-i, overflow:"hidden", boxShadow:"0 2px 6px rgba(0,0,0,0.15)" }}>
                   <img src={img} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                 </div>
               ))}
@@ -874,7 +874,7 @@ export default function LandingPage() {
               <div style={{ display:"flex", gap:1, marginBottom:3 }}>
                 {[1,2,3,4,5].map(i=><Star key={i} size={13} fill="#F59E0B" color="#F59E0B"/>)}
               </div>
-              <p style={{ fontSize:13, color:"var(--text4)" }}>Loved by players everywhere</p>
+              <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>Loved by players everywhere</p>
             </div>
           </div>
         </motion.div>
@@ -883,10 +883,10 @@ export default function LandingPage() {
         <motion.div className="hero-device" initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6, delay:0.15 }} style={{ display:"flex", justifyContent:"center" }}>
           <div style={{ position:"relative" }}>
             <div style={{ background:"linear-gradient(145deg,#E8E4DE,#CEC9C1)", borderRadius:32, padding:12, boxShadow:"0 40px 80px rgba(0,0,0,0.2),0 8px 24px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.5)" }}>
-              <div style={{ background:"var(--surface)", borderRadius:22, overflow:"hidden", minWidth:340, boxShadow:"inset 0 2px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 18px", background:"var(--bg2)", borderBottom:"0.5px solid var(--border)" }}>
-                  <span style={{ fontSize:11, fontWeight:600, color:"var(--text4)", fontFamily:"monospace" }}>9:41</span>
-                  <div style={{ display:"flex", gap:3 }}>{[0,1,2].map(i=><div key={i} style={{ width:4, height:4, borderRadius:"50%", background:"var(--border2)" }}/>)}</div>
+              <div style={{ background:"var(--color-surface)", borderRadius:22, overflow:"hidden", minWidth:340, boxShadow:"inset 0 2px 8px rgba(0,0,0,0.06)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 18px", background:"var(--color-surface-2)", borderBottom:"0.5px solid var(--color-border)" }}>
+                  <span style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>9:41</span>
+                  <div style={{ display:"flex", gap:3 }}>{[0,1,2].map(i=><div key={i} style={{ width:4, height:4, borderRadius:"50%", background:"var(--color-border)" }}/>)}</div>
                 </div>
                 <HeroCarousel/>
               </div>
@@ -897,7 +897,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── VALUE BAR ── */}
-      <section style={{ background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", padding:"22px 48px" }}>
+      <section style={{ background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", padding:"22px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-around", flexWrap:"wrap", gap:16 }}>
           {[
             { icon:Trophy,   text:"Dozens of Elite Disciplines" },
@@ -918,11 +918,11 @@ export default function LandingPage() {
       {/* ── TOKEN ECONOMY ── */}
       <section style={{ maxWidth:1200, margin:"0 auto", padding:"72px 48px 0" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ marginBottom:36 }}>
-          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>How it works</p>
-          <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12 }}>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:10 }}>How it works</p>
+          <h2 style={{ fontSize:40, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:12 }}>
             Train your mind, every day.
           </h2>
-          <p style={{ fontSize:18, color:"var(--text3)", maxWidth:560 }}>
+          <p style={{ fontSize:18, color:"var(--color-text-secondary)", maxWidth:560 }}>
             Free players get 5 daily training sessions across the full vault. Pro subscribers train without limits.
           </p>
         </motion.div>
@@ -932,11 +932,11 @@ export default function LandingPage() {
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0 }}
             className="ms-card" style={{ padding:"28px" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
-              <Zap size={22} color="#4F6EF7"/>
+              <Zap size={22} color="var(--color-accent-primary)"/>
             </div>
-            <p style={{ fontSize:48, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>5</p>
-            <p style={{ fontSize:16, fontWeight:600, color:"var(--text2)", marginBottom:6 }}>Free Daily Plays</p>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Access the full vault. Sessions reset every 24 hours at midnight.</p>
+            <p style={{ fontSize:48, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", lineHeight:1, marginBottom:8 }}>5</p>
+            <p style={{ fontSize:16, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:6 }}>Free Daily Plays</p>
+            <p style={{ fontSize:14, color:"var(--color-text-secondary)", lineHeight:1.6 }}>Access the full vault. Sessions reset every 24 hours at midnight.</p>
           </motion.div>
 
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.08 }}
@@ -944,20 +944,20 @@ export default function LandingPage() {
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(245,158,11,0.15)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Flame size={22} color="#F59E0B" className="streak-fire"/>
             </div>
-            <p style={{ fontSize:48, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>+10</p>
-            <p style={{ fontSize:16, fontWeight:600, color:"var(--text2)", marginBottom:6 }}>Weekly Streak Bonus</p>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.6 }}>Play 7 days in a row and earn 10 bonus plays automatically added to your account.</p>
+            <p style={{ fontSize:48, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", lineHeight:1, marginBottom:8 }}>+10</p>
+            <p style={{ fontSize:16, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:6 }}>Weekly Streak Bonus</p>
+            <p style={{ fontSize:14, color:"var(--color-text-secondary)", lineHeight:1.6 }}>Play 7 days in a row and earn 10 bonus plays automatically added to your account.</p>
           </motion.div>
 
           <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.16 }}
-            style={{ background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", borderRadius:24, padding:"28px 28px", boxShadow:"0 16px 40px rgba(79,110,247,0.25)" }}>
+            style={{ background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", borderRadius:24, padding:"28px 28px", boxShadow:"0 16px 40px rgba(79,110,247,0.25)" }}>
             <div style={{ width:44, height:44, borderRadius:14, background:"rgba(255,255,255,0.2)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
               <Infinity size={22} color="white"/>
             </div>
-            <p style={{ fontSize:48, fontWeight:700, color:"white", fontFamily:"Georgia,serif", lineHeight:1, marginBottom:8 }}>∞</p>
+            <p style={{ fontSize:48, fontWeight:700, color:"white", fontFamily:"var(--font-sans)", lineHeight:1, marginBottom:8 }}>∞</p>
             <p style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,0.95)", marginBottom:6 }}>Pro Unlimited</p>
             <p style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.6 }}>Unlimited training, thousands of stages across all games, and family leaderboards from $2/mo.</p>
-            <Link href="/pricing" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 18px", borderRadius:12, background:"white", color:"#4F6EF7", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+            <Link href="/pricing" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 18px", borderRadius:12, background:"white", color:"var(--color-accent-primary)", fontSize:13, fontWeight:700, textDecoration:"none" }}>
               Upgrade <ChevronRight size={13}/>
             </Link>
           </motion.div>
@@ -967,15 +967,15 @@ export default function LandingPage() {
       {/* ── WHO IT'S FOR ── */}
       <section style={{ maxWidth:1200, margin:"0 auto", padding:"72px 48px 0" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ textAlign:"center", marginBottom:48 }}>
-          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>Built for Every Stage of Life</p>
-          <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.1 }}>
-            One app. <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Every generation.</em>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:10 }}>Built for Every Stage of Life</p>
+          <h2 style={{ fontSize:40, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:12, lineHeight:1.1 }}>
+            One app. <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Every generation.</em>
           </h2>
         </motion.div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))", gap:20, marginBottom:72 }}>
           {[
   {
-    icon:<Users size={22} color="#4F6EF7"/>,
+    icon:<Users size={22} color="var(--color-accent-primary)"/>,
     tag:"The Modern Parent",
     heading:"Screen time you can finally feel good about.",
     body:"Replace mindless feeds with structural logic games that foster spatial awareness and deep critical planning from an early age. MindElement grows with your child.",
@@ -1003,9 +1003,9 @@ export default function LandingPage() {
               initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
               className="ms-card" style={{ padding:"32px 28px" }}>
               <div style={{ width:44, height:44, borderRadius:14, background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>{item.icon}</div>
-              <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>{item.tag}</p>
-              <h3 style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:12, lineHeight:1.3 }}>{item.heading}</h3>
-              <p style={{ fontSize:15, color:"var(--text3)", lineHeight:1.7 }}>{item.body}</p>
+              <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:10 }}>{item.tag}</p>
+              <h3 style={{ fontSize:20, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:12, lineHeight:1.3 }}>{item.heading}</h3>
+              <p style={{ fontSize:15, color:"var(--color-text-secondary)", lineHeight:1.7 }}>{item.body}</p>
             </motion.div>
           ))}
         </div>
@@ -1039,13 +1039,13 @@ export default function LandingPage() {
       {/* ── GAMES COLLECTION ── */}
       <section style={{ maxWidth:1200, margin:"0 auto", padding:"0 48px 80px" }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} style={{ marginBottom:32 }}>
-          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>The Collection</p>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:10 }}>The Collection</p>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
-            <h2 style={{ fontSize:40, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1.1 }}>
+            <h2 style={{ fontSize:40, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", lineHeight:1.1 }}>
               An Evolving Vault.<br/>
-              <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>One Subscription.</em>
+              <em style={{ fontStyle:"italic", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>One Subscription.</em>
             </h2>
-            <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 20px", borderRadius:14, border:"0.5px solid var(--border)", background:"var(--surface)", color:"var(--text2)", textDecoration:"none", fontSize:14, fontWeight:600 }}>
+            <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 20px", borderRadius:14, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", color:"var(--color-text-secondary)", textDecoration:"none", fontSize:14, fontWeight:600 }}>
               View All Games <ArrowRight size={14}/>
             </Link>
           </div>
@@ -1060,24 +1060,24 @@ export default function LandingPage() {
 
       <div id="how-it-works" style={{scrollMarginTop:"70px"}}/>
       {/* ── HOW IT WORKS ── */}
-      <section style={{ background:"var(--bg2)", borderTop:"0.5px solid var(--border)", borderBottom:"0.5px solid var(--border)", padding:"72px 48px" }}>
+      <section style={{ background:"var(--color-surface-2)", borderTop:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", padding:"72px 48px" }}>
         <div style={{ maxWidth:1000, margin:"0 auto" }}>
-          <h2 style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:40, color:"var(--text1)", textAlign:"center", marginBottom:52 }}>
+          <h2 style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:40, color:"var(--color-text-primary)", textAlign:"center", marginBottom:52 }}>
             Built for the Modern Mind
           </h2>
           <div className="how-grid">
             {[
-              { from:"#4F6EF7", to:"#7C4FD4", num:"01", title:"Choose a discipline", body:"24 logic games, each with its own rhythm. Start free with any game — no account needed." },
-              { from:"#9C6BE8", to:"#C4785A", num:"02", title:"Train daily",          body:"XP decays in real time. The faster you solve, the more you earn. Build a streak for bonus plays." },
+              { from:"var(--color-accent-primary)", to:"#7C4FD4", num:"01", title:"Choose a discipline", body:"24 logic games, each with its own rhythm. Start free with any game — no account needed." },
+              { from:"var(--color-accent-primary)", to:"#C4785A", num:"02", title:"Train daily",          body:"XP decays in real time. The faster you solve, the more you earn. Build a streak for bonus plays." },
               { from:"#7C9E87", to:"#4A7C59", num:"03", title:"Master and compete",   body:"Family leaderboards, shareable challenge links, and real-time celebrations when records fall." },
             ].map((s,i)=>(
               <motion.div key={i} initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.1 }}
                 className="ms-card" style={{ padding:28 }}>
-                <div style={{ width:44, height:44, borderRadius:"22.5%", background:`linear-gradient(135deg,${s.from},${s.to})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:"white", fontFamily:"Georgia,serif", marginBottom:16 }}>
+                <div style={{ width:44, height:44, borderRadius:"22.5%", background:`linear-gradient(135deg,${s.from},${s.to})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:"white", fontFamily:"var(--font-sans)", marginBottom:16 }}>
                   {s.num}
                 </div>
-                <p style={{ fontSize:17, fontWeight:700, color:"var(--text1)", marginBottom:10 }}>{s.title}</p>
-                <p style={{ fontSize:15, color:"var(--text3)", lineHeight:1.65 }}>{s.body}</p>
+                <p style={{ fontSize:17, fontWeight:700, color:"var(--color-text-primary)", marginBottom:10 }}>{s.title}</p>
+                <p style={{ fontSize:15, color:"var(--color-text-secondary)", lineHeight:1.65 }}>{s.body}</p>
               </motion.div>
             ))}
           </div>
@@ -1090,14 +1090,14 @@ export default function LandingPage() {
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,rgba(79,110,247,0.87),rgba(156,107,232,0.78))" }}/>
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 48px" }}>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}>
-            <h2 style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:48, color:"white", marginBottom:14, lineHeight:1.08 }}>
+            <h2 style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:48, color:"white", marginBottom:14, lineHeight:1.08 }}>
               Your sharpest self<br/><em>starts here.</em>
             </h2>
             <p style={{ fontSize:18, color:"rgba(255,255,255,0.8)", marginBottom:32, maxWidth:440 }}>
               Join a growing community of curious minds training daily. 5 free sessions every day. No credit card needed.
             </p>
             <Link href={user?"/games":"/auth/signup"}
-              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"16px 32px", borderRadius:18, background:"white", color:"#4F6EF7", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 28px rgba(0,0,0,0.2)" }}>
+              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"16px 32px", borderRadius:18, background:"white", color:"var(--color-accent-primary)", fontWeight:700, fontSize:16, textDecoration:"none", boxShadow:"0 8px 28px rgba(0,0,0,0.2)" }}>
               Start Training Free <ChevronRight size={16}/>
             </Link>
           </motion.div>
@@ -1111,39 +1111,39 @@ export default function LandingPage() {
       {/* ── PRICING ── */}
       <section style={{ maxWidth:1000, margin:"0 auto", padding:"80px 48px" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
-          <h2 style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:40, color:"var(--text1)", marginBottom:10 }}>Simple, Honest Pricing</h2>
-          <p style={{ fontSize:18, color:"var(--text4)" }}>Less than a coffee. Invest in the sharpest version of your household.</p>
+          <h2 style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:40, color:"var(--color-text-primary)", marginBottom:10 }}>Simple, Honest Pricing</h2>
+          <p style={{ fontSize:18, color:"var(--color-text-secondary)" }}>Less than a coffee. Invest in the sharpest version of your household.</p>
         </div>
         <div className="pricing-grid" style={{ alignItems:"start", maxWidth:860, margin:"0 auto" }}>
           {PLANS.map((plan,i)=>(
             <motion.div key={i} initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:i*0.08 }}
               style={{ borderRadius:24, padding:28, position:"relative",
-                background: plan.highlight ? "linear-gradient(135deg,#4F6EF7,#9C6BE8)" : "var(--surface)",
-                border: plan.highlight ? "none" : "0.5px solid var(--border)",
+                background: plan.highlight ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)",
+                border: plan.highlight ? "none" : "0.5px solid var(--color-border)",
                 boxShadow: plan.highlight ? "0 24px 56px rgba(79,110,247,0.3)" : "var(--shadow-sm)",
-                color: plan.highlight ? "white" : "var(--text1)" }}>
+                color: plan.highlight ? "white" : "var(--color-text-primary)" }}>
               {plan.highlight&&(
-                <div style={{ position:"absolute", top:-13, left:"50%", transform:"translateX(-50%)", fontSize:10, fontWeight:700, color:"#4F6EF7", background:"white", padding:"4px 14px", borderRadius:20, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", whiteSpace:"nowrap" }}>
+                <div style={{ position:"absolute", top:-13, left:"50%", transform:"translateX(-50%)", fontSize:10, fontWeight:700, color:"var(--color-accent-primary)", background:"white", padding:"4px 14px", borderRadius:20, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", whiteSpace:"nowrap" }}>
                   Most Popular
                 </div>
               )}
-              <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:12, color:plan.highlight?"rgba(255,255,255,0.65)":"var(--text4)" }}>{plan.name}</p>
+              <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:12, color:plan.highlight?"rgba(255,255,255,0.65)":"var(--color-text-secondary)" }}>{plan.name}</p>
               <div style={{ display:"flex", alignItems:"flex-end", gap:4, marginBottom:22 }}>
-                <span style={{ fontSize:52, fontWeight:700, lineHeight:1, fontFamily:"Georgia,serif" }}>{plan.price}</span>
+                <span style={{ fontSize:52, fontWeight:700, lineHeight:1, fontFamily:"var(--font-sans)" }}>{plan.price}</span>
                 <span style={{ fontSize:14, paddingBottom:7, opacity:0.6 }}>{plan.period}</span>
               </div>
               <ul style={{ listStyle:"none", marginBottom:24, display:"flex", flexDirection:"column", gap:10 }}>
                 {plan.features.map((f,j)=>(
-                  <li key={j} style={{ display:"flex", alignItems:"center", gap:10, fontSize:14, color:plan.highlight?"rgba(255,255,255,0.88)":"var(--text2)" }}>
+                  <li key={j} style={{ display:"flex", alignItems:"center", gap:10, fontSize:14, color:plan.highlight?"rgba(255,255,255,0.88)":"var(--color-text-secondary)" }}>
                     <div style={{ width:18, height:18, borderRadius:"50%", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:plan.highlight?"rgba(255,255,255,0.2)":"#EEF2FF" }}>
-                      <Check size={10} color={plan.highlight?"white":"#4F6EF7"}/>
+                      <Check size={10} color={plan.highlight?"white":"var(--color-accent-primary)"}/>
                     </div>
                     {f}
                   </li>
                 ))}
               </ul>
               {plan.free ? (
-                <Link href="/auth/signup" style={{ display:"block", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, textDecoration:"none", background:"var(--surface)", color:"var(--text2)", border:"1.5px solid var(--border2)" }}>
+                <Link href="/auth/signup" style={{ display:"block", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, textDecoration:"none", background:"var(--color-surface)", color:"var(--color-text-secondary)", border:"1.5px solid var(--color-border)" }}>
                   Start Training Free
                 </Link>
               ) : (
@@ -1159,8 +1159,8 @@ export default function LandingPage() {
                   }}
                   style={{ display:"block", width:"100%", textAlign:"center", padding:"13px", borderRadius:14, fontWeight:700, fontSize:14, cursor:"pointer", border:"none",
                     background: plan.highlight ? "white" : "transparent",
-                    color: plan.highlight ? "#4F6EF7" : "var(--text2)",
-                    outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
+                    color: plan.highlight ? "var(--color-accent-primary)" : "var(--color-text-secondary)",
+                    outline: plan.highlight ? "none" : "1.5px solid var(--color-border)" }}>
                   Test your skills free now
                 </button>
               )}
@@ -1173,8 +1173,8 @@ export default function LandingPage() {
       <div id="faq" style={{scrollMarginTop:"70px"}}/>
       <section style={{ maxWidth:720, margin:"0 auto", padding:"80px 48px" }}>
         <div style={{ textAlign:"center", marginBottom:48 }}>
-          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)", marginBottom:10 }}>FAQ</p>
-          <h2 style={{ fontSize:36, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", lineHeight:1.15 }}>
+          <p style={{ fontSize:12, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:10 }}>FAQ</p>
+          <h2 style={{ fontSize:36, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", lineHeight:1.15 }}>
             Frequently Asked Questions
           </h2>
         </div>
@@ -1190,29 +1190,29 @@ export default function LandingPage() {
           ["Does it work offline?", "Yes. MindElement is a Progressive Web App. Install it to your home screen and play without an internet connection."],
           ["What languages are supported?", "English, Spanish, German, French, Portuguese, Dutch, and Hebrew with full right-to-left layout."],
         ].map(([q, a], i) => (
-          <details key={i} style={{ borderBottom:"0.5px solid var(--border)" }}>
-            <summary style={{ fontSize:15, fontWeight:600, color:"var(--text1)",
+          <details key={i} style={{ borderBottom:"0.5px solid var(--color-border)" }}>
+            <summary style={{ fontSize:15, fontWeight:600, color:"var(--color-text-primary)",
               padding:"18px 0", cursor:"pointer", listStyle:"none",
               display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               {q}
-              <span style={{ fontSize:20, color:"var(--text4)", flexShrink:0 }}>+</span>
+              <span style={{ fontSize:20, color:"var(--color-text-secondary)", flexShrink:0 }}>+</span>
             </summary>
-            <p style={{ fontSize:14, color:"var(--text3)", lineHeight:1.75, paddingBottom:18, maxWidth:600 }}>{a}</p>
+            <p style={{ fontSize:14, color:"var(--color-text-secondary)", lineHeight:1.75, paddingBottom:18, maxWidth:600 }}>{a}</p>
           </details>
         ))}
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop:"0.5px solid var(--border)", background:"var(--bg2)", padding:"32px 48px" }}>
+      <footer style={{ borderTop:"0.5px solid var(--color-border)", background:"var(--color-surface-2)", padding:"32px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:16 }}>
           <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
             <img src="/icons/icon-192.png" alt="MindElement" style={{ width:28, height:28, borderRadius:"22.5%", objectFit:"cover" }}/>
-            <span style={{ fontWeight:700, fontSize:15, color:"var(--text2)", fontFamily:"Georgia,serif" }}>MindElement</span>
+            <span style={{ fontWeight:700, fontSize:15, color:"var(--color-text-secondary)", fontFamily:"var(--font-sans)" }}>MindElement</span>
           </Link>
-          <p style={{ fontSize:13, color:"var(--text4)" }}>&copy; {new Date().getFullYear()} MindElement. All rights reserved.</p>
+          <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>&copy; {new Date().getFullYear()} MindElement. All rights reserved.</p>
           <div style={{ display:"flex", gap:24 }}>
             {[["Games","/games"],["Pricing","/pricing"],["Privacy","/privacy"],["Terms","/terms"],["Refund","/refund"],["Contact","/contact"]].map(([l,h])=>(
-              <Link key={l} href={h} style={{ fontSize:13, color:"var(--text4)", textDecoration:"none" }}>{l}</Link>
+              <Link key={l} href={h} style={{ fontSize:13, color:"var(--color-text-secondary)", textDecoration:"none" }}>{l}</Link>
             ))}
           </div>
         </div>

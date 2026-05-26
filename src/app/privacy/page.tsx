@@ -9,12 +9,12 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
       <Navbar />
       <main style={{ maxWidth: 720, margin: "0 auto", padding: "100px 24px 80px" }}>
         <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", color: "var(--cyan)", textTransform: "uppercase", marginBottom: 16 }}>Legal</p>
-        <h1 style={{ fontSize: 42, fontWeight: 700, fontFamily: "Georgia,serif", marginBottom: 8 }}>Privacy Policy</h1>
-        <p style={{ fontSize: 14, color: "var(--text4)", marginBottom: 48 }}>Last updated: May 2025</p>
+        <h1 style={{ fontSize: 42, fontWeight: 700, fontFamily: "var(--font-sans)", marginBottom: 8 }}>Privacy Policy</h1>
+        <p style={{ fontSize: 14, color: "var(--color-text-secondary)", marginBottom: 48 }}>Last updated: May 2025</p>
 
         <Legal title="1. Who We Are">
           MindElement ("we", "us", "our") operates the brain-training application at mindelement.app. For privacy inquiries contact us at <a href="mailto:hello@mindelement.app" style={{ color: "var(--cyan)" }}>hello@mindelement.app</a>.
@@ -76,8 +76,8 @@ export default function PrivacyPage() {
 function Legal({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section style={{ marginBottom: 36 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text1)", marginBottom: 12, fontFamily: "Georgia,serif" }}>{title}</h2>
-      <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.8 }}>{children}</p>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 12, fontFamily: "var(--font-sans)" }}>{title}</h2>
+      <p style={{ fontSize: 15, color: "var(--color-text-secondary)", lineHeight: 1.8 }}>{children}</p>
     </section>
   );
 }

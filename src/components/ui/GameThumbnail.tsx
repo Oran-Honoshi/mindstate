@@ -6,12 +6,12 @@ import { Brain } from "lucide-react";
 
 // Seeded color palette per slug — deterministic, no randomness
 const SLUG_PALETTES: Record<string, { from: string; to: string; accent: string }> = {
-  "tango":         { from:"#4F6EF7", to:"#9C6BE8", accent:"#00FFFF" },
+  "tango":         { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#00FFFF" },
   "memory":        { from:"#059669", to:"#0891B2", accent:"#39FF14" },
-  "queens":        { from:"#7C3AED", to:"#4F6EF7", accent:"#F59E0B" },
+  "queens":        { from:"#7C3AED", to:"var(--color-accent-primary)", accent:"#F59E0B" },
   "sudoku":        { from:"#1D4ED8", to:"#7C3AED", accent:"#00FFFF" },
   "zip":           { from:"#0891B2", to:"#059669", accent:"#39FF14" },
-  "flow":          { from:"#EF4444", to:"#F59E0B", accent:"#00FFFF" },
+  "flow":          { from:"var(--color-error)", to:"#F59E0B", accent:"#00FFFF" },
   "bridges":       { from:"#B45309", to:"#92400E", accent:"#FDE68A" },
   "kakuro":        { from:"#1D4ED8", to:"#1E40AF", accent:"#93C5FD" },
   "logic-path":    { from:"#0E7490", to:"#0891B2", accent:"#67E8F9" },
@@ -51,7 +51,7 @@ export function GameThumbnail({ slug, imageUrl, className = "" }: GameThumbnailP
     );
   }
 
-  const palette = SLUG_PALETTES[slug] ?? { from:"#4F6EF7", to:"#9C6BE8", accent:"#00FFFF" };
+  const palette = SLUG_PALETTES[slug] ?? { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#00FFFF" };
 
   return (
     <div style={{

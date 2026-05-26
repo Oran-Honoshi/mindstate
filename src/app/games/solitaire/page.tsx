@@ -37,12 +37,12 @@ function canStack(card:Card,onto:Card|null):boolean{if(!onto)return card.value==
 function canFoundation(card:Card,top:Card|null):boolean{if(!top)return card.value===1;return card.suit===top.suit&&card.value===top.value+1;}
 function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
-function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);}
+function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"rgba(255,255,255,0.2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>XP</span></div>);}
 
 function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean}){
   const w=small?36:48,h=small?52:68;
-  if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>);
-  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"#EEF2FF":"white",border:`1.5px solid ${selected?"#4F6EF7":"#E2E8F0"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px #4F6EF7":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
+  if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>);
+  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"#EEF2FF":"white",border:`1.5px solid ${selected?"var(--color-accent-primary)":"#E2E8F0"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px var(--color-accent-primary)":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
     <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span>
     <span style={{fontSize:small?14:16,color:cardColor(card.suit),lineHeight:1}}>{card.suit}</span>
   </motion.div>);
@@ -169,7 +169,7 @@ function SolitairePageInner(){
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <Link href="/games" style={{color:"rgba(255,255,255,0.7)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:12}}><ArrowLeft size={13}/> Games</Link>
               <div style={{width:1,height:14,background:"rgba(255,255,255,0.2)"}}/>
-              <span style={{fontSize:16,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:16,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>Moves: {moves}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>

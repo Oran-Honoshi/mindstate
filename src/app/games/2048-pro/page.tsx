@@ -46,8 +46,8 @@ function hasLost(g:Grid){if(g.some(r=>r.some(v=>v===0)))return false;for(let r=0
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
+  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
 }
 
 function TwentyFortyEightProPageInner(){
@@ -137,7 +137,7 @@ function TwentyFortyEightProPageInner(){
     window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey);
   },[handleMove]);
 
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,360):320;
   const cellSize=Math.floor((maxW-12)/4);
   const currentXP=xpState?calculateXP(xpState).currentXP:0;
@@ -147,18 +147,18 @@ function TwentyFortyEightProPageInner(){
       <Navbar/>
       <GamePageSchema slug="2048-pro" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
-        <div style={{width:"100%",maxWidth:400,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:400,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>2048 Pro</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>2048 Pro</span>
+              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>TARGET {target}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           {xpState&&<XPBar xpState={xpState}/>}
@@ -168,14 +168,14 @@ function TwentyFortyEightProPageInner(){
           {[{label:"Score",value:score},{label:"Best Tile",value:bestTile}].map(s=>(
             <div key={s.label} style={{background:"#BBADA0",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
               <p style={{fontSize:10,fontWeight:700,color:"#EEE4DA",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
-              <p style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{s.value.toLocaleString()}</p>
+              <p style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
             </div>
           ))}
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:340}}>
+            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
             Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
           </motion.div>
         )}
@@ -206,14 +206,14 @@ function TwentyFortyEightProPageInner(){
           </div>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)",textAlign:"center"}}>
+        <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>
           {solutionRevealed?"Board locked · Retry to play properly":"Arrow keys or swipe to move · Reach "+target+" to win"}
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,48px)",gridTemplateRows:"repeat(2,48px)",gap:6}}>
           {[{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}].map(btn=>(
             <button key={btn.dir} onClick={()=>handleMove(btn.dir as any)} disabled={solutionRevealed}
-              style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
+              style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
               {btn.label}
             </button>
           ))}
@@ -227,9 +227,9 @@ function TwentyFortyEightProPageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 1000</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
@@ -238,19 +238,19 @@ function TwentyFortyEightProPageInner(){
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
+              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
               {gameState==="won"?<Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>:<div style={{fontSize:48,marginBottom:16}}>😔</div>}
-              <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{gameState==="won"?`${target} Reached!`:"Game Over"}</h2>
-              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Score: {score.toLocaleString()} · Best: {bestTile}</p>
+              <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>{gameState==="won"?`${target} Reached!`:"Game Over"}</h2>
+              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Score: {score.toLocaleString()} · Best: {bestTile}</p>
               {gameState==="won"&&(
-                <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
-                  <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
-                  <p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p>
+                <div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}>
+                  <p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
+                  <p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p>
                 </div>
               )}
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
-                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
+                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
               </div>
             </motion.div>
           </motion.div>

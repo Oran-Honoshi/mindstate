@@ -53,7 +53,7 @@ export function StageMap({
     { bg: string; color: string; border: string; cursor: string; opacity: number }
   > = {
     active: {
-      bg: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+      bg: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
       color: "white",
       border: "none",
       cursor: "pointer",
@@ -75,14 +75,14 @@ export function StageMap({
     },
     current: {
       bg: "#EEF2FF",
-      color: "#4F6EF7",
-      border: "2px solid #4F6EF7",
+      color: "var(--color-accent-primary)",
+      border: "2px solid var(--color-accent-primary)",
       cursor: "pointer",
       opacity: 1,
     },
     locked: {
-      bg: "var(--bg2)",
-      color: "var(--text4)",
+      bg: "var(--color-surface-2)",
+      color: "var(--color-text-secondary)",
       border: "none",
       cursor: "not-allowed",
       opacity: 0.35,
@@ -113,7 +113,7 @@ export function StageMap({
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         style={{
-          background: "var(--surface)",
+          background: "var(--color-surface)",
           borderRadius: 24,
           padding: 24,
           maxWidth: 480,
@@ -137,14 +137,14 @@ export function StageMap({
               style={{
                 fontSize: 18,
                 fontWeight: 700,
-                color: "var(--text1)",
-                fontFamily: "Georgia,serif",
+                color: "var(--color-text-primary)",
+                fontFamily: "var(--font-sans)",
                 margin: 0,
               }}
             >
               Stage Map
             </h2>
-            <p style={{ fontSize: 11, color: "var(--text4)", marginTop: 2 }}>
+            <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 2 }}>
               {completed.size} / {totalStages} completed
               {fullyDone && " · 👑 Mastered"}
             </p>
@@ -154,11 +154,11 @@ export function StageMap({
             style={{
               padding: "6px 14px",
               borderRadius: 10,
-              border: "0.5px solid var(--border2)",
-              background: "var(--surface)",
+              border: "0.5px solid var(--color-border)",
+              background: "var(--color-surface)",
               fontSize: 12,
               cursor: "pointer",
-              color: "var(--text3)",
+              color: "var(--color-text-secondary)",
             }}
           >
             Close
@@ -241,8 +241,8 @@ export function StageMap({
                       width: 7,
                       height: 7,
                       borderRadius: "50%",
-                      background: "#4F6EF7",
-                      boxShadow: "0 0 0 2px var(--surface)",
+                      background: "var(--color-accent-primary)",
+                      boxShadow: "0 0 0 2px var(--color-surface)",
                     }}
                   />
                 )}
@@ -258,20 +258,20 @@ export function StageMap({
             gap: 12,
             marginTop: 16,
             fontSize: 10,
-            color: "var(--text4)",
+            color: "var(--color-text-secondary)",
             flexWrap: "wrap",
           }}
         >
           {[
             { bg: "#F0FDF4", border: "1px solid #86EFAC", label: "Completed" },
             { bg: "#FFFBEB", border: "1px solid #FDE68A", label: "Skipped" },
-            { bg: "#EEF2FF", border: "2px solid #4F6EF7", label: "Current" },
+            { bg: "#EEF2FF", border: "2px solid var(--color-accent-primary)", label: "Current" },
             {
-              bg: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              bg: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
               border: "none",
               label: "Playing now",
             },
-            { bg: "var(--bg2)", border: "none", label: "Locked", opacity: 0.35 },
+            { bg: "var(--color-surface-2)", border: "none", label: "Locked", opacity: 0.35 },
           ].map((item) => (
             <span
               key={item.label}

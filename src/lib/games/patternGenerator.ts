@@ -13,7 +13,7 @@ function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
 
 const SHAPES=["●","■","▲","◆","★","","⬟","⬠"];
-const COLORS=["#EF4444","#3B82F6","#22C55E","#F59E0B","#A855F7","#EC4899","#14B8A6","#F97316"];
+const COLORS=["var(--color-error)","#3B82F6","#22C55E","#F59E0B","#A855F7","#EC4899","#14B8A6","#F97316"];
 
 export function generatePattern(seed:string, difficulty:"easy"|"medium"|"hard"): PatternBoard {
   const rng=mulberry32(seedToNum(seed));

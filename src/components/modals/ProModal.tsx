@@ -52,11 +52,11 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
 
             {/* Header */}
             <div style={{
-              background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
               borderRadius: 18, padding: "20px 20px", marginBottom: 24, textAlign: "center",
             }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🔒</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: "white", fontFamily: "Georgia,serif", marginBottom: 4 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "white", fontFamily: "var(--font-sans)", marginBottom: 4 }}>
                 Pro Feature
               </h2>
               {feature && (
@@ -74,7 +74,7 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
               {FEATURES.map((f, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < FEATURES.length - 1 ? "0.5px solid #F8F7F5" : "none" }}>
                   <div style={{ width: 28, height: 28, borderRadius: 8, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <f.icon size={13} color="#4F6EF7" />
+                    <f.icon size={13} color="var(--color-accent-primary)" />
                   </div>
                   <p style={{ fontSize: 13, color: "#374151" }}>{f.text}</p>
                   <Check size={13} color="#22C55E" style={{ marginLeft: "auto", flexShrink: 0 }} />
@@ -86,13 +86,13 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
             <div style={{ background: "#F8F7F5", borderRadius: 16, padding: "14px 16px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 2 }}>Individual Plan</p>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif" }}>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>
                   $2<span style={{ fontSize: 13, fontWeight: 400, color: "#94A3B8" }}>/mo</span>
                 </p>
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 2 }}>Family Plan from</p>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#4F6EF7", fontFamily: "Georgia,serif" }}>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-sans)" }}>
                   $5<span style={{ fontSize: 13, fontWeight: 400, color: "#94A3B8" }}>/mo</span>
                 </p>
               </div>
@@ -102,7 +102,7 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
               style={{
                 display: "block", textAlign: "center", padding: 14,
                 borderRadius: 14, border: "none",
-                background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                 fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none",
                 boxShadow: "0 8px 24px rgba(79,110,247,0.3)",
               }}>

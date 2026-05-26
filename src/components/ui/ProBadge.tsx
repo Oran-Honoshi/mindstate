@@ -35,7 +35,7 @@ export function ProGate({ feature, children }: ProBadgeProps) {
             padding: "6px 12px", borderRadius: 20,
             background: "white", border: "0.5px solid rgba(0,0,0,0.1)",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            fontSize: 12, fontWeight: 700, color: "#4F6EF7",
+            fontSize: 12, fontWeight: 700, color: "var(--color-accent-primary)",
           }}>
             <Lock size={12} /> Pro
           </div>
@@ -64,12 +64,12 @@ export function ProBanner({ feature }: { feature: string }) {
           borderTop: "1px solid rgba(79,110,247,0.15)",
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Lock size={14} color="#4F6EF7" />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#4F6EF7" }}>
+          <Lock size={14} color="var(--color-accent-primary)" />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-accent-primary)" }}>
             Unlock {feature} with Pro
           </span>
         </div>
-        <span style={{ fontSize: 12, color: "#9C6BE8", fontWeight: 700 }}>$2/mo →</span>
+        <span style={{ fontSize: 12, color: "var(--color-accent-primary)", fontWeight: 700 }}>$2/mo →</span>
       </button>
       <ProModal open={showModal} onClose={() => setShowModal(false)} feature={feature} />
     </>

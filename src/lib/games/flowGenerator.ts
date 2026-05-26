@@ -15,7 +15,7 @@ export type FlowBoard = {
 };
 
 const COLORS = [
-  "#EF4444", "#3B82F6", "#22C55E", "#F59E0B",
+  "var(--color-error)", "#3B82F6", "#22C55E", "#F59E0B",
   "#A855F7", "#EC4899", "#14B8A6", "#F97316",
 ];
 

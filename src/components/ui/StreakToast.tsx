@@ -32,7 +32,7 @@ export function StreakToast({ streak, bonusAwarded, onDismiss }: StreakToastProp
       onClick={onDismiss}
     >
       <div style={{ width:44, height:44, borderRadius:14,
-        background:bonusAwarded?"linear-gradient(135deg,#F59E0B,#EF4444)":"linear-gradient(135deg,#F97316,#F59E0B)",
+        background:bonusAwarded?"linear-gradient(135deg,#F59E0B,var(--color-error))":"linear-gradient(135deg,#F97316,#F59E0B)",
         display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
         <Flame size={22} color="white" fill="white"/>
       </div>
@@ -50,7 +50,7 @@ export function StreakToast({ streak, bonusAwarded, onDismiss }: StreakToastProp
       </div>
       {bonusAwarded && (
         <div style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:20,
-          background:"rgba(79,110,247,0.1)", color:"#4F6EF7", fontSize:12, fontWeight:700, flexShrink:0 }}>
+          background:"rgba(79,110,247,0.1)", color:"var(--color-accent-primary)", fontSize:12, fontWeight:700, flexShrink:0 }}>
           <Zap size={12}/> +10
         </div>
       )}

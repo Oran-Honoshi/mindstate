@@ -37,8 +37,8 @@ function getDifficulty(stage: number): Difficulty {
 function XPBar({xpState}:{xpState:XPState}){
   const[snap,setSnap]=useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);
+  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
+  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
 }
 
 function NonogramGameInner() {
@@ -159,10 +159,10 @@ function NonogramGameInner() {
     }
   }
 
-  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating puzzle...</p></div>);
+  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating puzzle...</p></div>);
 
   const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const CLUE_W=Math.min(60,maxW*0.25);
   const cellSize=Math.floor((maxW-CLUE_W)/board.size);
@@ -173,18 +173,18 @@ function NonogramGameInner() {
       <Navbar/>
       <GamePageSchema slug="nonogram" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
-        <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:540,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:11,color:"var(--text4)"}}>Stage</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:11,color:"var(--color-text-secondary)"}}>Stage</span>
+              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
@@ -192,7 +192,7 @@ function NonogramGameInner() {
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
@@ -203,7 +203,7 @@ function NonogramGameInner() {
             {board.colClues.map((clue,c)=>(
               <div key={c} style={{width:cellSize,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",paddingBottom:4,minHeight:40}}>
                 {clue.map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(cellSize*0.4,11),fontWeight:700,color:"var(--text2)",lineHeight:1.3}}>{n}</span>
+                  <span key={i} style={{fontSize:Math.min(cellSize*0.4,11),fontWeight:700,color:"var(--color-text-secondary)",lineHeight:1.3}}>{n}</span>
                 ))}
               </div>
             ))}
@@ -212,7 +212,7 @@ function NonogramGameInner() {
             <div key={r} style={{display:"flex",alignItems:"center"}}>
               <div style={{width:CLUE_W,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:3,paddingRight:6,minHeight:cellSize}}>
                 {board.rowClues[r].map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(12,cellSize*0.45),fontWeight:700,color:"var(--text2)"}}>{n}</span>
+                  <span key={i} style={{fontSize:Math.min(12,cellSize*0.45),fontWeight:700,color:"var(--color-text-secondary)"}}>{n}</span>
                 ))}
               </div>
               {board.solution[r].map((_,c)=>{
@@ -224,8 +224,8 @@ function NonogramGameInner() {
                       background:isSol?"rgba(239,68,68,0.15)":val===true?"#1C1917":val===false?"#FEF2F2":"white",
                       borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
                       cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.1s"}}>
-                    {val===true&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"#EF4444":"#1C1917",borderRadius:1}}/>}
-                    {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"#EF4444",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
+                    {val===true&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"#1C1917",borderRadius:1}}/>}
+                    {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"var(--color-error)",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
                   </motion.button>
                 );
               })}
@@ -240,9 +240,9 @@ function NonogramGameInner() {
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 

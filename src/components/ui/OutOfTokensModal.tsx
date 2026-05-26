@@ -66,7 +66,7 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
             exit={{ scale: 0.88, y: 28 }}
             transition={{ type: "spring", stiffness: 380, damping: 26 }}
             style={{
-              background: "var(--surface)", borderRadius: 28,
+              background: "var(--color-surface)", borderRadius: 28,
               padding: "28px 24px", maxWidth: 380, width: "100%",
               boxShadow: "0 32px 80px rgba(0,0,0,0.3)",
               position: "relative",
@@ -76,9 +76,9 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
             <button onClick={handleClose}
               style={{
                 position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8,
-                background: "var(--bg2)", border: "none", cursor: "pointer", display: "flex",
+                background: "var(--color-surface-2)", border: "none", cursor: "pointer", display: "flex",
               }}>
-              <X size={14} color="var(--text4)" />
+              <X size={14} color="var(--color-text-secondary)" />
             </button>
 
             {/* Icon — uses actual app icon */}
@@ -96,26 +96,26 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
                 />
               </div>
               <h2 style={{
-                fontSize: 21, fontWeight: 700, color: "var(--text1)",
-                fontFamily: "Georgia,serif", marginBottom: 6,
+                fontSize: 21, fontWeight: 700, color: "var(--color-text-primary)",
+                fontFamily: "var(--font-sans)", marginBottom: 6,
               }}>
                 Keep your mind sharp?
               </h2>
-              <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
                 You've used all {FREE_DAILY_TOKENS} free plays today.
               </p>
               {/* Countdown */}
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 marginTop: 10, padding: "8px 16px", borderRadius: 12,
-                background: "var(--bg2)", border: "0.5px solid var(--border)",
+                background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)",
               }}>
-                <Clock size={14} color="var(--text4)" />
-                <span style={{ fontSize: 13, color: "var(--text2)", fontWeight: 600 }}>
+                <Clock size={14} color="var(--color-text-secondary)" />
+                <span style={{ fontSize: 13, color: "var(--color-text-secondary)", fontWeight: 600 }}>
                   Next reset in
                 </span>
                 <span style={{
-                  fontSize: 15, fontWeight: 700, color: "var(--text1)",
+                  fontSize: 15, fontWeight: 700, color: "var(--color-text-primary)",
                   fontFamily: "monospace",
                 }}>
                   {countdown}
@@ -129,7 +129,7 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
               borderRadius: 16, padding: "16px 18px", marginBottom: 18,
               border: "0.5px solid rgba(79,110,247,0.15)",
             }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#4F6EF7", marginBottom: 8 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent-primary)", marginBottom: 8 }}>
                 Pro — Less than a cup of coffee
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -145,9 +145,9 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
                       background: "rgba(79,110,247,0.12)",
                       display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                     }}>
-                      <Zap size={9} color="#4F6EF7" />
+                      <Zap size={9} color="var(--color-accent-primary)" />
                     </div>
-                    <p style={{ fontSize: 12, color: "var(--text2)" }}>{f}</p>
+                    <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>{f}</p>
                   </div>
                 ))}
               </div>
@@ -158,7 +158,7 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 width: "100%", padding: "14px", borderRadius: 16, border: "none",
-                background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                 fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none",
                 marginBottom: 10, boxShadow: "0 6px 20px rgba(79,110,247,0.3)",
               }}>
@@ -168,16 +168,16 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
             <button onClick={handleClose}
               style={{
                 width: "100%", padding: "11px", borderRadius: 14,
-                border: "0.5px solid var(--border2)", background: "var(--bg2)",
-                fontSize: 13, fontWeight: 600, color: "var(--text3)", cursor: "pointer",
+                border: "0.5px solid var(--color-border)", background: "var(--color-surface-2)",
+                fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}>
               <Clock size={12} /> Wait for reset · Back to games
             </button>
 
             {!user && (
-              <p style={{ textAlign: "center", fontSize: 12, color: "var(--text4)", marginTop: 12 }}>
-                <Link href="/auth/signin" style={{ color: "#4F6EF7", textDecoration: "none" }}>
+              <p style={{ textAlign: "center", fontSize: 12, color: "var(--color-text-secondary)", marginTop: 12 }}>
+                <Link href="/auth/signin" style={{ color: "var(--color-accent-primary)", textDecoration: "none" }}>
                   Sign in
                 </Link>{" "}to track your progress and streaks
               </p>

@@ -75,7 +75,7 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                 <Lightbulb size={22} color="#F59E0B" />
               </div>
               <div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif" }}>Share an Idea</h2>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>Share an Idea</h2>
                 <p style={{ fontSize: 12, color: "#94A3B8" }}>We read every suggestion</p>
               </div>
             </div>
@@ -97,7 +97,7 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                     <button key={cat.value} onClick={() => setCategory(cat.value)}
                       style={{
                         padding: "6px 14px", borderRadius: 20, border: "0.5px solid", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
-                        background: category === cat.value ? "linear-gradient(135deg,#4F6EF7,#9C6BE8)" : "white",
+                        background: category === cat.value ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "white",
                         color: category === cat.value ? "white" : "#64748B",
                         borderColor: category === cat.value ? "transparent" : "#E2E8F0",
                       }}>
@@ -133,7 +133,7 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                   disabled={!content.trim() || loading}
                   style={{
                     width: "100%", padding: 13, borderRadius: 14, border: "none",
-                    background: content.trim() ? "linear-gradient(135deg,#4F6EF7,#9C6BE8)" : "#E2E8F0",
+                    background: content.trim() ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "#E2E8F0",
                     fontSize: 13, fontWeight: 700,
                     color: content.trim() ? "white" : "#94A3B8",
                     cursor: content.trim() ? "pointer" : "not-allowed",

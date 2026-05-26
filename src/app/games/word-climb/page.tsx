@@ -73,15 +73,15 @@ function XPBar({ xpState }: { xpState: XPState }) {
     return () => clearInterval(iv);
   }, [xpState]);
   const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
+  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--bg3)", borderRadius:2, overflow:"hidden" }}>
+      <div style={{ flex:1, height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
         <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }}
           style={{ height:"100%", background:color, borderRadius:2 }}/>
       </div>
       <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--text4)" }}>XP</span>
+      <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>XP</span>
     </div>
   );
 }
@@ -104,7 +104,7 @@ function WordClimbInner() {
   const diff = getDifficulty(stage);
   const [startWord, endWord, solution] = getPuzzle(stage, diff);
   const wordLen = startWord.length;
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "#EF4444";
+  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
 
   const loadStage = useCallback((s: number) => {
     const d = getDifficulty(s);
@@ -176,41 +176,41 @@ function WordClimbInner() {
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
 
         {/* Header */}
-        <div style={{ width:"100%", maxWidth:480, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
+        <div style={{ width:"100%", maxWidth:480, background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
-              <div style={{ width:1, height:16, background:"var(--border2)" }}/>
-              <span style={{ fontSize:12, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>Word Climb</span>
-              <div style={{ width:1, height:16, background:"var(--border2)" }}/>
-              <span style={{ fontSize:18, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
+              <Link href="/games" style={{ color:"var(--color-text-secondary)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
+              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
+              <span style={{ fontSize:12, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>Word Climb</span>
+              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
+              <span style={{ fontSize:18, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
+              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>{elapsed}</span>
+              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
         {/* Goal */}
-        <div style={{ display:"flex", alignItems:"center", gap:16, fontSize:13, color:"var(--text3)" }}>
-          <span style={{ fontWeight:700, fontSize:20, color:"var(--text1)", fontFamily:"Georgia,serif", letterSpacing:"0.08em" }}>{startWord}</span>
+        <div style={{ display:"flex", alignItems:"center", gap:16, fontSize:13, color:"var(--color-text-secondary)" }}>
+          <span style={{ fontWeight:700, fontSize:20, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", letterSpacing:"0.08em" }}>{startWord}</span>
           <span>→</span>
-          <span style={{ fontWeight:700, fontSize:20, color:"#4F6EF7", fontFamily:"Georgia,serif", letterSpacing:"0.08em" }}>{endWord}</span>
+          <span style={{ fontWeight:700, fontSize:20, color:"var(--color-accent-primary)", fontFamily:"var(--font-sans)", letterSpacing:"0.08em" }}>{endWord}</span>
         </div>
-        <p style={{ fontSize:11, color:"var(--text4)" }}>Change one letter at a time · Each step must be a valid word</p>
+        <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Change one letter at a time · Each step must be a valid word</p>
 
         {/* Path so far */}
         <div style={{ display:"flex", flexDirection:"column", gap:6, width:"100%", maxWidth:320, alignItems:"center" }}>
           {userPath.map((word, i) => (
             <div key={i} style={{
               padding:"10px 24px", borderRadius:12, fontSize:18, fontWeight:700,
-              fontFamily:"Georgia,serif", letterSpacing:"0.1em",
-              background: word === endWord ? "#F0FDF4" : i === 0 ? "var(--bg2)" : "var(--surface)",
-              border: `1.5px solid ${word === endWord ? "#86EFAC" : "var(--border)"}`,
-              color: word === endWord ? "#16A34A" : "var(--text1)",
+              fontFamily:"var(--font-sans)", letterSpacing:"0.1em",
+              background: word === endWord ? "#F0FDF4" : i === 0 ? "var(--color-surface-2)" : "var(--color-surface)",
+              border: `1.5px solid ${word === endWord ? "#86EFAC" : "var(--color-border)"}`,
+              color: word === endWord ? "#16A34A" : "var(--color-text-primary)",
             }}>
               {word}
             </div>
@@ -226,20 +226,20 @@ function WordClimbInner() {
                 maxLength={wordLen}
                 placeholder={`${wordLen}-letter word`}
                 style={{
-                  padding:"10px 16px", borderRadius:12, border:"1.5px solid var(--border2)",
-                  background:"var(--surface)", fontSize:16, fontWeight:700,
-                  fontFamily:"Georgia,serif", letterSpacing:"0.1em", textAlign:"center",
-                  color:"var(--text1)", outline:"none", width:160,
+                  padding:"10px 16px", borderRadius:12, border:"1.5px solid var(--color-border)",
+                  background:"var(--color-surface)", fontSize:16, fontWeight:700,
+                  fontFamily:"var(--font-sans)", letterSpacing:"0.1em", textAlign:"center",
+                  color:"var(--color-text-primary)", outline:"none", width:160,
                   textTransform:"uppercase",
                 }}
               />
               <button onClick={handleSubmit}
-                style={{ padding:"10px 16px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                style={{ padding:"10px 16px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>
                 Go
               </button>
             </div>
           )}
-          {error && <p style={{ fontSize:12, color:"#EF4444", fontWeight:600 }}>{error}</p>}
+          {error && <p style={{ fontSize:12, color:"var(--color-error)", fontWeight:600 }}>{error}</p>}
         </div>
 
         {/* Controls */}
@@ -247,10 +247,10 @@ function WordClimbInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
-          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 100</span>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>← Prev</button>
+          <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s => s + 1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>
             Next <ChevronRight size={13}/>
           </button>
         </div>
@@ -260,23 +260,23 @@ function WordClimbInner() {
       {completed && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(14px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, padding:24 }}>
           <motion.div initial={{ scale:0.9, y:20 }} animate={{ scale:1, y:0 }}
-            style={{ background:"var(--surface)", borderRadius:28, padding:36, maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
+            style={{ background:"var(--color-surface)", borderRadius:28, padding:36, maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
             <div style={{ fontSize:56, marginBottom:12 }}>🎉</div>
-            <h2 style={{ fontSize:26, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:4 }}>
+            <h2 style={{ fontSize:26, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:4 }}>
               {startWord} → {endWord}
             </h2>
-            <p style={{ fontSize:13, color:"var(--text4)", marginBottom:24 }}>{userPath.length - 1} steps · {elapsed}</p>
-            <div style={{ background:"var(--bg2)", borderRadius:16, padding:20, marginBottom:20 }}>
-              <p style={{ fontSize:11, color:"var(--text4)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase" }}>XP Earned</p>
-              <p style={{ fontSize:52, fontWeight:700, color:"#4F6EF7", fontFamily:"Georgia,serif" }}>{finalXP}</p>
+            <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:24 }}>{userPath.length - 1} steps · {elapsed}</p>
+            <div style={{ background:"var(--color-surface-2)", borderRadius:16, padding:20, marginBottom:20 }}>
+              <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase" }}>XP Earned</p>
+              <p style={{ fontSize:52, fontWeight:700, color:"var(--color-accent-primary)", fontFamily:"var(--font-sans)" }}>{finalXP}</p>
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={() => loadStage(stage)}
-                style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid var(--border2)", background:"var(--surface)", fontSize:13, fontWeight:600, color:"var(--text2)", cursor:"pointer" }}>
+                style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:13, fontWeight:600, color:"var(--color-text-secondary)", cursor:"pointer" }}>
                 Retry
               </button>
               <button onClick={() => { setCompleted(false); setStage(s => s + 1); }}
-                style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                 Next Stage →
               </button>
             </div>

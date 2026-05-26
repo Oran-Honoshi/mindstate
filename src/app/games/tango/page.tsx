@@ -64,17 +64,17 @@ function XPBar({ xpState }: { xpState: XPState }) {
     return () => clearInterval(iv);
   }, [xpState]);
   const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
+  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ flex: 1, height: 4, background: "var(--bg3)", borderRadius: 2, overflow: "hidden" }}>
+      <div style={{ flex: 1, height: 4, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
         <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.5 }}
           style={{ height: "100%", background: color, borderRadius: 2 }} />
       </div>
       <span style={{ fontSize: 13, fontWeight: 700, color, fontFamily: "monospace", minWidth: 36 }}>
         {snap.currentXP}
       </span>
-      <span style={{ fontSize: 11, color: "var(--text4)" }}>XP</span>
+      <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>XP</span>
     </div>
   );
 }
@@ -302,13 +302,13 @@ function TangoGameInner() {
   }
 
   if (!board || !xpState) return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "var(--text4)", fontSize: 13 }}>Generating board...</p>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "var(--color-text-secondary)", fontSize: 13 }}>Generating board...</p>
     </div>
   );
 
   const diff = getDifficulty(stage);
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "#EF4444";
+  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
   const cellSize = Math.floor((maxW - (board.size - 1) * 10) / board.size);
   const currentXP = calculateXP(xpState).currentXP;
 
@@ -318,32 +318,32 @@ function TangoGameInner() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column" }}>
       <Navbar />
       <GamePageSchema slug={GAME_SLUG} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "76px 16px 32px", gap: 20 }}>
 
         {/* Header card */}
-        <div style={{ width: "100%", maxWidth: 580, background: "var(--surface)", borderRadius: 20, border: "0.5px solid var(--border)", padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+        <div style={{ width: "100%", maxWidth: 580, background: "var(--color-surface)", borderRadius: 20, border: "0.5px solid var(--color-border)", padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden", flexShrink: 1 }}>
-  <Link href="/games" style={{ color: "var(--text4)", textDecoration: "none", display: "flex", alignItems: "center", gap: 3, fontSize: 12, flexShrink: 0 }}>
+  <Link href="/games" style={{ color: "var(--color-text-secondary)", textDecoration: "none", display: "flex", alignItems: "center", gap: 3, fontSize: 12, flexShrink: 0 }}>
     <ArrowLeft size={13} /> Games
   </Link>
   <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
-  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", flexShrink: 0 }}>Tango</span>
+  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", flexShrink: 0 }}>Tango</span>
   <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
-  <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", flexShrink: 0 }}>{stage}</span>
+  <span style={{ fontSize: 18, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", flexShrink: 0 }}>{stage}</span>
   <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: `${diffColor}15`, color: diffColor, flexShrink: 0, whiteSpace: "nowrap" }}>
     {diff.toUpperCase()}
   </span>
 </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-  <span style={{ fontSize: 11, color: "var(--text4)", fontFamily: "monospace", whiteSpace: "nowrap" }}>{elapsed}</span>
-  <button onClick={() => loadStage(stage)} style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
+  <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "monospace", whiteSpace: "nowrap" }}>{elapsed}</span>
+  <button onClick={() => loadStage(stage)} style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex" }}>
     <RotateCcw size={12} />
   </button>
-  <button onClick={() => setShowMap(true)} style={{ padding: "5px 8px", borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", color: "var(--text4)", fontSize: 10, fontWeight: 600 }}>
+  <button onClick={() => setShowMap(true)} style={{ padding: "5px 8px", borderRadius: 8, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 10, fontWeight: 600 }}>
     Map
   </button>
 </div>
@@ -353,12 +353,12 @@ function TangoGameInner() {
 
         {solutionRevealed && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "8px 20px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "#EF4444" }}>
+            style={{ padding: "8px 20px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text4)" }}>
+        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--color-text-secondary)" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><SunIcon size={13} /> Sun</span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><MoonIcon size={13} /> Moon</span>
           <span>· Equal per row & col · No 3 in a row</span>
@@ -406,7 +406,7 @@ function TangoGameInner() {
     zIndex: 10,
     fontSize: Math.max(8, Math.round(cellSize * 0.22)),
     fontWeight: 800,
-    color: rightC === "same" ? "#4F6EF7" : "#F87171",
+    color: rightC === "same" ? "var(--color-accent-primary)" : "#F87171",
     lineHeight: 1,
     pointerEvents: "none",
   }}>
@@ -421,7 +421,7 @@ function TangoGameInner() {
     zIndex: 10,
     fontSize: Math.max(8, Math.round(cellSize * 0.22)),
     fontWeight: 800,
-    color: bottomC === "same" ? "#4F6EF7" : "#F87171",
+    color: bottomC === "same" ? "var(--color-accent-primary)" : "#F87171",
     lineHeight: 1,
     pointerEvents: "none",
   }}>
@@ -444,12 +444,12 @@ function TangoGameInner() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => stage > 1 && setStage((s) => s - 1)} disabled={stage === 1}
-            style={{ padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--text3)", opacity: stage === 1 ? 0.4 : 1 }}>
+            style={{ padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← Prev
           </button>
-          <span style={{ fontSize: 12, color: "var(--text4)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+          <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>Stage {stage} of {TOTAL_STAGES}</span>
           <button onClick={() => setStage((s) => s + 1)}
-            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--border2)", background: "var(--surface)", cursor: "pointer", fontSize: 12, color: "var(--text2)", fontWeight: 600 }}>
+            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600 }}>
             Next <ChevronRight size={13} />
           </button>
         </div>

@@ -60,7 +60,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
         exit={{ scale: 0.88, y: 24 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         style={{
-          background: "var(--surface)", borderRadius: 28, padding: 36,
+          background: "var(--color-surface)", borderRadius: 28, padding: 36,
           maxWidth: 360, width: "100%", position: "relative",
           boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
           textAlign: "center",
@@ -70,12 +70,12 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
           onClick={onClose}
           style={{
             position: "absolute", top: 16, right: 16,
-            background: "var(--bg2)", border: "none", borderRadius: "50%",
+            background: "var(--color-surface-2)", border: "none", borderRadius: "50%",
             width: 28, height: 28, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <X size={14} color="var(--text4)" />
+          <X size={14} color="var(--color-text-secondary)" />
         </button>
 
         <AnimatePresence mode="wait">
@@ -83,12 +83,12 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
             <motion.div key="rate" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🧠</div>
               <h2 style={{
-                fontSize: 20, fontWeight: 700, color: "var(--text1)",
-                fontFamily: "Georgia,serif", marginBottom: 8,
+                fontSize: 20, fontWeight: 700, color: "var(--color-text-primary)",
+                fontFamily: "var(--font-sans)", marginBottom: 8,
               }}>
                 {titles[trigger]}
               </h2>
-              <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 24, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24, lineHeight: 1.6 }}>
                 {subtitles[trigger]}
               </p>
               <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 8 }}>
@@ -108,30 +108,30 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                     <Star
                       size={36}
                       fill={(hover || rating) >= s ? "#F59E0B" : "none"}
-                      color={(hover || rating) >= s ? "#F59E0B" : "var(--border2)"}
+                      color={(hover || rating) >= s ? "#F59E0B" : "var(--color-border)"}
                       strokeWidth={1.5}
                     />
                   </motion.button>
                 ))}
               </div>
-              <p style={{ fontSize: 11, color: "var(--text4)" }}>Tap a star to rate</p>
+              <p style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Tap a star to rate</p>
             </motion.div>
           )}
 
           {phase === "thanks" && (
             <motion.div key="thanks" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>💙</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", marginBottom: 8 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", marginBottom: 8 }}>
                 Thanks for the feedback
               </h2>
-              <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 24, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24, lineHeight: 1.6 }}>
                 We really appreciate it. We're constantly working to make MindElement better.
               </p>
               <button
                 onClick={onClose}
                 style={{
                   width: "100%", padding: 13, borderRadius: 14, border: "none",
-                  background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                  background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                   fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer",
                 }}
               >
@@ -143,20 +143,20 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
           {phase === "prompt" && (
             <motion.div key="prompt" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🌟</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif", marginBottom: 8 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", marginBottom: 8 }}>
                 You made our day!
               </h2>
-              <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 20, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
                 A quick review on Trustpilot would mean the world to us and help other brain-training fans discover MindElement.
               </p>
               <div style={{
-                background: "var(--bg2)", borderRadius: 14, padding: "12px 16px",
-                marginBottom: 20, border: "0.5px solid var(--border)",
+                background: "var(--color-surface-2)", borderRadius: 14, padding: "12px 16px",
+                marginBottom: 20, border: "0.5px solid var(--color-border)",
               }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text4)", marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Ready-to-paste review
                 </p>
-                <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6, fontStyle: "italic" }}>
+                <p style={{ fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.6, fontStyle: "italic" }}>
                   "Really enjoying MindElement — the brain training games are addictive and beautifully designed. Highly recommend!"
                 </p>
               </div>
@@ -164,7 +164,7 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                 onClick={copyAndOpen}
                 style={{
                   width: "100%", padding: 13, borderRadius: 14, border: "none",
-                  background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                  background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                   fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   marginBottom: 10,
@@ -176,8 +176,8 @@ export function ReviewModal({ trigger, onClose }: ReviewModalProps) {
                 onClick={onClose}
                 style={{
                   width: "100%", padding: 11, borderRadius: 14,
-                  border: "0.5px solid var(--border2)", background: "var(--surface)",
-                  fontSize: 13, fontWeight: 600, color: "var(--text3)", cursor: "pointer",
+                  border: "0.5px solid var(--color-border)", background: "var(--color-surface)",
+                  fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer",
                 }}
               >
                 Maybe later

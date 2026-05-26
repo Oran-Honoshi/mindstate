@@ -16,10 +16,10 @@ export function GameSnapshot({ slug }: { slug: string }) {
               : <path d={`M${c*20+15},${r*20+10} a5,5 0 0,0 0,10`} fill="#6366F1"/>}
           </g>
         )))}
-        <circle cx={26} cy={15} r={4} fill="white" stroke="#4F6EF7" strokeWidth={1}/>
-        <text x={26} y={18} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"#4F6EF7"}}>=</text>
-        <circle cx={46} cy={35} r={4} fill="white" stroke="#EF4444" strokeWidth={1}/>
-        <text x={46} y={38} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"#EF4444"}}>x</text>
+        <circle cx={26} cy={15} r={4} fill="white" stroke="var(--color-accent-primary)" strokeWidth={1}/>
+        <text x={26} y={18} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"var(--color-accent-primary)"}}>=</text>
+        <circle cx={46} cy={35} r={4} fill="white" stroke="var(--color-error)" strokeWidth={1}/>
+        <text x={46} y={38} textAnchor="middle" style={{fontSize:6,fontWeight:700,fill:"var(--color-error)"}}>x</text>
       </svg>
     ),
 
@@ -32,9 +32,9 @@ export function GameSnapshot({ slug }: { slug: string }) {
           return(
             <g key={i}>
               <rect x={c*20+6} y={r*22+8} width={17} height={19} rx={4}
-                fill={revealed?"white":"#4F6EF7"} stroke={revealed?"#E2E8F0":"none"} strokeWidth={1} opacity={revealed?1:0.8}/>
+                fill={revealed?"white":"var(--color-accent-primary)"} stroke={revealed?"#E2E8F0":"none"} strokeWidth={1} opacity={revealed?1:0.8}/>
               {revealed&&<circle cx={c*20+14.5} cy={r*22+17.5} r={5}
-                fill={[0,4].includes(i)?"#EF4444":"#3B82F6"} opacity={0.8}/>}
+                fill={[0,4].includes(i)?"var(--color-error)":"#3B82F6"} opacity={0.8}/>}
             </g>
           );
         })}
@@ -81,12 +81,12 @@ export function GameSnapshot({ slug }: { slug: string }) {
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(13,148,136,0.04)" rx={10}/>
         <polyline points="15,15 15,40 40,40 40,15 65,15 65,40 65,65 40,65 15,65 15,40"
-          fill="none" stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+          fill="none" stroke="var(--color-accent-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
         {[[15,15,1],[65,15,2],[65,65,3],[15,65,4]].map(([x,y,n],i)=>(
           <g key={i}>
-            <circle cx={x} cy={y} r={10} fill="white" stroke="#4F6EF7" strokeWidth={2}/>
+            <circle cx={x} cy={y} r={10} fill="white" stroke="var(--color-accent-primary)" strokeWidth={2}/>
             <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
-              style={{fontSize:10,fontWeight:700,fill:"#4F6EF7"}}>{n}</text>
+              style={{fontSize:10,fontWeight:700,fill:"var(--color-accent-primary)"}}>{n}</text>
           </g>
         ))}
         {[[40,40],[40,15],[40,65],[15,40],[65,40]].map(([x,y],i)=>(
@@ -98,12 +98,12 @@ export function GameSnapshot({ slug }: { slug: string }) {
     "flow": (
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(79,110,247,0.04)" rx={10}/>
-        <circle cx={10} cy={10} r={9} fill="#EF4444"/>
+        <circle cx={10} cy={10} r={9} fill="var(--color-error)"/>
         <circle cx={80} cy={10} r={9} fill="#3B82F6"/>
         <circle cx={10} cy={80} r={9} fill="#22C55E"/>
         <circle cx={80} cy={80} r={9} fill="#F59E0B"/>
         <polyline points="10,10 10,45 45,45 45,10 80,10" fill="none" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-        <polyline points="10,10 10,80" fill="none" stroke="#EF4444" strokeWidth="4" strokeLinecap="round" opacity="0.5"/>
+        <polyline points="10,10 10,80" fill="none" stroke="var(--color-error)" strokeWidth="4" strokeLinecap="round" opacity="0.5"/>
         <polyline points="10,80 45,80 45,45 80,45 80,80" fill="none" stroke="#22C55E" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
         <polyline points="80,10 80,45" fill="none" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" opacity="0.5"/>
         {[22.5,45,67.5].map(x=><line key={x} x1={x} y1={0} x2={x} y2={90} stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>)}
@@ -122,7 +122,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
         <line x1={72} y1={22} x2={72} y2={72} stroke="#374151" strokeWidth="3" opacity="0.6"/>
         {[[18,18,3],[72,18,2],[18,72,2],[72,72,3],[45,45,4]].map(([x,y,n],i)=>(
           <g key={i}>
-            <circle cx={x} cy={y} r={13} fill="#4F6EF7"/>
+            <circle cx={x} cy={y} r={13} fill="var(--color-accent-primary)"/>
             <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{n}</text>
           </g>
         ))}
@@ -146,7 +146,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
                 <text x={x+15} y={y+19} style={{fontSize:7,fill:"white",fontWeight:700}}>{clue}</text></>
               )}
               {!isBlack&&r+c>0&&(
-                <text x={x+10.5} y={y+14} textAnchor="middle" style={{fontSize:9,fontWeight:700,fill:"#4F6EF7"}}>
+                <text x={x+10.5} y={y+14} textAnchor="middle" style={{fontSize:9,fontWeight:700,fill:"var(--color-accent-primary)"}}>
                   {[[4,3,2],[2,1],[5,3],[4]][r]?.[c-1]||""}
                 </text>
               )}
@@ -164,7 +164,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
           [[false,false,true,false],[true,true,true,false],[true,false,false,true]],
           [[true,true,false,false],[false,false,false,true],[true,false,false,false]],
         ].map((row,r)=>row.map((pipe,c)=>{
-          const cx=c*28+18,cy=r*28+18,w=5,color="#4F6EF7";
+          const cx=c*28+18,cy=r*28+18,w=5,color="var(--color-accent-primary)";
           return(
             <g key={`${r}-${c}`}>
               <rect x={cx-14} y={cy-14} width={26} height={26} fill="rgba(79,110,247,0.06)" rx={5}/>
@@ -240,7 +240,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(245,158,11,0.04)" rx={10}/>
         {[[0,0,1,1,1],[0,0,2,1,3],[0,2,2,3,3],[4,2,2,3,3],[4,4,2,4,3]].map((row,r)=>row.map((pid,c)=>{
-          const colors=["#EF4444","#3B82F6","#22C55E","#F59E0B","#A855F7"];
+          const colors=["var(--color-error)","#3B82F6","#22C55E","#F59E0B","#A855F7"];
           return<rect key={`${r}-${c}`} x={c*16+8} y={r*16+8} width={15} height={15} fill={colors[pid]} opacity={0.8} rx={3}/>;
         }))}
       </svg>
@@ -266,7 +266,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
     "gravity-sort": (
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(194,65,12,0.04)" rx={10}/>
-        {[["#EF4444","#3B82F6","#22C55E","#F59E0B"],["#3B82F6","#22C55E","#EF4444","#3B82F6"],["#22C55E","#F59E0B","#3B82F6","#EF4444"],["#F59E0B","#EF4444","#F59E0B","#22C55E"]].map((col,ci)=>col.map((color,ri)=>(
+        {[["var(--color-error)","#3B82F6","#22C55E","#F59E0B"],["#3B82F6","#22C55E","var(--color-error)","#3B82F6"],["#22C55E","#F59E0B","#3B82F6","var(--color-error)"],["#F59E0B","var(--color-error)","#F59E0B","#22C55E"]].map((col,ci)=>col.map((color,ri)=>(
           <rect key={`${ci}-${ri}`} x={ci*21+6} y={ri*18+10} width={18} height={15} rx={4} fill={color} opacity={0.85}/>
         )))}
         <text x={45} y={86} textAnchor="middle" style={{fontSize:12,fill:"#94A3B8"}}>↓</text>
@@ -352,7 +352,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
       <svg width={90} height={90} viewBox="0 0 90 90">
         <rect width={90} height={90} fill="rgba(34,197,94,0.04)" rx={10}/>
         {/* Word ladder — each rung differs by one letter */}
-        {[["CAT","#22C55E"],["COT","#4F6EF7"],["COG","#9C6BE8"],["DOG","#F59E0B"]].map(([word,color],r)=>(
+        {[["CAT","#22C55E"],["COT","var(--color-accent-primary)"],["COG","var(--color-accent-primary)"],["DOG","#F59E0B"]].map(([word,color],r)=>(
           <g key={r}>
             {/* Rung line */}
             <rect x={12} y={r*18+14} width={66} height={14} rx={7}
@@ -377,17 +377,17 @@ export function GameSnapshot({ slug }: { slug: string }) {
           <g key={i}>
             <rect x={8} y={i*16+8} width={60} height={13} rx={6}
               fill={i===2?"rgba(79,110,247,0.15)":"var(--bg2,#F8F7F5)"}
-              stroke={i===2?"#4F6EF7":"#E2E8F0"} strokeWidth={1}/>
+              stroke={i===2?"var(--color-accent-primary)":"#E2E8F0"} strokeWidth={1}/>
             <text x={38} y={i*16+18} textAnchor="middle"
-              style={{fontSize:9,fontWeight:600,fill:i===2?"#4F6EF7":"#64748B"}}>{clue}</text>
+              style={{fontSize:9,fontWeight:600,fill:i===2?"var(--color-accent-primary)":"#64748B"}}>{clue}</text>
             {i<2&&<text x={72} y={i*16+18} style={{fontSize:9,fill:"#94A3B8"}}>▼</text>}
           </g>
         ))}
         {/* Answer box */}
         <rect x={8} y={60} width={74} height={22} rx={8}
-          fill="rgba(79,110,247,0.08)" stroke="#4F6EF7" strokeWidth={1.5} strokeDasharray="4"/>
+          fill="rgba(79,110,247,0.08)" stroke="var(--color-accent-primary)" strokeWidth={1.5} strokeDasharray="4"/>
         <text x={45} y={75} textAnchor="middle"
-          style={{fontSize:11,fontWeight:700,fill:"#4F6EF7"}}>INCEPTION?</text>
+          style={{fontSize:11,fontWeight:700,fill:"var(--color-accent-primary)"}}>INCEPTION?</text>
       </svg>
     ),
 
@@ -397,16 +397,16 @@ export function GameSnapshot({ slug }: { slug: string }) {
         <rect width={90} height={90} fill="rgba(59,130,246,0.04)" rx={10}/>
         {/* Simple flag stripes — looks like a generic flag */}
         <rect x={12} y={20} width={50} height={36} rx={3} fill="#1D4ED8"/>
-        <rect x={12} y={20} width={50} height={12} rx={3} fill="#EF4444"/>
-        <rect x={12} y={44} width={50} height={12} rx={0} fill="#EF4444"/>
+        <rect x={12} y={20} width={50} height={12} rx={3} fill="var(--color-error)"/>
+        <rect x={12} y={44} width={50} height={12} rx={0} fill="var(--color-error)"/>
         {/* White middle stripe */}
         <rect x={12} y={32} width={50} height={12} rx={0} fill="white"/>
         {/* Flag pole */}
         <rect x={10} y={14} width={3} height={46} rx={1} fill="#94A3B8"/>
         {/* Question mark overlay */}
-        <circle cx={70} cy={60} r={14} fill="white" stroke="#4F6EF7" strokeWidth={2}/>
+        <circle cx={70} cy={60} r={14} fill="white" stroke="var(--color-accent-primary)" strokeWidth={2}/>
         <text x={70} y={65} textAnchor="middle"
-          style={{fontSize:16,fontWeight:700,fill:"#4F6EF7"}}>?</text>
+          style={{fontSize:16,fontWeight:700,fill:"var(--color-accent-primary)"}}>?</text>
       </svg>
     ),
 
@@ -416,16 +416,16 @@ export function GameSnapshot({ slug }: { slug: string }) {
         <rect width={90} height={90} fill="rgba(99,102,241,0.04)" rx={10}/>
         {/* Simple skyline */}
         <rect x={6}  y={55} width={10} height={28} rx={2} fill="#6366F1" opacity={0.7}/>
-        <rect x={18} y={42} width={12} height={41} rx={2} fill="#4F6EF7" opacity={0.9}/>
+        <rect x={18} y={42} width={12} height={41} rx={2} fill="var(--color-accent-primary)" opacity={0.9}/>
         <rect x={32} y={50} width={8}  height={33} rx={2} fill="#6366F1" opacity={0.7}/>
-        <rect x={42} y={35} width={14} height={48} rx={2} fill="#4F6EF7"/>
+        <rect x={42} y={35} width={14} height={48} rx={2} fill="var(--color-accent-primary)"/>
         <rect x={58} y={48} width={10} height={35} rx={2} fill="#6366F1" opacity={0.8}/>
         <rect x={70} y={58} width={14} height={25} rx={2} fill="#6366F1" opacity={0.6}/>
         {/* Ground */}
         <rect x={0} y={82} width={90} height={8} fill="#E2E8F0" rx={0}/>
         {/* Pin */}
-        <circle cx={49} cy={22} r={8} fill="#EF4444"/>
-        <path d="M49,30 L49,42" stroke="#EF4444" strokeWidth={2}/>
+        <circle cx={49} cy={22} r={8} fill="var(--color-error)"/>
+        <path d="M49,30 L49,42" stroke="var(--color-error)" strokeWidth={2}/>
         <circle cx={49} cy={22} r={4} fill="white"/>
       </svg>
     ),

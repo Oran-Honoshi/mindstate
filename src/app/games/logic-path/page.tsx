@@ -40,7 +40,7 @@ function PipeSVG({ cell, size, isCorrect, showFeedback }: {
 }) {
   const c = size / 2;
   const w = Math.max(4, size * 0.18);
-  const color = showFeedback ? (isCorrect ? "#22C55E" : "#4F6EF7") : "#4F6EF7";
+  const color = showFeedback ? (isCorrect ? "#22C55E" : "var(--color-accent-primary)") : "var(--color-accent-primary)";
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       {showFeedback && <rect x={0} y={0} width={size} height={size} fill={isCorrect?"rgba(34,197,94,0.08)":"rgba(79,110,247,0.05)"} rx={6}/>}
@@ -61,14 +61,14 @@ function XPBar({ xpState }: { xpState: XPState }) {
   const [snap, setSnap] = useState(() => calculateXP(xpState));
   useEffect(() => { const iv = setInterval(() => setSnap(calculateXP(xpState)), 500); return () => clearInterval(iv); }, [xpState]);
   const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
+  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--bg3)", borderRadius:2, overflow:"hidden" }}>
+      <div style={{ flex:1, height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
         <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }} style={{ height:"100%", background:color, borderRadius:2 }}/>
       </div>
       <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--text4)" }}>XP</span>
+      <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>XP</span>
     </div>
   );
 }
@@ -185,54 +185,54 @@ function LogicPathPageInner() {
   }
 
   if (!board || !xpState) return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <p style={{ color:"var(--text4)", fontSize:13 }}>Generating board...</p>
+    <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <p style={{ color:"var(--color-text-secondary)", fontSize:13 }}>Generating board...</p>
     </div>
   );
 
   const diff = getDifficulty(stage);
-  const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW = typeof window!=="undefined" ? Math.min(window.innerWidth-48, 400) : 340;
   const cellSize = Math.floor((maxW - (board.size-1)*8) / board.size);
   const currentXP = calculateXP(xpState).currentXP;
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)", display:"flex", flexDirection:"column" }}>
+    <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", flexDirection:"column" }}>
       <Navbar/>
       <GamePageSchema slug="logic-path" />
       <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:16 }}>
 
-        <div style={{ width:"100%", maxWidth:480, background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
+        <div style={{ width:"100%", maxWidth:480, background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <Link href="/games" style={{ color:"var(--text4)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
-              <div style={{ width:1, height:16, background:"var(--border)" }}/>
-              <span style={{ fontSize:20, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif" }}>{stage}</span>
+              <Link href="/games" style={{ color:"var(--color-text-secondary)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
+              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
+              <span style={{ fontSize:20, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{stage}</span>
               <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()} · {board.size}×{board.size}</span>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", color:"var(--text4)", display:"flex" }}><RotateCcw size={13}/></button>
+              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>{elapsed}</span>
+              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{ fontSize:12, color:"var(--text3)", textAlign:"center", maxWidth:340, lineHeight:1.6 }}>
+        <div style={{ fontSize:12, color:"var(--color-text-secondary)", textAlign:"center", maxWidth:340, lineHeight:1.6 }}>
           Click any pipe to rotate it 90°. Make all connections match between neighbors. No open ends at borders.
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--text4)" }}>
+        <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--color-text-secondary)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-            <div style={{ width:16, height:16, borderRadius:4, background:"rgba(79,110,247,0.1)", border:"1.5px solid #4F6EF7", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <div style={{ width:8, height:2, background:"#4F6EF7", borderRadius:1 }}/>
+            <div style={{ width:16, height:16, borderRadius:4, background:"rgba(79,110,247,0.1)", border:"1.5px solid var(--color-accent-primary)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ width:8, height:2, background:"var(--color-accent-primary)", borderRadius:1 }}/>
             </div>
             Pipe segment
           </div>
@@ -243,7 +243,7 @@ function LogicPathPageInner() {
           <div style={{ display:"flex", alignItems:"center", gap:5 }}><Lock size={11}/> Locked</div>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)`, gap:8, background:"var(--bg2)", borderRadius:16, padding:12, border:"1.5px solid var(--border)", boxShadow:"var(--shadow-md)" }}>
+        <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)`, gap:8, background:"var(--color-surface-2)", borderRadius:16, padding:12, border:"1.5px solid var(--color-border)", boxShadow:"var(--shadow-md)" }}>
           {grid.map((row, r) => row.map((cell, c) => {
             const correct = isCellCorrect(grid, board.solution, r, c);
             return (
@@ -252,15 +252,15 @@ function LogicPathPageInner() {
                 onClick={() => handleRotate(r, c)}
                 style={{
                   width:cellSize, height:cellSize, borderRadius:10,
-                  background: cell.locked ? (solutionRevealed?"rgba(239,68,68,0.05)":"var(--bg3)")
-                    : showFeedback&&correct ? "rgba(34,197,94,0.08)" : "var(--surface)",
-                  border:`1.5px solid ${cell.locked?(solutionRevealed?"rgba(239,68,68,0.2)":"var(--border2)"):showFeedback&&correct?"#86EFAC":"var(--border)"}`,
+                  background: cell.locked ? (solutionRevealed?"rgba(239,68,68,0.05)":"var(--color-surface-2)")
+                    : showFeedback&&correct ? "rgba(34,197,94,0.08)" : "var(--color-surface)",
+                  border:`1.5px solid ${cell.locked?(solutionRevealed?"rgba(239,68,68,0.2)":"var(--color-border)"):showFeedback&&correct?"#86EFAC":"var(--color-border)"}`,
                   cursor: cell.locked||solutionRevealed ? "not-allowed" : "pointer",
                   display:"flex", alignItems:"center", justifyContent:"center",
                   position:"relative", transition:"all 0.15s",
                 }}>
                 <PipeSVG cell={cell} size={cellSize-8} isCorrect={showFeedback?correct:undefined} showFeedback={showFeedback}/>
-                {cell.locked && <div style={{ position:"absolute", top:3, right:3 }}><Lock size={8} color={solutionRevealed?"#EF4444":"var(--text4)"}/></div>}
+                {cell.locked && <div style={{ position:"absolute", top:3, right:3 }}><Lock size={8} color={solutionRevealed?"var(--color-error)":"var(--color-text-secondary)"}/></div>}
               </motion.div>
             );
           }))}
@@ -270,7 +270,7 @@ function LogicPathPageInner() {
           <HintButton hintsLeft={MAX_HINTS-hintsUsed} xpCost={HINT_XP_COST} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
           {!solutionRevealed&&(
             <button onClick={() => setShowFeedback(f => !f)}
-              style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--border2)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--text3)", cursor:"pointer" }}>
+              style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--color-border)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--color-surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--color-text-secondary)", cursor:"pointer" }}>
               {showFeedback ? "Feedback On" : "Check Progress"}
             </button>
           )}
@@ -279,10 +279,10 @@ function LogicPathPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--text3)", opacity:stage===1?0.4:1 }}>← Prev</button>
-          <span style={{ fontSize:12, color:"var(--text4)" }}>Stage {stage} of 1000</span>
+            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>← Prev</button>
+          <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of 1000</span>
           <button onClick={() => setStage(s=>s+1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, color:"var(--text2)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 

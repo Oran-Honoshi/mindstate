@@ -31,7 +31,7 @@ const PLANS = [
     free: false,
     highlight: false,
     icon: Crown,
-    color: "#4F6EF7",
+    color: "var(--color-accent-primary)",
     features: ["1 member account","Thousands of algorithmic stages","Unlimited daily training","Full vault access","Infinite mode","3-day free trial"],
   },
   {
@@ -43,7 +43,7 @@ const PLANS = [
     free: false,
     highlight: true,
     icon: Users,
-    color: "#9C6BE8",
+    color: "var(--color-accent-primary)",
     features: ["Up to 3 independent profiles","Dedicated child & senior UI","Shared family milestones","Unlimited daily training","Full vault access","3-day free trial"],
   },
   {
@@ -96,7 +96,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
       <Navbar />
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 24px 80px" }}>
 
@@ -106,10 +106,10 @@ export default function PricingPage() {
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", color: "var(--cyan)", textTransform: "uppercase", marginBottom: 16 }}>
             Pricing
           </p>
-          <h1 style={{ fontSize: "clamp(36px,4vw,56px)", fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 16, lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: "clamp(36px,4vw,56px)", fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 16, lineHeight: 1.1 }}>
             Simple, honest pricing
           </h1>
-          <p style={{ fontSize: 17, color: "var(--text3)", maxWidth: 480, margin: "0 auto", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 17, color: "var(--color-text-secondary)", maxWidth: 480, margin: "0 auto", lineHeight: 1.6 }}>
             An investment in the sharpest version of your household. Cancel anytime.
           </p>
         </motion.div>
@@ -122,8 +122,8 @@ export default function PricingPage() {
               <motion.div key={plan.name}
                 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 style={{
-                  background: plan.highlight ? "linear-gradient(135deg,#4F6EF7,#9C6BE8)" : "var(--surface)",
-                  border: plan.highlight ? "none" : "0.5px solid var(--border)",
+                  background: plan.highlight ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)",
+                  border: plan.highlight ? "none" : "0.5px solid var(--color-border)",
                   borderRadius: 24, padding: "32px 28px",
                   boxShadow: plan.highlight ? "0 24px 56px rgba(79,110,247,0.3)" : "var(--shadow-sm)",
                   position: "relative", display: "flex", flexDirection: "column",
@@ -139,35 +139,35 @@ export default function PricingPage() {
                   <Icon size={20} color={plan.highlight ? "white" : plan.color} />
                 </div>
 
-                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: plan.highlight ? "rgba(255,255,255,0.65)" : "var(--text4)", marginBottom: 8 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: plan.highlight ? "rgba(255,255,255,0.65)" : "var(--color-text-secondary)", marginBottom: 8 }}>
                   {plan.name}
                 </p>
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontSize: 48, fontWeight: 700, fontFamily: "Georgia,serif", color: plan.highlight ? "white" : "var(--text1)", lineHeight: 1 }}>
+                  <span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-sans)", color: plan.highlight ? "white" : "var(--color-text-primary)", lineHeight: 1 }}>
                     {plan.price}
                   </span>
-                  <span style={{ fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.6)" : "var(--text4)" }}>
+                  <span style={{ fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.6)" : "var(--color-text-secondary)" }}>
                     {plan.period}
                   </span>
                 </div>
 
                 {plan.trial && (
-                  <p style={{ fontSize: 12, color: plan.highlight ? "rgba(255,255,255,0.55)" : "var(--text4)", marginBottom: 24 }}>
+                  <p style={{ fontSize: 12, color: plan.highlight ? "rgba(255,255,255,0.55)" : "var(--color-text-secondary)", marginBottom: 24 }}>
                     3-day free trial · then billed monthly
                   </p>
                 )}
                 {plan.free && (
-                  <p style={{ fontSize: 12, color: "var(--text4)", marginBottom: 24 }}>
+                  <p style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 24 }}>
                     No credit card required
                   </p>
                 )}
 
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.88)" : "var(--text2)" }}>
+                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.88)" : "var(--color-text-secondary)" }}>
                       <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(255,255,255,0.2)" : "#EEF2FF" }}>
-                        <Check size={10} color={plan.highlight ? "white" : "#4F6EF7"} />
+                        <Check size={10} color={plan.highlight ? "white" : "var(--color-accent-primary)"} />
                       </div>
                       {f}
                     </li>
@@ -175,12 +175,12 @@ export default function PricingPage() {
                 </ul>
 
                 {plan.free ? (
-                  <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--surface)", color: "var(--text2)", border: "1.5px solid var(--border2)" }}>
+                  <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--color-surface)", color: "var(--color-text-secondary)", border: "1.5px solid var(--color-border)" }}>
                     Start Training Free
                   </Link>
                 ) : (
                   <button onClick={() => openCheckout(plan.paddlePriceId!)}
-                    style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "#4F6EF7" : "var(--text2)", outline: plan.highlight ? "none" : "1.5px solid var(--border2)" }}>
+                    style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "var(--color-accent-primary)" : "var(--color-text-secondary)", outline: plan.highlight ? "none" : "1.5px solid var(--color-border)" }}>
                     {plan.highlight ? "Protect Your Household" : plan.name === "Grand Family" ? "Access Grand Vault" : "Start Free Trial"}
                   </button>
                 )}
@@ -192,7 +192,7 @@ export default function PricingPage() {
         {/* FAQ */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           style={{ maxWidth: 640, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, fontFamily: "Georgia,serif", textAlign: "center", marginBottom: 32 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, fontFamily: "var(--font-sans)", textAlign: "center", marginBottom: 32 }}>
             Common questions
           </h2>
           {[
@@ -208,7 +208,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Footer note */}
-        <p style={{ textAlign: "center", fontSize: 13, color: "var(--text4)", marginTop: 48 }}>
+        <p style={{ textAlign: "center", fontSize: 13, color: "var(--color-text-secondary)", marginTop: 48 }}>
           By subscribing you agree to our{" "}
           <Link href="/terms" style={{ color: "var(--cyan)", textDecoration: "none" }}>Terms of Service</Link>
           {" "}and{" "}
@@ -225,15 +225,15 @@ export default function PricingPage() {
 function FAQ({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderBottom: "0.5px solid var(--border)", padding: "20px 0" }}>
+    <div style={{ borderBottom: "0.5px solid var(--color-border)", padding: "20px 0" }}>
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text1)" }}>{q}</span>
-        <span style={{ fontSize: 20, color: "var(--text4)", flexShrink: 0, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--color-text-primary)" }}>{q}</span>
+        <span style={{ fontSize: 20, color: "var(--color-text-secondary)", flexShrink: 0, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</span>
       </button>
       {open && (
         <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-          style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.7, marginTop: 12, paddingRight: 32 }}>
+          style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.7, marginTop: 12, paddingRight: 32 }}>
           {a}
         </motion.p>
       )}

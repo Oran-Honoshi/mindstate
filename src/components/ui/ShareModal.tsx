@@ -103,9 +103,9 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 20 }}
         style={{
-          background: "var(--surface)",
+          background: "var(--color-surface)",
           borderRadius: 28,
-          border: "0.5px solid var(--border)",
+          border: "0.5px solid var(--color-border)",
           padding: "32px",
           maxWidth: 420,
           width: "100%",
@@ -117,8 +117,8 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
         <button onClick={onClose} style={{
           position: "absolute", top: 16, right: 16,
           padding: 8, borderRadius: 10, border: "none",
-          background: "var(--bg2)", cursor: "pointer",
-          display: "flex", color: "var(--text4)",
+          background: "var(--color-surface-2)", cursor: "pointer",
+          display: "flex", color: "var(--color-text-secondary)",
         }}>
           <X size={16} />
         </button>
@@ -132,7 +132,7 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
           ) : (
             <div style={{
               width: 52, height: 52, borderRadius: 18,
-              background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
               display: "flex", alignItems: "center", justifyContent: "center",
               margin: "0 auto 16px",
             }}>
@@ -141,12 +141,12 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
           )}
 
           <h2 style={{
-            fontSize: 22, fontWeight: 700, fontFamily: "Georgia,serif",
-            color: "var(--text1)", marginBottom: 8, lineHeight: 1.25,
+            fontSize: 22, fontWeight: 700, fontFamily: "var(--font-sans)",
+            color: "var(--color-text-primary)", marginBottom: 8, lineHeight: 1.25,
           }}>
             {msg.headline}
           </h2>
-          <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
             {msg.sub}
           </p>
         </div>
@@ -196,8 +196,8 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
                 gap: 6, padding: "14px 10px", borderRadius: 16,
-                background: "var(--bg2)", border: "0.5px solid var(--border2)",
-                color: "var(--text2)", fontSize: 12, fontWeight: 600,
+                background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)",
+                color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -211,8 +211,8 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
                 gap: 6, padding: "14px 10px", borderRadius: 16,
-                background: "var(--bg2)", border: "0.5px solid var(--border2)",
-                color: "var(--text2)", fontSize: 12, fontWeight: 600,
+                background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)",
+                color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -226,8 +226,8 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
                 gap: 6, padding: "14px 10px", borderRadius: 16,
-                background: "var(--bg2)", border: "0.5px solid var(--border2)",
-                color: "var(--text2)", fontSize: 12, fontWeight: 600,
+                background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)",
+                color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -246,8 +246,8 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 padding: "13px", borderRadius: 16,
-                background: "transparent", border: "0.5px solid var(--border2)",
-                color: "var(--text2)", fontSize: 14, fontWeight: 600,
+                background: "transparent", border: "0.5px solid var(--color-border)",
+                color: "var(--color-text-secondary)", fontSize: 14, fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -261,10 +261,10 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
           padding: "10px 14px", borderRadius: 14,
-          background: "var(--bg2)", border: "0.5px solid var(--border2)",
+          background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)",
         }}>
           <span style={{
-            flex: 1, fontSize: 13, color: "var(--text4)",
+            flex: 1, fontSize: 13, color: "var(--color-text-secondary)",
             fontFamily: "monospace", overflow: "hidden",
             textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
@@ -276,7 +276,7 @@ export function ShareModal({ open, onClose, context = "after-game", gameSlug, xp
             style={{
               display: "flex", alignItems: "center", gap: 5,
               padding: "7px 12px", borderRadius: 10,
-              background: copied ? "#22C55E" : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+              background: copied ? "#22C55E" : "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
               border: "none", color: "white",
               fontSize: 12, fontWeight: 700, cursor: "pointer",
               whiteSpace: "nowrap", transition: "background 0.2s",

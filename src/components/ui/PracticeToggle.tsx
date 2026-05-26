@@ -15,7 +15,7 @@ export function PracticeToggle({ practice, onChange }: PracticeToggleProps) {
       padding: 3, gap: 2,
     }}>
       {[
-        { value: false, label: "Ranked", icon: Trophy, color: "#4F6EF7" },
+        { value: false, label: "Ranked", icon: Trophy, color: "var(--color-accent-primary)" },
         { value: true,  label: "Practice", icon: BookOpen, color: "#94A3B8" },
       ].map(opt => (
         <button

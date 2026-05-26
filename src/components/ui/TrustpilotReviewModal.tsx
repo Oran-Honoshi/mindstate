@@ -120,9 +120,9 @@ export function TrustpilotReviewModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 20 }}
         style={{
-          background: "var(--surface)",
+          background: "var(--color-surface)",
           borderRadius: 28,
-          border: "0.5px solid var(--border)",
+          border: "0.5px solid var(--color-border)",
           padding: "32px",
           maxWidth: 440,
           width: "100%",
@@ -134,8 +134,8 @@ export function TrustpilotReviewModal({
         <button onClick={handleClose} style={{
           position: "absolute", top: 16, right: 16,
           padding: 8, borderRadius: 10, border: "none",
-          background: "var(--bg2)", cursor: "pointer",
-          display: "flex", color: "var(--text4)",
+          background: "var(--color-surface-2)", cursor: "pointer",
+          display: "flex", color: "var(--color-text-secondary)",
         }}>
           <X size={16} />
         </button>
@@ -154,10 +154,10 @@ export function TrustpilotReviewModal({
                 }}>
                   <Star size={24} color="white" fill="white" />
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 8 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 8 }}>
                   How are we doing?
                 </h2>
-                <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.6 }}>
+                <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
                   {contextMessage}
                 </p>
               </div>
@@ -187,7 +187,7 @@ export function TrustpilotReviewModal({
                 ))}
               </div>
 
-              <p style={{ textAlign: "center", fontSize: 12, color: "var(--text4)" }}>
+              <p style={{ textAlign: "center", fontSize: 12, color: "var(--color-text-secondary)" }}>
                 {hovered === 1 && "Poor"}
                 {hovered === 2 && "Fair"}
                 {hovered === 3 && "Good"}
@@ -207,10 +207,10 @@ export function TrustpilotReviewModal({
                     <Star key={s} size={20} color="#F59E0B" fill={s <= rating ? "#F59E0B" : "transparent"} />
                   ))}
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 6 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 6 }}>
                   That means a lot — thank you!
                 </h2>
-                <p style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
                   We've prepared a review for you. Edit it freely, then copy it and paste it on Trustpilot.
                 </p>
               </div>
@@ -222,8 +222,8 @@ export function TrustpilotReviewModal({
                 rows={5}
                 style={{
                   width: "100%", padding: "12px 14px",
-                  borderRadius: 14, border: "0.5px solid var(--border2)",
-                  background: "var(--bg2)", color: "var(--text1)",
+                  borderRadius: 14, border: "0.5px solid var(--color-border)",
+                  background: "var(--color-surface-2)", color: "var(--color-text-primary)",
                   fontSize: 14, lineHeight: 1.6, resize: "vertical",
                   fontFamily: "inherit", marginBottom: 16,
                   boxSizing: "border-box",
@@ -252,7 +252,7 @@ export function TrustpilotReviewModal({
                 }
               </motion.button>
 
-              <p style={{ textAlign: "center", fontSize: 11, color: "var(--text4)", marginTop: 10 }}>
+              <p style={{ textAlign: "center", fontSize: 11, color: "var(--color-text-secondary)", marginTop: 10 }}>
                 Your review will be copied to clipboard, then Trustpilot opens — just paste and submit.
               </p>
             </motion.div>
@@ -268,12 +268,12 @@ export function TrustpilotReviewModal({
                   display: "flex", alignItems: "center", justifyContent: "center",
                   margin: "0 auto 14px",
                 }}>
-                  <MessageSquare size={22} color="#4F6EF7" />
+                  <MessageSquare size={22} color="var(--color-accent-primary)" />
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 6 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 6 }}>
                   We want to do better
                 </h2>
-                <p style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
                   Tell us what's not working. Our team reads every message and responds within 24 hours.
                 </p>
               </div>
@@ -293,8 +293,8 @@ export function TrustpilotReviewModal({
                     rows={5}
                     style={{
                       width: "100%", padding: "12px 14px",
-                      borderRadius: 14, border: "0.5px solid var(--border2)",
-                      background: "var(--bg2)", color: "var(--text1)",
+                      borderRadius: 14, border: "0.5px solid var(--color-border)",
+                      background: "var(--color-surface-2)", color: "var(--color-text-primary)",
                       fontSize: 14, lineHeight: 1.6, resize: "vertical",
                       fontFamily: "inherit", marginBottom: 16,
                       boxSizing: "border-box",
@@ -306,7 +306,7 @@ export function TrustpilotReviewModal({
                     style={{
                       width: "100%", padding: "14px",
                       borderRadius: 14, border: "none",
-                      background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                      background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                       color: "white", fontSize: 15, fontWeight: 700,
                       cursor: !feedback.trim() || submitting ? "not-allowed" : "pointer",
                       opacity: !feedback.trim() || submitting ? 0.6 : 1,
@@ -338,18 +338,18 @@ export function TrustpilotReviewModal({
               >
                 <Check size={28} color="white" />
               </motion.div>
-              <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 8 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 8 }}>
                 Thank you!
               </h2>
-              <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.6, marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6, marginBottom: 24 }}>
                 {rating >= 4
                   ? "Your review helps other players discover MindElement. We genuinely appreciate it."
                   : "Your feedback helps us build a better product. We'll get back to you soon."}
               </p>
               <button onClick={handleClose} style={{
                 padding: "12px 28px", borderRadius: 14,
-                border: "0.5px solid var(--border2)",
-                background: "var(--surface)", color: "var(--text2)",
+                border: "0.5px solid var(--color-border)",
+                background: "var(--color-surface)", color: "var(--color-text-secondary)",
                 fontWeight: 600, fontSize: 14, cursor: "pointer",
               }}>
                 Back to training

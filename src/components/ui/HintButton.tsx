@@ -43,7 +43,7 @@ export function HintButton({ hintsLeft, xpCost, onUseHint, disabled }: HintButto
           Hint ({hintsLeft} left)
           {!exhausted && (
             <span style={{
-              fontSize:10, fontWeight:700, color:"#EF4444",
+              fontSize:10, fontWeight:700, color:"var(--color-error)",
               background:"rgba(239,68,68,0.1)", padding:"1px 5px",
               borderRadius:6, marginLeft:2,
             }}>
@@ -75,7 +75,7 @@ export function HintButton({ hintsLeft, xpCost, onUseHint, disabled }: HintButto
             onClick={e => { if (e.target === e.currentTarget) setConfirm(false); }}>
             <motion.div
               initial={{ scale:0.9, y:20 }} animate={{ scale:1, y:0 }} exit={{ scale:0.9, y:20 }}
-              style={{ background:"var(--surface)", borderRadius:24, padding:26,
+              style={{ background:"var(--color-surface)", borderRadius:24, padding:26,
                 maxWidth:320, width:"100%", boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
 
               <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
@@ -85,10 +85,10 @@ export function HintButton({ hintsLeft, xpCost, onUseHint, disabled }: HintButto
                   <Lightbulb size={22} color="#F59E0B"/>
                 </div>
                 <div>
-                  <h3 style={{ fontSize:15, fontWeight:700, color:"var(--text1)", marginBottom:2 }}>
+                  <h3 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)", marginBottom:2 }}>
                     Use a Hint?
                   </h3>
-                  <p style={{ fontSize:12, color:"var(--text4)" }}>
+                  <p style={{ fontSize:12, color:"var(--color-text-secondary)" }}>
                     {hintsLeft} of 3 hints remaining this stage
                   </p>
                 </div>
@@ -99,15 +99,15 @@ export function HintButton({ hintsLeft, xpCost, onUseHint, disabled }: HintButto
                 border:"0.5px solid rgba(239,68,68,0.15)" }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                    <Zap size={13} color="#EF4444"/>
-                    <p style={{ fontSize:13, color:"var(--text2)", fontWeight:600 }}>XP cost</p>
+                    <Zap size={13} color="var(--color-error)"/>
+                    <p style={{ fontSize:13, color:"var(--color-text-secondary)", fontWeight:600 }}>XP cost</p>
                   </div>
-                  <span style={{ fontSize:18, fontWeight:700, color:"#EF4444",
-                    fontFamily:"Georgia,serif" }}>
+                  <span style={{ fontSize:18, fontWeight:700, color:"var(--color-error)",
+                    fontFamily:"var(--font-sans)" }}>
                     -{xpCost} XP
                   </span>
                 </div>
-                <p style={{ fontSize:11, color:"var(--text4)", lineHeight:1.5 }}>
+                <p style={{ fontSize:11, color:"var(--color-text-secondary)", lineHeight:1.5 }}>
                   One incorrect cell will be corrected. The solution is not revealed — just one step forward.
                 </p>
               </div>
@@ -115,8 +115,8 @@ export function HintButton({ hintsLeft, xpCost, onUseHint, disabled }: HintButto
               <div style={{ display:"flex", gap:10 }}>
                 <button onClick={() => setConfirm(false)}
                   style={{ flex:1, padding:"11px", borderRadius:12,
-                    border:"0.5px solid var(--border2)", background:"var(--bg2)",
-                    fontSize:13, fontWeight:600, color:"var(--text2)", cursor:"pointer" }}>
+                    border:"0.5px solid var(--color-border)", background:"var(--color-surface-2)",
+                    fontSize:13, fontWeight:600, color:"var(--color-text-secondary)", cursor:"pointer" }}>
                   Cancel
                 </button>
                 <button onClick={handleConfirm}

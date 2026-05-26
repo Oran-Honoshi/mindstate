@@ -29,7 +29,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
     setTokens(getTokensRemaining(user.id));
     const iv = setInterval(() => {
       setTokens(getTokensRemaining(user.id));
-      setCountdown(formatCountdown(secondsUntilReset()));
+      setCountdown(String(secondsUntilReset(user.id)));
     }, 1000);
     return () => clearInterval(iv);
   }, [user]);
@@ -76,11 +76,11 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
             <>
               {/* Has tokens */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Zap size={22} color="white" fill="white" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif" }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>
                     Play {gameName}
                   </h2>
                   <p style={{ fontSize: 12, color: "#94A3B8" }}>This uses 1 daily play</p>
@@ -91,12 +91,12 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               <div style={{ background: "#F8F7F5", borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "#1C1917" }}>Daily plays remaining</p>
-                  <p style={{ fontSize: 22, fontWeight: 700, color: "#4F6EF7", fontFamily: "Georgia,serif" }}>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-sans)" }}>
                     {tokens} / {FREE_DAILY_TOKENS}
                   </p>
                 </div>
                 <div style={{ height: 6, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg,#4F6EF7,#9C6BE8)", width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
+                  <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg,var(--color-accent-primary),var(--color-accent-primary))", width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
                 </div>
                 <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
                   <Clock size={10} style={{ display: "inline", marginRight: 4 }}/>
@@ -106,7 +106,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
 
               <button
                 onClick={onConfirm}
-                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)", fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
+                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
                 Play Now <ChevronRight size={15} />
               </button>
 
@@ -120,7 +120,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               {/* No tokens left */}
               <div style={{ textAlign: "center", marginBottom: 24 }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}></div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1C1917", fontFamily: "Georgia,serif", marginBottom: 6 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)", marginBottom: 6 }}>
                   No plays left today
                 </h2>
                 <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>
@@ -136,7 +136,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               </div>
 
               <Link href="/pricing" onClick={onClose}
-                style={{ display: "block", textAlign: "center", padding: 14, borderRadius: 14, background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)", fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", marginBottom: 10, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
+                style={{ display: "block", textAlign: "center", padding: 14, borderRadius: 14, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", marginBottom: 10, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
                 Upgrade to Pro — Unlimited Plays
               </Link>
 
@@ -162,7 +162,7 @@ export function TokenHUD({ userId, isPro }: { userId: string; isPro: boolean }) 
     setTokens(getTokensRemaining(userId));
     const iv = setInterval(() => {
       setTokens(getTokensRemaining(userId));
-      setCountdown(formatCountdown(secondsUntilReset()));
+      setCountdown(String(secondsUntilReset(userId)));
     }, 1000);
     return () => clearInterval(iv);
   }, [userId, isPro]);
@@ -174,8 +174,8 @@ export function TokenHUD({ userId, isPro }: { userId: string; isPro: boolean }) 
   );
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: tokens > 0 ? "#4F6EF7" : "#EF4444", fontWeight: 600 }}>
-      <Zap size={12} color={tokens > 0 ? "#4F6EF7" : "#EF4444"} />
+    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: tokens > 0 ? "var(--color-accent-primary)" : "var(--color-error)", fontWeight: 600 }}>
+      <Zap size={12} color={tokens > 0 ? "var(--color-accent-primary)" : "var(--color-error)"} />
       {tokens}/{FREE_DAILY_TOKENS} plays
     </div>
   );

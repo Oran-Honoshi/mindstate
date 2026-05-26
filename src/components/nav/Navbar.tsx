@@ -12,7 +12,7 @@ import {
 import { useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
 
-const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
+const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -39,9 +39,9 @@ export function Navbar() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         // Tighter padding on mobile — 12px sides, 24px on desktop
         padding: "0 12px", height: 56,
-        background: "color-mix(in srgb, var(--bg) 93%, transparent)",
+        background: "color-mix(in srgb, var(--color-bg) 93%, transparent)",
         backdropFilter: "blur(20px)",
-        borderBottom: "0.5px solid var(--border)",
+        borderBottom: "0.5px solid var(--color-border)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
       }}>
 
@@ -53,7 +53,7 @@ export function Navbar() {
             style={{ width: 30, height: 30, borderRadius: "22.5%", objectFit: "cover" }}
           />
           {/* Hide full name on very small screens — show only on ≥480px */}
-          <span className="nav-logo-text" style={{ fontWeight: 700, fontSize: 15, color: "var(--text1)", fontFamily: "Georgia,serif" }}>
+          <span className="nav-logo-text" style={{ fontWeight: 700, fontSize: 15, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>
             MindElement
           </span>
         </Link>
@@ -82,7 +82,7 @@ export function Navbar() {
                   padding: "7px 12px", borderRadius: 10, textDecoration: "none",
                   fontSize: 13, fontWeight: 500, transition: "all 0.15s",
                   background: isActive(link.href) ? "rgba(79,110,247,0.08)" : "transparent",
-                  color: isActive(link.href) ? "#4F6EF7" : "#64748B",
+                  color: isActive(link.href) ? "var(--color-accent-primary)" : "#64748B",
                 }}>
                 {link.label}
               </Link>
@@ -96,14 +96,14 @@ export function Navbar() {
           {/* Silent mode — only on game pages, hidden on landing */}
           {!isLanding && (
             <button onClick={toggleSilentMode}
-              style={{ padding: 7, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
+              style={{ padding: 7, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex" }}>
               {isSilentMode ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
           )}
 
           {/* Theme toggle */}
           <button onClick={toggleTheme}
-            style={{ padding: 7, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", color: "var(--text4)", display: "flex" }}>
+            style={{ padding: 7, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex" }}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
@@ -113,9 +113,9 @@ export function Navbar() {
             <div className="nav-links-desktop" style={{ gap: 6 }}>
               <Link href="/auth/signin"
                 style={{
-                  fontSize: 13, fontWeight: 600, color: "var(--text3)",
+                  fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)",
                   padding: "7px 12px", borderRadius: 10, textDecoration: "none",
-                  border: "0.5px solid var(--border)", background: "var(--surface)",
+                  border: "0.5px solid var(--color-border)", background: "var(--color-surface)",
                 }}>
                 Sign in
               </Link>
@@ -136,7 +136,7 @@ export function Navbar() {
                 <button onClick={() => setProfileOpen(o => !o)} style={{
                   display: "flex", alignItems: "center", gap: 5,
                   padding: "5px 8px 5px 5px", borderRadius: 12,
-                  border: "0.5px solid rgba(0,0,0,0.09)", background: "var(--surface)",
+                  border: "0.5px solid rgba(0,0,0,0.09)", background: "var(--color-surface)",
                   cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                 }}>
                   <div style={{
@@ -147,7 +147,7 @@ export function Navbar() {
                     {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
                   </div>
                   <span style={{
-                    fontSize: 12, fontWeight: 600, color: "var(--text2)",
+                    fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)",
                     maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
                     {profile?.username ?? "Profile"}
@@ -166,15 +166,15 @@ export function Navbar() {
                         transition={{ duration: 0.14 }}
                         style={{
                           position: "absolute", right: 0, top: "calc(100% + 8px)", width: 200,
-                          background: "var(--surface)", border: "0.5px solid var(--border)",
+                          background: "var(--color-surface)", border: "0.5px solid var(--color-border)",
                           borderRadius: 18, boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
                           zIndex: 50, overflow: "hidden",
                         }}>
                         <div style={{ padding: "13px 15px 9px", borderBottom: "0.5px solid #F8F7F5" }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text1)", marginBottom: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {profile?.username ?? "Player"}
                           </p>
-                          <p style={{ fontSize: 11, color: "var(--text4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <p style={{ fontSize: 11, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {user.email}
                           </p>
                         </div>
@@ -188,7 +188,7 @@ export function Navbar() {
                             onClick={() => setProfileOpen(false)}
                             style={{
                               display: "flex", alignItems: "center", gap: 10,
-                              padding: "10px 15px", fontSize: 13, color: "var(--text2)",
+                              padding: "10px 15px", fontSize: 13, color: "var(--color-text-secondary)",
                               textDecoration: "none", borderBottom: "0.5px solid #FAFAF9",
                             }}
                             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#F8F7F5"}
@@ -200,7 +200,7 @@ export function Navbar() {
                         <button onClick={() => { signOut(); setProfileOpen(false); }}
                           style={{
                             width: "100%", display: "flex", alignItems: "center", gap: 10,
-                            padding: "10px 15px", fontSize: 13, color: "#EF4444",
+                            padding: "10px 15px", fontSize: 13, color: "var(--color-error)",
                             background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
                           }}
                           onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#FEF2F2"}
@@ -231,7 +231,7 @@ export function Navbar() {
             <>
               <div className="nav-links-desktop" style={{ gap: 5, marginLeft: 4 }}>
                 <Link href="/auth/signin"
-                  style={{ fontSize: 13, color: "var(--text3)", padding: "7px 11px", borderRadius: 10, textDecoration: "none" }}>
+                  style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "7px 11px", borderRadius: 10, textDecoration: "none" }}>
                   Sign in
                 </Link>
                 <Link href="/auth/signup"
@@ -250,7 +250,7 @@ export function Navbar() {
           <button onClick={() => setMenuOpen(o => !o)} className="nav-mobile-only"
             style={{
               padding: 7, borderRadius: 9, background: "transparent",
-              border: "none", cursor: "pointer", color: "var(--text3)", marginLeft: 2,
+              border: "none", cursor: "pointer", color: "var(--color-text-secondary)", marginLeft: 2,
               display: "flex",
             }}>
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -270,17 +270,17 @@ export function Navbar() {
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
               style={{
                 position: "fixed", right: 0, top: 0, bottom: 0, width: 260,
-                background: "var(--surface)", zIndex: 50,
+                background: "var(--color-surface)", zIndex: 50,
                 boxShadow: "-8px 0 40px rgba(0,0,0,0.1)",
                 display: "flex", flexDirection: "column",
               }}>
               <div style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "16px 20px", borderBottom: "0.5px solid var(--border)",
+                padding: "16px 20px", borderBottom: "0.5px solid var(--color-border)",
               }}>
-                <span style={{ fontWeight: 700, color: "var(--text1)", fontFamily: "Georgia,serif" }}>Menu</span>
+                <span style={{ fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>Menu</span>
                 <button onClick={() => setMenuOpen(false)}
-                  style={{ padding: 6, borderRadius: 8, background: "var(--bg2)", border: "none", cursor: "pointer" }}>
+                  style={{ padding: 6, borderRadius: 8, background: "var(--color-surface-2)", border: "none", cursor: "pointer" }}>
                   <X size={16} color="#64748B" />
                 </button>
               </div>
@@ -292,14 +292,14 @@ export function Navbar() {
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "12px 14px", borderRadius: 12, textDecoration: "none",
                       fontSize: 14, fontWeight: 500,
-                      color: isActive(link.href) ? "#4F6EF7" : "#374151",
+                      color: isActive(link.href) ? "var(--color-accent-primary)" : "#374151",
                       background: isActive(link.href) ? "rgba(79,110,247,0.07)" : "transparent",
                     }}>
                     <link.icon size={16} />
                     {link.label}
                   </Link>
                 ))}
-                <div style={{ height: "0.5px", background: "var(--border)", margin: "8px 0" }} />
+                <div style={{ height: "0.5px", background: "var(--color-border)", margin: "8px 0" }} />
                 {user ? (
                   <>
                     {[
@@ -310,7 +310,7 @@ export function Navbar() {
                         style={{
                           display: "flex", alignItems: "center", gap: 10,
                           padding: "12px 14px", borderRadius: 12, textDecoration: "none",
-                          fontSize: 14, fontWeight: 500, color: "var(--text2)",
+                          fontSize: 14, fontWeight: 500, color: "var(--color-text-secondary)",
                         }}>
                         <item.icon size={16} color="#94A3B8" />
                         {item.label}
@@ -320,7 +320,7 @@ export function Navbar() {
                       style={{
                         display: "flex", alignItems: "center", gap: 10,
                         padding: "12px 14px", borderRadius: 12,
-                        fontSize: 14, fontWeight: 500, color: "#EF4444",
+                        fontSize: 14, fontWeight: 500, color: "var(--color-error)",
                         background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
                       }}>
                       <LogOut size={16} />
@@ -332,8 +332,8 @@ export function Navbar() {
                     <Link href="/auth/signin" onClick={() => setMenuOpen(false)}
                       style={{
                         display: "block", textAlign: "center", padding: "12px",
-                        borderRadius: 12, border: "0.5px solid var(--border)",
-                        fontSize: 13, fontWeight: 600, color: "var(--text2)", textDecoration: "none",
+                        borderRadius: 12, border: "0.5px solid var(--color-border)",
+                        fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", textDecoration: "none",
                       }}>
                       Sign in
                     </Link>

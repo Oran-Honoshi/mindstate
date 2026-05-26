@@ -23,7 +23,7 @@ export function WelcomeModal() {
   const steps = [
     {
       icon: Brain,
-      color: "#4F6EF7",
+      color: "var(--color-accent-primary)",
       bg: "#EEF2FF",
       title: `Welcome, ${profile?.username ?? "friend"}!`,
       body: "You've joined MindElement — an elegant brain-training suite designed for the modern mind. Here's what to expect.",
@@ -47,7 +47,7 @@ export function WelcomeModal() {
     },
     {
       icon: Users,
-      color: "#9C6BE8",
+      color: "var(--color-accent-primary)",
       bg: "#F5F3FF",
       title: "Family & Friends",
       body: "Create a Family Group and invite up to 6 friends. Compete on a private leaderboard and get real-time notifications when someone breaks a record.",
@@ -117,7 +117,7 @@ export function WelcomeModal() {
 
           <h2 style={{
             fontSize: 22, fontWeight: 700, color: "#1C1917",
-            fontFamily: "Georgia,serif", marginBottom: 10, lineHeight: 1.2,
+            fontFamily: "var(--font-sans)", marginBottom: 10, lineHeight: 1.2,
           }}>
             {current.title}
           </h2>
@@ -144,7 +144,7 @@ export function WelcomeModal() {
                 onClick={() => setShow(false)}
                 style={{
                   flex: 2, padding: 13, borderRadius: 14, border: "none",
-                  background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                  background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                   fontSize: 13, fontWeight: 700, color: "white",
                   textDecoration: "none", display: "flex",
                   alignItems: "center", justifyContent: "center", gap: 6,
@@ -157,7 +157,7 @@ export function WelcomeModal() {
                 onClick={() => setStep(s => s + 1)}
                 style={{
                   flex: 2, padding: 13, borderRadius: 14, border: "none",
-                  background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                  background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                   fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer",
                 }}
               >

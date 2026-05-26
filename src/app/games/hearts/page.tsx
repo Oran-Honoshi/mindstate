@@ -36,11 +36,11 @@ function shuffleCards(cards:Card[],seed:number):Card[]{const rng=mulberry32(seed
 function cardPoints(card:Card):number{if(card.suit==="♥")return 1;if(card.suit==="♠"&&card.label==="Q")return 13;return 0;}
 function cardColor(suit:Suit):string{return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
 
-function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
+function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);}
 
 function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;onClick?:()=>void;faceDown?:boolean}){
   return(<motion.button onClick={onClick} whileHover={onClick?{y:-6}:{}} whileTap={onClick?{scale:0.95}:{}}
-    style={{width:52,height:76,borderRadius:8,border:`2px solid ${selected?"#4F6EF7":"#E2E8F0"}`,background:faceDown?"linear-gradient(135deg,#4F6EF7,#9C6BE8)":selected?"#EEF2FF":"white",cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:selected?"0 4px 12px rgba(79,110,247,0.2)":"0 2px 6px rgba(0,0,0,0.06)",flexShrink:0}}>
+    style={{width:52,height:76,borderRadius:8,border:`2px solid ${selected?"var(--color-accent-primary)":"#E2E8F0"}`,background:faceDown?"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))":selected?"#EEF2FF":"white",cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:selected?"0 4px 12px rgba(79,110,247,0.2)":"0 2px 6px rgba(0,0,0,0.06)",flexShrink:0}}>
     {!faceDown&&<><span style={{fontSize:13,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span><span style={{fontSize:18,color:cardColor(card.suit),lineHeight:1,marginTop:2}}>{card.suit}</span></>}
   </motion.button>);
 }
@@ -132,7 +132,7 @@ function HeartsPageInner(){
     setSelected(idx);setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();
   }
 
-  if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Dealing cards...</p></div>);
+  if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Dealing cards...</p></div>);
 
   const currentXP=calculateXP(xpState).currentXP;
   const won=phase==="done"&&playerScore<=cpuScore;
@@ -147,7 +147,7 @@ function HeartsPageInner(){
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
               <Link href="/games" style={{color:"rgba(255,255,255,0.7)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"rgba(255,255,255,0.2)"}}/>
-              <span style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{stage}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <span style={{fontSize:12,color:"rgba(255,255,255,0.7)",fontFamily:"monospace"}}>{elapsed}</span>
@@ -161,7 +161,7 @@ function HeartsPageInner(){
           {[{label:"You",score:playerScore},{label:"CPU",score:cpuScore}].map(s=>(
             <div key={s.label} style={{flex:1,background:"rgba(255,255,255,0.1)",borderRadius:16,padding:"12px 16px",backdropFilter:"blur(8px)",border:"0.5px solid rgba(255,255,255,0.15)"}}>
               <p style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginBottom:4}}>{s.label}</p>
-              <p style={{fontSize:24,fontWeight:700,color:"white",fontFamily:"Georgia,serif"}}>{s.score} <span style={{fontSize:14,color:"#EF4444"}}>pts</span></p>
+              <p style={{fontSize:24,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.score} <span style={{fontSize:14,color:"var(--color-error)"}}>pts</span></p>
             </div>
           ))}
         </div>
@@ -191,7 +191,7 @@ function HeartsPageInner(){
         </div>
 
         {selected!==null&&phase==="play"&&!solutionRevealed&&(
-          <button onClick={playCard} style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--surface)",fontSize:14,fontWeight:700,color:"#1A6B3A",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
+          <button onClick={playCard} style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--color-surface)",fontSize:14,fontWeight:700,color:"#1A6B3A",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
             Play {hand[selected].label}{hand[selected].suit}
           </button>
         )}
@@ -210,14 +210,14 @@ function HeartsPageInner(){
 
       <AnimatePresence>
         {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
+          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
             <div style={{fontSize:48,marginBottom:16}}>{won?"🏆":"😔"}</div>
-            <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
-            <p style={{fontSize:13,color:"var(--text3)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
-            {won&&<div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p></div>}
+            <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
+            <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
+            {won&&<div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p></div>}
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
-              <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
+              <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
             </div>
           </motion.div>
         </motion.div>)}

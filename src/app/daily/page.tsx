@@ -15,7 +15,7 @@ import {
 } from "@/lib/games/dailyChallenge";
 import { getStreak } from "@/lib/supabase/streaks";
 
-const ACCENT = "linear-gradient(135deg,#4F6EF7,#9C6BE8)";
+const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
 
 const GAME_NAMES: Record<string, string> = {
   tango:"Tango", memory:"Memory", queens:"Queens", sudoku:"Mini Sudoku",
@@ -27,16 +27,16 @@ const GAME_NAMES: Record<string, string> = {
 };
 
 const GAME_COLORS: Record<string, { from: string; to: string }> = {
-  tango:          { from:"#4F6EF7", to:"#9C6BE8" },
+  tango:          { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)" },
   memory:         { from:"#059669", to:"#3B82F6" },
-  queens:         { from:"#D97706", to:"#EF4444" },
+  queens:         { from:"#D97706", to:"var(--color-error)" },
   sudoku:         { from:"#DC2626", to:"#B91C1C" },
   zip:            { from:"#0D9488", to:"#0891B2" },
   minesweeper:    { from:"#991B1B", to:"#DC2626" },
   flow:           { from:"#15803D", to:"#0D9488" },
   nonogram:       { from:"#BE185D", to:"#7C3AED" },
   bridges:        { from:"#B45309", to:"#D97706" },
-  "pattern-match":{ from:"#7C3AED", to:"#4F6EF7" },
+  "pattern-match":{ from:"#7C3AED", to:"var(--color-accent-primary)" },
   kakuro:         { from:"#1D4ED8", to:"#0891B2" },
   "gravity-sort": { from:"#C2410C", to:"#D97706" },
   "logic-path":   { from:"#0891B2", to:"#0D9488" },
@@ -76,26 +76,26 @@ export default function DailyPage() {
   const completedCount = completedToday.size;
   const totalGames = DAILY_GAMES.length;
   const featuredCompleted = completedToday.has(todayFeatured);
-  const gc = GAME_COLORS[todayFeatured] ?? { from:"#4F6EF7", to:"#9C6BE8" };
+  const gc = GAME_COLORS[todayFeatured] ?? { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)" };
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--bg)" }}>
+    <div style={{ minHeight:"100vh", background:"var(--color-bg)" }}>
       <Navbar/>
       <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 20px 60px" }}>
 
         {/* Header */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:28 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-            <Calendar size={18} color="#4F6EF7"/>
-            <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--text4)" }}>
+            <Calendar size={18} color="var(--color-accent-primary)"/>
+            <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)" }}>
               Daily Challenge · {new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
             </p>
           </div>
-          <h1 style={{ fontSize:36, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:6 }}>
+          <h1 style={{ fontSize:36, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:6 }}>
             Today's Challenges
           </h1>
           <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
-            <p style={{ fontSize:14, color:"var(--text3)" }}>
+            <p style={{ fontSize:14, color:"var(--color-text-secondary)" }}>
               {completedCount}/{totalGames} completed today
             </p>
             <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:20,
@@ -115,25 +115,25 @@ export default function DailyPage() {
               ))}
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <Clock size={12} color="var(--text4)"/>
-              <span style={{ fontSize:12, color:"var(--text4)", fontFamily:"monospace" }}>Resets in {countdown}</span>
+              <Clock size={12} color="var(--color-text-secondary)"/>
+              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>Resets in {countdown}</span>
             </div>
           </div>
         </motion.div>
 
         {/* Progress bar */}
-        <div style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", marginBottom:24, boxShadow:"var(--shadow-sm)" }}>
+        <div style={{ background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"20px 24px", marginBottom:24, boxShadow:"var(--shadow-sm)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <p style={{ fontSize:13, fontWeight:600, color:"var(--text2)" }}>Daily Progress</p>
-            <p style={{ fontSize:13, fontWeight:700, color:"#4F6EF7" }}>{Math.round((completedCount/totalGames)*100)}%</p>
+            <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-secondary)" }}>Daily Progress</p>
+            <p style={{ fontSize:13, fontWeight:700, color:"var(--color-accent-primary)" }}>{Math.round((completedCount/totalGames)*100)}%</p>
           </div>
-          <div style={{ height:8, background:"var(--bg3)", borderRadius:4, overflow:"hidden" }}>
+          <div style={{ height:8, background:"var(--color-surface-2)", borderRadius:4, overflow:"hidden" }}>
             <motion.div
               animate={{ width:`${(completedCount/totalGames)*100}%` }}
               transition={{ duration:0.8, ease:"easeOut" }}
               style={{ height:"100%", borderRadius:4, background:ACCENT }}/>
           </div>
-          <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
+          <p style={{ fontSize:11, color:"var(--color-text-secondary)", marginTop:8 }}>
             Daily challenges don't cost plays — free for everyone, every day
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function DailyPage() {
         {/* Featured game — big card */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.05 }}
           style={{ marginBottom:20 }}>
-          <p style={{ fontSize:11, fontWeight:600, color:"var(--text4)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:10 }}>
+          <p style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:10 }}>
             Featured Today
           </p>
           <Link href={`/games/${todayFeatured}?daily=1`} style={{ display:"block", textDecoration:"none" }}>
@@ -163,7 +163,7 @@ export default function DailyPage() {
                       </span>
                     )}
                   </div>
-                  <h2 style={{ fontSize:32, fontWeight:700, color:"white", fontFamily:"Georgia,serif", marginBottom:6 }}>
+                  <h2 style={{ fontSize:32, fontWeight:700, color:"white", fontFamily:"var(--font-sans)", marginBottom:6 }}>
                     {GAME_NAMES[todayFeatured]}
                   </h2>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
@@ -192,13 +192,13 @@ export default function DailyPage() {
 
         {/* All daily games grid */}
         <div style={{ marginBottom:24 }}>
-          <p style={{ fontSize:11, fontWeight:600, color:"var(--text4)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:14 }}>
+          <p style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:14 }}>
             All Daily Challenges
           </p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
             {DAILY_GAMES.map((game, i) => {
               const done = completedToday.has(game);
-              const gc2 = GAME_COLORS[game] ?? { from:"#4F6EF7", to:"#9C6BE8" };
+              const gc2 = GAME_COLORS[game] ?? { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)" };
               const isFeatured = game === todayFeatured;
               return (
                 <motion.div key={game}
@@ -206,8 +206,8 @@ export default function DailyPage() {
                   transition={{ delay:0.06 + i * 0.03 }}>
                   <Link href={`/games/${game}?daily=1`} style={{ display:"block", textDecoration:"none" }}>
                     <div style={{
-                      background:"var(--surface)", borderRadius:18,
-                      border:`0.5px solid ${isFeatured?"rgba(79,110,247,0.3)":"var(--border)"}`,
+                      background:"var(--color-surface)", borderRadius:18,
+                      border:`0.5px solid ${isFeatured?"rgba(79,110,247,0.3)":"var(--color-border)"}`,
                       padding:"16px", boxShadow:"var(--shadow-sm)",
                       cursor:"pointer", transition:"all 0.2s",
                       opacity: done ? 0.7 : 1,
@@ -216,7 +216,7 @@ export default function DailyPage() {
                     onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(0)";el.style.boxShadow="var(--shadow-sm)";}}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                         <div style={{ width:52, height:52, borderRadius:12,
-                          background:"var(--bg2)",
+                          background:"var(--color-surface-2)",
                           display:"flex", alignItems:"center", justifyContent:"center",
                           overflow:"hidden" }}>
                           <div style={{ transform:"scale(0.55)", transformOrigin:"center" }}>
@@ -234,9 +234,9 @@ export default function DailyPage() {
                           </span>
                         )}
                       </div>
-                      <p style={{ fontSize:13, fontWeight:700, color:"var(--text1)", marginBottom:2 }}>{GAME_NAMES[game]}</p>
+                      <p style={{ fontSize:13, fontWeight:700, color:"var(--color-text-primary)", marginBottom:2 }}>{GAME_NAMES[game]}</p>
                       <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <p style={{ fontSize:11, color:"var(--text4)" }}>Stage {getDailyStageInfo(game).stage}</p>
+                <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Stage {getDailyStageInfo(game).stage}</p>
                 <span style={{ fontSize:9, fontWeight:700, padding:"1px 6px", borderRadius:6,
                   background:getDailyStageInfo(game).difficulty==="easy"?"rgba(34,197,94,0.1)":
                              getDailyStageInfo(game).difficulty==="medium"?"rgba(245,158,11,0.1)":
@@ -256,22 +256,22 @@ export default function DailyPage() {
 
         {/* Streak tracker */}
         {user && (
-          <div style={{ background:"var(--surface)", borderRadius:20, border:"0.5px solid var(--border)", padding:"20px 24px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"20px 24px", boxShadow:"var(--shadow-sm)" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
               <Flame size={16} color="#F59E0B" fill="#F59E0B"/>
-              <p style={{ fontSize:14, fontWeight:700, color:"var(--text1)" }}>Your Streak</p>
+              <p style={{ fontSize:14, fontWeight:700, color:"var(--color-text-primary)" }}>Your Streak</p>
             </div>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               {Array.from({ length: 7 }, (_, i) => {
                 const filled = i < (streak % 7 || (streak > 0 && streak % 7 === 0 ? 7 : 0));
                 return (
                   <div key={i} style={{ flex:1, height:8, borderRadius:4,
-                    background: filled ? "linear-gradient(90deg,#F97316,#F59E0B)" : "var(--bg3)",
+                    background: filled ? "linear-gradient(90deg,#F97316,#F59E0B)" : "var(--color-surface-2)",
                     minWidth:20, transition:"background 0.3s" }}/>
                 );
               })}
             </div>
-            <p style={{ fontSize:11, color:"var(--text4)", marginTop:8 }}>
+            <p style={{ fontSize:11, color:"var(--color-text-secondary)", marginTop:8 }}>
               {streak % 7 === 0 && streak > 0
                 ? " Perfect week! +10 bonus plays awarded!"
                 : `${7 - (streak % 7)} more days for +10 bonus plays`}

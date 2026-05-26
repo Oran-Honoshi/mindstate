@@ -20,7 +20,7 @@ function TangoSnapshot({ solved }: { solved: boolean }) {
   return (
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,28px)",gap:3}}>
       {board.map((row,r)=>row.map((cell,c)=>(
-        <div key={`${r}-${c}`} style={{width:28,height:28,borderRadius:6,background:cell?"white":"var(--bg3)",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div key={`${r}-${c}`} style={{width:28,height:28,borderRadius:6,background:cell?"white":"var(--color-surface-2)",border:"1px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           {cell==="S"&&<SunIcon size={14}/>}
           {cell==="M"&&<MoonIcon size={14}/>}
         </div>
@@ -84,22 +84,22 @@ function SudokuSnapshot({ solved }: { solved: boolean }) {
 
 function FlowSnapshot({ solved }: { solved: boolean }) {
   const SIZE = 4;
-  const dots: Record<string,string> = {"0,0":"#EF4444","0,3":"#3B82F6","3,0":"#22C55E","3,3":"#F59E0B"};
+  const dots: Record<string,string> = {"0,0":"var(--color-error)","0,3":"#3B82F6","3,0":"#22C55E","3,3":"#F59E0B"};
   const paths: Record<string,string> = solved ? {
-    "0,0":"#EF4444","0,1":"#EF4444","0,2":"#EF4444","0,3":"#3B82F6",
-    "1,0":"#22C55E","1,1":"#EF4444","1,2":"#3B82F6","1,3":"#3B82F6",
+    "0,0":"var(--color-error)","0,1":"var(--color-error)","0,2":"var(--color-error)","0,3":"#3B82F6",
+    "1,0":"#22C55E","1,1":"var(--color-error)","1,2":"#3B82F6","1,3":"#3B82F6",
     "2,0":"#22C55E","2,1":"#F59E0B","2,2":"#F59E0B","2,3":"#3B82F6",
     "3,0":"#22C55E","3,1":"#F59E0B","3,2":"#F59E0B","3,3":"#F59E0B",
   } : {};
   return (
-    <div style={{border:"1.5px solid var(--border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
+    <div style={{border:"1.5px solid var(--color-border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},22px)`}}>
         {Array.from({length:SIZE},(_,r)=>Array.from({length:SIZE},(_,c)=>{
           const k=`${r},${c}`;
           const dot=dots[k];
           const fill=paths[k];
           return(
-            <div key={k} style={{width:22,height:22,background:fill?`${fill}30`:"var(--bg2)",border:"0.5px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div key={k} style={{width:22,height:22,background:fill?`${fill}30`:"var(--color-surface-2)",border:"0.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
               {dot&&<div style={{width:12,height:12,borderRadius:"50%",background:dot}}/>}
             </div>
           );
@@ -119,17 +119,17 @@ function NonogramSnapshot({ solved }: { solved: boolean }) {
       <div style={{display:"flex",marginLeft:20}}>
         {colClues.map((cl,i)=>(
           <div key={i} style={{width:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",paddingBottom:2}}>
-            {cl.map((n,j)=><span key={j} style={{fontSize:9,fontWeight:700,color:"var(--text2)",lineHeight:1.2}}>{n}</span>)}
+            {cl.map((n,j)=><span key={j} style={{fontSize:9,fontWeight:700,color:"var(--color-text-secondary)",lineHeight:1.2}}>{n}</span>)}
           </div>
         ))}
       </div>
       {solution.map((_,r)=>(
         <div key={r} style={{display:"flex",alignItems:"center"}}>
           <div style={{width:20,display:"flex",justifyContent:"flex-end",paddingRight:3,gap:2}}>
-            {rowClues[r].map((n,i)=><span key={i} style={{fontSize:9,fontWeight:700,color:"var(--text2)"}}>{n}</span>)}
+            {rowClues[r].map((n,i)=><span key={i} style={{fontSize:9,fontWeight:700,color:"var(--color-text-secondary)"}}>{n}</span>)}
           </div>
           {grid[r].map((cell,c)=>(
-            <div key={c} style={{width:20,height:20,background:cell?"#1C1917":"var(--bg2)",border:"0.5px solid var(--border)"}}/>
+            <div key={c} style={{width:20,height:20,background:cell?"#1C1917":"var(--color-surface-2)",border:"0.5px solid var(--color-border)"}}/>
           ))}
         </div>
       ))}
@@ -145,7 +145,7 @@ function MinesweeperSnapshot({ solved }: { solved: boolean }) {
   ];
   const NC:Record<string,string>={"1":"#2563EB","2":"#16A34A"};
   return(
-    <div style={{border:"1.5px solid var(--border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
+    <div style={{border:"1.5px solid var(--color-border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,28px)"}}>
         {grid.map((row,r)=>row.map((cell,c)=>(
           <div key={`${r}-${c}`} style={{width:28,height:28,background:cell.rev?"#F8F7F5":"white",border:"0.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:NC[cell.val]||"inherit",boxShadow:!cell.rev?"inset 0 1px 0 rgba(255,255,255,0.8)":"none"}}>
@@ -167,7 +167,7 @@ function ZipSnapshot({ solved }: { solved: boolean }) {
         {path.slice(1).map((k,i)=>{
           const[r,c]=k.split(",").map(Number);
           const[pr,pc]=path[i].split(",").map(Number);
-          return<line key={i} x1={pc*26+13} y1={pr*26+13} x2={c*26+13} y2={r*26+13} stroke="#4F6EF7" strokeWidth="3" strokeLinecap="round" opacity="0.5"/>;
+          return<line key={i} x1={pc*26+13} y1={pr*26+13} x2={c*26+13} y2={r*26+13} stroke="var(--color-accent-primary)" strokeWidth="3" strokeLinecap="round" opacity="0.5"/>;
         })}
       </svg>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,26px)",gap:0}}>
@@ -176,7 +176,7 @@ function ZipSnapshot({ solved }: { solved: boolean }) {
           const wp=waypoints[k];
           const inPath=pathSet.has(k);
           return(
-            <div key={k} style={{width:26,height:26,background:inPath?"rgba(79,110,247,0.1)":"var(--bg2)",border:"0.5px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>
+            <div key={k} style={{width:26,height:26,background:inPath?"rgba(79,110,247,0.1)":"var(--color-surface-2)",border:"0.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
               {wp||""}
             </div>
           );
@@ -190,7 +190,7 @@ function BridgesSnapshot({ solved }: { solved: boolean }) {
   const islands = [{r:0,c:0,n:2},{r:0,c:3,n:2},{r:3,c:0,n:2},{r:3,c:3,n:2}];
   const SIZE=4, CELL=24;
   return(
-    <svg width={SIZE*CELL} height={SIZE*CELL} style={{border:"1px solid var(--border)",borderRadius:6,background:"var(--bg2)"}}>
+    <svg width={SIZE*CELL} height={SIZE*CELL} style={{border:"1px solid var(--color-border)",borderRadius:6,background:"var(--color-surface-2)"}}>
       {solved&&<>
         <line x1={12} y1={12} x2={84} y2={12} stroke="#374151" strokeWidth="2"/>
         <line x1={12} y1={84} x2={84} y2={84} stroke="#374151" strokeWidth="2"/>
@@ -199,7 +199,7 @@ function BridgesSnapshot({ solved }: { solved: boolean }) {
       </>}
       {islands.map((isl,i)=>(
         <g key={i}>
-          <circle cx={isl.c*CELL+CELL/2} cy={isl.r*CELL+CELL/2} r={CELL*0.35} fill={solved?"#22C55E":"#4F6EF7"}/>
+          <circle cx={isl.c*CELL+CELL/2} cy={isl.r*CELL+CELL/2} r={CELL*0.35} fill={solved?"#22C55E":"var(--color-accent-primary)"}/>
           <text x={isl.c*CELL+CELL/2} y={isl.r*CELL+CELL/2+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:11,fontWeight:700,fill:"white"}}>{isl.n}</text>
         </g>
       ))}
@@ -213,12 +213,12 @@ function PatternSnapshot({ solved }: { solved: boolean }) {
   return(
     <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
       {seq.map((n,i)=>(
-        <div key={i} style={{width:28,height:28,borderRadius:8,background:"var(--bg2)",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--text1)"}}>
+        <div key={i} style={{width:28,height:28,borderRadius:8,background:"var(--color-surface-2)",border:"1px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-text-primary)"}}>
           {n}
         </div>
       ))}
-      <div style={{fontSize:14,color:"var(--text4)"}}>→</div>
-      <div style={{width:28,height:28,borderRadius:8,border:`2px ${solved?"solid":"dashed"} #4F6EF7`,background:solved?"rgba(79,110,247,0.1)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>
+      <div style={{fontSize:14,color:"var(--color-text-secondary)"}}>→</div>
+      <div style={{width:28,height:28,borderRadius:8,border:`2px ${solved?"solid":"dashed"} var(--color-accent-primary)`,background:solved?"rgba(79,110,247,0.1)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
         {solved?ans:"?"}
       </div>
     </div>
@@ -267,12 +267,12 @@ function KakuroSnapshot({ solved }: { solved: boolean }) {
         {/* Row 1 */}
         <ClueCell right={9}/>
         {[solved?"5":"",solved?"4":""].map((v,i)=>(
-          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
+          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>{v}</div>
         ))}
         {/* Row 2 */}
         <ClueCell right={4}/>
         {[solved?"1":"",solved?"3":""].map((v,i)=>(
-          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#4F6EF7"}}>{v}</div>
+          <div key={i} style={{width:S,height:S,background:solved?"#EEF2FF":"white",border:"0.5px solid #CBD5E0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>{v}</div>
         ))}
       </div>
     </div>
@@ -280,14 +280,14 @@ function KakuroSnapshot({ solved }: { solved: boolean }) {
 }
 
 function GravitySnapshot({ solved }: { solved: boolean }) {
-  const COLORS = ["#EF4444","#3B82F6","#22C55E"];
+  const COLORS = ["var(--color-error)","#3B82F6","#22C55E"];
   const before = [[0,1,2],[1,2,0],[2,0,1]];
   const after  = [[0,1,2],[0,1,2],[0,1,2]];
   const grid = solved ? after : before;
   return(
     <div style={{display:"flex",gap:4,alignItems:"flex-end"}}>
       {grid[0].map((_,col)=>(
-        <div key={col} style={{display:"flex",flexDirection:"column-reverse",gap:3,background:"var(--bg3)",borderRadius:6,padding:3}}>
+        <div key={col} style={{display:"flex",flexDirection:"column-reverse",gap:3,background:"var(--color-surface-2)",borderRadius:6,padding:3}}>
           {grid.map((_,row)=>(
             <div key={row} style={{width:18,height:18,borderRadius:4,background:COLORS[grid[row][col]]}}/>
           ))}
@@ -313,7 +313,7 @@ function HexSnapshot({ solved }: { solved: boolean }) {
         const val=vals[i];
         return(
           <g key={i}>
-            <polygon points={hexPts(x,y)} fill={COLORS[val]||"#EDE9FE"} stroke="var(--border)" strokeWidth="1"/>
+            <polygon points={hexPts(x,y)} fill={COLORS[val]||"#EDE9FE"} stroke="var(--color-border)" strokeWidth="1"/>
             {val>0&&<text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:9,fontWeight:700,fill:"#374151"}}>{val}</text>}
           </g>
         );
@@ -333,12 +333,12 @@ function LogicPathSnapshot({ solved }: { solved: boolean }) {
        [false,false,false,true],[true,true,false,false],[false,false,true,false],
        [false,true,true,false],[true,false,false,true],[true,false,false,false]];
   return(
-    <div style={{border:"1.5px solid var(--border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
+    <div style={{border:"1.5px solid var(--color-border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${SIZE},${CELL}px)`}}>
         {pipes.map((pipe,i)=>{
-          const color="#4F6EF7";const c=CELL/2;const w=CELL*0.15;
+          const color="var(--color-accent-primary)";const c=CELL/2;const w=CELL*0.15;
           return(
-            <div key={i} style={{width:CELL,height:CELL,background:"var(--bg2)",border:"0.5px solid var(--border)",position:"relative"}}>
+            <div key={i} style={{width:CELL,height:CELL,background:"var(--color-surface-2)",border:"0.5px solid var(--color-border)",position:"relative"}}>
               <svg width={CELL} height={CELL} style={{position:"absolute"}}>
                 {pipe[0]&&<rect x={c-w/2} y={0} width={w} height={c} fill={color} rx={2}/>}
                 {pipe[1]&&<rect x={c} y={c-w/2} width={c} height={w} fill={color} rx={2}/>}
@@ -375,15 +375,15 @@ function LightUpSnapshot({ solved }: { solved: boolean }) {
 }
 
 function PatchesSnapshot({ solved }: { solved: boolean }) {
-  const COLORS = ["#EF4444","#3B82F6","#22C55E","#F59E0B"];
+  const COLORS = ["var(--color-error)","#3B82F6","#22C55E","#F59E0B"];
   const solution = [[0,0,1,1],[0,2,2,1],[3,2,2,1],[3,3,2,1]];
   const empty = [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]];
   const grid = solved ? solution : empty;
   return(
-    <div style={{border:"1.5px solid var(--border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
+    <div style={{border:"1.5px solid var(--color-border)",borderRadius:6,overflow:"hidden",display:"inline-block"}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,20px)"}}>
         {grid.map((row,r)=>row.map((val,c)=>(
-          <div key={`${r}-${c}`} style={{width:20,height:20,background:val>=0?COLORS[val]:"var(--bg2)",border:"0.5px solid var(--border)",opacity:0.9}}/>
+          <div key={`${r}-${c}`} style={{width:20,height:20,background:val>=0?COLORS[val]:"var(--color-surface-2)",border:"0.5px solid var(--color-border)",opacity:0.9}}/>
         )))}
       </div>
     </div>
@@ -397,7 +397,7 @@ function WordSlingSnapshot({ solved }: { solved: boolean }) {
     <div style={{display:"flex",flexDirection:"column",gap:6}}>
       <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
         {letters.map((l,i)=>(
-          <div key={i} style={{width:20,height:20,borderRadius:5,background:"var(--bg2)",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"var(--text1)"}}>{l}</div>
+          <div key={i} style={{width:20,height:20,borderRadius:5,background:"var(--color-surface-2)",border:"1px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"var(--color-text-primary)"}}>{l}</div>
         ))}
       </div>
       {found.length>0&&(
@@ -417,12 +417,12 @@ function HeartsSnapshot({ solved }: { solved: boolean }) {
     <div style={{display:"flex",flexDirection:"column",gap:4}}>
       <div style={{display:"flex",gap:2}}>
         {playerCards.map((c,i)=>(
-          <div key={i} style={{width:20,height:28,borderRadius:3,background:solved&&c==="A♠"?"#EEF2FF":"white",border:`1px solid ${solved&&c==="A♠"?"#4F6EF7":"#E2E8F0"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:c.includes("♥")||c.includes("♦")?"#DC2626":"#1C1917"}}>{c}</div>
+          <div key={i} style={{width:20,height:28,borderRadius:3,background:solved&&c==="A♠"?"#EEF2FF":"white",border:`1px solid ${solved&&c==="A♠"?"var(--color-accent-primary)":"#E2E8F0"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:c.includes("♥")||c.includes("♦")?"#DC2626":"#1C1917"}}>{c}</div>
         ))}
       </div>
       {solved&&<div style={{display:"flex",gap:6,justifyContent:"center"}}>
         <div style={{width:20,height:28,borderRadius:3,background:"white",border:"1px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:"#DC2626"}}>Q♠</div>
-        <div style={{width:20,height:28,borderRadius:3,background:"#EEF2FF",border:"1px solid #4F6EF7",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700}}>A♠</div>
+        <div style={{width:20,height:28,borderRadius:3,background:"#EEF2FF",border:"1px solid var(--color-accent-primary)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700}}>A♠</div>
       </div>}
     </div>
   );
@@ -683,8 +683,8 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
   return (
     <>
       <button onClick={handleOpen}
-        style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--border2)", background:"var(--surface)", cursor:"pointer", fontSize:12, fontWeight:600, color:"var(--text3)", boxShadow:"var(--shadow-sm)" }}>
-        <HelpCircle size={13} color="#4F6EF7"/> How to play
+        style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, fontWeight:600, color:"var(--color-text-secondary)", boxShadow:"var(--shadow-sm)" }}>
+        <HelpCircle size={13} color="var(--color-accent-primary)"/> How to play
       </button>
 
       <AnimatePresence>
@@ -694,18 +694,18 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
             onClick={e=>{if(e.target===e.currentTarget)handleClose();}}>
             <motion.div initial={{scale:0.92,y:24}} animate={{scale:1,y:0}} exit={{scale:0.92,y:24}}
               transition={{type:"spring",stiffness:380,damping:28}}
-              style={{ background:"var(--surface)", borderRadius:28, maxWidth:500, width:"100%", maxHeight:"88vh", overflowY:"auto", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", position:"relative" }}>
+              style={{ background:"var(--color-surface)", borderRadius:28, maxWidth:500, width:"100%", maxHeight:"88vh", overflowY:"auto", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", position:"relative" }}>
 
               {/* Header */}
-              <div style={{ padding:"22px 24px 16px", borderBottom:"0.5px solid var(--border)", position:"sticky", top:0, background:"var(--surface)", zIndex:1, borderRadius:"28px 28px 0 0" }}>
+              <div style={{ padding:"22px 24px 16px", borderBottom:"0.5px solid var(--color-border)", position:"sticky", top:0, background:"var(--color-surface)", zIndex:1, borderRadius:"28px 28px 0 0" }}>
                 <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
                   <div>
-                    <h2 style={{ fontSize:19, fontWeight:700, color:"var(--text1)", fontFamily:"Georgia,serif", marginBottom:4 }}>{info.title}</h2>
-                    <p style={{ fontSize:13, color:"var(--text3)", lineHeight:1.6 }}>{info.goal}</p>
+                    <h2 style={{ fontSize:19, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:4 }}>{info.title}</h2>
+                    <p style={{ fontSize:13, color:"var(--color-text-secondary)", lineHeight:1.6 }}>{info.goal}</p>
                   </div>
                   <button onClick={handleClose}
-                    style={{ padding:8, borderRadius:10, background:"var(--bg2)", border:"none", cursor:"pointer", flexShrink:0 }}>
-                    <X size={15} color="var(--text3)"/>
+                    style={{ padding:8, borderRadius:10, background:"var(--color-surface-2)", border:"none", cursor:"pointer", flexShrink:0 }}>
+                    <X size={15} color="var(--color-text-secondary)"/>
                   </button>
                 </div>
               </div>
@@ -715,7 +715,7 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
                 {/* Board snapshots — before/after */}
                 {Snapshot && (
                   <div>
-                    <p style={{ fontSize:11, fontWeight:700, color:"var(--text4)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:12 }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"var(--color-text-secondary)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:12 }}>
                       Before → After
                     </p>
                     <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
@@ -723,9 +723,9 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
                         <div style={{ marginBottom:6, display:"flex", justifyContent:"center" }}>
                           <Snapshot solved={false}/>
                         </div>
-                        <p style={{ fontSize:10, color:"var(--text4)", fontWeight:600 }}>Starting board</p>
+                        <p style={{ fontSize:10, color:"var(--color-text-secondary)", fontWeight:600 }}>Starting board</p>
                       </div>
-                      <div style={{ fontSize:20, color:"var(--text4)" }}>→</div>
+                      <div style={{ fontSize:20, color:"var(--color-text-secondary)" }}>→</div>
                       <div style={{ textAlign:"center" }}>
                         <div style={{ marginBottom:6, display:"flex", justifyContent:"center" }}>
                           <Snapshot solved={true}/>
@@ -738,14 +738,14 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
 
                 {/* Rules */}
                 <div>
-                  <p style={{ fontSize:11, fontWeight:700, color:"var(--text4)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:10 }}>Rules</p>
+                  <p style={{ fontSize:11, fontWeight:700, color:"var(--color-text-secondary)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:10 }}>Rules</p>
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {info.rules.map((rule,i) => (
                       <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-                        <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#4F6EF7", flexShrink:0, marginTop:1 }}>
+                        <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"var(--color-accent-primary)", flexShrink:0, marginTop:1 }}>
                           {i+1}
                         </div>
-                        <p style={{ fontSize:13, color:"var(--text2)", lineHeight:1.55 }}>{rule}</p>
+                        <p style={{ fontSize:13, color:"var(--color-text-secondary)", lineHeight:1.55 }}>{rule}</p>
                       </div>
                     ))}
                   </div>
@@ -779,7 +779,7 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
                 </div>
 
                 <button onClick={handleClose}
-                  style={{ width:"100%", padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)", fontSize:13, fontWeight:700, color:"white", cursor:"pointer" }}>
+                  style={{ width:"100%", padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer" }}>
                   Got it — Let's Play
                 </button>
               </div>

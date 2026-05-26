@@ -42,11 +42,11 @@ const ICONS = [
   { icon: Zap,       color:"#CA8A04", bg:"#FFFBEB", darkColor:"#FDE047", darkBg:"rgba(234,179,8,0.15)"  },
   { icon: Heart,     color:"#E11D48", bg:"#FFE4E6", darkColor:"#FB7185", darkBg:"rgba(244,63,94,0.15)"  },
   { icon: Crown,     color:"#B45309", bg:"#FEF3C7", darkColor:"#FCD34D", darkBg:"rgba(245,158,11,0.15)" },
-  { icon: Gem,       color:"#0891B2", bg:"#CFFAFE", darkColor:"#22D3EE", darkBg:"rgba(6,182,212,0.15)"  },
+  { icon: Gem,       color:"#0891B2", bg:"#CFFAFE", darkColor:"var(--color-accent-primary)", darkBg:"rgba(6,182,212,0.15)"  },
   { icon: Snowflake, color:"#0284C7", bg:"#DBEAFE", darkColor:"#60A5FA", darkBg:"rgba(59,130,246,0.15)" },
   { icon: Feather,   color:"#059669", bg:"#D1FAE5", darkColor:"#34D399", darkBg:"rgba(16,185,129,0.15)" },
   { icon: Fish,      color:"#0369A1", bg:"#E0F2FE", darkColor:"#38BDF8", darkBg:"rgba(14,165,233,0.15)" },
-  { icon: Bird,      color:"#0891B2", bg:"#CFFAFE", darkColor:"#22D3EE", darkBg:"rgba(6,182,212,0.15)"  },
+  { icon: Bird,      color:"#0891B2", bg:"#CFFAFE", darkColor:"var(--color-accent-primary)", darkBg:"rgba(6,182,212,0.15)"  },
   { icon: Music,     color:"#7C3AED", bg:"#EDE9FE", darkColor:"#A78BFA", darkBg:"rgba(139,92,246,0.15)" },
   { icon: Palette,   color:"#BE185D", bg:"#FCE7F3", darkColor:"#F472B6", darkBg:"rgba(236,72,153,0.15)" },
   { icon: Coffee,    color:"#92400E", bg:"#FEF3C7", darkColor:"#D97706", darkBg:"rgba(180,83,9,0.15)"   },
@@ -107,10 +107,10 @@ function XPBar({ xpState }: { xpState: XPState }) {
     return () => clearInterval(iv);
   }, [xpState]);
   const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "#EF4444";
+  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex-1 h-1 rounded-sm overflow-hidden" style={{ background: "var(--bg3)" }}>
+      <div className="flex-1 h-1 rounded-sm overflow-hidden" style={{ background: "var(--color-surface-2)" }}>
         <motion.div
           animate={{ width: `${pct * 100}%` }}
           transition={{ duration: 0.5 }}
@@ -119,7 +119,7 @@ function XPBar({ xpState }: { xpState: XPState }) {
         />
       </div>
       <span className="text-[13px] font-bold font-mono min-w-[36px]" style={{ color }}>{snap.currentXP}</span>
-      <span className="text-[11px]" style={{ color: "var(--text4)" }}>XP</span>
+      <span className="text-[11px]" style={{ color: "var(--color-text-secondary)" }}>XP</span>
     </div>
   );
 }
@@ -253,7 +253,7 @@ function MemoryGameInner() {
   }
 
   const diff = getDifficulty(stage);
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "#EF4444";
+  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
   const cols = diff === "easy" ? 4 : diff === "medium" ? 5 : 6;
   const matched = cards.filter(c => c.matched).length / 2;
   const total = cards.length / 2;
@@ -264,8 +264,8 @@ function MemoryGameInner() {
   );
 
   if (!xpState) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
-      <p className="text-[13px]" style={{ color: "var(--text4)" }}>Generating board...</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--color-bg)" }}>
+      <p className="text-[13px]" style={{ color: "var(--color-text-secondary)" }}>Generating board...</p>
     </div>
   );
 
@@ -278,13 +278,13 @@ function MemoryGameInner() {
         <div className="game-header w-full max-w-[560px]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center flex-shrink min-w-0 overflow-hidden" style={{ gap: 6, flexWrap: "nowrap" }}>
-              <Link href="/games" className="flex items-center no-underline flex-shrink-0" style={{ color: "var(--text4)", gap: 3, fontSize: 12 }}>
+              <Link href="/games" className="flex items-center no-underline flex-shrink-0" style={{ color: "var(--color-text-secondary)", gap: 3, fontSize: 12 }}>
                 <ArrowLeft size={13}/> Games
               </Link>
-              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--border2)" }}/>
-              <span className="text-[12px] font-bold flex-shrink-0" style={{ color: "var(--text1)", fontFamily: "Georgia,serif" }}>Memory</span>
-              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--border2)" }}/>
-              <span className="text-[18px] font-bold flex-shrink-0" style={{ color: "var(--text1)", fontFamily: "Georgia,serif" }}>{stage}</span>
+              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--color-border)" }}/>
+              <span className="text-[12px] font-bold flex-shrink-0" style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>Memory</span>
+              <div className="flex-shrink-0" style={{ width: 1, height: 14, background: "var(--color-border)" }}/>
+              <span className="text-[18px] font-bold flex-shrink-0" style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>{stage}</span>
               <span className="flex-shrink-0 whitespace-nowrap" style={{
                 fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10,
                 background: isDark ? `${diffColor}25` : `${diffColor}15`,
@@ -293,17 +293,17 @@ function MemoryGameInner() {
               }}>
                 {diff.toUpperCase()}
               </span>
-              <span className="text-[11px] flex-shrink-0 whitespace-nowrap" style={{ color: "var(--text4)" }}>{matched}/{total}</span>
+              <span className="text-[11px] flex-shrink-0 whitespace-nowrap" style={{ color: "var(--color-text-secondary)" }}>{matched}/{total}</span>
             </div>
             <div className="flex items-center flex-shrink-0" style={{ gap: 4 }}>
               <span
                 className={`text-[11px] font-mono whitespace-nowrap${isDark ? " neon-cyan" : ""}`}
-                style={!isDark ? { color: "var(--text4)" } : undefined}
+                style={!isDark ? { color: "var(--color-text-secondary)" } : undefined}
               >{elapsed}</span>
               <button
                 onClick={() => loadStage(stage)}
                 className="game-control-btn flex items-center justify-center cursor-pointer"
-                style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--border2)", background: "var(--surface)", color: "var(--text4)" }}
+                style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)" }}
               >
                 <RotateCcw size={12}/>
               </button>
@@ -357,7 +357,7 @@ function MemoryGameInner() {
                         : "2px solid transparent",
                     background: isRevealed
                       ? cardBg
-                      : "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                      : "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                   }),
                 }}
@@ -387,24 +387,24 @@ function MemoryGameInner() {
             className="text-[12px] rounded-xl"
             style={{
               padding: "8px 16px",
-              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "0.5px solid var(--border2)",
-              background: isDark ? "rgba(255,255,255,0.05)" : "var(--surface)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "0.5px solid var(--color-border)",
+              background: isDark ? "rgba(255,255,255,0.05)" : "var(--color-surface)",
               cursor: stage > 1 ? "pointer" : "not-allowed",
-              color: "var(--text3)",
+              color: "var(--color-text-secondary)",
               opacity: stage === 1 ? 0.4 : 1,
             }}
           >
             ← Prev
           </button>
-          <span className="text-[12px]" style={{ color: "var(--text4)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+          <span className="text-[12px]" style={{ color: "var(--color-text-secondary)" }}>Stage {stage} of {TOTAL_STAGES}</span>
           <button
             onClick={() => setStage(s => s + 1)}
             className="flex items-center gap-1 text-[12px] font-semibold rounded-xl cursor-pointer"
             style={{
               padding: "8px 16px",
-              border: isDark ? "1px solid rgba(34,211,238,0.25)" : "0.5px solid var(--border2)",
-              background: isDark ? "rgba(34,211,238,0.1)" : "var(--surface)",
-              color: isDark ? "rgba(34,211,238,0.9)" : "var(--text2)",
+              border: isDark ? "1px solid rgba(34,211,238,0.25)" : "0.5px solid var(--color-border)",
+              background: isDark ? "rgba(34,211,238,0.1)" : "var(--color-surface)",
+              color: isDark ? "rgba(34,211,238,0.9)" : "var(--color-text-secondary)",
             }}
           >
             Next <ChevronRight size={13}/>

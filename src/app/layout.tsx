@@ -1,6 +1,6 @@
 import { FAQSchema, OrganizationSchema, WebAppSchema, HowToSchema } from "@/app/seo-schema";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Outfit, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -13,18 +13,17 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SharePrompt } from "@/components/ui/SharePrompt";
 import { CosmicBackground } from "@/components/ui/CosmicBackground";
 
-const fraunces = Fraunces({
-  subsets: ["latin"], variable: "--font-fraunces",
-  weight: ["300","400","500","600","700","900"], style: ["normal","italic"],
-});
-const outfit = Outfit({
-  subsets: ["latin"], variable: "--font-outfit",
-  weight: ["300","400","500","600","700"],
-});
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  weight: ['400','500','600','700','800'],
+})
+
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"], variable: "--font-mono-var",
-  weight: ["400","500","600"],
-});
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['500','700'],
+})
 
 export const metadata: Metadata = {
   title: {
@@ -142,7 +141,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}}/>
       </head>
-      <body className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
 
         <CosmicBackground />
 

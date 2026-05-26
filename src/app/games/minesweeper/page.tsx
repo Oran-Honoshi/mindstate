@@ -92,14 +92,14 @@ function XPBar({ xpState }: { xpState: XPState }) {
   const [snap,setSnap] = useState(()=>calculateXP(xpState));
   useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
   const pct=snap.percentRemaining;
-  const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";
+  const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
   return(
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      <div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}>
+      <div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}>
         <motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/>
       </div>
       <span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span>
-      <span style={{fontSize:11,color:"var(--text4)"}}>XP</span>
+      <span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span>
     </div>
   );
 }
@@ -237,13 +237,13 @@ function MinesweeperGameInner() {
   }
 
   if (!board||!xpState) return(
-    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p>
+    <div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p>
     </div>
   );
 
   const diff = getDifficulty(stage);
-  const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW = typeof window!=="undefined"?Math.min(window.innerWidth-32,480):440;
   const cellSize = Math.max(Math.floor(maxW/board.cols), 28);
   const minesLeft = board.mines-flagCount;
@@ -255,29 +255,29 @@ function MinesweeperGameInner() {
       <GamePageSchema slug="minesweeper" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
 
-        <div style={{width:"100%",maxWidth:560,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:560,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:11,color:"var(--text4)"}}>Stage</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:11,color:"var(--color-text-secondary)"}}>Stage</span>
+              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{display:"flex",alignItems:"center",gap:4,fontSize:12,color:"#DC2626"}}><Bomb size={13}/> {minesLeft}</span>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)"}}>Left click = reveal · Right click = flag · First click is always safe</div>
+        <div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Left click = reveal · Right click = flag · First click is always safe</div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Mines flagged · Safe cells revealed · XP set to 1
           </motion.div>
         )}
@@ -306,7 +306,7 @@ function MinesweeperGameInner() {
                     color: cell.isMine?"#DC2626":NUM_COLORS[cell.adjacent]??"transparent",
                     boxShadow:!isRevealed&&!isFlagged&&!solutionRevealed?"inset 0 2px 0 rgba(255,255,255,0.8),inset 0 -1px 0 rgba(0,0,0,0.06)":"none",
                   }}>
-                  {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={isSolFlag?"#EF4444":"#F59E0B"}/>}
+                  {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={isSolFlag?"var(--color-error)":"#F59E0B"}/>}
                   {isRevealed&&cell.isMine&&<Bomb size={Math.round(cellSize*0.45)} color="#DC2626"/>}
                   {isRevealed&&!cell.isMine&&(cell.adjacent>0?cell.adjacent:"")}
                 </motion.button>
@@ -322,10 +322,10 @@ function MinesweeperGameInner() {
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
+            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 1000</span>
           <button onClick={()=>setStage(s=>s+1)}
-            style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 
@@ -335,13 +335,13 @@ function MinesweeperGameInner() {
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
+              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
               <div style={{fontSize:48,marginBottom:16}}>💥</div>
-              <h2 style={{fontSize:24,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:6}}>Mine Hit</h2>
-              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>Better luck next time.</p>
+              <h2 style={{fontSize:24,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:6}}>Mine Hit</h2>
+              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Better luck next time.</p>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Try Again</button>
-                <button onClick={()=>setStage(s=>s+1)} style={{flex:1,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer"}}>Next Stage</button>
+                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Try Again</button>
+                <button onClick={()=>setStage(s=>s+1)} style={{flex:1,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer"}}>Next Stage</button>
               </div>
             </motion.div>
           </motion.div>
@@ -354,17 +354,17 @@ function MinesweeperGameInner() {
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
             <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
+              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
               <div style={{fontSize:48,marginBottom:16}}>✅</div>
-              <h2 style={{fontSize:26,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif",marginBottom:4}}>Stage {stage} Clear</h2>
-              <p style={{fontSize:13,color:"var(--text4)",marginBottom:24}}>{elapsed} · {diff}</p>
-              <div style={{background:"var(--bg2)",borderRadius:16,padding:20,marginBottom:20}}>
-                <p style={{fontSize:11,color:"var(--text4)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
-                <p style={{fontSize:48,fontWeight:700,color:"#4F6EF7",fontFamily:"Georgia,serif"}}>{finalXP}</p>
+              <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>Stage {stage} Clear</h2>
+              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>{elapsed} · {diff}</p>
+              <div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}>
+                <p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
+                <p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p>
               </div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--border2)",background:"var(--surface)",fontSize:13,fontWeight:600,color:"var(--text2)",cursor:"pointer"}}>Retry</button>
-                <button onClick={()=>{setGameOver(null);setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,#4F6EF7,#9C6BE8)",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
+                <button onClick={()=>{setGameOver(null);setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
               </div>
             </motion.div>
           </motion.div>

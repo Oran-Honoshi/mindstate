@@ -32,7 +32,7 @@ function getDifficulty(s:number):Difficulty{
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
 }
-function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
+function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);}
 
 function BridgesGameInner(){
   const{user}=useAuthStore();
@@ -133,10 +133,10 @@ function BridgesGameInner(){
     }
   }
 
-  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
+  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p></div>);
 
   const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const cellSize=Math.floor(maxW/board.size);
   const currentXP=calculateXP(xpState).currentXP;
@@ -152,27 +152,27 @@ function BridgesGameInner(){
       <Navbar/>
       <GamePageSchema slug="bridges" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
-        <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:540,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        <div style={{fontSize:11,color:"var(--text4)"}}>Click between islands to add bridges · Each island shows its required count</div>
+        <div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Click between islands to add bridges · Each island shows its required count</div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
@@ -194,7 +194,7 @@ function BridgesGameInner(){
             const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
             const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
             const midX=(x1+x2)/2,midY=(y1+y2)/2;
-            const bridgeColor=solutionRevealed?"#EF4444":"#374151";
+            const bridgeColor=solutionRevealed?"var(--color-error)":"#374151";
             return(
               <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:solutionRevealed?"default":"pointer"}}>
                 <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
@@ -212,7 +212,7 @@ function BridgesGameInner(){
             const status=islandStatus(island);
             const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
             const r=cellSize*0.3;
-            const bgColor=status==="done"?"#22C55E":status==="over"?"#EF4444":"#4F6EF7";
+            const bgColor=status==="done"?"#22C55E":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
             return(
               <g key={island.id}>
                 <circle cx={x} cy={y} r={r} fill={bgColor} opacity={status==="done"?1:0.85}/>
@@ -231,9 +231,9 @@ function BridgesGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 1000</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 

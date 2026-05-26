@@ -29,20 +29,20 @@ export default function ContactPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text1)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
       <Navbar />
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "100px 24px 60px" }}>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
 
-          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text4)", textDecoration: "none", marginBottom: 32 }}>
+          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--color-text-secondary)", textDecoration: "none", marginBottom: 32 }}>
             <ArrowLeft size={14} /> Back
           </Link>
 
-          <h1 style={{ fontSize: 36, fontWeight: 700, fontFamily: "Georgia,serif", color: "var(--text1)", marginBottom: 8 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 700, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", marginBottom: 8 }}>
             Get in touch
           </h1>
-          <p style={{ fontSize: 15, color: "var(--text3)", marginBottom: 40, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 15, color: "var(--color-text-secondary)", marginBottom: 40, lineHeight: 1.6 }}>
             Questions, feedback, or just want to say hello — we read everything.
           </p>
 
@@ -51,10 +51,10 @@ export default function ContactPage() {
               <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 style={{ background: "rgba(34,197,94,0.08)", border: "0.5px solid rgba(34,197,94,0.3)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
                 <CheckCircle size={40} color="#22C55E" style={{ margin: "0 auto 16px" }} />
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text1)", marginBottom: 8 }}>Message sent</h2>
-                <p style={{ fontSize: 14, color: "var(--text3)", marginBottom: 24 }}>We'll get back to you within 24 hours.</p>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 8 }}>Message sent</h2>
+                <p style={{ fontSize: 14, color: "var(--color-text-secondary)", marginBottom: 24 }}>We'll get back to you within 24 hours.</p>
                 <button onClick={() => setStatus("idle")}
-                  style={{ padding: "10px 24px", borderRadius: 12, border: "0.5px solid var(--border2)", background: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--text2)", cursor: "pointer" }}>
+                  style={{ padding: "10px 24px", borderRadius: 12, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer" }}>
                   Send another
                 </button>
               </motion.div>
@@ -86,14 +86,14 @@ export default function ContactPage() {
 
                 {status === "error" && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#EF4444" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--color-error)" }}>
                     <AlertCircle size={15} /> Something went wrong. Please try again.
                   </motion.div>
                 )}
 
                 <motion.button type="submit" disabled={status === "sending"}
                   whileTap={{ scale: 0.98 }}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)", color: "white", fontSize: 15, fontWeight: 700, cursor: status === "sending" ? "not-allowed" : "pointer", opacity: status === "sending" ? 0.7 : 1 }}>
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color: "white", fontSize: 15, fontWeight: 700, cursor: status === "sending" ? "not-allowed" : "pointer", opacity: status === "sending" ? 0.7 : 1 }}>
                   <Send size={15} />
                   {status === "sending" ? "Sending..." : "Send message"}
                 </motion.button>
@@ -111,8 +111,8 @@ export default function ContactPage() {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", letterSpacing: "0.05em" }}>
-        {label}{required && <span style={{ color: "#EF4444", marginLeft: 3 }}>*</span>}
+      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", letterSpacing: "0.05em" }}>
+        {label}{required && <span style={{ color: "var(--color-error)", marginLeft: 3 }}>*</span>}
       </label>
       {children}
     </div>
@@ -122,10 +122,10 @@ function Field({ label, required, children }: { label: string; required?: boolea
 const inputStyle: React.CSSProperties = {
   padding: "11px 14px",
   borderRadius: 12,
-  border: "0.5px solid var(--border2)",
-  background: "var(--surface)",
+  border: "0.5px solid var(--color-border)",
+  background: "var(--color-surface)",
   fontSize: 14,
-  color: "var(--text1)",
+  color: "var(--color-text-primary)",
   outline: "none",
   width: "100%",
   fontFamily: "inherit",

@@ -49,7 +49,7 @@ function CelebrationToast({ record, onDismiss }: { record: RecordBreak; onDismis
     >
       <div style={{
         width: 40, height: 40, borderRadius: "50%",
-        background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+        background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
@@ -60,7 +60,7 @@ function CelebrationToast({ record, onDismiss }: { record: RecordBreak; onDismis
           Record broken! 
         </p>
         <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>
-          <strong style={{ color: "#4F6EF7" }}>{record.username}</strong> scored{" "}
+          <strong style={{ color: "var(--color-accent-primary)" }}>{record.username}</strong> scored{" "}
           <strong style={{ color: "#1C1917" }}>{record.xp_earned} XP</strong> on{" "}
           {GAME_NAMES[record.game_slug] ?? record.game_slug} Stage {record.stage_number}
         </p>

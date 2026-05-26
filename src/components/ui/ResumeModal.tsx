@@ -34,22 +34,22 @@ export function ResumeModal({ stageName, savedAt, onResume, onStartFresh }: Resu
         animate={{ scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         style={{
-          background: "var(--surface)", borderRadius: 28, padding: 32,
+          background: "var(--color-surface)", borderRadius: 28, padding: 32,
           maxWidth: 340, width: "100%", textAlign: "center",
           boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
         }}
       >
         <div style={{ fontSize: 48, marginBottom: 12 }}>💾</div>
         <h2 style={{
-          fontSize: 20, fontWeight: 700, color: "var(--text1)",
-          fontFamily: "Georgia,serif", marginBottom: 8,
+          fontSize: 20, fontWeight: 700, color: "var(--color-text-primary)",
+          fontFamily: "var(--font-sans)", marginBottom: 8,
         }}>
           Pick up where you left off?
         </h2>
-        <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 8, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 8, lineHeight: 1.6 }}>
           You have an unfinished game on Stage {stageName}.
         </p>
-        <p style={{ fontSize: 11, color: "var(--text4)", marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 24 }}>
           Saved {timeAgo(savedAt)}
         </p>
 
@@ -57,7 +57,7 @@ export function ResumeModal({ stageName, savedAt, onResume, onStartFresh }: Resu
           onClick={onResume}
           style={{
             width: "100%", padding: 14, borderRadius: 14, border: "none",
-            background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+            background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
             fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             marginBottom: 10,
@@ -70,8 +70,8 @@ export function ResumeModal({ stageName, savedAt, onResume, onStartFresh }: Resu
           onClick={onStartFresh}
           style={{
             width: "100%", padding: 12, borderRadius: 14,
-            border: "0.5px solid var(--border2)", background: "var(--surface)",
-            fontSize: 13, fontWeight: 600, color: "var(--text3)", cursor: "pointer",
+            border: "0.5px solid var(--color-border)", background: "var(--color-surface)",
+            fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >

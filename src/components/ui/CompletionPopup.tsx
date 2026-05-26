@@ -83,7 +83,7 @@ export function CompletionPopup({
           animate={{ scale: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           style={{
-            background: "var(--surface)",
+            background: "var(--color-surface)",
             borderRadius: 28,
             padding: 36,
             maxWidth: 340,
@@ -97,21 +97,21 @@ export function CompletionPopup({
             style={{
               fontSize: 26,
               fontWeight: 700,
-              color: "var(--text1)",
-              fontFamily: "Georgia,serif",
+              color: "var(--color-text-primary)",
+              fontFamily: "var(--font-sans)",
               marginBottom: 4,
             }}
           >
             Stage {stage} Complete!
           </h2>
-          <p style={{ fontSize: 13, color: "var(--text4)", marginBottom: 24 }}>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24 }}>
             {elapsed} · {difficulty}
           </p>
 
           {/* XP block */}
           <div
             style={{
-              background: "var(--bg2)",
+              background: "var(--color-surface-2)",
               borderRadius: 16,
               padding: 20,
               marginBottom: 20,
@@ -120,7 +120,7 @@ export function CompletionPopup({
             <p
               style={{
                 fontSize: 11,
-                color: "var(--text4)",
+                color: "var(--color-text-secondary)",
                 fontWeight: 600,
                 marginBottom: 4,
                 letterSpacing: "0.1em",
@@ -133,8 +133,8 @@ export function CompletionPopup({
               style={{
                 fontSize: 52,
                 fontWeight: 700,
-                color: "#4F6EF7",
-                fontFamily: "Georgia,serif",
+                color: "var(--color-accent-primary)",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {xp}
@@ -149,11 +149,11 @@ export function CompletionPopup({
                 flex: 1,
                 padding: 13,
                 borderRadius: 14,
-                border: "0.5px solid var(--border2)",
-                background: "var(--surface)",
+                border: "0.5px solid var(--color-border)",
+                background: "var(--color-surface)",
                 fontSize: 13,
                 fontWeight: 600,
-                color: "var(--text2)",
+                color: "var(--color-text-secondary)",
                 cursor: "pointer",
               }}
             >
@@ -166,7 +166,7 @@ export function CompletionPopup({
                 padding: 13,
                 borderRadius: 14,
                 border: "none",
-                background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+                background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
                 fontSize: 13,
                 fontWeight: 700,
                 color: "white",

@@ -24,13 +24,13 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
             background: "rgba(79,110,247,0.1)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
-            <Sparkles size={18} color="#4F6EF7" />
+            <Sparkles size={18} color="var(--color-accent-primary)" />
           </div>
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text1)", marginBottom: 2 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 2 }}>
               New games in development · More stages coming
             </p>
-            <p style={{ fontSize: 12, color: "var(--text3)" }}>
+            <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
               With our ongoing development plan, you will always be challenged with something new.
             </p>
           </div>
@@ -48,25 +48,25 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
         viewport={{ once: true }}
         style={{ marginBottom: 40 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <Sparkles size={16} color="#4F6EF7" />
-          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text4)" }}>
+          <Sparkles size={16} color="var(--color-accent-primary)" />
+          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-secondary)" }}>
             What is coming next
           </p>
         </div>
         <h2 style={{
-          fontSize: 36, fontWeight: 700, color: "var(--text1)",
-          fontFamily: "Georgia,serif", marginBottom: 12, lineHeight: 1.15,
+          fontSize: 36, fontWeight: 700, color: "var(--color-text-primary)",
+          fontFamily: "var(--font-sans)", marginBottom: 12, lineHeight: 1.15,
         }}>
           With our ongoing and future development plan,
           <span style={{
             display: "block",
-            background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+            background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
           }}>
             you will always be challenged.
           </span>
         </h2>
-        <p style={{ fontSize: 17, color: "var(--text3)", maxWidth: 540, lineHeight: 1.7 }}>
+        <p style={{ fontSize: 17, color: "var(--color-text-secondary)", maxWidth: 540, lineHeight: 1.7 }}>
           New games and stages are always in development. MindElement grows with you — there is always a next challenge waiting.
         </p>
       </motion.div>
@@ -76,14 +76,14 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
         {[
           {
             icon: Gamepad2,
-            color: "#4F6EF7",
+            color: "var(--color-accent-primary)",
             bg: "rgba(79,110,247,0.08)",
             title: "Dozens more games are under development",
             body: "New logic disciplines, new mechanics, new ways to challenge your mind. The vault keeps growing.",
           },
           {
             icon: Layers,
-            color: "#9C6BE8",
+            color: "var(--color-accent-primary)",
             bg: "rgba(156,107,232,0.08)",
             title: "Hundreds of new stages to existing games",
             body: "Every current game will receive hundreds of additional stages across all difficulty tiers — easy, medium, and hard.",
@@ -103,9 +103,9 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
             style={{
-              background: "var(--surface)",
+              background: "var(--color-surface)",
               borderRadius: 20,
-              border: "0.5px solid var(--border)",
+              border: "0.5px solid var(--color-border)",
               padding: "24px 28px",
               display: "flex", alignItems: "flex-start", gap: 18,
               boxShadow: "var(--shadow-sm)",
@@ -118,10 +118,10 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
               <item.icon size={22} color={item.color} />
             </div>
             <div>
-              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text1)", marginBottom: 6 }}>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 6 }}>
                 {item.title}
               </p>
-              <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.65 }}>
+              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.65 }}>
                 {item.body}
               </p>
             </div>
@@ -137,7 +137,7 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
         transition={{ delay: 0.24 }}
         style={{
           borderRadius: 22, padding: "28px 32px",
-          background: "linear-gradient(135deg,#4F6EF7,#9C6BE8)",
+          background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
           boxShadow: "0 16px 40px rgba(79,110,247,0.25)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: 24, flexWrap: "wrap",
@@ -154,7 +154,7 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
           style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "13px 22px", borderRadius: 14, background: "white",
-            color: "#4F6EF7", fontSize: 14, fontWeight: 700, textDecoration: "none",
+            color: "var(--color-accent-primary)", fontSize: 14, fontWeight: 700, textDecoration: "none",
             whiteSpace: "nowrap", flexShrink: 0,
           }}>
           Get Early Access <ChevronRight size={14} />

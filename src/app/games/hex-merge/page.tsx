@@ -29,9 +29,9 @@ import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 
 function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
-function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"#EF4444";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--bg3)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--text4)"}}>XP</span></div>);}
+function XPBar({xpState}:{xpState:XPState}){const[snap,setSnap]=useState(()=>calculateXP(xpState));useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);}
 
-const TILE_COLORS:Record<number,{bg:string;text:string}>={0:{bg:"#F1EDE8",text:"transparent"},1:{bg:"#DBEAFE",text:"#1D4ED8"},2:{bg:"#BBF7D0",text:"#15803D"},4:{bg:"#FED7AA",text:"#C2410C"},8:{bg:"#FDE68A",text:"#B45309"},16:{bg:"#E9D5FF",text:"#7C3AED"},32:{bg:"#FECDD3",text:"#BE123C"},64:{bg:"#99F6E4",text:"#0F766E"},128:{bg:"#4F6EF7",text:"white"},256:{bg:"#9C6BE8",text:"white"},512:{bg:"#EF4444",text:"white"},1024:{bg:"#F59E0B",text:"white"}};
+const TILE_COLORS:Record<number,{bg:string;text:string}>={0:{bg:"#F1EDE8",text:"transparent"},1:{bg:"#DBEAFE",text:"#1D4ED8"},2:{bg:"#BBF7D0",text:"#15803D"},4:{bg:"#FED7AA",text:"#C2410C"},8:{bg:"#FDE68A",text:"#B45309"},16:{bg:"#E9D5FF",text:"#7C3AED"},32:{bg:"#FECDD3",text:"#BE123C"},64:{bg:"#99F6E4",text:"#0F766E"},128:{bg:"var(--color-accent-primary)",text:"white"},256:{bg:"var(--color-accent-primary)",text:"white"},512:{bg:"var(--color-error)",text:"white"},1024:{bg:"#F59E0B",text:"white"}};
 function tileColor(v:number):{bg:string;text:string}{return TILE_COLORS[v]??{bg:"#374151",text:"white"};}
 
 function HexMergePageInner(){
@@ -99,9 +99,9 @@ function HexMergePageInner(){
     }
   }
 
-  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--text4)",fontSize:13}}>Generating board...</p></div>);
+  if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p></div>);
 
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"#EF4444";
+  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const hexSize=diff==="easy"?Math.floor(boardWidth/9):diff==="medium"?Math.floor(boardWidth/11):Math.floor(boardWidth/14);
   const svgSize=boardWidth;
   const currentXP=calculateXP(xpState).currentXP;
@@ -116,29 +116,29 @@ function HexMergePageInner(){
       <Navbar/>
       <GamePageSchema slug="hex-merge" />
       <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:18}}>
-        <div style={{width:"100%",maxWidth:540,background:"var(--surface)",borderRadius:20,border:"0.5px solid var(--border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+        <div style={{width:"100%",maxWidth:540,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--text4)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
+              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
               <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>Hex Merge</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--text1)",fontFamily:"Georgia,serif"}}>{stage}</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>Hex Merge</span>
+              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
               <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>TARGET {target}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:12,color:"var(--text4)"}}>Best: {bestTile||"—"}</span>
-              <span style={{fontSize:12,color:"var(--text4)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",color:"var(--text4)",display:"flex"}}><RotateCcw size={13}/></button>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Best: {bestTile||"—"}</span>
+              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
+              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
             </div>
           </div>
           <XPBar xpState={xpState}/>
         </div>
 
-        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--text4)"}}>Click a tile to select · Click a matching neighbor to merge · Reach {target}</div>}
+        {!solutionRevealed&&<div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Click a tile to select · Click a matching neighbor to merge · Reach {target}</div>}
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"#EF4444",textAlign:"center",maxWidth:380}}>
+            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:380}}>
             Target: {target} · Strategy: merge equal tiles outward from center · XP set to 1
           </motion.div>
         )}
@@ -154,7 +154,7 @@ function HexMergePageInner(){
               const canMerge=isAdj&&val>0&&cells.get(`${selected![0]},${selected![1]}`)===val;
               return(
                 <g key={`${q},${r}`} onClick={()=>handleCellClick(q,r)} style={{cursor:val>0&&!solutionRevealed?"pointer":"default"}}>
-                  <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"#EEF2FF":bg} stroke={isSel?"#4F6EF7":canMerge?"#22C55E":"#E2E8F0"} strokeWidth={isSel||canMerge?2.5:1}/>
+                  <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"#EEF2FF":bg} stroke={isSel?"var(--color-accent-primary)":canMerge?"#22C55E":"#E2E8F0"} strokeWidth={isSel||canMerge?2.5:1}/>
                   {val>0&&(<text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:val>=100?hexSize*0.3:hexSize*0.38,fontWeight:700,fill:text,userSelect:"none"}}>{val}</text>)}
                 </g>
               );
@@ -170,9 +170,9 @@ function HexMergePageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--text3)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--text4)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--border2)",background:"var(--surface)",cursor:"pointer",fontSize:12,color:"var(--text2)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
       </main>
 

@@ -54,7 +54,7 @@ export function GameCompleteModal({
             exit={{ scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
             style={{
-              background: "var(--surface)",
+              background: "var(--color-surface)",
               borderRadius: 32,
               padding: "40px 32px 32px",
               maxWidth: 360,
@@ -132,8 +132,8 @@ export function GameCompleteModal({
                 style={{
                   fontSize: 28,
                   fontWeight: 700,
-                  color: "var(--text1)",
-                  fontFamily: "Georgia,serif",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "var(--font-sans)",
                   marginBottom: 8,
                   lineHeight: 1.15,
                 }}
@@ -143,13 +143,13 @@ export function GameCompleteModal({
               <p
                 style={{
                   fontSize: 14,
-                  color: "var(--text4)",
+                  color: "var(--color-text-secondary)",
                   marginBottom: 28,
                   lineHeight: 1.6,
                 }}
               >
                 You have completed all{" "}
-                <strong style={{ color: "var(--text2)" }}>
+                <strong style={{ color: "var(--color-text-secondary)" }}>
                   {totalStages.toLocaleString()}
                 </strong>{" "}
                 stages. A crown has been awarded to your vault.
@@ -206,11 +206,11 @@ export function GameCompleteModal({
                   flex: 1,
                   padding: 13,
                   borderRadius: 14,
-                  border: "0.5px solid var(--border2)",
-                  background: "var(--surface)",
+                  border: "0.5px solid var(--color-border)",
+                  background: "var(--color-surface)",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "var(--text2)",
+                  color: "var(--color-text-secondary)",
                   cursor: "pointer",
                   textDecoration: "none",
                   display: "flex",

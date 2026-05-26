@@ -23,7 +23,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           padding:24, fontFamily:"monospace" }}>
           <div style={{ maxWidth:700, width:"100%" }}>
             <div style={{ fontSize:32, marginBottom:12 }}>💥</div>
-            <h2 style={{ color:"#EF4444", fontSize:18, fontWeight:700, marginBottom:8 }}>
+            <h2 style={{ color:"var(--color-error)", fontSize:18, fontWeight:700, marginBottom:8 }}>
               Runtime Error{this.props.game ? ` in ${this.props.game}` : ""}
             </h2>
             <div style={{ background:"#1A1A2E", borderRadius:12, padding:16,
@@ -39,7 +39,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={() => this.setState({ hasError:false, error:"", stack:"" })}
                 style={{ padding:"8px 18px", borderRadius:10, border:"none",
-                  background:"#4F6EF7", color:"white", cursor:"pointer", fontSize:13, fontWeight:600 }}>
+                  background:"var(--color-accent-primary)", color:"white", cursor:"pointer", fontSize:13, fontWeight:600 }}>
                 Retry
               </button>
               <button onClick={() => window.history.back()}
