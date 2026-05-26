@@ -401,7 +401,7 @@ function TangoGameInner() {
             style={{ padding: "7px 14px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← Prev
           </button>
-          <button onClick={() => setStage((s) => loadStage(s) as unknown as number)}
+          <button onClick={() => loadStage(stage)}
             style={{ padding: "7px 12px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, color: "var(--color-text-secondary)" }}>
             Restart
           </button>
