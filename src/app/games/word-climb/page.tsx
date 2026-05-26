@@ -3,24 +3,24 @@ const TOTAL_STAGES = 100;
 const GAME_SLUG = "word-climb";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
-import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
-import { Navbar } from "@/components/nav/Navbar";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
-import { HintButton } from "@/components/ui/HintButton";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
-import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
+import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
+import { GameShell } from "@/components/game";
 
-// ── Word ladder data ──────────────────────────────────────────────────────────
-// Each puzzle: start word → end word, with a known solution path length
-// Words differ by exactly one letter at each step, all steps must be valid words
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function getDifficulty(s: number): Difficulty {
   if (s === 1) return "easy";
@@ -28,7 +28,6 @@ function getDifficulty(s: number): Difficulty {
   return h < 30 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
-// Seeded puzzle bank — easy (3 steps), medium (4 steps), hard (5+ steps)
 const PUZZLES: Record<Difficulty, [string, string, string[]][]> = {
   easy: [
     ["CAT",  "DOG",  ["CAT","COT","DOT","DOG"]],
@@ -66,33 +65,15 @@ function isOneLetterAway(a: string, b: string): boolean {
   return diffs === 1;
 }
 
-function XPBar({ xpState }: { xpState: XPState }) {
-  const [snap, setSnap] = useState(() => calculateXP(xpState));
-  useEffect(() => {
-    const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
-    return () => clearInterval(iv);
-  }, [xpState]);
-  const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
-  return (
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
-        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }}
-          style={{ height:"100%", background:color, borderRadius:2 }}/>
-      </div>
-      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>XP</span>
-    </div>
-  );
-}
-
 function WordClimbInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [xpState, setXpState] = useState<XPState | null>(null);
-  const [elapsed, setElapsed] = useState("00:00");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [liveXP, setLiveXP] = useState(1000);
+  const [finalElapsed, setFinalElapsed] = useState("0:00");
   const [completed, setCompleted] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -104,7 +85,6 @@ function WordClimbInner() {
   const diff = getDifficulty(stage);
   const [startWord, endWord, solution] = getPuzzle(stage, diff);
   const wordLen = startWord.length;
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
 
   const loadStage = useCallback((s: number) => {
     const d = getDifficulty(s);
@@ -117,9 +97,14 @@ function WordClimbInner() {
     setFinalXP(0);
     setHintsUsed(0);
     setError("");
-    setElapsed("00:00");
+    setElapsedSeconds(0);
+    setLiveXP(1000);
+    setFinalElapsed("0:00");
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    }, 500);
   }, []);
 
   useEffect(() => {
@@ -141,6 +126,7 @@ function WordClimbInner() {
     if (word === endWord) {
       const earned = finalizeXP(xpState);
       setFinalXP(earned);
+      setFinalElapsed(formatTime(Math.floor((Date.now() - xpState.startTime) / 1000)));
       setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess();
@@ -170,31 +156,21 @@ function WordClimbInner() {
   if (!xpState) return null;
 
   return (
-    <div className="game-page">
-      <Navbar/>
-      <GamePageSchema slug="word-climb" />
-      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Word Climb"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3 - hintsUsed}
+        onUndo={() => {}}
+        onHint={handleHint}
+        onCheck={() => {}}
+      >
+        <GamePageSchema slug="word-climb" />
 
-        {/* Header */}
-        <div style={{ width:"100%", maxWidth:480, background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <Link href="/games" style={{ color:"var(--color-text-secondary)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
-              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
-              <span style={{ fontSize:12, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>Word Climb</span>
-              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
-              <span style={{ fontSize:18, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()}</span>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}><RotateCcw size={13}/></button>
-            </div>
-          </div>
-          <XPBar xpState={xpState}/>
-        </div>
-
-        {/* Goal */}
         <div style={{ display:"flex", alignItems:"center", gap:16, fontSize:13, color:"var(--color-text-secondary)" }}>
           <span style={{ fontWeight:700, fontSize:20, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", letterSpacing:"0.08em" }}>{startWord}</span>
           <span>→</span>
@@ -202,7 +178,6 @@ function WordClimbInner() {
         </div>
         <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Change one letter at a time · Each step must be a valid word</p>
 
-        {/* Path so far */}
         <div style={{ display:"flex", flexDirection:"column", gap:6, width:"100%", maxWidth:320, alignItems:"center" }}>
           {userPath.map((word, i) => (
             <div key={i} style={{
@@ -216,7 +191,6 @@ function WordClimbInner() {
             </div>
           ))}
 
-          {/* Input */}
           {!completed && (
             <div style={{ display:"flex", gap:8, width:"100%", justifyContent:"center" }}>
               <input
@@ -234,16 +208,13 @@ function WordClimbInner() {
                 }}
               />
               <button onClick={handleSubmit}
-                style={{ padding:"10px 16px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                style={{ padding:"10px 16px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>
                 Go
               </button>
             </div>
           )}
           {error && <p style={{ fontSize:12, color:"var(--color-error)", fontWeight:600 }}>{error}</p>}
         </div>
-
-        {/* Controls */}
-        <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed}/>
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
@@ -254,9 +225,8 @@ function WordClimbInner() {
             Next <ChevronRight size={13}/>
           </button>
         </div>
-      </main>
+      </GameShell>
 
-      {/* Completion */}
       {completed && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(14px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, padding:24 }}>
           <motion.div initial={{ scale:0.9, y:20 }} animate={{ scale:1, y:0 }}
@@ -265,7 +235,7 @@ function WordClimbInner() {
             <h2 style={{ fontSize:26, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:4 }}>
               {startWord} → {endWord}
             </h2>
-            <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:24 }}>{userPath.length - 1} steps · {elapsed}</p>
+            <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:24 }}>{userPath.length - 1} steps · {finalElapsed}</p>
             <div style={{ background:"var(--color-surface-2)", borderRadius:16, padding:20, marginBottom:20 }}>
               <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase" }}>XP Earned</p>
               <p style={{ fontSize:52, fontWeight:700, color:"var(--color-accent-primary)", fontFamily:"var(--font-sans)" }}>{finalXP}</p>
@@ -276,7 +246,7 @@ function WordClimbInner() {
                 Retry
               </button>
               <button onClick={() => { setCompleted(false); setStage(s => s + 1); }}
-                style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                 Next Stage →
               </button>
             </div>
@@ -290,8 +260,7 @@ function WordClimbInner() {
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
-
-    </div>
+    </>
   );
 }
 export default function WordClimbPage() {

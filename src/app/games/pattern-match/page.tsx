@@ -9,36 +9,33 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,ChevronRight,Lightbulb}from"lucide-react";
-import Link from"next/link";
+import{ChevronRight,Lightbulb}from"lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
-import{Navbar}from"@/components/nav/Navbar";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
-import{HintButton}from"@/components/ui/HintButton";
-import { ShowSolution } from "@/components/ui/ShowSolution";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 import{generatePattern,type PatternBoard}from"@/lib/games/patternGenerator";
-import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
+import{createXPState,calculateXP,finalizeXP,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
+import { GameShell } from "@/components/game";
+
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
   const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;
   return h<20?"easy":h<70?"medium":"hard";
-}
-function XPBar({xpState}:{xpState:XPState}){
-  const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
 }
 
 function PatternMatchGameInner(){
@@ -49,7 +46,9 @@ function PatternMatchGameInner(){
   const[selected,setSelected]=useState<string|null>(null);
   const[correct,setCorrect]=useState<boolean|null>(null);
   const[xpState,setXpState]=useState<XPState|null>(null);
-  const[elapsed,setElapsed]=useState("00:00");
+  const[elapsedSeconds,setElapsedSeconds]=useState(0);
+  const[liveXP,setLiveXP]=useState(1000);
+  const[finalElapsed,setFinalElapsed]=useState("0:00");
   const[completed,setCompleted]=useState(false);
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
@@ -66,7 +65,14 @@ function PatternMatchGameInner(){
 
   usePageVisibility(
     ()=>{if(timerRef.current)clearInterval(timerRef.current);},
-    ()=>{if(xpState&&!completed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
+    ()=>{
+      if(xpState&&!completed){
+        timerRef.current=setInterval(()=>{
+          setElapsedSeconds(Math.floor((Date.now()-xpState.startTime)/1000));
+          setLiveXP(calculateXP(xpState).currentXP);
+        },500);
+      }
+    }
   );
 
   const loadStage=useCallback((s:number)=>{
@@ -75,11 +81,15 @@ function PatternMatchGameInner(){
     const b=generatePattern(`pattern-${diff}-${s}`,diff);
     const xp=createXPState(diff);
     setBoard(b);setSelected(null);setCorrect(null);setShowRule(false);setHintsUsed(0);
-    setXpState(xp);setCompleted(false);setFinalXP(0);setElapsed("00:00");
+    setXpState(xp);setCompleted(false);setFinalXP(0);
+    setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
+    timerRef.current=setInterval(()=>{
+      setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    },500);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
@@ -95,15 +105,13 @@ function PatternMatchGameInner(){
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!board||!xpState)return;
-    // Highlight the correct answer by selecting it
     const ansKey=`${board.answer.value}-${board.answer.color??""}`;
     setSelected(ansKey);
-    setCorrect(false); // show as "selected but not by player" — red border overridden below
+    setCorrect(false);
     setSolutionRevealed(true);
-    setShowRule(true); // also reveal the rule
+    setShowRule(true);
     setXpState(prev=>prev?{...prev,startTime:Date.now()-prev.decayDuration*1000}:prev);
     if(timerRef.current)clearInterval(timerRef.current);
   }
@@ -117,9 +125,20 @@ function PatternMatchGameInner(){
     if(isCorrect){
       playSuccess();
       setTimeout(()=>{
-        if(xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);
-          markStageCompleted("pattern-match",stage);}
-        if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"pattern-match",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:xpState?finalizeXP(xpState):0,time_taken:Math.floor((Date.now()-(xpState?.startTime??Date.now()))/1000)});}},600);
+        if(xpState){
+          const earned=finalizeXP(xpState);
+          setFinalXP(earned);
+          setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
+          setCompleted(true);
+          if(timerRef.current)clearInterval(timerRef.current);
+          setTimeout(()=>triggerConfetti(),80);
+          markStageCompleted("pattern-match",stage);
+        }
+        if(user){
+          updateStreak(user.id);
+          saveScore({user_id:user.id,game_slug:"pattern-match",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:xpState?finalizeXP(xpState):0,time_taken:Math.floor((Date.now()-(xpState?.startTime??Date.now()))/1000)});
+        }
+      },600);
     } else {
       playError();
       setTimeout(()=>setSelected(null),1200);
@@ -138,35 +157,26 @@ function PatternMatchGameInner(){
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating puzzle...</p></div>);
 
-  const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const hintsLeft=xpState.maxHints-xpState.hintsUsed;
   const totalItems=board.sequence.length+1;
   const seqGap=10;
   const itemSize=Math.min(60,Math.floor((boardWidth-(totalItems-1)*seqGap-24)/totalItems));
-  const currentXP=calculateXP(xpState).currentXP;
 
   return(
-    <div className="game-page">
-      <Navbar/>
-      <GamePageSchema slug="pattern-match" />
-      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:20}}>
-        <div style={{width:"100%",maxWidth:560,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
-              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>Pattern Match</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
-            </div>
-          </div>
-          <XPBar xpState={xpState}/>
-        </div>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Pattern Match"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3-hintsUsed}
+        onUndo={()=>{}}
+        onHint={handleHint}
+        onCheck={()=>{}}
+      >
+        <GamePageSchema slug="pattern-match" />
 
         <div style={{background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"24px 20px",width:"100%",maxWidth:560,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
           <p style={{fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16}}>What comes next?</p>
@@ -184,7 +194,7 @@ function PatternMatchGameInner(){
           </div>
           {(showRule||solutionRevealed)&&(
             <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-              style={{marginTop:16,padding:"10px 14px",background:solutionRevealed?"rgba(239,68,68,0.06)":"rgba(245,158,11,0.08)",borderRadius:12,border:`0.5px solid ${solutionRevealed?"rgba(239,68,68,0.2)":"rgba(245,158,11,0.3)"}`}}>
+              style={{marginTop:16,padding:"10px 14px",background:solutionRevealed?"rgba(255,68,68,0.06)":"rgba(245,158,11,0.08)",borderRadius:12,border:`0.5px solid ${solutionRevealed?"rgba(255,68,68,0.2)":"rgba(245,158,11,0.3)"}`}}>
               <p style={{fontSize:12,color:solutionRevealed?"var(--color-error)":"#B45309",fontWeight:600}}>
                 {solutionRevealed?"Solution: ":"Hint: "}{board.rule}
               </p>
@@ -192,14 +202,12 @@ function PatternMatchGameInner(){
           )}
         </div>
 
-        {/* Options */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,width:"100%",maxWidth:560}}>
           {board.options.map((opt,i)=>{
             const key=`${opt.value}-${opt.color??""}`;
             const ansKey=`${board.answer.value}-${board.answer.color??""}`;
             const isSelected=selected===key;
             const isAnswer=key===ansKey;
-            // When solution revealed: highlight answer in green, dim others
             const bg=solutionRevealed
               ?(isAnswer?"#F0FDF4":"var(--color-surface-2)")
               :isSelected?(correct?"#F0FDF4":"#FEF2F2"):"white";
@@ -229,7 +237,6 @@ function PatternMatchGameInner(){
           <AnimatePresence>
             {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>−25% XP</motion.span>}
           </AnimatePresence>
-          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -237,7 +244,7 @@ function PatternMatchGameInner(){
           <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
-      </main>
+      </GameShell>
 
       <OutOfTokensModal gameName="Pattern Match" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showResume && resumeData && (
@@ -257,9 +264,9 @@ function PatternMatchGameInner(){
         />
       )}
       {showMap&&<StageMap gameSlug="pattern-match" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={finalElapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement · Pattern Match Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+        onShare={()=>{const text=`MindElement · Pattern Match Stage ${stage} · ${finalXP} XP · ${finalElapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
       <GameCompleteModal
         open={showGameComplete}
         gameName="Pattern Match"
@@ -267,8 +274,7 @@ function PatternMatchGameInner(){
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
-
-    </div>
+    </>
   );
 }
 export default function PatternMatchGame(){return<ErrorBoundary game="pattern-match"><PatternMatchGameInner/></ErrorBoundary>;}

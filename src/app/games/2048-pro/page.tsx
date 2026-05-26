@@ -1,5 +1,5 @@
 "use client";
-const TOTAL_STAGES = 1000;
+const TOTAL_STAGES = 100;
 const GAME_SLUG = "2048-pro";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
@@ -10,21 +10,24 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
 import{motion,AnimatePresence}from"framer-motion";
-import{ArrowLeft,RotateCcw,ChevronRight,Share2,Trophy}from"lucide-react";
-import Link from"next/link";
+import{ChevronRight,Trophy}from"lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
-import{Navbar}from"@/components/nav/Navbar";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
-import{HintButton}from"@/components/ui/HintButton";
-import { ShowSolution } from "@/components/ui/ShowSolution";
-import{createXPState,calculateXP,finalizeXP,formatElapsed,type XPState,type Difficulty}from"@/lib/games/xpEngine";
+import{createXPState,calculateXP,finalizeXP,type XPState,type Difficulty}from"@/lib/games/xpEngine";
 import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
+import { GameShell } from "@/components/game";
+
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"medium";
@@ -43,13 +46,6 @@ function move(g:Grid,dir:"up"|"down"|"left"|"right"):{grid:Grid;score:number;mov
 function hasWon(g:Grid,target:number){return g.some(r=>r.some(v=>v>=target));}
 function hasLost(g:Grid){if(g.some(r=>r.some(v=>v===0)))return false;for(let r=0;r<4;r++)for(let c=0;c<4;c++){if(c<3&&g[r][c]===g[r][c+1])return false;if(r<3&&g[r][c]===g[r+1][c])return false;}return true;}
 
-function XPBar({xpState}:{xpState:XPState}){
-  const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
-}
-
 function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
   const[showMap,setShowMap]=useState(false);
@@ -61,7 +57,9 @@ function TwentyFortyEightProPageInner(){
   const[bestTile,setBestTile]=useState(2);
   const[gameState,setGameState]=useState<"playing"|"won"|"lost">("playing");
   const[xpState,setXpState]=useState<XPState|null>(null);
-  const[elapsed,setElapsed]=useState("00:00");
+  const[elapsedSeconds,setElapsedSeconds]=useState(0);
+  const[liveXP,setLiveXP]=useState(1000);
+  const[finalElapsed,setFinalElapsed]=useState("0:00");
   const[finalXP,setFinalXP]=useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
@@ -73,11 +71,17 @@ function TwentyFortyEightProPageInner(){
 
   usePageVisibility(
     ()=>{if(timerRef.current)clearInterval(timerRef.current);},
-    ()=>{if(xpState&&gameState==="playing"&&!solutionRevealed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
+    ()=>{if(xpState&&gameState==="playing"&&!solutionRevealed){timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xpState.startTime)/1000));setLiveXP(calculateXP(xpState).currentXP);},500);}}
   );
 
   const diff=getDifficulty(stage);
   const target=diff==="easy"?512:diff==="medium"?1024:2048;
+
+  const handleHint=useCallback(()=>{
+    if(!xpState||hintsUsed>=3||solutionRevealed)return;
+    setHintsUsed(h=>h+1);
+    setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+  },[xpState,hintsUsed,solutionRevealed]);
 
   const loadStage=useCallback((s:number)=>{
     saveGameState("2048-pro",{stage:s,savedAt:Date.now()});
@@ -85,11 +89,11 @@ function TwentyFortyEightProPageInner(){
     const xp=createXPState(d);
     const g=initGrid(s*997);
     setGrid(g);setScore(0);setBestTile(2);setGameState("playing");
-    setXpState(xp);setFinalXP(0);setElapsed("00:00");setHintsUsed(0);
+    setXpState(xp);setFinalXP(0);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setHintsUsed(0);
     setSolutionRevealed(false);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
+    timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
     if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
@@ -105,8 +109,6 @@ function TwentyFortyEightProPageInner(){
     return()=>{if(timerRef.current)clearInterval(timerRef.current);};
   },[stage,loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
-  // 2048 has no static solution — lock the board and show strategy tip
   function handleRevealSolution(){
     if(!xpState)return;
     setSolutionRevealed(true);
@@ -125,6 +127,7 @@ function TwentyFortyEightProPageInner(){
     playClick();
     if(hasWon(ng,target)){
       const earned=finalizeXP(xpState);setFinalXP(earned);setGameState("won");
+      setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
       markStageCompleted("2048-pro",stage);
@@ -137,101 +140,87 @@ function TwentyFortyEightProPageInner(){
     window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey);
   },[handleMove]);
 
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,360):320;
   const cellSize=Math.floor((maxW-12)/4);
-  const currentXP=xpState?calculateXP(xpState).currentXP:0;
 
   return(
-    <div style={{minHeight:"100vh",background:"#FAF8EF",display:"flex",flexDirection:"column"}}>
-      <Navbar/>
-      <GamePageSchema slug="2048-pro" />
-      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
-        <div style={{width:"100%",maxWidth:400,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,overflow:"hidden",flexShrink:1}}>
-              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
-              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>2048 Pro</span>
-              <span style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>TARGET {target}</span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="2048 Pro"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3-hintsUsed}
+        onUndo={()=>{}}
+        onHint={handleHint}
+        onCheck={()=>{}}
+      >
+        <GamePageSchema slug={GAME_SLUG} />
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,padding:"16px 16px 32px"}}>
+          <div style={{display:"flex",gap:12}}>
+            {[{label:"Score",value:score},{label:"Best Tile",value:bestTile}].map(s=>(
+              <div key={s.label} style={{background:"#BBADA0",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
+                <p style={{fontSize:10,fontWeight:700,color:"#EEE4DA",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
+                <p style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+
+          {solutionRevealed&&(
+            <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
+              Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
+            </motion.div>
+          )}
+
+          <div
+            style={{background:"#BBADA0",borderRadius:16,padding:8,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",touchAction:"none",opacity:solutionRevealed?0.7:1}}
+            onTouchStart={e=>{const t=e.touches[0];touchStart.current={x:t.clientX,y:t.clientY};}}
+            onTouchEnd={e=>{
+              if(!touchStart.current)return;
+              const t=e.changedTouches[0];
+              const dx=t.clientX-touchStart.current.x,dy=t.clientY-touchStart.current.y;
+              touchStart.current=null;
+              if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+              if(Math.abs(dx)>Math.abs(dy))handleMove(dx>0?"right":"left");
+              else handleMove(dy>0?"down":"up");
+            }}>
+            <div style={{display:"grid",gridTemplateColumns:`repeat(4,${cellSize}px)`,gap:8}}>
+              {grid.map((row,r)=>row.map((val,c)=>{
+                const{bg,color}=getColor(val);
+                const fontSize=val>=1000?cellSize*0.28:cellSize*0.38;
+                return(
+                  <motion.div key={`${r}-${c}-${val}`} initial={val>0?{scale:0.8,opacity:0}:{}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}}
+                    style={{width:cellSize,height:cellSize,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color,boxShadow:val>=8?"0 2px 8px rgba(0,0,0,0.2)":"none"}}>
+                    {val||""}
+                  </motion.div>
+                );
+              }))}
             </div>
           </div>
-          {xpState&&<XPBar xpState={xpState}/>}
-        </div>
 
-        <div style={{display:"flex",gap:12}}>
-          {[{label:"Score",value:score},{label:"Best Tile",value:bestTile}].map(s=>(
-            <div key={s.label} style={{background:"#BBADA0",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#EEE4DA",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
-              <p style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
-            </div>
-          ))}
-        </div>
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>
+            {solutionRevealed?"Board locked · Retry to play properly":"Arrow keys or swipe to move · Reach "+target+" to win"}
+          </div>
 
-        {solutionRevealed&&(
-          <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"10px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
-            Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
-          </motion.div>
-        )}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,48px)",gridTemplateRows:"repeat(2,48px)",gap:6}}>
+            {[{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}].map(btn=>(
+              <button key={btn.dir} onClick={()=>handleMove(btn.dir as any)} disabled={solutionRevealed}
+                style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
+                {btn.label}
+              </button>
+            ))}
+          </div>
 
-        <div
-          style={{background:"#BBADA0",borderRadius:16,padding:8,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",touchAction:"none",opacity:solutionRevealed?0.7:1}}
-          onTouchStart={e=>{const t=e.touches[0];touchStart.current={x:t.clientX,y:t.clientY};}}
-          onTouchEnd={e=>{
-            if(!touchStart.current)return;
-            const t=e.changedTouches[0];
-            const dx=t.clientX-touchStart.current.x,dy=t.clientY-touchStart.current.y;
-            touchStart.current=null;
-            if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
-            if(Math.abs(dx)>Math.abs(dy))handleMove(dx>0?"right":"left");
-            else handleMove(dy>0?"down":"up");
-          }}>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(4,${cellSize}px)`,gap:8}}>
-            {grid.map((row,r)=>row.map((val,c)=>{
-              const{bg,color}=getColor(val);
-              const fontSize=val>=1000?cellSize*0.28:cellSize*0.38;
-              return(
-                <motion.div key={`${r}-${c}-${val}`} initial={val>0?{scale:0.8,opacity:0}:{}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}}
-                  style={{width:cellSize,height:cellSize,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color,boxShadow:val>=8?"0 2px 8px rgba(0,0,0,0.2)":"none"}}>
-                  {val||""}
-                </motion.div>
-              );
-            }))}
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
+            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
+            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
           </div>
         </div>
-
-        <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>
-          {solutionRevealed?"Board locked · Retry to play properly":"Arrow keys or swipe to move · Reach "+target+" to win"}
-        </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,48px)",gridTemplateRows:"repeat(2,48px)",gap:6}}>
-          {[{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}].map(btn=>(
-            <button key={btn.dir} onClick={()=>handleMove(btn.dir as any)} disabled={solutionRevealed}
-              style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
-              {btn.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton hintsLeft={3-hintsUsed} xpCost={100}
-            onUseHint={()=>{if(!xpState||hintsUsed>=3||solutionRevealed)return;setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);}}
-            disabled={gameState!=="playing"||solutionRevealed}/>
-          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={gameState!=="playing"||solutionRevealed}/>
-        </div>
-
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 1000</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
-        </div>
-      </main>
+      </GameShell>
 
       <AnimatePresence>
         {(gameState==="won"||gameState==="lost")&&(
@@ -250,7 +239,7 @@ function TwentyFortyEightProPageInner(){
               )}
               <div style={{display:"flex",gap:10}}>
                 <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
-                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
               </div>
             </motion.div>
           </motion.div>
@@ -275,7 +264,7 @@ function TwentyFortyEightProPageInner(){
           }}
         />
       )}
-      {showMap&&<StageMap gameSlug="2048-pro" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showMap&&<StageMap gameSlug="2048-pro" totalStages={TOTAL_STAGES} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
       <GameCompleteModal
         open={showGameComplete}
         gameName="2048 Pro"
@@ -283,8 +272,7 @@ function TwentyFortyEightProPageInner(){
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
-
-    </div>
+    </>
   );
 }
 export default function TwentyFortyEightProPage(){return<ErrorBoundary game="2048-pro"><TwentyFortyEightProPageInner/></ErrorBoundary>;}

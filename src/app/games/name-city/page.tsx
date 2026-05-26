@@ -7,17 +7,13 @@ import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncomplete
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { Navbar } from "@/components/nav/Navbar";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
-import { HintButton } from "@/components/ui/HintButton";
-import { ShowSolution } from "@/components/ui/ShowSolution";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { generateCityGame, scoreGuess, type CityGameBoard, type LetterResult } from "@/lib/games/cityGameGenerator";
-import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
+import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
@@ -25,6 +21,13 @@ import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
+import { GameShell } from "@/components/game";
+
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function getDifficulty(s:number):Difficulty{
   if(s===1)return"easy";
@@ -37,13 +40,6 @@ const TILE:Record<LetterResult,{bg:string;border:string;text:string}>={
   absent: {bg:"#4B5563",border:"#374151",text:"white"},
 };
 const KB=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["ENTER","Z","X","C","V","B","N","M","⌫"]];
-
-function XPBar({xpState}:{xpState:XPState}){
-  const[snap,setSnap]=useState(()=>calculateXP(xpState));
-  useEffect(()=>{const iv=setInterval(()=>setSnap(calculateXP(xpState)),500);return()=>clearInterval(iv);},[xpState]);
-  const pct=snap.percentRemaining;const color=pct>0.6?"#22C55E":pct>0.3?"#F59E0B":"var(--color-error)";
-  return(<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{flex:1,height:4,background:"var(--color-surface-2)",borderRadius:2,overflow:"hidden"}}><motion.div animate={{width:`${pct*100}%`}} transition={{duration:0.5}} style={{height:"100%",background:color,borderRadius:2}}/></div><span style={{fontSize:13,fontWeight:700,color,fontFamily:"monospace",minWidth:36}}>{snap.currentXP}</span><span style={{fontSize:11,color:"var(--color-text-secondary)"}}>XP</span></div>);
-}
 
 function NameCityInner(){
   const{user}=useAuthStore();
@@ -59,7 +55,9 @@ function NameCityInner(){
   const[hintsUsed,setHintsUsed]=useState(0);
   const[shownHints,setShownHints]=useState<string[]>([]);
   const[xpState,setXpState]=useState<XPState|null>(null);
-  const[elapsed,setElapsed]=useState("00:00");
+  const[elapsedSeconds,setElapsedSeconds]=useState(0);
+  const[liveXP,setLiveXP]=useState(1000);
+  const[finalElapsed,setFinalElapsed]=useState("0:00");
   const[finalXP,setFinalXP]=useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
@@ -69,7 +67,14 @@ function NameCityInner(){
 
   usePageVisibility(
     ()=>{if(timerRef.current)clearInterval(timerRef.current);},
-    ()=>{if(xpState&&!completed)timerRef.current=setInterval(()=>setElapsed(formatElapsed(xpState.startTime)),1000);}
+    ()=>{
+      if(xpState&&!completed){
+        timerRef.current=setInterval(()=>{
+          setElapsedSeconds(Math.floor((Date.now()-xpState.startTime)/1000));
+          setLiveXP(calculateXP(xpState).currentXP);
+        },500);
+      }
+    }
   );
 
   const loadStage=useCallback((s:number)=>{
@@ -79,17 +84,19 @@ function NameCityInner(){
     const xp=createXPState(diff);
     setBoard(b);setGuesses([]);setResults([]);setCurrent("");
     setCompleted(false);setLost(false);setFinalXP(0);
-    setHintsUsed(0);setShownHints([]);setElapsed("00:00");setXpState(xp);
+    setHintsUsed(0);setShownHints([]);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setXpState(xp);
     setSolutionRevealed(false);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>setElapsed(formatElapsed(xp.startTime)),1000);
+    timerRef.current=setInterval(()=>{
+      setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    },500);
     if(user){const ok=consumeToken(user.id);if(!ok)return;}
   },[user]);
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution(){
     if(!board||!xpState)return;
     setLost(true);
@@ -116,7 +123,22 @@ function NameCityInner(){
     setGuesses(ng);setResults(nr);setCurrent("");
     const won=res.every(r=>r==="correct");
     const out=ng.length>=board.maxGuesses&&!won;
-    if(won){setTimeout(()=>{const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);clearGameState("name-city");if(timerRef.current)clearInterval(timerRef.current);playSuccess();triggerConfetti();if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"name-city",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}},board.wordLength*100+400);}
+    if(won){
+      setTimeout(()=>{
+        const earned=finalizeXP(xpState);
+        setFinalXP(earned);
+        setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
+        setCompleted(true);
+        clearGameState("name-city");
+        if(timerRef.current)clearInterval(timerRef.current);
+        playSuccess();
+        triggerConfetti();
+        if(user){
+          updateStreak(user.id);
+          saveScore({user_id:user.id,game_slug:"name-city",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+        }
+      },board.wordLength*100+400);
+    }
     else if(out){setTimeout(()=>{setLost(true);if(timerRef.current)clearInterval(timerRef.current);playError();},board.wordLength*100+400);}
   }
 
@@ -129,33 +151,23 @@ function NameCityInner(){
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><p>Loading...</p></div>);
 
-  const diff=getDifficulty(stage);
-  const diffColor=diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const cellSize=Math.min(52,Math.floor((gridAreaWidth-(board.wordLength-1)*6)/board.wordLength));
-  const currentXP=calculateXP(xpState).currentXP;
 
   return(
-    <div className="game-page">
-      <Navbar/>
-      <GamePageSchema slug="name-city" />
-      <main style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"76px 16px 32px",gap:16}}>
-        <div style={{width:"100%",maxWidth:480,background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"16px 20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <Link href="/games" style={{color:"var(--color-text-secondary)",textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:13}}><ArrowLeft size={14}/> Games</Link>
-              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>Name the City</span>
-              <div style={{width:1,height:16,background:"#E2E8F0"}}/>
-              <span style={{fontSize:18,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{stage}</span>
-              <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:10,background:`${diffColor}15`,color:diffColor}}>{diff.toUpperCase()}</span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-              <span style={{fontSize:12,color:"var(--color-text-secondary)",fontFamily:"monospace"}}>{elapsed}</span>
-              <button onClick={()=>loadStage(stage)} style={{padding:7,borderRadius:9,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",color:"var(--color-text-secondary)",display:"flex"}}><RotateCcw size={13}/></button>
-            </div>
-          </div>
-          <XPBar xpState={xpState}/>
-        </div>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Name the City"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3-hintsUsed}
+        onUndo={()=>{}}
+        onHint={handleHint}
+        onCheck={()=>{}}
+      >
+        <GamePageSchema slug="name-city" />
 
         <AnimatePresence>
           {(completed||lost)&&(
@@ -166,7 +178,7 @@ function NameCityInner(){
 
         {lost&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}}
-            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(239,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(239,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"var(--color-error)",textAlign:"center"}}>
+            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(255,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(255,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"var(--color-error)",textAlign:"center"}}>
             {solutionRevealed?"Solution: ":"It was: "}{board.flag} {board.answer} · {(board as any).country}
           </motion.div>
         )}
@@ -217,23 +229,18 @@ function NameCityInner(){
           </div>
         )}
 
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||lost}/>
-          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||lost||solutionRevealed}/>
-        </div>
-
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
           <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
           <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
         </div>
-      </main>
+      </GameShell>
 
       {showMap&&<StageMap gameSlug="name-city" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={finalElapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Name the City Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
+    </>
   );
 }
 export default function NameCityPage(){return<ErrorBoundary game="name-city"><NameCityInner/></ErrorBoundary>;}

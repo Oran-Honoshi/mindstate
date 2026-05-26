@@ -3,27 +3,28 @@ const TOTAL_STAGES = 100;
 const GAME_SLUG = "pinpoint";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
-import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
-import { Navbar } from "@/components/nav/Navbar";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
-import { HintButton } from "@/components/ui/HintButton";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
-import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
+import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
+import { GameShell } from "@/components/game";
 
-// ── Puzzle bank ───────────────────────────────────────────────────────────────
-// Each puzzle: answer + 5 clues ordered from hardest (most obscure) to easiest
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 interface Puzzle {
   answer: string;
-  clues: string[]; // [hardest → easiest], 5 clues
+  clues: string[];
 }
 
 const PUZZLES: Puzzle[] = [
@@ -59,29 +60,8 @@ function getPuzzle(stage: number): Puzzle {
   return PUZZLES[stage % PUZZLES.length];
 }
 
-// How many clues to reveal based on difficulty
 function getInitialClues(diff: Difficulty): number {
   return diff === "easy" ? 2 : diff === "medium" ? 1 : 1;
-}
-
-function XPBar({ xpState }: { xpState: XPState }) {
-  const [snap, setSnap] = useState(() => calculateXP(xpState));
-  useEffect(() => {
-    const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
-    return () => clearInterval(iv);
-  }, [xpState]);
-  const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
-  return (
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
-        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }}
-          style={{ height:"100%", background:color, borderRadius:2 }}/>
-      </div>
-      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>XP</span>
-    </div>
-  );
 }
 
 function PinpointInner() {
@@ -90,7 +70,9 @@ function PinpointInner() {
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [xpState, setXpState] = useState<XPState | null>(null);
-  const [elapsed, setElapsed] = useState("00:00");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [liveXP, setLiveXP] = useState(1000);
+  const [finalElapsed, setFinalElapsed] = useState("0:00");
   const [completed, setCompleted] = useState(false);
   const [lost, setLost] = useState(false);
   const [finalXP, setFinalXP] = useState(0);
@@ -103,7 +85,6 @@ function PinpointInner() {
 
   const diff = getDifficulty(stage);
   const puzzle = getPuzzle(stage);
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
   const maxGuesses = diff === "easy" ? 5 : diff === "medium" ? 4 : 3;
 
   const loadStage = useCallback((s: number) => {
@@ -117,9 +98,14 @@ function PinpointInner() {
     setLost(false);
     setFinalXP(0);
     setHintsUsed(0);
-    setElapsed("00:00");
+    setElapsedSeconds(0);
+    setLiveXP(1000);
+    setFinalElapsed("0:00");
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    }, 500);
   }, []);
 
   useEffect(() => {
@@ -139,6 +125,7 @@ function PinpointInner() {
     if (g === puzzle.answer.toUpperCase()) {
       const earned = finalizeXP(xpState);
       setFinalXP(earned);
+      setFinalElapsed(formatTime(Math.floor((Date.now() - xpState.startTime) / 1000)));
       setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess();
@@ -154,7 +141,6 @@ function PinpointInner() {
       playError();
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      // Reveal next clue on wrong guess
       if (revealedClues < puzzle.clues.length) {
         setRevealedClues(r => r + 1);
       }
@@ -176,35 +162,25 @@ function PinpointInner() {
   if (!xpState) return null;
 
   return (
-    <div className="game-page">
-      <Navbar/>
-      <GamePageSchema slug="pinpoint" />
-      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
-
-        {/* Header */}
-        <div style={{ width:"100%", maxWidth:480, background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"16px 20px", boxShadow:"var(--shadow-sm)" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <Link href="/games" style={{ color:"var(--color-text-secondary)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
-              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
-              <span style={{ fontSize:12, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>Pinpoint</span>
-              <div style={{ width:1, height:16, background:"var(--color-border)" }}/>
-              <span style={{ fontSize:18, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>{diff.toUpperCase()}</span>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}><RotateCcw size={13}/></button>
-            </div>
-          </div>
-          <XPBar xpState={xpState}/>
-        </div>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Pinpoint"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3 - hintsUsed}
+        onUndo={() => {}}
+        onHint={handleHint}
+        onCheck={() => {}}
+      >
+        <GamePageSchema slug="pinpoint" />
 
         <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>
           {guesses.length}/{maxGuesses} guesses · {revealedClues}/{puzzle.clues.length} clues revealed
         </p>
 
-        {/* Clues */}
         <div style={{ width:"100%", maxWidth:480, display:"flex", flexDirection:"column", gap:8 }}>
           {puzzle.clues.slice(0, revealedClues).map((clue, i) => (
             <motion.div key={i}
@@ -229,7 +205,6 @@ function PinpointInner() {
           )}
         </div>
 
-        {/* Previous guesses */}
         {guesses.length > 0 && (
           <div style={{ width:"100%", maxWidth:480, display:"flex", flexDirection:"column", gap:6 }}>
             {guesses.map((g, i) => (
@@ -240,7 +215,6 @@ function PinpointInner() {
           </div>
         )}
 
-        {/* Answer reveal on loss */}
         {lost && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
             style={{ padding:"12px 24px", borderRadius:14, background:"#FEF2F2", border:"1px solid #FECACA", fontSize:16, fontWeight:700, color:"var(--color-error)" }}>
@@ -248,7 +222,6 @@ function PinpointInner() {
           </motion.div>
         )}
 
-        {/* Input */}
         {!completed && !lost && (
           <motion.div animate={shake ? { x: [-6, 6, -4, 4, 0] } : {}} transition={{ duration:0.3 }}
             style={{ display:"flex", gap:8, width:"100%", maxWidth:480 }}>
@@ -265,14 +238,11 @@ function PinpointInner() {
               }}
             />
             <button onClick={handleGuess}
-              style={{ padding:"12px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>
+              style={{ padding:"12px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>
               Guess
             </button>
           </motion.div>
         )}
-
-        {/* Controls */}
-        <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed || lost}/>
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
@@ -283,9 +253,8 @@ function PinpointInner() {
             Next <ChevronRight size={13}/>
           </button>
         </div>
-      </main>
+      </GameShell>
 
-      {/* Completion */}
       <AnimatePresence>
         {completed && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
@@ -298,7 +267,7 @@ function PinpointInner() {
                 {puzzle.answer}
               </h2>
               <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:24 }}>
-                {guesses.length} guess{guesses.length !== 1 ? "es" : ""} · {revealedClues} clue{revealedClues !== 1 ? "s" : ""} used · {elapsed}
+                {guesses.length} guess{guesses.length !== 1 ? "es" : ""} · {revealedClues} clue{revealedClues !== 1 ? "s" : ""} used · {finalElapsed}
               </p>
               <div style={{ background:"var(--color-surface-2)", borderRadius:16, padding:20, marginBottom:20 }}>
                 <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase" }}>XP Earned</p>
@@ -310,7 +279,7 @@ function PinpointInner() {
                   Retry
                 </button>
                 <button onClick={() => { setCompleted(false); setStage(s => s + 1); }}
-                  style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                  style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                   Next Stage →
                 </button>
               </div>
@@ -325,8 +294,7 @@ function PinpointInner() {
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
-
-    </div>
+    </>
   );
 }
 export default function PinpointPage() {

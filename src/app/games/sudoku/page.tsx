@@ -1,19 +1,16 @@
 "use client";
-const TOTAL_STAGES = 1000;
+const TOTAL_STAGES = 100;
 const GAME_SLUG = "sudoku";
 import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
 import{ResumeModal}from"@/components/ui/ResumeModal";
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
-import{UndoButton}from"@/components/ui/UndoButton";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, ChevronRight, Delete } from "lucide-react";
-import Link from "next/link";
-import { Navbar } from "@/components/nav/Navbar";
-import { createXPState, calculateXP, finalizeXP, formatElapsed, type XPState, type Difficulty } from "@/lib/games/xpEngine";
+import { ChevronRight, Delete } from "lucide-react";
+import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { buildSeed } from "@/lib/games/tangoGenerator";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
@@ -21,10 +18,15 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
-import { HintButton } from "@/components/ui/HintButton";
-import { ShowSolution } from "@/components/ui/ShowSolution";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
+import { GameShell } from "@/components/game";
+
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 type SudokuCell = number | null;
 type SudokuBoard = SudokuCell[][];
@@ -92,22 +94,6 @@ function generateSudoku(seed: string, difficulty: Difficulty) {
   return { size, solution, puzzle, br, bc };
 }
 
-function XPBar({ xpState }: { xpState: XPState }) {
-  const [snap, setSnap] = useState(() => calculateXP(xpState));
-  useEffect(() => { const iv = setInterval(() => setSnap(calculateXP(xpState)), 500); return () => clearInterval(iv); }, [xpState]);
-  const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
-  return (
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ flex:1, height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
-        <motion.div animate={{ width:`${pct*100}%` }} transition={{ duration:0.5 }} style={{ height:"100%", background:color, borderRadius:2 }}/>
-      </div>
-      <span style={{ fontSize:13, fontWeight:700, color, fontFamily:"monospace", minWidth:36 }}>{snap.currentXP}</span>
-      <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>XP</span>
-    </div>
-  );
-}
-
 function SudokuGameInner() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
@@ -116,7 +102,9 @@ function SudokuGameInner() {
   const [selected, setSelected] = useState<[number,number]|null>(null);
   const [errors, setErrors] = useState<Set<string>>(new Set());
   const [xpState, setXpState] = useState<XPState|null>(null);
-  const [elapsed, setElapsed] = useState("00:00");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [liveXP, setLiveXP] = useState(1000);
+  const [finalElapsed, setFinalElapsed] = useState("0:00");
   const [completed, setCompleted] = useState(false);
   const [showResume, setShowResume] = useState(false);
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
@@ -137,9 +125,14 @@ function SudokuGameInner() {
 
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
-    () => { if (xpState && !completed) {
-      timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
-    }}
+    () => {
+      if (xpState && !completed) {
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
+          setLiveXP(calculateXP(xpState).currentXP);
+        }, 500);
+      }
+    }
   );
 
   const loadStage = useCallback((s: number) => {
@@ -153,11 +146,15 @@ function SudokuGameInner() {
     setBoardHistory([]);
     setSelected(null); setErrors(new Set());
     setXpState(xp); setCompleted(false); setFinalXP(0);
-    setHintsUsed(0); setShowFeedback(false); setElapsed("00:00");
+    setHintsUsed(0); setShowFeedback(false);
+    setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    }, 500);
   }, []);
 
   useEffect(() => {
@@ -174,7 +171,6 @@ function SudokuGameInner() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [stage, loadStage]);
 
-  // ── Show Solution ──────────────────────────────────────────────────────────
   function handleRevealSolution() {
     if (!puzzleData || !xpState) return;
     setPlayerBoard(puzzleData.solution.map(r => [...r]));
@@ -200,7 +196,6 @@ function SudokuGameInner() {
       if (v !== puzzleData.solution[ri][ci]) errs.add(`${ri}-${ci}`);
     }));
     if (errs.size > 0) { setErrors(errs); playError(); } else { setErrors(new Set()); }
-    // Flash completed box
     if (num !== null) {
       const br2 = puzzleData.br, bc2 = puzzleData.bc;
       const boxR = Math.floor(r/br2)*br2, boxC = Math.floor(c/bc2)*bc2;
@@ -217,7 +212,9 @@ function SudokuGameInner() {
     const emptyCount = puzzleData.puzzle.flat().filter(v => v === null).length;
     const userFilledCount = nb.flat().filter((v, i) => { const ri=Math.floor(i/nb[0].length),ci=i%nb[0].length; return puzzleData.puzzle[ri][ci]===null&&v!==null; }).length;
     if (allCorrect && allFilled && userFilledCount >= emptyCount && xpState) {
-      const earned = finalizeXP(xpState); setFinalXP(earned); setCompleted(true);
+      const earned = finalizeXP(xpState); setFinalXP(earned);
+      setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
+      setCompleted(true);
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
       markStageCompleted("sudoku",stage);
@@ -256,45 +253,33 @@ function SudokuGameInner() {
     </div>
   );
 
-  const diff = getDifficulty(stage);
-  const diffColor = diff==="easy"?"#22C55E":diff==="medium"?"#F59E0B":"var(--color-error)";
   const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 480) : 400;
   const cellSize = Math.floor(maxW / puzzleData.size);
   const nums = Array.from({ length: puzzleData.size }, (_, i) => i + 1);
-  const currentXP = calculateXP(xpState).currentXP;
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", flexDirection:"column" }}>
-      <Navbar/>
-      <GamePageSchema slug="sudoku" />
-      <main style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"76px 16px 32px", gap:18 }}>
-        <div style={{ width:"100%", maxWidth:520, background:"var(--color-surface)", borderRadius:20, border:"0.5px solid var(--color-border)", padding:"16px 20px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <Link href="/games" style={{ color:"var(--color-text-secondary)", textDecoration:"none", display:"flex", alignItems:"center", gap:4, fontSize:13 }}><ArrowLeft size={14}/> Games</Link>
-              <div style={{ width:1, height:16, background:"#E2E8F0" }}/>
-              <span style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Stage</span>
-              <span style={{ fontSize:20, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>{stage}</span>
-              <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:10, background:`${diffColor}15`, color:diffColor }}>
-                {diff.toUpperCase()} · {puzzleData.size}×{puzzleData.size}
-              </span>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontFamily:"monospace" }}>{elapsed}</span>
-              <button onClick={() => loadStage(stage)} style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}><RotateCcw size={13}/></button>
-            </div>
-          </div>
-          <XPBar xpState={xpState}/>
-        </div>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Sudoku"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3-hintsUsed}
+        onUndo={handleUndo}
+        onHint={handleHint}
+        onCheck={()=>{}}
+      >
+        <GamePageSchema slug="sudoku" />
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(239,68,68,0.08)",border:"0.5px solid rgba(239,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        {/* Board */}
         <div style={{ border:"2px solid #374151", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}>
           <div style={{ display:"grid", gridTemplateColumns:`repeat(${puzzleData.size},${cellSize}px)` }}>
             {puzzleData.puzzle.map((row, r) => row.map((given, c) => {
@@ -316,7 +301,7 @@ function SudokuGameInner() {
                     display:"flex", alignItems:"center", justifyContent:"center",
                     fontSize: puzzleData.size===6 ? 18 : 14, fontWeight:700,
                     outline:"none", cursor: isGiven || solutionRevealed ? "default" : "pointer",
-                    background: isSolution ? "rgba(239,68,68,0.04)"
+                    background: isSolution ? "rgba(255,68,68,0.04)"
                       : showFeedback&&feedbackCells.has(`${r}-${c}`) ? "#DCFCE7"
                       : showFeedback&&wrongCells.has(`${r}-${c}`) ? "#FEF2F2"
                       : isSelected ? "#EEF2FF"
@@ -330,7 +315,7 @@ function SudokuGameInner() {
                     borderRight: rightBox ? "2px solid #374151" : "0.5px solid #E2E8F0",
                     borderBottom: bottomBox ? "2px solid #374151" : "0.5px solid #E2E8F0",
                     borderTop:"none", borderLeft:"none",
-                    boxShadow: isSelected ? "inset 0 0 0 2px var(--color-accent-primary)" : "none",
+                    boxShadow: isSelected ? "inset 0 0 0 2px #4F6EF7" : "none",
                   }}>
                   {value ?? ""}
                 </motion.button>
@@ -339,7 +324,6 @@ function SudokuGameInner() {
           </div>
         </div>
 
-        {/* Number pad */}
         {!solutionRevealed && (
           <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
             {nums.map(n => (
@@ -355,20 +339,14 @@ function SudokuGameInner() {
           </div>
         )}
 
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",justifyContent:"center"}}>
-          <UndoButton onUndo={handleUndo} canUndo={boardHistory.length>0} disabled={completed||solutionRevealed}/>
-          <HintButton hintsLeft={3-hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed||solutionRevealed}/>
-          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed||solutionRevealed}/>
-        </div>
-
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
             style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>← Prev</button>
-          <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of 1000</span>
+          <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of 100</span>
           <button onClick={() => setStage(s=>s+1)}
             style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
         </div>
-      </main>
+      </GameShell>
 
       <OutOfTokensModal gameName="Sudoku" open={showTokenModal} onClose={()=>setShowTokenModal(false)}/>
       {showResume && resumeData && (
@@ -392,11 +370,11 @@ function SudokuGameInner() {
           }}
         />
       )}
-      {showMap&&<StageMap gameSlug="sudoku" totalStages={1000} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={elapsed}
+      {showMap&&<StageMap gameSlug="sudoku" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={finalElapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
-        onShare={()=>{const text=`MindElement · Sudoku Stage ${stage} · ${finalXP} XP · ${elapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
-    </div>
+        onShare={()=>{const text=`MindElement · Sudoku Stage ${stage} · ${finalXP} XP · ${finalElapsed}`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
+    </>
   );
 }
 
@@ -420,13 +398,12 @@ function CompletionPopup({ open, stage, elapsed, difficulty, xpEarned, onRetry, 
           </div>
           <div style={{display:"flex",gap:10}}>
             <button onClick={onRetry} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
-            <button onClick={onNext} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage →</button>
+            <button onClick={onNext} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage →</button>
           </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 }
-
 
 export default function SudokuGame(){return<ErrorBoundary game="sudoku"><SudokuGameInner/></ErrorBoundary>;}
