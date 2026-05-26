@@ -130,7 +130,7 @@ export default function PricingPage() {
                 }}>
 
                 {plan.highlight && (
-                  <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "#00FFFF", color: "#121212", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", padding: "4px 14px", borderRadius: 20, whiteSpace: "nowrap" }}>
+                  <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "var(--color-accent-primary)", color: "var(--color-on-accent)", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", padding: "4px 14px", borderRadius: 20, whiteSpace: "nowrap" }}>
                     MOST POPULAR
                   </div>
                 )}

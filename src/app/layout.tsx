@@ -111,6 +111,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             var root = document.documentElement;
+            var THEME_COLOR = { dark: '#121212', light: '#FFFFFF', paper: '#F2E8D9' };
+            function setMeta(t) {
+              var m = document.querySelector('meta[name="theme-color"]');
+              if (!m) {
+                m = document.createElement('meta');
+                m.name = 'theme-color';
+                document.head.appendChild(m);
+              }
+              m.content = THEME_COLOR[t];
+            }
             try {
               var raw = localStorage.getItem('mindstate-settings');
               var s = raw ? JSON.parse(raw) : null;
@@ -119,6 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               if (theme !== 'dark' && theme !== 'light' && theme !== 'paper') theme = 'dark';
               root.setAttribute('data-theme', theme);
               root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+              setMeta(theme);
               if (state && state.language === 'he') {
                 root.dir = 'rtl';
                 root.lang = 'he';
@@ -129,6 +140,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             } catch(e) {
               root.setAttribute('data-theme', 'dark');
               root.style.colorScheme = 'dark';
+              setMeta('dark');
             }
           })();
         `}}/>
