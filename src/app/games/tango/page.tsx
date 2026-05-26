@@ -1,8 +1,3 @@
-// src/app/games/tango/page.tsx
-// ── TEMPLATE: shows how to wire smart routing + GameCompleteModal ──────────
-// Apply the same pattern to all other game pages (the diff is mechanical).
-// Search for "SMART ROUTING" comments to find every change from the old version.
-
 "use client";
 import { saveGameState, loadGameState, clearGameState } from "@/lib/games/gameStateStorage";
 import { ResumeModal } from "@/components/ui/ResumeModal";
@@ -11,23 +6,20 @@ import {
   getLastStage,
   getLastStageRemote,
   markStageCompleted,
-  getNextUncompletedStage,     // SMART ROUTING
-  shouldShowGameCompleteModal, // SMART ROUTING
+  getNextUncompletedStage,
+  shouldShowGameCompleteModal,
 } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Share2, RotateCcw, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { Navbar } from "@/components/nav/Navbar";
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import {
   generateTangoBoard, validateBoard, buildSeed,
   type Cell, type TangoBoard, type CellStatus,
 } from "@/lib/games/tangoGenerator";
 import {
-  createXPState, calculateXP, finalizeXP, formatElapsed,
+  createXPState, calculateXP, finalizeXP,
   type XPState, type Difficulty,
 } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -37,17 +29,14 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
-import { UndoButton } from "@/components/ui/UndoButton";
-import { HintButton } from "@/components/ui/HintButton";
-import { ShowSolution } from "@/components/ui/ShowSolution";
 import { GameInstructions } from "@/components/ui/GameInstructions";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
-import { GameCompleteModal } from "@/components/ui/GameCompleteModal"; // SMART ROUTING
+import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
+import { GameShell } from "@/components/game";
 
-// SMART ROUTING: set this to the real totalStages for this game
 const TOTAL_STAGES = 100;
 const GAME_SLUG = "tango";
 
@@ -57,26 +46,10 @@ function getDifficulty(stage: number): Difficulty {
   return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
-function XPBar({ xpState }: { xpState: XPState }) {
-  const [snap, setSnap] = useState(() => calculateXP(xpState));
-  useEffect(() => {
-    const iv = setInterval(() => setSnap(calculateXP(xpState)), 500);
-    return () => clearInterval(iv);
-  }, [xpState]);
-  const pct = snap.percentRemaining;
-  const color = pct > 0.6 ? "#22C55E" : pct > 0.3 ? "#F59E0B" : "var(--color-error)";
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ flex: 1, height: 4, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
-        <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.5 }}
-          style={{ height: "100%", background: color, borderRadius: 2 }} />
-      </div>
-      <span style={{ fontSize: 13, fontWeight: 700, color, fontFamily: "monospace", minWidth: 36 }}>
-        {snap.currentXP}
-      </span>
-      <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>XP</span>
-    </div>
-  );
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function TangoGameInner() {
@@ -85,7 +58,9 @@ function TangoGameInner() {
   const [board, setBoard] = useState<TangoBoard | null>(null);
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>([]);
   const [xpState, setXpState] = useState<XPState | null>(null);
-  const [elapsed, setElapsed] = useState("00:00");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [liveXP, setLiveXP] = useState(1000);
+  const [finalElapsed, setFinalElapsed] = useState("0:00");
   const [completed, setCompleted] = useState(false);
   const [showResume, setShowResume] = useState(false);
   const [resumeData, setResumeData] = useState<Record<string, unknown> | null>(null);
@@ -99,10 +74,7 @@ function TangoGameInner() {
   const [errorCols, setErrorCols] = useState<Set<number>>(new Set());
   const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
   const [solutionRevealed, setSolutionRevealed] = useState(false);
-
-  // SMART ROUTING: next uncompleted stage (computed after each completion)
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
-  // SMART ROUTING: game-complete modal
   const [showGameComplete, setShowGameComplete] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -113,12 +85,14 @@ function TangoGameInner() {
     () => { if (timerRef.current) clearInterval(timerRef.current); },
     () => {
       if (xpState && !completed) {
-        timerRef.current = setInterval(() => setElapsed(formatElapsed(xpState.startTime)), 1000);
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
+          setLiveXP(calculateXP(xpState).currentXP);
+        }, 500);
       }
     }
   );
 
-  // Cross-device sync on mount
   useEffect(() => {
     let cancelled = false;
     getLastStageRemote(GAME_SLUG).then((remote) => {
@@ -139,31 +113,35 @@ function TangoGameInner() {
     setXpState(xp);
     setCompleted(false);
     setFinalXP(0);
-    setElapsed("00:00");
+    setElapsedSeconds(0);
+    setLiveXP(1000);
+    setFinalElapsed("0:00");
     setHintsUsed(0);
     setHistory([]);
     setErrorRows(new Set());
     setErrorCols(new Set());
     setErrorCells(new Set());
     setSolutionRevealed(false);
-    setNextUncompleted(null); // SMART ROUTING: reset between stages
+    setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setElapsed(formatElapsed(xp.startTime)), 1000);
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
+      setLiveXP(calculateXP(xp).currentXP);
+    }, 500);
   }, []);
 
   useEffect(() => {
-  if (!resumeChecked.current) {
-    resumeChecked.current = true;
-    const saved = loadGameState(GAME_SLUG);
-    if (saved && (saved.stage as number) > 1) {
-      setResumeData(saved);
-      setShowResume(true);
-      // Still load the board so the screen isn't blank
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState(GAME_SLUG);
+      if (saved && (saved.stage as number) > 1) {
+        setResumeData(saved);
+        setShowResume(true);
+      }
     }
-  }
-  loadStage(stage);
-  return () => { if (timerRef.current) clearInterval(timerRef.current); };
-}, [stage, loadStage]);
+    loadStage(stage);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [stage, loadStage]);
 
   function handleRevealSolution() {
     if (!board || !xpState) return;
@@ -245,16 +223,15 @@ function TangoGameInner() {
       const earned = finalizeXP(xpState);
       setFinalXP(earned);
       setCompleted(true);
+      setFinalElapsed(formatTime(Math.floor((Date.now() - xpState.startTime) / 1000)));
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess();
       setTimeout(() => triggerConfetti(), 80);
 
-      // SMART ROUTING: record completion, compute next uncompleted stage
       markStageCompleted(GAME_SLUG, stage);
       const next = getNextUncompletedStage(GAME_SLUG, TOTAL_STAGES);
       setNextUncompleted(next);
 
-      // SMART ROUTING: check if game is now fully complete (fires once ever)
       if (shouldShowGameCompleteModal(GAME_SLUG, TOTAL_STAGES)) {
         setTimeout(() => setShowGameComplete(true), 1800);
       }
@@ -301,6 +278,11 @@ function TangoGameInner() {
     }
   }
 
+  function handleCheck() {
+    if (!board) return;
+    checkRowColErrors(playerGrid, board.size);
+  }
+
   if (!board || !xpState) return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "var(--color-text-secondary)", fontSize: 13 }}>Generating board...</p>
@@ -308,9 +290,7 @@ function TangoGameInner() {
   );
 
   const diff = getDifficulty(stage);
-  const diffColor = diff === "easy" ? "#22C55E" : diff === "medium" ? "#F59E0B" : "var(--color-error)";
   const cellSize = Math.floor((maxW - (board.size - 1) * 10) / board.size);
-  const currentXP = calculateXP(xpState).currentXP;
 
   const cm = new Map<string, "same" | "diff">();
   board.constraints.forEach((c) =>
@@ -318,53 +298,34 @@ function TangoGameInner() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column" }}>
-      <Navbar />
-      <GamePageSchema slug={GAME_SLUG} />
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "76px 16px 32px", gap: 20 }}>
-
-        {/* Header card */}
-        <div style={{ width: "100%", maxWidth: 580, background: "var(--color-surface)", borderRadius: 20, border: "0.5px solid var(--color-border)", padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden", flexShrink: 1 }}>
-  <Link href="/games" style={{ color: "var(--color-text-secondary)", textDecoration: "none", display: "flex", alignItems: "center", gap: 3, fontSize: 12, flexShrink: 0 }}>
-    <ArrowLeft size={13} /> Games
-  </Link>
-  <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
-  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", flexShrink: 0 }}>Tango</span>
-  <div style={{ width: 1, height: 14, background: "#E2E8F0", flexShrink: 0 }} />
-  <span style={{ fontSize: 18, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", flexShrink: 0 }}>{stage}</span>
-  <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: `${diffColor}15`, color: diffColor, flexShrink: 0, whiteSpace: "nowrap" }}>
-    {diff.toUpperCase()}
-  </span>
-</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-  <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "monospace", whiteSpace: "nowrap" }}>{elapsed}</span>
-  <button onClick={() => loadStage(stage)} style={{ padding: 6, borderRadius: 8, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex" }}>
-    <RotateCcw size={12} />
-  </button>
-  <button onClick={() => setShowMap(true)} style={{ padding: "5px 8px", borderRadius: 8, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 10, fontWeight: 600 }}>
-    Map
-  </button>
-</div>
-          </div>
-          <XPBar xpState={xpState} />
-        </div>
+    <>
+      <GameShell
+        slug={GAME_SLUG}
+        gameName="Tango"
+        stageNumber={stage}
+        xp={liveXP}
+        maxXp={1000}
+        elapsedSeconds={elapsedSeconds}
+        hintsRemaining={3 - hintsUsed}
+        onUndo={handleUndo}
+        onHint={handleHint}
+        onCheck={handleCheck}
+      >
+        <GamePageSchema slug={GAME_SLUG} />
 
         {solutionRevealed && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "8px 20px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
+            style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "rgba(255,68,68,0.08)", border: "0.5px solid rgba(255,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "var(--color-error)", marginBottom: 8 }}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--color-text-secondary)" }}>
+        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 8 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><SunIcon size={13} /> Sun</span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><MoonIcon size={13} /> Moon</span>
           <span>· Equal per row & col · No 3 in a row</span>
         </div>
 
-        {/* Board */}
         <div style={{ width: "100%", maxWidth: maxW, overflow: "hidden" }}>
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.size},${cellSize}px)`, gap: 10 }}>
             {board.puzzle.map((_, r) =>
@@ -389,8 +350,8 @@ function TangoGameInner() {
                         borderRadius: Math.round(cellSize * 0.22),
                         display: "flex", alignItems: "center", justifyContent: "center",
                         border: "1.5px solid",
-                        background: isSolution ? "rgba(239,68,68,0.06)" : isGiven ? "#F8F7F5" : hasError ? "rgba(239,68,68,0.08)" : "white",
-                        borderColor: isSolution ? "rgba(239,68,68,0.3)" : isGiven ? "#EDE9E4" : value ? "#DDD6F8" : "#EDE9E4",
+                        background: isSolution ? "rgba(255,68,68,0.06)" : isGiven ? "#F8F7F5" : hasError ? "rgba(255,68,68,0.08)" : "white",
+                        borderColor: isSolution ? "rgba(255,68,68,0.3)" : isGiven ? "#EDE9E4" : value ? "#DDD6F8" : "#EDE9E4",
                         cursor: isGiven || solutionRevealed ? "default" : "pointer",
                         outline: "none",
                       }}>
@@ -399,35 +360,35 @@ function TangoGameInner() {
                       {!value && <div style={{ width: Math.round(cellSize * 0.14), height: Math.round(cellSize * 0.14), borderRadius: "50%", background: isGiven ? "#CCC7BE" : "#E8E4DE" }} />}
                     </motion.button>
                     {rightC && c < board.size - 1 && (
-  <div style={{
-    position: "absolute",
-    right: -(Math.max(6, Math.round(cellSize * 0.2))),
-    top: "50%", transform: "translateY(-50%)",
-    zIndex: 10,
-    fontSize: Math.max(8, Math.round(cellSize * 0.22)),
-    fontWeight: 800,
-    color: rightC === "same" ? "var(--color-accent-primary)" : "#F87171",
-    lineHeight: 1,
-    pointerEvents: "none",
-  }}>
-    {rightC === "same" ? "=" : "×"}
-  </div>
-)}
-{bottomC && r < board.size - 1 && (
-  <div style={{
-    position: "absolute",
-    bottom: -(Math.max(6, Math.round(cellSize * 0.2))),
-    left: "50%", transform: "translateX(-50%)",
-    zIndex: 10,
-    fontSize: Math.max(8, Math.round(cellSize * 0.22)),
-    fontWeight: 800,
-    color: bottomC === "same" ? "var(--color-accent-primary)" : "#F87171",
-    lineHeight: 1,
-    pointerEvents: "none",
-  }}>
-    {bottomC === "same" ? "=" : "×"}
-  </div>
-)}
+                      <div style={{
+                        position: "absolute",
+                        right: -(Math.max(6, Math.round(cellSize * 0.2))),
+                        top: "50%", transform: "translateY(-50%)",
+                        zIndex: 10,
+                        fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+                        fontWeight: 800,
+                        color: rightC === "same" ? "var(--color-accent-primary)" : "#F87171",
+                        lineHeight: 1,
+                        pointerEvents: "none",
+                      }}>
+                        {rightC === "same" ? "=" : "×"}
+                      </div>
+                    )}
+                    {bottomC && r < board.size - 1 && (
+                      <div style={{
+                        position: "absolute",
+                        bottom: -(Math.max(6, Math.round(cellSize * 0.2))),
+                        left: "50%", transform: "translateX(-50%)",
+                        zIndex: 10,
+                        fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+                        fontWeight: 800,
+                        color: bottomC === "same" ? "var(--color-accent-primary)" : "#F87171",
+                        lineHeight: 1,
+                        pointerEvents: "none",
+                      }}>
+                        {bottomC === "same" ? "=" : "×"}
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -435,25 +396,25 @@ function TangoGameInner() {
           </div>
         </div>
 
-        {/* Controls */}
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          <UndoButton onUndo={handleUndo} canUndo={history.length > 0} disabled={completed || solutionRevealed} />
-          <HintButton hintsLeft={3 - hintsUsed} xpCost={100} onUseHint={handleHint} disabled={completed || solutionRevealed} />
-          <ShowSolution onReveal={handleRevealSolution} currentXP={currentXP} disabled={completed || solutionRevealed} />
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
           <button onClick={() => stage > 1 && setStage((s) => s - 1)} disabled={stage === 1}
-            style={{ padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
+            style={{ padding: "7px 14px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← Prev
           </button>
-          <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+          <button onClick={() => setStage((s) => loadStage(s) as unknown as number)}
+            style={{ padding: "7px 12px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, color: "var(--color-text-secondary)" }}>
+            Restart
+          </button>
+          <button onClick={() => setShowMap(true)}
+            style={{ padding: "7px 12px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 600 }}>
+            Map
+          </button>
           <button onClick={() => setStage((s) => s + 1)}
-            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 12, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600 }}>
+            style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600 }}>
             Next <ChevronRight size={13} />
           </button>
         </div>
-      </main>
+      </GameShell>
 
       <OutOfTokensModal gameName="Tango" open={showTokenModal} onClose={() => setShowTokenModal(false)} />
 
@@ -485,16 +446,14 @@ function TangoGameInner() {
         />
       )}
 
-      {/* SMART ROUTING: CompletionPopup with Go to Latest */}
       <CompletionPopup
         open={completed}
         stage={stage}
         difficulty={getDifficulty(stage)}
         xpEarned={finalXP}
-        elapsed={elapsed}
+        elapsed={finalElapsed}
         onRetry={() => loadStage(stage)}
         onNext={() => { setCompleted(false); setStage((s) => s + 1); }}
-        // SMART ROUTING: show "Go to Stage N" button when there's a gap
         onGoToLatest={
           nextUncompleted != null
             ? () => { setCompleted(false); setStage(nextUncompleted!); }
@@ -502,13 +461,12 @@ function TangoGameInner() {
         }
         nextUncompletedStage={nextUncompleted ?? undefined}
         onShare={() => {
-          const text = `MindElement · Tango Stage ${stage} · ${finalXP} XP · ${elapsed}`;
-          if (navigator.share) navigator.share({ title: "MindElement", text, url: "https://mindelement.app" }).catch(() => {});
+          const text = `Mind Element · Tango Stage ${stage} · ${finalXP} XP · ${finalElapsed}`;
+          if (navigator.share) navigator.share({ title: "Mind Element", text, url: "https://mindelement.app" }).catch(() => {});
           else window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text), "_blank");
         }}
       />
 
-      {/* SMART ROUTING: Game-complete celebration (fires once ever) */}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Tango"
@@ -516,10 +474,10 @@ function TangoGameInner() {
         onPlayAgain={() => { setShowGameComplete(false); setStage(1); }}
         onClose={() => setShowGameComplete(false)}
       />
-
-    </div>
+    </>
   );
 }
+
 export default function TangoGame() {
   return (
     <ErrorBoundary game={GAME_SLUG}>
