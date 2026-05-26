@@ -245,6 +245,7 @@ function TangoGameInner() {
           difficulty: getDifficulty(stage),
           xp_earned: earned,
           time_taken: Math.floor((Date.now() - xpState.startTime) / 1000),
+          hints_used: hintsUsed,
         });
       }
     }

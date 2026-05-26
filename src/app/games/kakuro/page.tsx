@@ -146,7 +146,7 @@ function KakuroGameInner() {
       playSuccess(); setTimeout(() => triggerConfetti(), 80);
       markStageCompleted("kakuro", stage);
       if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
-      if (user) saveScore({ user_id:user.id, game_slug:"kakuro", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) });
+      if (user) saveScore({ user_id:user.id, game_slug:"kakuro", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000), hints_used:hintsUsed });
     }
   }
 

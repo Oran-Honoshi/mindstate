@@ -136,7 +136,7 @@ function PatternMatchGameInner(){
         }
         if(user){
           updateStreak(user.id);
-          saveScore({user_id:user.id,game_slug:"pattern-match",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:xpState?finalizeXP(xpState):0,time_taken:Math.floor((Date.now()-(xpState?.startTime??Date.now()))/1000)});
+          saveScore({user_id:user.id,game_slug:"pattern-match",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:xpState?finalizeXP(xpState):0,time_taken:Math.floor((Date.now()-(xpState?.startTime??Date.now()))/1000),hints_used:hintsUsed});
         }
       },600);
     } else {

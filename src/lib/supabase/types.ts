@@ -16,6 +16,7 @@ export interface Score {
   difficulty: string;
   xp_earned: number;
   time_taken: number;
+  hints_used: number;
   completed_at: string;
 }
 

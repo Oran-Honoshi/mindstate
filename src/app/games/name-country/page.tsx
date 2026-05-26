@@ -135,7 +135,7 @@ function NameCountryInner(){
         triggerConfetti();
         if(user){
           updateStreak(user.id);
-          saveScore({user_id:user.id,game_slug:"name-country",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});
+          saveScore({user_id:user.id,game_slug:"name-country",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});
         }
       },board.wordLength*100+400);
     }

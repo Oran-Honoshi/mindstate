@@ -136,7 +136,8 @@ function WordClimbInner() {
         updateStreak(user.id);
         saveScore({ user_id: user.id, game_slug: "word-climb", stage_number: stage,
           difficulty: getDifficulty(stage), xp_earned: earned,
-          time_taken: Math.floor((Date.now() - xpState.startTime) / 1000) });
+          time_taken: Math.floor((Date.now() - xpState.startTime) / 1000),
+          hints_used: hintsUsed });
       }
     }
   }

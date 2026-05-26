@@ -171,7 +171,7 @@ function WordSlingPageInner() {
         if (timerRef.current) clearInterval(timerRef.current);
         playSuccess(); triggerConfetti();
         markStageCompleted("word-sling", stage);
-        if (user) { updateStreak(user.id); saveScore({ user_id:user.id, game_slug:"word-sling", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000) }); }
+        if (user) { updateStreak(user.id); saveScore({ user_id:user.id, game_slug:"word-sling", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000), hints_used:hintsUsed }); }
       }, board.wordLength * 120 + 400);
     } else if (outOfGuesses) {
       setTimeout(() => { setLost(true); if (timerRef.current) clearInterval(timerRef.current); playError(); }, board.wordLength * 120 + 400);

@@ -222,7 +222,7 @@ function MemoryGameInner() {
           if (shouldShowGameCompleteModal(GAME_SLUG, TOTAL_STAGES)) setTimeout(() => setShowGameComplete(true), 1800);
           if (user) {
             updateStreak(user.id);
-            saveScore({ user_id: user.id, game_slug: GAME_SLUG, stage_number: stage, difficulty: getDifficulty(stage), xp_earned: earned, time_taken: Math.floor((Date.now() - xpState.startTime) / 1000) });
+            saveScore({ user_id: user.id, game_slug: GAME_SLUG, stage_number: stage, difficulty: getDifficulty(stage), xp_earned: earned, time_taken: Math.floor((Date.now() - xpState.startTime) / 1000), hints_used: hintsUsed });
           }
         }
       } else {

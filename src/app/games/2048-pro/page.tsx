@@ -131,7 +131,7 @@ function TwentyFortyEightProPageInner(){
       if(timerRef.current)clearInterval(timerRef.current);
       playSuccess();setTimeout(()=>triggerConfetti(),80);
       markStageCompleted("2048-pro",stage);
-      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"2048-pro",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}}
+      if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"2048-pro",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});}}
     else if(hasLost(ng)){setGameState("lost");if(timerRef.current)clearInterval(timerRef.current);}
   },[grid,gameState,xpState,bestTile,target,stage,user,solutionRevealed]);
 

@@ -123,7 +123,7 @@ function HeartsPageInner(){
             const earned=finalizeXP(xpState);setFinalXP(earned);
             setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
             playSuccess();setTimeout(()=>triggerConfetti(),80);markStageCompleted("hearts",stage);
-            if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000)});}
+            if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"hearts",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});}
           }
           else playError();
         },800);
