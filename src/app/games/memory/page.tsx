@@ -18,6 +18,7 @@ import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
@@ -42,7 +43,7 @@ const ICONS = [
   { icon: Star,      color:"#CA8A04", bg:"#FEF9C3", darkColor:"#FDE047", darkBg:"rgba(234,179,8,0.15)"  },
   { icon: Moon,      color:"#7C3AED", bg:"#EDE9FE", darkColor:"#C084FC", darkBg:"rgba(168,85,247,0.15)" },
   { icon: Sun,       color:"#D97706", bg:"#FEF3C7", darkColor:"#FBBF24", darkBg:"rgba(245,158,11,0.15)" },
-  { icon: Cloud,     color:"#475569", bg:"#F1F5F9", darkColor:"#94A3B8", darkBg:"rgba(71,85,105,0.2)"   },
+  { icon: Cloud,     color:"#475569", bg:"var(--color-surface-2)", darkColor:"#94A3B8", darkBg:"rgba(71,85,105,0.2)"   },
   { icon: Zap,       color:"#CA8A04", bg:"#FFFBEB", darkColor:"#FDE047", darkBg:"rgba(234,179,8,0.15)"  },
   { icon: Heart,     color:"#E11D48", bg:"#FFE4E6", darkColor:"#FB7185", darkBg:"rgba(244,63,94,0.15)"  },
   { icon: Crown,     color:"#B45309", bg:"#FEF3C7", darkColor:"#FCD34D", darkBg:"rgba(245,158,11,0.15)" },
@@ -92,21 +93,9 @@ function makeBoard(seed: string, diff: Difficulty): Card[] {
   return arr.map((iconIdx, id) => ({ id, iconIdx, flipped: false, matched: false }));
 }
 
-function useIsDark() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const check = () => setDark(document.documentElement.getAttribute("data-theme") === "dark");
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  return dark;
-}
-
 function MemoryGameInner() {
   const { user } = useAuthStore();
-  const isDark = useIsDark();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -296,8 +285,7 @@ function MemoryGameInner() {
           {cards.map(card => {
             const iconData = ICONS[card.iconIdx];
             const Icon = iconData.icon;
-            const cardColor = isDark ? iconData.darkColor : iconData.color;
-            const cardBg = isDark ? iconData.darkBg : iconData.bg;
+            const cardColor = theme === "dark" ? iconData.darkColor : iconData.color;
             const isRevealed = card.flipped || card.matched;
             return (
               <motion.button key={card.id}
@@ -305,32 +293,23 @@ function MemoryGameInner() {
                 whileTap={!card.flipped && !card.matched ? {scale: 0.92} : {}}
                 style={{
                   width: cellSize, height: cellSize, borderRadius: "var(--radius)",
-                  border: card.matched
-                    ? `2px solid ${isDark ? "rgba(57,255,20,0.5)" : "#86EFAC"}`
-                    : card.flipped
-                      ? `2px solid ${isDark ? `${cardColor}40` : iconData.bg}`
-                      : isDark ? "1px solid rgba(0,255,255,0.15)" : "2px solid transparent",
-                  background: isRevealed
-                    ? (isDark ? `rgba(20,20,42,0.7)` : cardBg)
-                    : isDark
-                      ? "linear-gradient(135deg,rgba(0,255,255,0.5),rgba(0,255,255,0.5))"
-                      : "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",
+                  border: card.matched || card.flipped
+                    ? "2px solid var(--color-accent-secondary)"
+                    : "2px solid var(--color-accent-primary)",
+                  background: isRevealed ? "var(--color-surface)" : "var(--color-surface-2)",
                   cursor: card.matched ? "default" : "pointer",
                   outline: "none", display:"flex", alignItems:"center", justifyContent:"center",
                   boxShadow: card.matched
-                    ? (isDark ? `0 0 16px rgba(57,255,20,0.2), 0 0 0 2px rgba(57,255,20,0.3)` : "0 0 0 2px #86EFAC")
-                    : isDark
-                      ? "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)"
-                      : "0 2px 8px rgba(0,0,0,0.15)",
-                  ...(isDark && !isRevealed ? { backdropFilter:"blur(4px)", WebkitBackdropFilter:"blur(4px)" } : {}),
-                  ...(isDark && isRevealed ? { backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)" } : {}),
+                    ? "0 0 0 3px var(--color-accent-secondary)"
+                    : "0 2px 8px rgba(0,0,0,0.12)",
+                  transition: "border 0.15s, background 0.15s, box-shadow 0.15s",
                 }}>
                 {isRevealed && (
                   <Icon
                     size={Math.round(cellSize * 0.45)}
                     color={cardColor}
-                    strokeWidth={isDark ? 1.5 : 1.8}
-                    style={isDark ? { filter: `drop-shadow(0 0 ${card.matched ? "8px" : "4px"} ${cardColor}80)` } : {}}
+                    strokeWidth={theme === "dark" ? 1.5 : 1.8}
+                    style={theme === "dark" ? { filter: `drop-shadow(0 0 ${card.matched ? "8px" : "4px"} ${cardColor}80)` } : {}}
                   />
                 )}
               </motion.button>
