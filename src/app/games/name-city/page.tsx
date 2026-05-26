@@ -136,6 +136,7 @@ function NameCityInner(){
         if(timerRef.current)clearInterval(timerRef.current);
         playSuccess();
         triggerConfetti();
+        markStageCompleted("name-city",stage);
         if(user){
           updateStreak(user.id);
           saveScore({user_id:user.id,game_slug:"name-city",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});

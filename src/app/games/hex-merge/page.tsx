@@ -56,6 +56,8 @@ function HexMergePageInner(){
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[history,setHistory]=useState<{cells:Map<string,number>;bestTile:number}[]>([]);
+  const[hintCell,setHintCell]=useState<[number,number]|null>(null);
+  const hintTimerRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -74,6 +76,8 @@ function HexMergePageInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setBestTile(0);
     setSolutionRevealed(false);
+    setHintCell(null);
+    if(hintTimerRef.current){clearTimeout(hintTimerRef.current);hintTimerRef.current=null;}
     setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
@@ -92,9 +96,23 @@ function HexMergePageInner(){
   }
 
   function handleHint(){
-    if(!xpState||hintsUsed>=3||solutionRevealed)return;
+    if(!board||!xpState||hintsUsed>=3||solutionRevealed)return;
+    let bestVal=0;
+    let best:[number,number]|null=null;
+    for(const[key,val]of cells.entries()){
+      if(val===0)continue;
+      const[q,r]=key.split(",").map(Number);
+      for(const[dq,dr]of HEX_DIRS){
+        if(cells.get(`${q+dq},${r+dr}`)===val&&val*2>bestVal){bestVal=val*2;best=[q,r];}
+      }
+    }
+    if(!best)return;
+    setHintCell(best);
+    if(hintTimerRef.current)clearTimeout(hintTimerRef.current);
+    hintTimerRef.current=setTimeout(()=>setHintCell(null),2000);
     setHintsUsed(h=>h+1);
     setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+    playError();
   }
 
   function handleUndo(){
@@ -169,11 +187,13 @@ function HexMergePageInner(){
                 const val=cells.get(`${q},${r}`)??0;
                 const isSel=!solutionRevealed&&selected?.[0]===q&&selected?.[1]===r;
                 const isAdj=!solutionRevealed&&selected!==null&&HEX_DIRS.some(([dq,dr])=>selected[0]+dq===q&&selected[1]+dr===r);
+                const isHint=!isSel&&hintCell?.[0]===q&&hintCell?.[1]===r;
                 const{bg,text}=tileColor(val);
                 const canMerge=isAdj&&val>0&&cells.get(`${selected![0]},${selected![1]}`)===val;
                 return(
                   <g key={`${q},${r}`} onClick={()=>handleCellClick(q,r)} style={{cursor:val>0&&!solutionRevealed?"pointer":"default"}}>
-                    <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"#EEF2FF":bg} stroke={isSel?"var(--color-accent-primary)":canMerge?"#22C55E":"#E2E8F0"} strokeWidth={isSel||canMerge?2.5:1}/>
+                    <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"#EEF2FF":bg} stroke={isSel?"var(--color-accent-primary)":isHint?"var(--color-accent-secondary)":canMerge?"#22C55E":"#E2E8F0"} strokeWidth={isSel||isHint||canMerge?2.5:1}
+                      style={isHint?{filter:`drop-shadow(0 0 ${hexSize*0.3}px var(--color-accent-secondary))`}:undefined}/>
                     {val>0&&(<text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:val>=100?hexSize*0.3:hexSize*0.38,fontWeight:700,fill:text,userSelect:"none"}}>{val}</text>)}
                   </g>
                 );
