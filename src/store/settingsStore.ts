@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type Language = "en" | "es" | "de" | "fr" | "pt" | "nl" | "he";
-export type Theme = "light" | "dark";
+export type Theme = "dark" | "light" | "paper";
 
 interface SettingsState {
   isSilentMode: boolean;
@@ -12,7 +12,7 @@ interface SettingsState {
   language: Language;
   toggleSilentMode: () => void;
   toggleAccessibilityMode: () => void;
-  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
   setLanguage: (lang: Language) => void;
 }
 
@@ -21,7 +21,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       isSilentMode: false,
       isAccessibilityMode: false,
-      theme: "light",
+      theme: "dark",
       language: "en",
 
       toggleSilentMode: () => set(s => ({ isSilentMode: !s.isSilentMode })),
@@ -34,12 +34,11 @@ export const useSettingsStore = create<SettingsState>()(
         }
       },
 
-      toggleTheme: () => {
-        const next = get().theme === "light" ? "dark" : "light";
-        set({ theme: next });
+      setTheme: (theme) => {
+        set({ theme });
         if (typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", next === "dark");
-          document.documentElement.style.colorScheme = next;
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.style.colorScheme = theme === "dark" ? "dark" : "light";
         }
       },
 

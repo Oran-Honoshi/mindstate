@@ -17,7 +17,7 @@ const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-a
 export function Navbar() {
   const pathname = usePathname();
   const isLanding = pathname === "/";
-  const { isSilentMode, toggleSilentMode, theme, toggleTheme } = useSettingsStore();
+  const { isSilentMode, toggleSilentMode, theme, setTheme } = useSettingsStore();
   const { user, profile, signOut } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -102,7 +102,7 @@ export function Navbar() {
           )}
 
           {/* Theme toggle */}
-          <button onClick={toggleTheme}
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             style={{ padding: 7, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex" }}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </button>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Volume2, VolumeX, Sun, Moon, Globe, CreditCard, Shield, Bell, Trash2, Check, ChevronRight, Zap, Infinity as InfinityIcon } from "lucide-react";
 import { Navbar } from "@/components/nav/Navbar";
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { useSettingsStore } from "@/store/settingsStore";
 import { SUPPORTED_LANGUAGES } from "@/lib/i18n/config";
 import type { Language } from "@/store/settingsStore";
@@ -57,7 +58,7 @@ function Row({ label, desc, children }: { label:string; desc?:string; children:R
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { isSilentMode, toggleSilentMode, theme, toggleTheme, language, setLanguage } = useSettingsStore();
+  const { isSilentMode, toggleSilentMode, language, setLanguage } = useSettingsStore();
   const { user, profile, signOut } = useAuthStore();
   const [username, setUsername] = useState(profile?.username ?? "");
   const [saved, setSaved] = useState(false);
@@ -120,8 +121,8 @@ export default function SettingsPage() {
           <Row label="Silent Mode" desc="Disable all sounds and haptic feedback">
             <Toggle value={isSilentMode} onChange={toggleSilentMode}/>
           </Row>
-          <Row label="Dark Mode" desc="Switch between light and dark theme">
-            <Toggle value={theme==="dark"} onChange={toggleTheme}/>
+          <Row label="Theme" desc="Choose how MindState looks">
+            <ThemeSwitcher/>
           </Row>
           <Row label={t("settings_lang")} desc="Interface language · Direction auto-switches for RTL">
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, maxWidth:320, justifyContent:"flex-end" }}>

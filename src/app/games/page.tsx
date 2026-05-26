@@ -668,7 +668,7 @@ function TrustpilotBadge() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, toggleTheme } = useSettingsStore();
+  const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, setTheme } = useSettingsStore();
   const { user, profile } = useAuthStore();
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
@@ -781,7 +781,7 @@ export default function LandingPage() {
     </button>
  
     {/* Theme toggle */}
-    <button onClick={toggleTheme}
+    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       style={{ padding:7, borderRadius:9, background:"transparent", border:"none", cursor:"pointer", color:"var(--color-text-secondary)", display:"flex" }}>
       {theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}
     </button>

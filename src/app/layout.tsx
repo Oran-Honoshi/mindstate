@@ -96,7 +96,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any"/>
         <link rel="icon" href="/icons/icon-192.png" type="image/png"/>
@@ -110,26 +110,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="msapplication-TileColor" content="#121212"/>
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
+            var root = document.documentElement;
             try {
-              var s = JSON.parse(localStorage.getItem('mindelement-settings') || '{}');
+              var raw = localStorage.getItem('mindstate-settings');
+              var s = raw ? JSON.parse(raw) : null;
               var state = s && s.state;
-              if (!state) return;
-              if (state.theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                document.documentElement.style.colorScheme = 'dark';
-              } else {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.style.colorScheme = 'light';
+              var theme = (state && state.theme) || 'dark';
+              if (theme !== 'dark' && theme !== 'light' && theme !== 'paper') theme = 'dark';
+              root.setAttribute('data-theme', theme);
+              root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+              if (state && state.language === 'he') {
+                root.dir = 'rtl';
+                root.lang = 'he';
               }
-              if (state.language === 'he') {
-                document.documentElement.dir = 'rtl';
-                document.documentElement.lang = 'he';
-              }
-              if (state.isAccessibilityMode) {
-                document.documentElement.classList.add('accessibility-mode');
+              if (state && state.isAccessibilityMode) {
+                root.classList.add('accessibility-mode');
               }
             } catch(e) {
-              document.documentElement.classList.remove('dark');
+              root.setAttribute('data-theme', 'dark');
+              root.style.colorScheme = 'dark';
             }
           })();
         `}}/>

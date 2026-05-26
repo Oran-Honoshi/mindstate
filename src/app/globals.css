@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -9,21 +9,25 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── CSS variables — light mode defaults ── */
+/* ── Shared defaults (non-palette) — inherited by all themes unless overridden ── */
 :root {
-  --color-bg:               #121212;
-  --color-surface:          #1E1E1E;
-  --color-surface-2:        #2A2A2A;
   --color-accent-primary:   #00FFFF;
   --color-accent-secondary: #39FF14;
-  --color-text-primary:     #F5F5F5;
-  --color-text-secondary:   #A0A0A0;
   --color-error:            #FF4444;
   --color-success:          #39FF14;
-  --color-border:           rgba(255,255,255,0.12);
   --radius:                 8px;
   --font-sans:              'Inter', sans-serif;
   --font-mono:              'JetBrains Mono', monospace;
+}
+
+/* ── Dark theme (default) ── */
+[data-theme="dark"] {
+  --color-bg:               #121212;
+  --color-surface:          #1E1E1E;
+  --color-surface-2:        #2A2A2A;
+  --color-text-primary:     #F5F5F5;
+  --color-text-secondary:   #A0A0A0;
+  --color-border:           rgba(255,255,255,0.12);
   --shadow-sm:              0 2px 8px rgba(0,0,0,0.4);
   --shadow-md:              0 8px 24px rgba(0,0,0,0.5);
   --shadow-lg:              0 24px 64px rgba(0,0,0,0.6);
@@ -39,10 +43,27 @@
   --shadow-md:              0 8px 24px rgba(0,0,0,0.08);
   --shadow-lg:              0 24px 64px rgba(0,0,0,0.10);
 }
+[data-theme="paper"] {
+  --color-bg:               #F2E8D9;
+  --color-surface:          #EDE0C8;
+  --color-surface-2:        #E5D5B0;
+  --color-text-primary:     #1A1714;
+  --color-text-secondary:   #4A3F35;
+  --color-accent-primary:   #1A1714;
+  --color-accent-secondary: #2D5A1B;
+  --color-error:            #8B1A1A;
+  --color-border:           rgba(26,23,20,0.20);
+  --radius:                 0px;
+  --font-sans:              'Old Standard TT', serif;
+  --font-mono:              'Special Elite', cursive;
+  --shadow-sm:              2px 2px 0 rgba(26,23,20,0.15);
+  --shadow-md:              3px 3px 0 rgba(26,23,20,0.20);
+  --shadow-lg:              4px 4px 0 rgba(26,23,20,0.25);
+}
 
 
 /* ── Dark mode — Cyber Cosmic ── */
-html.dark {
+[data-theme="dark"] {
   --bg:        var(--color-bg);
   --bg2:       #0D0D1A;
   --bg3:       #131320;
@@ -103,7 +124,7 @@ body {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-html.dark .ms-card {
+[data-theme="dark"] .ms-card {
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
@@ -113,7 +134,7 @@ html.dark .ms-card {
   backdrop-filter: blur(20px);
   border-bottom: 0.5px solid var(--color-border);
 }
-html.dark .ms-nav {
+[data-theme="dark"] .ms-nav {
   background: rgba(7,7,18,0.75) !important;
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
@@ -137,13 +158,13 @@ html.dark .ms-nav {
   padding: 16px 20px;
   box-shadow: var(--shadow-sm);
 }
-html.dark .game-header {
+[data-theme="dark"] .game-header {
   border: 1px solid rgba(34,211,238,0.12);
   box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 /* ── Glassmorphic surface helper ── */
-html.dark .glass-surface {
+[data-theme="dark"] .glass-surface {
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
@@ -152,46 +173,46 @@ html.dark .glass-surface {
 .neon-green { color: var(--color-accent-secondary);  text-shadow: 0 0 8px rgba(16,244,160,0.6); }
 .neon-purple{ color: var(--neon-purple); text-shadow: 0 0 8px rgba(168,85,247,0.6); }
 
-html.dark .neon-border-cyan {
+[data-theme="dark"] .neon-border-cyan {
   border-color: rgba(34,211,238,0.3) !important;
   box-shadow: 0 0 12px rgba(34,211,238,0.15), inset 0 0 12px rgba(34,211,238,0.05);
 }
 
 /* ── Dark mode button overrides ── */
-html.dark button.game-control-btn {
+[data-theme="dark"] button.game-control-btn {
   background: rgba(255,255,255,0.06) !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
   color: var(--color-text-secondary) !important;
   backdrop-filter: blur(8px);
 }
-html.dark button.game-control-btn:hover {
+[data-theme="dark"] button.game-control-btn:hover {
   background: rgba(34,211,238,0.1) !important;
   border-color: rgba(34,211,238,0.3) !important;
   color: var(--color-accent-primary) !important;
 }
 
 /* ── Queens region colors — dark mode overrides ── */
-html.dark .queens-region-0 { background: rgba(59,130,246,0.12) !important; }
-html.dark .queens-region-1 { background: rgba(249,115,22,0.10) !important; }
-html.dark .queens-region-2 { background: rgba(34,197,94,0.10) !important; }
-html.dark .queens-region-3 { background: rgba(168,85,247,0.12) !important; }
-html.dark .queens-region-4 { background: rgba(239,68,68,0.10) !important; }
-html.dark .queens-region-5 { background: rgba(234,179,8,0.10) !important; }
-html.dark .queens-region-6 { background: rgba(6,182,212,0.10) !important; }
-html.dark .queens-region-7 { background: rgba(16,185,129,0.10) !important; }
+[data-theme="dark"] .queens-region-0 { background: rgba(59,130,246,0.12) !important; }
+[data-theme="dark"] .queens-region-1 { background: rgba(249,115,22,0.10) !important; }
+[data-theme="dark"] .queens-region-2 { background: rgba(34,197,94,0.10) !important; }
+[data-theme="dark"] .queens-region-3 { background: rgba(168,85,247,0.12) !important; }
+[data-theme="dark"] .queens-region-4 { background: rgba(239,68,68,0.10) !important; }
+[data-theme="dark"] .queens-region-5 { background: rgba(234,179,8,0.10) !important; }
+[data-theme="dark"] .queens-region-6 { background: rgba(6,182,212,0.10) !important; }
+[data-theme="dark"] .queens-region-7 { background: rgba(16,185,129,0.10) !important; }
 
 /* ── Memory card — dark mode ── */
-html.dark .memory-card-back {
+[data-theme="dark"] .memory-card-back {
   background: linear-gradient(135deg, rgba(79,110,247,0.6), rgba(156,107,232,0.6)) !important;
   border: 1px solid rgba(34,211,238,0.2) !important;
   box-shadow: 0 0 16px rgba(34,211,238,0.1) !important;
 }
-html.dark .memory-card-front {
+[data-theme="dark"] .memory-card-front {
   background: rgba(20,20,42,0.7) !important;
   backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
 }
-html.dark .memory-card-matched {
+[data-theme="dark"] .memory-card-matched {
   border-color: rgba(16,244,160,0.5) !important;
   box-shadow: 0 0 16px rgba(16,244,160,0.2) !important;
 }
@@ -286,7 +307,7 @@ html.dark .memory-card-matched {
 .accessibility-mode .xp-live-counter { visibility: hidden; }
 .accessibility-mode .ms-nav a,.accessibility-mode .ms-nav button { padding: 12px 16px; }
 .accessibility-mode { --border: rgba(0,0,0,0.25); --border2: rgba(0,0,0,0.35); }
-.accessibility-mode.dark { --border: rgba(255,255,255,0.25); --border2: rgba(255,255,255,0.35); }
+.accessibility-mode[data-theme="dark"] { --border: rgba(255,255,255,0.25); --border2: rgba(255,255,255,0.35); }
 .accessibility-mode *:focus-visible { outline: 3px solid var(--color-accent-primary); outline-offset: 3px; }
 
 /* ─── MOBILE OVERFLOW CONTAINMENT ─── */
@@ -357,19 +378,19 @@ button, a, [role="button"] { min-height: 44px; touch-action: manipulation; }
 
 
 .cosmic-bg-layer { display: none; }
-html.dark .cosmic-bg-layer { display: block; }
-html.dark body { background: transparent !important; }
-html.dark .game-page { background: transparent; }
-html.dark .home-page  { background: transparent; }
-html.dark .auth-page        { background: transparent; }
-html.dark .profile-page    { background: transparent; }
-html.dark .settings-page   { background: transparent; }
-html.dark .leaderboard-page { background: transparent; }
+[data-theme="dark"] .cosmic-bg-layer { display: block; }
+[data-theme="dark"] body { background: transparent !important; }
+[data-theme="dark"] .game-page { background: transparent; }
+[data-theme="dark"] .home-page  { background: transparent; }
+[data-theme="dark"] .auth-page        { background: transparent; }
+[data-theme="dark"] .profile-page    { background: transparent; }
+[data-theme="dark"] .settings-page   { background: transparent; }
+[data-theme="dark"] .leaderboard-page { background: transparent; }
 
 /* ── Search input — dark mode ── */
-html.dark input[type="text"], html.dark input:not([type]) {
+[data-theme="dark"] input[type="text"], [data-theme="dark"] input:not([type]) {
   background: var(--color-surface) !important;
   color: var(--color-text-primary) !important;
   border-color: var(--color-border) !important;
 }
-html.dark input::placeholder { color: var(--color-text-secondary) !important; }
+[data-theme="dark"] input::placeholder { color: var(--color-text-secondary) !important; }

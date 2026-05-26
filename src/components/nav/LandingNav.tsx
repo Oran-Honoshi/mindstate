@@ -15,7 +15,7 @@ const NAV_LINKS = [
 ];
 
 export function LandingNav() {
-  const { theme, toggleTheme } = useSettingsStore();
+  const { theme, setTheme } = useSettingsStore();
   const { user } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,7 +68,7 @@ export function LandingNav() {
         </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <button onClick={toggleTheme}
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             style={{ padding:7, borderRadius:9, border:"0.5px solid var(--color-border)",
               background:"transparent", cursor:"pointer", display:"flex", color:"var(--color-text-secondary)" }}>
             {theme==="dark" ? <Sun size={14}/> : <Moon size={14}/>}

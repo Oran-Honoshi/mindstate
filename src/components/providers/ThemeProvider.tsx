@@ -3,17 +3,12 @@ import { useEffect } from "react";
 import { useSettingsStore } from "@/store/settingsStore";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { theme } = useSettingsStore();
+  const theme = useSettingsStore(s => s.theme);
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-      root.style.colorScheme = "dark";
-    } else {
-      root.classList.remove("dark");
-      root.style.colorScheme = "light";
-    }
+    root.setAttribute("data-theme", theme);
+    root.style.colorScheme = theme === "dark" ? "dark" : "light";
   }, [theme]);
 
   return <>{children}</>;
