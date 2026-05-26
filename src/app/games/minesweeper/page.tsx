@@ -110,6 +110,7 @@ function MinesweeperGameInner() {
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [history, setHistory] = useState<{board: Board; firstClick: boolean; flagCount: number}[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -130,6 +131,7 @@ function MinesweeperGameInner() {
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setFinalXP(0); setFirstClick(true); setFlagCount(0);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -171,6 +173,7 @@ function MinesweeperGameInner() {
     if (board.cells[r][c].state === "flagged") return;
     if (board.cells[r][c].state === "revealed") return;
 
+    setHistory(h => [...h.slice(-19), {board: {...board, cells: board.cells.map(row => row.map(c => ({...c})))}, firstClick, flagCount}]);
     let cells = board.cells.map(row => [...row.map(c => ({...c}))]);
 
     if (firstClick) {
@@ -211,10 +214,21 @@ function MinesweeperGameInner() {
     e.preventDefault();
     if (!board || gameOver || solutionRevealed) return;
     if (board.cells[r][c].state === "revealed") return;
+    setHistory(h => [...h.slice(-19), {board: {...board, cells: board.cells.map(row => row.map(c => ({...c})))}, firstClick, flagCount}]);
     const cells = board.cells.map(row=>[...row.map(c=>({...c}))]);
     if (cells[r][c].state === "flagged") { cells[r][c].state="hidden"; setFlagCount(f=>f-1); }
     else { cells[r][c].state="flagged"; setFlagCount(f=>f+1); }
     setBoard({...board,cells});
+  }
+
+  function handleUndo() {
+    if (history.length === 0 || gameOver) return;
+    const last = history[history.length - 1];
+    setBoard(last.board);
+    setFirstClick(last.firstClick);
+    setFlagCount(last.flagCount);
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -252,7 +266,7 @@ function MinesweeperGameInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

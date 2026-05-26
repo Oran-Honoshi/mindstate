@@ -66,6 +66,7 @@ function TwentyFortyEightProPageInner(){
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
+  const[history,setHistory]=useState<{grid:Grid;score:number;bestTile:number}[]>([]);
   const touchStart=useRef<{x:number;y:number}|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
@@ -91,6 +92,7 @@ function TwentyFortyEightProPageInner(){
     setGrid(g);setScore(0);setBestTile(2);setGameState("playing");
     setXpState(xp);setFinalXP(0);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setHintsUsed(0);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
@@ -116,10 +118,19 @@ function TwentyFortyEightProPageInner(){
     if(timerRef.current)clearInterval(timerRef.current);
   }
 
+  function handleUndo(){
+    if(history.length===0)return;
+    const last=history[history.length-1];
+    setGrid(last.grid);setScore(last.score);setBestTile(last.bestTile);
+    setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   const handleMove=useCallback((dir:"up"|"down"|"left"|"right")=>{
     if(gameState!=="playing"||!xpState||solutionRevealed)return;
     const{grid:ng,score:s,moved}=move(grid,dir);
     if(!moved){playError();return;}
+    setHistory(h=>[...h.slice(-19),{grid:grid.map(r=>[...r]),score,bestTile}]);
     addTile(ng,Date.now());
     const newBest=Math.max(bestTile,...ng.flat());
     setGrid(ng);setScore(prev=>prev+s);setBestTile(newBest);
@@ -153,7 +164,7 @@ function TwentyFortyEightProPageInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

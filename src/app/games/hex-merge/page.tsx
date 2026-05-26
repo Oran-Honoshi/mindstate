@@ -55,6 +55,7 @@ function HexMergePageInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<{cells:Map<string,number>;bestTile:number}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -73,6 +74,7 @@ function HexMergePageInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setBestTile(0);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
@@ -95,6 +97,14 @@ function HexMergePageInner(){
     setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
   }
 
+  function handleUndo(){
+    if(history.length===0)return;
+    const last=history[history.length-1];
+    setCells(last.cells);setBestTile(last.bestTile);setSelected(null);
+    setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   function handleCellClick(q:number,r:number){
     if(!board||completed||solutionRevealed)return;
     const val=cells.get(`${q},${r}`)??0;
@@ -103,7 +113,7 @@ function HexMergePageInner(){
       const[sq,sr]=selected;
       if(sq===q&&sr===r){setSelected(null);return;}
       const nc=mergeCells(cells,sq,sr,q,r);
-      if(nc){const newBest=Math.max(bestTile,...nc.values());setCells(nc);setBestTile(newBest);setSelected(null);playClick();
+      if(nc){setHistory(h=>[...h.slice(-19),{cells:new Map(cells),bestTile}]);const newBest=Math.max(bestTile,...nc.values());setCells(nc);setBestTile(newBest);setSelected(null);playClick();
         if(checkHexWin(nc,target)&&xpState){
           const earned=finalizeXP(xpState);setFinalXP(earned);setCompleted(true);
           setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
@@ -136,7 +146,7 @@ function HexMergePageInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

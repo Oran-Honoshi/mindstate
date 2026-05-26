@@ -52,6 +52,7 @@ function GravitySortPageInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<{blocks:number[][];moves:number}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth=useBoardWidth(32,460);
 
@@ -69,6 +70,7 @@ function GravitySortPageInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setMoves(0);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
@@ -110,6 +112,14 @@ function GravitySortPageInner(){
     setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
   }
 
+  function handleUndo(){
+    if(history.length===0)return;
+    const last=history[history.length-1];
+    setBlocks(last.blocks);setMoves(last.moves);setSelected(null);
+    setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   function handleColClick(col:number){
     if(!board||completed||solutionRevealed)return;
     if(selected===null){if(blocks[col].length===0)return;setSelected(col);playClick();}
@@ -117,6 +127,7 @@ function GravitySortPageInner(){
       if(selected===col){setSelected(null);return;}
       if(blocks[col].length>=board.rows){playError();setSelected(null);return;}
       if(blocks[selected].length===0){setSelected(col);return;}
+      setHistory(h=>[...h.slice(-19),{blocks:blocks.map(c=>[...c]),moves}]);
       const nb=blocks.map(c=>[...c]);const block=nb[selected].pop()!;nb[col].push(block);
       setBlocks(nb);setSelected(null);setMoves(m=>m+1);playClick();
       if(checkGravitySort(board,nb)&&xpState){
@@ -144,7 +155,7 @@ function GravitySortPageInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

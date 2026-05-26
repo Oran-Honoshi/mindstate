@@ -68,6 +68,7 @@ function HeartsPageInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<{hand:Card[];cpuHand:Card[];playerScore:number;cpuScore:number}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -84,6 +85,7 @@ function HeartsPageInner(){
     setTrick({player:null,cpu:null});setPlayerScore(0);setCpuScore(0);setSelected(null);setPhase("play");setMessage("");
     const xp=createXPState(diff);
     setXpState(xp);setFinalXP(0);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setHintsUsed(0);setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
@@ -105,6 +107,7 @@ function HeartsPageInner(){
     const playerCard=hand[selected];
     const cpuIdx=Math.floor(Math.random()*cpuHand.length);
     const cpuCard=cpuHand[cpuIdx];
+    setHistory(h=>[...h.slice(-19),{hand:[...hand],cpuHand:[...cpuHand],playerScore,cpuScore}]);
     setTrick({player:playerCard,cpu:cpuCard});setPhase("result");playClick();
     const playerWins=playerCard.value>cpuCard.value;
     const trickPts=[playerCard,cpuCard].reduce((s,c)=>s+cardPoints(c),0);
@@ -131,6 +134,14 @@ function HeartsPageInner(){
     },1200);
   }
 
+  function handleUndo(){
+    if(history.length===0||phase!=="play")return;
+    const last=history[history.length-1];
+    setHand(last.hand);setCpuHand(last.cpuHand);setPlayerScore(last.playerScore);setCpuScore(last.cpuScore);
+    setSelected(null);setMessage("");setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   function handleHint(){
     if(!xpState||hintsUsed>=3||phase!=="play"||solutionRevealed)return;
     const safe=hand.filter(c=>c.suit!=="♥"&&!(c.suit==="♠"&&c.label==="Q"));
@@ -153,7 +164,7 @@ function HeartsPageInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

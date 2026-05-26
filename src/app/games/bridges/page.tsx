@@ -55,6 +55,7 @@ function BridgesGameInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<Bridge[][]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -74,6 +75,7 @@ function BridgesGameInner(){
     const xp=createXPState(diff);
     setBoard(b);setPlaced([]);setXpState(xp);setCompleted(false);setFinalXP(0);
     setHintsUsed(0);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -110,6 +112,7 @@ function BridgesGameInner(){
     if(!existing) np=[...placed,{from:fromId,to:toId,count:1}];
     else if(existing.count===1) np=placed.map(b=>b===existing?{...b,count:2 as 2}:b);
     else np=placed.filter(b=>b!==existing);
+    setHistory(h=>[...h.slice(-19),placed.map(b=>({...b}))]);
     setPlaced(np);
     saveGameState("bridges",{stage,placed:np,hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
     playClick();
@@ -122,6 +125,13 @@ function BridgesGameInner(){
       if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if(user)saveScore({user_id:user.id,game_slug:"bridges",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});
     }
+  }
+
+  function handleUndo(){
+    if(history.length===0)return;
+    setPlaced(history[history.length-1]);
+    setHistory(h=>h.slice(0,-1));
+    playClick();
   }
 
   function handleHint(){
@@ -164,7 +174,7 @@ function BridgesGameInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

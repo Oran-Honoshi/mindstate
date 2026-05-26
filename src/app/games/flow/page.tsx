@@ -63,6 +63,7 @@ function FlowGameInner() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [finalXP, setFinalXP] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [history, setHistory] = useState<{ paths: Map<string, PathState>; cellColors: Map<string, Color> }[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   usePageVisibility(
@@ -109,6 +110,7 @@ function FlowGameInner() {
     setLiveXP(1000);
     setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -196,6 +198,7 @@ function FlowGameInner() {
     const startsAtDot = board.dots.get(drawing.cells[0]) === drawing.color;
     const endsAtDot = dotColor === drawing.color;
     if (startsAtDot && endsAtDot && drawing.cells.length >= 2) {
+      setHistory(h => [...h.slice(-19), { paths: new Map(paths), cellColors: new Map(cellColors) }]);
       const np = new Map(paths);
       np.set(drawing.color, { color: drawing.color, cells: drawing.cells });
       const nc = new Map(cellColors);
@@ -228,6 +231,16 @@ function FlowGameInner() {
       }
     }
     setDrawing(null);
+  }
+
+  function handleUndo() {
+    if (history.length === 0) return;
+    const last = history[history.length - 1];
+    setPaths(last.paths);
+    setCellColors(last.cellColors);
+    setDrawing(null);
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -303,7 +316,7 @@ function FlowGameInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3 - hintsUsed}
-        onUndo={() => {}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={() => {}}
       >

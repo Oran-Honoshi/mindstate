@@ -60,6 +60,7 @@ function PatternMatchGameInner(){
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
+  const[history,setHistory]=useState<{selected:string|null;correct:boolean|null}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const boardWidth = useBoardWidth(32, 520);
 
@@ -84,6 +85,7 @@ function PatternMatchGameInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -121,6 +123,7 @@ function PatternMatchGameInner(){
     const key=`${opt.value}-${opt.color??""}`;
     const ansKey=`${board.answer.value}-${board.answer.color??""}`;
     const isCorrect=key===ansKey;
+    setHistory(h=>[...h.slice(-19),{selected,correct}]);
     setSelected(key);setCorrect(isCorrect);
     if(isCorrect){
       playSuccess();
@@ -143,6 +146,14 @@ function PatternMatchGameInner(){
       playError();
       setTimeout(()=>setSelected(null),1200);
     }
+    playClick();
+  }
+
+  function handleUndo(){
+    if(history.length===0||completed||correct===true||solutionRevealed)return;
+    const last=history[history.length-1];
+    setSelected(last.selected);setCorrect(last.correct);
+    setHistory(h=>h.slice(0,-1));
     playClick();
   }
 
@@ -172,7 +183,7 @@ function PatternMatchGameInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

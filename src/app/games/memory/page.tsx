@@ -123,6 +123,7 @@ function MemoryGameInner() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [history, setHistory] = useState<Card[][]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
   const boardWidth = useBoardWidth(32, 520);
@@ -166,6 +167,7 @@ function MemoryGameInner() {
     setLiveXP(1000);
     setFinalElapsed("0:00");
     setHintsUsed(0);
+    setHistory([]);
     setNextUncompleted(null);
     lockRef.current = false;
     if (timerRef.current) clearInterval(timerRef.current);
@@ -194,6 +196,7 @@ function MemoryGameInner() {
     const card = cards.find(c => c.id === id);
     if (!card || card.flipped || card.matched) return;
     if (selected.length === 2) return;
+    setHistory(h => [...h.slice(-19), cards.map(c => ({...c}))]);
     const newCards = cards.map(c => c.id === id ? {...c, flipped: true} : c);
     const newSel = [...selected, id];
     setCards(newCards);
@@ -236,6 +239,14 @@ function MemoryGameInner() {
     }
   }
 
+  function handleUndo() {
+    if (history.length === 0 || lockRef.current) return;
+    setCards(history[history.length - 1]);
+    setSelected([]);
+    setHistory(h => h.slice(0, -1));
+    playClick();
+  }
+
   function handleHint() {
     if (!xpState || completed || hintsUsed >= 3) return;
     setCards(prev => prev.map(c => c.matched ? c : {...c, flipped: true}));
@@ -271,7 +282,7 @@ function MemoryGameInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3 - hintsUsed}
-        onUndo={() => {}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={() => {}}
       >

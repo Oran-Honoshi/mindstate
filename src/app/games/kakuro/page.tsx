@@ -53,6 +53,7 @@ function KakuroGameInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [history, setHistory] = useState<(number|null)[][][]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -76,6 +77,7 @@ function KakuroGameInner() {
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0);
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -119,6 +121,7 @@ function KakuroGameInner() {
     if (!board || !selected || completed || solutionRevealed) return;
     const [r, c] = selected;
     if (board.grid[r][c]?.type !== "white") return;
+    setHistory(h => [...h.slice(-19), userGrid.map(row => [...row])]);
     const ng = userGrid.map(row => [...row]);
     ng[r][c] = num;
     setUserGrid(ng);
@@ -148,6 +151,14 @@ function KakuroGameInner() {
       if(typeof window!=="undefined"){const w=parseInt(localStorage.getItem("mindstate-wins")??"0")+1;localStorage.setItem("mindstate-wins",String(w));}
       if (user) saveScore({ user_id:user.id, game_slug:"kakuro", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000), hints_used:hintsUsed });
     }
+  }
+
+  function handleUndo() {
+    if (history.length === 0) return;
+    setUserGrid(history[history.length - 1]);
+    setHistory(h => h.slice(0, -1));
+    setErrors(new Set());
+    playClick();
   }
 
   function handleHint() {
@@ -199,7 +210,7 @@ function KakuroGameInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

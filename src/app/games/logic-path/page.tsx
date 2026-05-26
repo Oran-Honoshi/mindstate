@@ -80,6 +80,7 @@ function LogicPathPageInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [history, setHistory] = useState<PipeCell[][][]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const pausedRef = useRef(false);
 
@@ -104,6 +105,7 @@ function LogicPathPageInner() {
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setHintsUsed(0); setShowFeedback(false);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     pausedRef.current = false;
@@ -139,6 +141,7 @@ function LogicPathPageInner() {
 
   function handleRotate(r: number, c: number) {
     if (!board || completed || grid[r][c].locked || solutionRevealed) return;
+    setHistory(h => [...h.slice(-19), grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })))]);
     const ng = grid.map(row => row.map(cell => ({ ...cell, connections: [...cell.connections] as [boolean,boolean,boolean,boolean] })));
     ng[r][c] = rotatePipe(ng[r][c]);
     setGrid(ng);
@@ -153,6 +156,13 @@ function LogicPathPageInner() {
       markStageCompleted("logic-path",stage);
       if (user) { updateStreak(user.id); saveScore({ user_id:user.id, game_slug:"logic-path", stage_number:stage, difficulty:getDifficulty(stage), xp_earned:earned, time_taken:Math.floor((Date.now()-xpState.startTime)/1000), hints_used:hintsUsed }); }
     }
+  }
+
+  function handleUndo() {
+    if (history.length === 0) return;
+    setGrid(history[history.length - 1]);
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -198,7 +208,7 @@ function LogicPathPageInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={MAX_HINTS-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

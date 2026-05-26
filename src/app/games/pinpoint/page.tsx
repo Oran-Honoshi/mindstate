@@ -81,6 +81,7 @@ function PinpointInner() {
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState<string[]>([]);
   const [shake, setShake] = useState(false);
+  const [history, setHistory] = useState<{guesses: string[]; revealedClues: number}[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const diff = getDifficulty(stage);
@@ -98,6 +99,7 @@ function PinpointInner() {
     setLost(false);
     setFinalXP(0);
     setHintsUsed(0);
+    setHistory([]);
     setElapsedSeconds(0);
     setLiveXP(1000);
     setFinalElapsed("0:00");
@@ -117,6 +119,7 @@ function PinpointInner() {
     if (!xpState || completed || lost) return;
     const g = guess.trim().toUpperCase();
     if (!g) return;
+    setHistory(h => [...h.slice(-19), {guesses: [...guesses], revealedClues}]);
     const newGuesses = [...guesses, g];
     setGuesses(newGuesses);
     setGuess("");
@@ -152,6 +155,15 @@ function PinpointInner() {
     }
   }
 
+  function handleUndo() {
+    if (history.length === 0 || completed || lost) return;
+    const last = history[history.length - 1];
+    setGuesses(last.guesses);
+    setRevealedClues(last.revealedClues);
+    setHistory(h => h.slice(0, -1));
+    playClick();
+  }
+
   function handleHint() {
     if (!xpState || hintsUsed >= 3 || completed || lost) return;
     setRevealedClues(r => Math.min(r + 1, puzzle.clues.length));
@@ -172,7 +184,7 @@ function PinpointInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3 - hintsUsed}
-        onUndo={() => {}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={() => {}}
       >

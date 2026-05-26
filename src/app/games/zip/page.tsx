@@ -111,6 +111,7 @@ function ZipGameInner() {
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [showResume, setShowResume] = useState(false);
   const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
+  const [history, setHistory] = useState<Pos[][]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -137,6 +138,7 @@ function ZipGameInner() {
     setXpState(xp); setCompleted(false); setFinalXP(0); setHintsUsed(0);
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -198,6 +200,7 @@ function ZipGameInner() {
     setUserPath(prev => {
       const newPath = tryAddCell(r, c, prev);
       if (!newPath) return prev;
+      setHistory(h => [...h.slice(-19), [...prev]]);
       saveGameState("zip", {stage, userPath: newPath, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now()});
       playClick();
       if (checkComplete(newPath, board) && xpState) {
@@ -223,6 +226,13 @@ function ZipGameInner() {
     if (r < 0 || r >= board.size || c < 0 || c >= board.size) return null;
     if (x - c * step > cellSizeRef.current || y - r * step > cellSizeRef.current) return null;
     return [r, c];
+  }
+
+  function handleUndo() {
+    if (history.length === 0 || completed || solutionRevealed) return;
+    setUserPath(history[history.length - 1]);
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -260,7 +270,7 @@ function ZipGameInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

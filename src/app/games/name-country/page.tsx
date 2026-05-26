@@ -62,6 +62,7 @@ function NameCountryInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<{guesses:string[];results:LetterResult[][]}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const gridAreaWidth=useBoardWidth(32,480);
 
@@ -86,6 +87,7 @@ function NameCountryInner(){
     setCompleted(false);setLost(false);setFinalXP(0);
     setHintsUsed(0);setShownHints([]);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setXpState(xp);
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -119,6 +121,7 @@ function NameCountryInner(){
   function submitGuess(){
     if(!board||!xpState||current.length!==board.wordLength){setShake(true);setTimeout(()=>setShake(false),500);playError();return;}
     const res=scoreGuess(current,board.answer);
+    setHistory(h=>[...h.slice(-19),{guesses:[...guesses],results:results.map(r=>[...r])}]);
     const ng=[...guesses,current];const nr=[...results,res];
     setGuesses(ng);setResults(nr);setCurrent("");
     const won=res.every(r=>r==="correct");
@@ -142,6 +145,14 @@ function NameCountryInner(){
     else if(out){setTimeout(()=>{setLost(true);if(timerRef.current)clearInterval(timerRef.current);playError();},board.wordLength*100+400);}
   }
 
+  function handleUndo(){
+    if(history.length===0||completed||lost)return;
+    const last=history[history.length-1];
+    setGuesses(last.guesses);setResults(last.results);setCurrent("");
+    setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   function handleHint(){
     if(!board||!xpState||hintsUsed>=3||completed||solutionRevealed)return;
     const hints=[`Continent: ${board.continent}`,`Capital: ${board.capital}`,board.hint1];
@@ -163,7 +174,7 @@ function NameCountryInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

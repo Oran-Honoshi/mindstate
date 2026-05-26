@@ -80,6 +80,7 @@ function WordClimbInner() {
   const [userPath, setUserPath] = useState<string[]>([]);
   const [current, setCurrent] = useState("");
   const [error, setError] = useState("");
+  const [history, setHistory] = useState<string[][]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const diff = getDifficulty(stage);
@@ -96,6 +97,7 @@ function WordClimbInner() {
     setCompleted(false);
     setFinalXP(0);
     setHintsUsed(0);
+    setHistory([]);
     setError("");
     setElapsedSeconds(0);
     setLiveXP(1000);
@@ -118,6 +120,7 @@ function WordClimbInner() {
     if (word.length !== wordLen) { setError(`Must be ${wordLen} letters`); return; }
     const last = userPath[userPath.length - 1];
     if (!isOneLetterAway(word, last)) { setError("Must differ by exactly one letter"); playError(); return; }
+    setHistory(h => [...h.slice(-19), [...userPath]]);
     const newPath = [...userPath, word];
     setUserPath(newPath);
     setCurrent("");
@@ -140,6 +143,15 @@ function WordClimbInner() {
           hints_used: hintsUsed });
       }
     }
+  }
+
+  function handleUndo() {
+    if (history.length === 0 || completed) return;
+    setUserPath(history[history.length - 1]);
+    setCurrent("");
+    setError("");
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -166,7 +178,7 @@ function WordClimbInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3 - hintsUsed}
-        onUndo={() => {}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={() => {}}
       >

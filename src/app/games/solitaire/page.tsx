@@ -69,6 +69,7 @@ function SolitairePageInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const[history,setHistory]=useState<{tableau:Card[][];stock:Card[];waste:Card[];foundations:Card[][];moves:number}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -95,6 +96,7 @@ function SolitairePageInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);setNextUncompleted(null);
+    setHistory([]);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
       setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));
@@ -112,8 +114,29 @@ function SolitairePageInner(){
     if(timerRef.current)clearInterval(timerRef.current);
   }
 
+  function pushHistory(){
+    setHistory(h=>[...h.slice(-19),{
+      tableau:tableau.map(p=>p.map(c=>({...c}))),
+      stock:stock.map(c=>({...c})),
+      waste:waste.map(c=>({...c})),
+      foundations:foundations.map(p=>p.map(c=>({...c}))),
+      moves
+    }]);
+  }
+
+  function handleUndo(){
+    if(history.length===0||completed||solutionRevealed)return;
+    const last=history[history.length-1];
+    setTableau(last.tableau);setStock(last.stock);setWaste(last.waste);
+    setFoundations(last.foundations);setMoves(last.moves);
+    setSelected(null);
+    setHistory(h=>h.slice(0,-1));
+    playClick();
+  }
+
   function drawCard(){
     if(solutionRevealed)return;
+    pushHistory();
     if(stock.length===0){setStock([...waste].reverse().map(c=>({...c,faceUp:false})));setWaste([]);return;}
     const card={...stock[stock.length-1],faceUp:true};
     setStock(s=>s.slice(0,-1));setWaste(w=>[...w,card]);setSelected(null);playClick();
@@ -128,6 +151,7 @@ function SolitairePageInner(){
       if(selected.pile==="waste")card=waste[waste.length-1]??null;
       else if(selected.pile==="tableau"){const pile=tableau[selected.col];card=pile[selected.idx]??null;}
       if(card&&canFoundation(card,top)){
+        pushHistory();
         const nf=foundations.map((p,i)=>i===fi?[...p,card!]:p);
         if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));
         else setTableau(t=>{const nt=t.map(p=>[...p]);nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;return nt;});
@@ -140,17 +164,17 @@ function SolitairePageInner(){
   }
 
   function tryMoveToFoundation(card:Card,sourceType:"waste"|"tableau",sourceCol:number,sourceIdx:number):boolean{
-    for(let fi=0;fi<4;fi++){const top=foundations[fi][foundations[fi].length-1]??null;if(canFoundation(card,top)){const nf=foundations.map((p,i)=>i===fi?[...p,card]:p);if(sourceType==="waste")setWaste(w=>w.slice(0,-1));else setTableau(t=>{const nt=t.map(p=>[...p]);nt[sourceCol]=nt[sourceCol].slice(0,sourceIdx);if(nt[sourceCol].length>0)nt[sourceCol][nt[sourceCol].length-1].faceUp=true;return nt;});setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});}}return true;}}return false;
+    for(let fi=0;fi<4;fi++){const top=foundations[fi][foundations[fi].length-1]??null;if(canFoundation(card,top)){pushHistory();const nf=foundations.map((p,i)=>i===fi?[...p,card]:p);if(sourceType==="waste")setWaste(w=>w.slice(0,-1));else setTableau(t=>{const nt=t.map(p=>[...p]);nt[sourceCol]=nt[sourceCol].slice(0,sourceIdx);if(nt[sourceCol].length>0)nt[sourceCol][nt[sourceCol].length-1].faceUp=true;return nt;});setFoundations(nf);setSelected(null);setMoves(m=>m+1);playSuccess();if(checkWin(nf)&&xpState){const earned=finalizeXP(xpState);setFinalXP(earned);setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));setCompleted(true);if(timerRef.current)clearInterval(timerRef.current);setTimeout(()=>triggerConfetti(),80);if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"solitaire",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});}}return true;}}return false;
   }
 
   function handleTableauClick(col:number,idx:number){
     if(solutionRevealed)return;
     const pile=tableau[col];
-    if(pile.length===0){if(selected){const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}if(movingCards[0].value===13){const nt=tableau.map(p=>[...p]);nt[col]=[...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();}else setSelected(null);}return;}
+    if(pile.length===0){if(selected){const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}if(movingCards[0].value===13){pushHistory();const nt=tableau.map(p=>[...p]);nt[col]=[...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();}else setSelected(null);}return;}
     const card=pile[idx];if(!card)return;
-    if(!card.faceUp){if(idx===pile.length-1){const nt=tableau.map(p=>[...p]);nt[col][idx]={...nt[col][idx],faceUp:true};setTableau(nt);setMoves(m=>m+1);playClick();}return;}
+    if(!card.faceUp){if(idx===pile.length-1){pushHistory();const nt=tableau.map(p=>[...p]);nt[col][idx]={...nt[col][idx],faceUp:true};setTableau(nt);setMoves(m=>m+1);playClick();}return;}
     if(selected?.pile==="tableau"&&selected.col===col&&selected.idx===idx){if(idx===pile.length-1&&tryMoveToFoundation(card,"tableau",col,idx))return;setSelected(null);return;}
-    if(selected){const onto=pile[pile.length-1];const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}const topMoving=movingCards[0];if(canStack(topMoving,onto)){const nt=tableau.map(p=>[...p]);nt[col]=[...nt[col],...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();return;}setSelected(null);}
+    if(selected){const onto=pile[pile.length-1];const movingCards=selected.pile==="tableau"?tableau[selected.col].slice(selected.idx):selected.pile==="waste"?[waste[waste.length-1]]:[];if(movingCards.length===0){setSelected(null);return;}const topMoving=movingCards[0];if(canStack(topMoving,onto)){pushHistory();const nt=tableau.map(p=>[...p]);nt[col]=[...nt[col],...movingCards];if(selected.pile==="tableau"){nt[selected.col]=nt[selected.col].slice(0,selected.idx);if(nt[selected.col].length>0)nt[selected.col][nt[selected.col].length-1].faceUp=true;}else if(selected.pile==="waste")setWaste(w=>w.slice(0,-1));setTableau(nt);setSelected(null);setMoves(m=>m+1);playClick();return;}setSelected(null);}
     setSelected({pile:"tableau",col,idx});playClick();
   }
 
@@ -179,7 +203,7 @@ function SolitairePageInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

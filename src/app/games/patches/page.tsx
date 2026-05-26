@@ -77,6 +77,7 @@ function PatchesGameInner(){
   const [showGameComplete, setShowGameComplete] = useState(false);
   const[showResume,setShowResume]=useState(false);
   const[resumeData,setResumeData]=useState<Record<string,unknown>|null>(null);
+  const[history,setHistory]=useState<{placed:Map<string,number>;placedPieces:Set<number>}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   usePageVisibility(
@@ -101,6 +102,7 @@ function PatchesGameInner(){
     setXpState(xp);setCompleted(false);setFinalXP(0);setHintsUsed(0);
     setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{
@@ -158,6 +160,7 @@ function PatchesGameInner(){
     const cellKey=`${r},${c}`;
     if(placed.has(cellKey)){
       const pid=placed.get(cellKey)!;
+      setHistory(h=>[...h.slice(-19),{placed:new Map(placed),placedPieces:new Set(placedPieces)}]);
       const np=new Map(placed);const npp=new Set(placedPieces);
       [...placed.entries()].filter(([,v])=>v===pid).forEach(([k])=>np.delete(k));
       npp.delete(pid);
@@ -173,6 +176,7 @@ function PatchesGameInner(){
       return true;
     });
     if(!valid){playError();return;}
+    setHistory(h=>[...h.slice(-19),{placed:new Map(placed),placedPieces:new Set(placedPieces)}]);
     const np=new Map(placed);
     cells.forEach(([pr,pc])=>np.set(`${pr},${pc}`,selectedPiece));
     const npp=new Set(placedPieces);npp.add(selectedPiece);
@@ -188,6 +192,15 @@ function PatchesGameInner(){
       markStageCompleted("patches",stage);
       if(user){updateStreak(user.id);saveScore({user_id:user.id,game_slug:"patches",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});}
     }
+  }
+
+  function handleUndo(){
+    if(history.length===0||completed||solutionRevealed)return;
+    const last=history[history.length-1];
+    setPlaced(last.placed);setPlacedPieces(last.placedPieces);
+    setSelectedPiece(null);setHoverCells(new Set());
+    setHistory(h=>h.slice(0,-1));
+    playClick();
   }
 
   function handleHint(){
@@ -225,7 +238,7 @@ function PatchesGameInner(){
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >

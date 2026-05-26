@@ -73,6 +73,7 @@ function WordSlingPageInner() {
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [history, setHistory] = useState<{guesses: string[]; results: LetterResult[][]; hintLetters: Set<number>}[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   usePageVisibility(
@@ -97,6 +98,7 @@ function WordSlingPageInner() {
     setHintsUsed(0); setHintLetters(new Set());
     setElapsedSeconds(0); setLiveXP(1000); setFinalElapsed("0:00");
     setSolutionRevealed(false);
+    setHistory([]);
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -154,6 +156,7 @@ function WordSlingPageInner() {
     if (!board || !xpState) return;
     if (current.length !== board.wordLength) { setShake(true); setTimeout(() => setShake(false), 500); playError(); return; }
     const res = scoreGuess(current, board.answer);
+    setHistory(h => [...h.slice(-19), {guesses: [...guesses], results: results.map(r => [...r]), hintLetters: new Set(hintLetters)}]);
     const newGuesses = [...guesses, current];
     const newResults = [...results, res];
     setGuesses(newGuesses); setResults(newResults); setCurrent("");
@@ -176,6 +179,15 @@ function WordSlingPageInner() {
     } else if (outOfGuesses) {
       setTimeout(() => { setLost(true); if (timerRef.current) clearInterval(timerRef.current); playError(); }, board.wordLength * 120 + 400);
     }
+  }
+
+  function handleUndo() {
+    if (history.length === 0 || completed || lost) return;
+    const last = history[history.length - 1];
+    setGuesses(last.guesses); setResults(last.results); setHintLetters(last.hintLetters);
+    setCurrent("");
+    setHistory(h => h.slice(0, -1));
+    playClick();
   }
 
   function handleHint() {
@@ -208,7 +220,7 @@ function WordSlingPageInner() {
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
         hintsRemaining={3-hintsUsed}
-        onUndo={()=>{}}
+        onUndo={handleUndo}
         onHint={handleHint}
         onCheck={()=>{}}
       >
