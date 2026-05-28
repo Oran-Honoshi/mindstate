@@ -36,7 +36,7 @@ function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"med
 function KakuroGameInner() {
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
-  const clueBg = theme === "dark" ? "var(--color-surface-2)" : "#374151";
+  const clueBg = theme === "dark" ? "rgba(4,10,20,0.97)" : theme === "light" ? "#374151" : "#3a3530";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<KakuroBoard | null>(null);
   const [userGrid, setUserGrid] = useState<(number|null)[][]>([]);
@@ -282,79 +282,117 @@ function KakuroGameInner() {
       >
         <GamePageSchema slug="kakuro" />
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, padding:"16px 16px 32px" }}>
-          <div style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Fill white cells · Each run must sum to its clue · No repeats in a run · {board.size}×{board.size}</div>
+          <div style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.05em" }}>
+            FILL WHITE CELLS · SUM TO CLUE · NO REPEATS IN A RUN · {board.size}×{board.size}
+          </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
-              Solution revealed · XP set to 1 · Retry to score properly
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",fontFamily:"var(--font-mono)"}}>
+              SOLUTION REVEALED · XP SET TO 1 · RETRY TO SCORE
             </motion.div>
           )}
 
-          <div style={{ border:"2px solid var(--color-border)", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)` }}>
-              {board.grid.map((row, r) => row.map((cell, c) => {
-                if (cell.type === "black") return (
-                  <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none" }}/>
-                );
-                if (cell.type === "clue") {
-                  const clue = cell as { type:"clue"; right?:number; down?:number };
-                  return (
-                    <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none", position:"relative", overflow:"hidden" }}>
-                      <svg width={cellSize} height={cellSize}>
-                        <line x1={0} y1={0} x2={cellSize} y2={cellSize} stroke="var(--color-border)" strokeWidth={1}/>
-                        {clue.down!==undefined&&<text x={cellSize*0.25} y={cellSize*0.45} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"white",fontFamily:"var(--font-mono)"}}>{clue.down}</text>}
-                        {clue.right!==undefined&&<text x={cellSize*0.75} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"white",fontFamily:"var(--font-mono)"}}>{clue.right}</text>}
-                      </svg>
-                    </div>
+          <div style={{
+            padding: 10, borderRadius: 16,
+            background: theme === "dark"
+              ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+              : theme === "light"
+              ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+              : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`,
+            backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 16%, transparent)",
+            boxShadow: theme === "dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}>
+            <div style={{ borderRadius:10, overflow:"hidden" }}>
+              <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)` }}>
+                {board.grid.map((row, r) => row.map((cell, c) => {
+                  const cellBorder = theme === "dark" ? "rgba(255,255,255,0.06)" : "var(--color-border)";
+                  if (cell.type === "black") return (
+                    <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:`0.5px solid ${cellBorder}`, borderBottom:`0.5px solid ${cellBorder}`, borderTop:"none", borderLeft:"none" }}/>
                   );
-                }
-                const isSelected = selected?.[0]===r && selected?.[1]===c;
-                const hasError = errors.has(`${r},${c}`);
-                const val = userGrid[r]?.[c];
-                const isSolution = solutionRevealed && val !== null;
-                const check = checkState?.get(`${r},${c}`);
-                return (
-                  <motion.button key={`${r}-${c}`}
-                    onClick={() => { if (!solutionRevealed) setSelected([r,c]); }}
-                    animate={hasError?{x:[-2,2,-2,2,0]}:{}}
-                    transition={{ duration:0.25 }}
-                    style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:Math.round(cellSize*0.45), fontWeight:700,
-                      cursor: solutionRevealed ? "default" : "pointer", outline:"none",
-                      background: check==="correct" ? "var(--color-accent-secondary)" : check==="incorrect" ? "var(--color-error)" : isSolution?"color-mix(in srgb, var(--color-error) 4%, var(--color-surface))":isSelected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":hasError?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)",
-                      color: check ? "var(--color-bg)" : isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"var(--color-border)",
-                      borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none",
-                      boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px var(--color-accent-primary)":"none",
-                      transition: "background 0.2s" }}>
-                    {val ?? ""}
-                  </motion.button>
-                );
-              }))}
+                  if (cell.type === "clue") {
+                    const clue = cell as { type:"clue"; right?:number; down?:number };
+                    const diagonalColor = theme === "dark" ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.4)";
+                    return (
+                      <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:`0.5px solid ${cellBorder}`, borderBottom:`0.5px solid ${cellBorder}`, borderTop:"none", borderLeft:"none", position:"relative", overflow:"hidden" }}>
+                        <svg width={cellSize} height={cellSize}>
+                          <line x1={2} y1={2} x2={cellSize-2} y2={cellSize-2} stroke={diagonalColor} strokeWidth={1}/>
+                          {clue.down!==undefined&&<text x={cellSize*0.28} y={cellSize*0.44} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"rgba(255,255,255,0.82)",fontFamily:"var(--font-mono)"}}>{clue.down}</text>}
+                          {clue.right!==undefined&&<text x={cellSize*0.74} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"rgba(255,255,255,0.82)",fontFamily:"var(--font-mono)"}}>{clue.right}</text>}
+                        </svg>
+                      </div>
+                    );
+                  }
+                  const isSelected = selected?.[0]===r && selected?.[1]===c;
+                  const hasError = errors.has(`${r},${c}`);
+                  const val = userGrid[r]?.[c];
+                  const isSolution = solutionRevealed && val !== null;
+                  const check = checkState?.get(`${r},${c}`);
+                  const cellBg = check==="correct" ? "var(--color-accent-secondary)"
+                    : check==="incorrect" ? "var(--color-error)"
+                    : isSolution ? "color-mix(in srgb, var(--color-error) 4%, var(--color-surface))"
+                    : isSelected ? "color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))"
+                    : hasError ? "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"
+                    : "var(--color-surface)";
+                  return (
+                    <motion.button key={`${r}-${c}`}
+                      onClick={() => { if (!solutionRevealed) setSelected([r,c]); }}
+                      animate={hasError?{x:[-2,2,-2,2,0]}:{}}
+                      transition={{ duration:0.25 }}
+                      style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:Math.round(cellSize*0.45), fontWeight:700, fontFamily:"var(--font-mono)",
+                        cursor: solutionRevealed ? "default" : "pointer", outline:"none",
+                        background: cellBg,
+                        color: check ? "#000" : isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"transparent",
+                        borderRight:`0.5px solid ${cellBorder}`, borderBottom:`0.5px solid ${cellBorder}`, borderTop:"none", borderLeft:"none",
+                        boxShadow: isSelected&&!solutionRevealed
+                          ? "inset 0 0 0 2px var(--color-accent-primary)"
+                          : hasError
+                          ? "inset 0 0 0 1.5px color-mix(in srgb, var(--color-error) 55%, transparent)"
+                          : "none",
+                        transition: "background 0.2s, box-shadow 0.2s" }}>
+                      {val ?? ""}
+                    </motion.button>
+                  );
+                }))}
+              </div>
             </div>
           </div>
 
           {!solutionRevealed && (
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
               {[1,2,3,4,5,6,7,8,9].map(n => (
-                <button key={n} onClick={() => handleInput(n)}
-                  style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:16, fontWeight:700, color:"var(--color-text-secondary)", cursor:"pointer", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
+                <motion.button key={n} onClick={() => handleInput(n)}
+                  whileHover={{ scale:1.07, boxShadow: theme==="dark" ? "0 0 12px 2px rgba(0,255,255,0.18)" : "0 4px 12px rgba(0,0,0,0.1)" }}
+                  whileTap={{ scale:0.91 }}
+                  style={{ width:44, height:44, borderRadius:12,
+                    border:"1px solid color-mix(in srgb, var(--color-accent-primary) 20%, var(--color-border))",
+                    background: theme==="dark" ? "color-mix(in srgb, rgba(0,255,255,1) 5%, var(--color-surface))" : "var(--color-surface)",
+                    fontSize:16, fontWeight:700, fontFamily:"var(--font-mono)",
+                    color:"var(--color-text-primary)", cursor:"pointer" }}>
                   {n}
-                </button>
+                </motion.button>
               ))}
-              <button onClick={() => handleInput(null)}
-                style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <Delete size={16} color="#94A3B8"/>
-              </button>
+              <motion.button onClick={() => handleInput(null)}
+                whileHover={{ scale:1.07 }} whileTap={{ scale:0.91 }}
+                style={{ width:44, height:44, borderRadius:12,
+                  border:"1px solid var(--color-border)",
+                  background:"var(--color-surface)", cursor:"pointer",
+                  display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Delete size={16} color="var(--color-text-secondary)"/>
+              </motion.button>
             </div>
           )}
 
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <button onClick={() => stage>1&&setStage(s=>s-1)} disabled={stage===1}
-              style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>← Prev</button>
-            <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+              style={{ padding:"8px 18px", borderRadius:10, border:"1px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:11, fontFamily:"var(--font-mono)", color:"var(--color-text-secondary)", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase" as const, opacity:stage===1?0.38:1 }}>← PREV</button>
+            <span style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", fontWeight:600, letterSpacing:"0.06em" }}>STAGE {stage}/{TOTAL_STAGES}</span>
             <button onClick={() => setStage(s=>s+1)}
-              style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>Next <ChevronRight size={13}/></button>
+              style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 18px", borderRadius:10, border:"1px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:11, fontFamily:"var(--font-mono)", color:"var(--color-text-secondary)", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase" as const }}>NEXT <ChevronRight size={12}/></button>
           </div>
         </div>
       </GameShell>
