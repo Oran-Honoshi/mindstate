@@ -27,6 +27,7 @@ import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -44,6 +45,7 @@ type PathState = { color: Color; cells: string[] };
 
 function FlowGameInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
@@ -328,6 +330,23 @@ function FlowGameInner() {
   const connected = paths.size;
   const total = board.colors.length;
 
+  const boardBg = theme === "dark"
+    ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+    : theme === "light"
+    ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+    : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`;
+
+  const navBtnStyle = {
+    padding: "8px 18px", borderRadius: 10,
+    border: "1px solid var(--color-border)",
+    background: "var(--color-surface)",
+    cursor: "pointer", fontSize: 11,
+    fontFamily: "var(--font-mono)",
+    color: "var(--color-text-secondary)",
+    fontWeight: 600, letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+  };
+
   return (
     <>
       <GameShell
@@ -345,82 +364,121 @@ function FlowGameInner() {
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "16px 16px 32px" }}>
 
-          <div style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>
-            {connected}/{total} flows · Drag from dot to dot · Fill every cell · No crossings
+          <div style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>
+            FLOWS {connected}/{total} · DRAG DOT TO DOT · FILL ALL CELLS · NO CROSSINGS
           </div>
 
           {solutionRevealed && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "color-mix(in srgb, var(--color-error) 8%, transparent)", border: "0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
-              Solution revealed · XP set to 1 · Retry to score properly
+              style={{ padding: "8px 20px", borderRadius: 12, background: "color-mix(in srgb, var(--color-error) 8%, transparent)", border: "0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--color-error)", fontFamily: "var(--font-mono)" }}>
+              SOLUTION REVEALED · XP SET TO 1 · RETRY TO SCORE
             </motion.div>
           )}
 
-          <div
+          <motion.div
+            animate={completed && theme === "dark" ? {
+              boxShadow: [
+                "0 0 0 1px rgba(57,255,20,0.15), 0 20px 64px rgba(0,0,0,0.5)",
+                "0 0 0 1px rgba(57,255,20,0.55), 0 0 40px rgba(57,255,20,0.18), 0 20px 64px rgba(0,0,0,0.5)",
+                "0 0 0 1px rgba(57,255,20,0.15), 0 20px 64px rgba(0,0,0,0.5)",
+              ],
+            } : {}}
+            transition={completed ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" } : {}}
             style={{
-              border: "2px solid var(--color-border)", borderRadius: "var(--radius)", overflow: "hidden",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.08)", cursor: "crosshair",
-              userSelect: "none", touchAction: "none",
+              padding: 10, borderRadius: 16,
+              background: boardBg, backgroundSize: "18px 18px",
+              border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+              boxShadow: theme === "dark"
+                ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+                : "0 4px 20px rgba(0,0,0,0.06)",
             }}
-            onMouseLeave={endDraw}
-            onTouchMove={(e) => {
-              e.preventDefault();
-              const t = e.touches[0];
-              const el = document.elementFromPoint(t.clientX, t.clientY);
-              if (el) {
-                const k = (el as HTMLElement).dataset.cellkey;
-                if (k) { const [r, c] = k.split(",").map(Number); continueDraw(r, c); }
-              }
-            }}
-            onTouchEnd={endDraw}
           >
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.size},${cellSize}px)` }}>
-              {Array.from({ length: board.size }, (_, r) =>
-                Array.from({ length: board.size }, (_, c) => {
-                  const k = cellKey(r, c);
-                  const dotColor = board.dots.get(k);
-                  const cellColor = drawing?.cells.includes(k) ? drawing.color : cellColors.get(k);
-                  const check = checkState?.get(k);
-                  return (
-                    <div key={k}
-                      data-cellkey={k}
-                      onMouseDown={() => startDraw(r, c)}
-                      onMouseEnter={() => continueDraw(r, c)}
-                      onMouseUp={endDraw}
-                      onTouchStart={(e) => { e.preventDefault(); startDraw(r, c); }}
-                      style={{
-                        width: cellSize, height: cellSize,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        background: check === "correct" ? "var(--color-accent-secondary)" : check === "incorrect" ? "var(--color-error)" : cellColor ? cellColor + "30" : "var(--color-surface)",
-                        borderRight: "0.5px solid var(--color-border)", borderBottom: "0.5px solid var(--color-border)",
-                        borderTop: "none", borderLeft: "none", position: "relative",
-                        transition: "background 0.2s",
-                      }}>
-                      {cellColor && !dotColor && (
-                        <div style={{ position: "absolute", inset: 4, borderRadius: 4, background: cellColor, opacity: 0.7 }} />
-                      )}
-                      {dotColor && (
-                        <div style={{
-                          width: cellSize * 0.55, height: cellSize * 0.55,
-                          borderRadius: "50%", background: dotColor,
-                          boxShadow: `0 2px 8px ${dotColor}60`,
-                          border: `3px solid ${dotColor}`,
-                          position: "relative", zIndex: 2,
-                        }} />
-                      )}
-                    </div>
-                  );
-                })
-              )}
+            <div
+              style={{
+                borderRadius: 10, overflow: "hidden",
+                cursor: "crosshair", userSelect: "none", touchAction: "none",
+              }}
+              onMouseLeave={endDraw}
+              onTouchMove={(e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                if (el) {
+                  const k = (el as HTMLElement).dataset.cellkey;
+                  if (k) { const [r, c] = k.split(",").map(Number); continueDraw(r, c); }
+                }
+              }}
+              onTouchEnd={endDraw}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.size},${cellSize}px)` }}>
+                {Array.from({ length: board.size }, (_, r) =>
+                  Array.from({ length: board.size }, (_, c) => {
+                    const k = cellKey(r, c);
+                    const dotColor = board.dots.get(k);
+                    const cellColor = drawing?.cells.includes(k) ? drawing.color : cellColors.get(k);
+                    const check = checkState?.get(k);
+                    const isDrawing = drawing?.cells.includes(k);
+                    const emptyBg = theme === "dark" ? "rgba(6,13,24,0.92)" : "var(--color-surface)";
+                    const pipeBg = check === "correct"
+                      ? "color-mix(in srgb, var(--color-accent-secondary) 22%, var(--color-surface))"
+                      : check === "incorrect"
+                      ? "color-mix(in srgb, var(--color-error) 22%, var(--color-surface))"
+                      : cellColor ? cellColor + (theme === "dark" ? "2a" : "18") : emptyBg;
+                    return (
+                      <div key={k}
+                        data-cellkey={k}
+                        onMouseDown={() => startDraw(r, c)}
+                        onMouseEnter={() => continueDraw(r, c)}
+                        onMouseUp={endDraw}
+                        onTouchStart={(e) => { e.preventDefault(); startDraw(r, c); }}
+                        style={{
+                          width: cellSize, height: cellSize,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: pipeBg,
+                          borderRight: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.05)" : "var(--color-border)"}`,
+                          borderBottom: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.05)" : "var(--color-border)"}`,
+                          borderTop: "none", borderLeft: "none",
+                          position: "relative", transition: "background 0.15s",
+                        }}>
+                        {cellColor && !dotColor && (
+                          <div style={{
+                            position: "absolute", inset: 5, borderRadius: 4,
+                            background: cellColor,
+                            opacity: isDrawing ? 1 : (completed ? 0.95 : 0.72),
+                            boxShadow: completed && theme === "dark" ? `0 0 8px 2px ${cellColor}70` : "none",
+                            transition: "opacity 0.2s, box-shadow 0.3s",
+                          }} />
+                        )}
+                        {dotColor && (
+                          <div style={{
+                            width: cellSize * 0.58, height: cellSize * 0.58,
+                            borderRadius: "50%", background: dotColor,
+                            boxShadow: theme === "dark"
+                              ? `0 0 10px 3px ${dotColor}80, 0 0 3px 1px ${dotColor}99`
+                              : `0 2px 8px ${dotColor}60`,
+                            position: "relative", zIndex: 2,
+                          }} />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
-              style={{ padding: "8px 16px", borderRadius: "var(--radius)", border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>← Prev</button>
-            <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>Stage {stage} of {TOTAL_STAGES}</span>
+              style={{ ...navBtnStyle, opacity: stage === 1 ? 0.38 : 1, cursor: stage === 1 ? "not-allowed" : "pointer" }}>
+              ← PREV
+            </button>
+            <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", fontWeight: 600, letterSpacing: "0.06em" }}>
+              STAGE {stage}/{TOTAL_STAGES}
+            </span>
             <button onClick={() => setStage(s => s + 1)}
-              style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: "var(--radius)", border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600 }}>Next <ChevronRight size={13} /></button>
+              style={{ ...navBtnStyle, display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+              NEXT <ChevronRight size={12} />
+            </button>
           </div>
         </div>
       </GameShell>
