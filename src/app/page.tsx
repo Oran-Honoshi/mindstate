@@ -137,6 +137,9 @@ export default function LandingPage() {
           Mind Element
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Link href="/games" style={{ color: "var(--color-text-primary)", fontWeight: 600, textDecoration: "none", fontSize: 14, fontFamily: "var(--font-sans)" }}>
+            Games
+          </Link>
           <ThemeSwitcher/>
           <Link href={accountHref} style={{
             padding: "8px 16px",

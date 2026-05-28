@@ -701,8 +701,7 @@ export default function LandingPage() {
   return (
     <div className="home-page" style={{ minHeight:"100vh", color:"var(--color-text-primary)" }}>
 
-      {/* ── NAV ── */} 
-/*
+      {/* ── NAV ── */}
 <nav className="ms-nav" style={{
   position:"fixed", top:0, left:0, right:0, zIndex:50,
   padding:"0 16px", height:56,
@@ -816,7 +815,6 @@ export default function LandingPage() {
     )}
   </div>
 </nav>
-*/
 
       <FAQSchema/>
       <OrganizationSchema/>
