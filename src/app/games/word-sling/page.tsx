@@ -37,10 +37,15 @@ function getDifficulty(s: number): Difficulty {
   return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
-const COLORS: Record<LetterResult, { bg: string; border: string; text: string }> = {
-  correct: { bg:"#22C55E", border:"#16A34A", text:"white" },
-  present: { bg:"#F59E0B", border:"#D97706", text:"white" },
-  absent:  { bg:"#4B5563", border:"#374151", text:"white" },
+const COLORS_LIGHT: Record<LetterResult, { bg: string; border: string; text: string; glow: string }> = {
+  correct: { bg:"#22C55E", border:"#16A34A", text:"white", glow:"none" },
+  present: { bg:"#F59E0B", border:"#D97706", text:"white", glow:"none" },
+  absent:  { bg:"#4B5563", border:"#374151", text:"white", glow:"none" },
+};
+const COLORS_DARK: Record<LetterResult, { bg: string; border: string; text: string; glow: string }> = {
+  correct: { bg:"rgba(57,255,20,0.15)", border:"rgba(57,255,20,0.8)", text:"var(--color-accent-secondary)", glow:"0 0 12px rgba(57,255,20,0.28), inset 0 0 6px rgba(57,255,20,0.08)" },
+  present: { bg:"rgba(245,158,11,0.18)", border:"rgba(245,158,11,0.8)", text:"#F59E0B", glow:"0 0 10px rgba(245,158,11,0.25)" },
+  absent:  { bg:"rgba(10,18,32,0.85)", border:"rgba(255,255,255,0.1)", text:"rgba(255,255,255,0.3)", glow:"none" },
 };
 
 const KEYBOARD_ROWS = [
@@ -52,7 +57,16 @@ const KEYBOARD_ROWS = [
 function WordSlingPageInner() {
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
-  const absentBg = theme === "dark" ? "var(--color-surface-2)" : "#4B5563";
+  const isDark = theme === "dark";
+  const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT;
+  const boardBg = isDark
+    ? {background:`radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 1px), #060d18`, backgroundSize:"18px 18px"}
+    : theme==="paper"
+    ? {background:`radial-gradient(circle, rgba(100,80,60,0.1) 1px, transparent 1px), var(--color-surface)`, backgroundSize:"18px 18px"}
+    : {background:"var(--color-surface)"};
+  const boardShadow = isDark
+    ? "0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 13%, transparent), 0 20px 60px rgba(0,0,0,0.55)"
+    : "0 2px 8px rgba(0,0,0,0.04)";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<WordleBoard | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -229,47 +243,61 @@ function WordSlingPageInner() {
         <GamePageSchema slug="word-sling" />
 
         {hintLetters.size > 0 && (
-          <div style={{ fontSize:13, color:"var(--color-accent-secondary)", fontWeight:600 }}>
-            Hint: position{hintLetters.size>1?"s":""} {[...hintLetters].map(i=>i+1).join(", ")} = {[...hintLetters].map(i=>board.answer[i]).join(", ")}
+          <div style={{ fontSize:11, color:"var(--color-accent-secondary)", fontWeight:700, fontFamily:"var(--font-mono)", letterSpacing:"0.06em",
+            textShadow:isDark?"0 0 10px rgba(57,255,20,0.4)":"none" }}>
+            HINT: POS {[...hintLetters].map(i=>i+1).join(",")} = {[...hintLetters].map(i=>board.answer[i]).join(",")}
           </div>
         )}
 
-        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-          {Array.from({length:board.maxGuesses},(_,gi)=>{
-            const guess = gi<guesses.length?guesses[gi]:gi===guesses.length?current:"";
-            const res = results[gi];
-            const isRevealing = reveal===gi;
-            return (
-              <motion.div key={gi} animate={shake&&gi===guesses.length?{x:[-6,6,-6,6,0]}:{}} transition={{duration:0.3}} style={{display:"flex",gap:6}}>
-                {Array.from({length:board.wordLength},(_,li)=>{
-                  const letter = guess[li]??"";
-                  const result = res?.[li];
-                  const color = result?COLORS[result]:null;
-                  return (
-                    <motion.div key={li}
-                      animate={result&&isRevealing?{rotateX:[0,-90,0],backgroundColor:[color!.bg+"00",color!.bg]}:{}}
-                      transition={{delay:(reveal===gi?li*120:0)/1000,duration:0.3}}
-                      style={{
-                        width:cellSize, height:cellSize,
-                        border:`2px solid ${color?color.border:letter?"var(--color-accent-primary)":"var(--color-border)"}`,
-                        borderRadius:8, background:color?(result==="absent"?absentBg:color.bg):"var(--color-surface)",
-                        display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:Math.round(cellSize*0.42), fontWeight:700,
-                        color:color?color.text:"var(--color-text-primary)", fontFamily:"var(--font-sans)",
-                      }}>
-                      {letter}
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            );
-          })}
+        <div style={{...boardBg, borderRadius:16, padding:"12px 10px", boxShadow:boardShadow, border:isDark?"1px solid color-mix(in srgb, var(--color-accent-primary) 12%, transparent)":"none"}}>
+          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            {Array.from({length:board.maxGuesses},(_,gi)=>{
+              const guess = gi<guesses.length?guesses[gi]:gi===guesses.length?current:"";
+              const res = results[gi];
+              const isRevealing = reveal===gi;
+              const isActiveRow = gi === guesses.length && !completed && !lost;
+              return (
+                <motion.div key={gi} animate={shake&&gi===guesses.length?{x:[-6,6,-6,6,0]}:{}} transition={{duration:0.3}} style={{display:"flex",gap:6,justifyContent:"center"}}>
+                  {Array.from({length:board.wordLength},(_,li)=>{
+                    const letter = guess[li]??"";
+                    const result = res?.[li];
+                    const color = result ? COLORS[result] : null;
+                    const emptyBg = isDark ? "rgba(6,13,24,0.85)" : "var(--color-surface)";
+                    const emptyBorder = isDark
+                      ? letter ? "2px solid rgba(0,255,255,0.55)" : isActiveRow ? "1.5px solid rgba(0,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)"
+                      : `2px solid ${letter ? "var(--color-accent-primary)" : "var(--color-border)"}`;
+                    return (
+                      <motion.div key={li}
+                        animate={result&&isRevealing?{rotateX:[0,-90,0]}:{}}
+                        transition={{delay:(reveal===gi?li*120:0)/1000,duration:0.3}}
+                        style={{
+                          width:cellSize, height:cellSize,
+                          border: color ? `2px solid ${color.border}` : emptyBorder,
+                          borderRadius:8,
+                          background: color ? color.bg : emptyBg,
+                          boxShadow: color ? color.glow : (isDark && letter) ? "0 0 8px rgba(0,255,255,0.1)" : "none",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:Math.round(cellSize*0.42), fontWeight:700,
+                          color: color ? color.text : "var(--color-text-primary)",
+                          fontFamily:"var(--font-mono)", letterSpacing:"0.05em",
+                        }}>
+                        {letter}
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {(lost||solutionRevealed) && (
           <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"color-mix(in srgb, var(--color-error) 8%, transparent)":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",border:`1px solid color-mix(in srgb, var(--color-error) 20%, transparent)`,fontSize:14,fontWeight:700,color:"var(--color-error)"}}>
-            {solutionRevealed?"Solution: ":"The word was: "}{board.answer}
+            style={{padding:"10px 20px",borderRadius:14,
+              background:isDark?"color-mix(in srgb, var(--color-error) 10%, rgba(6,13,24,0.95))":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",
+              border:`1px solid color-mix(in srgb, var(--color-error) 22%, transparent)`,
+              fontSize:12,fontWeight:700,color:"var(--color-error)",fontFamily:"var(--font-mono)",letterSpacing:"0.08em"}}>
+            {solutionRevealed?"SOLUTION: ":"ANSWER: "}{board.answer}
           </motion.div>
         )}
 
@@ -278,12 +306,21 @@ function WordSlingPageInner() {
             <div key={ri} style={{ display:"flex", justifyContent:"center", gap:5 }}>
               {row.map(key=>{
                 const state = letterStates.get(key);
-                const color = state?COLORS[state]:null;
+                const color = state ? COLORS[state] : null;
                 const isWide = key==="ENTER"||key==="⌫";
+                const keyBg = color ? color.bg : (isDark ? "rgba(12,22,38,0.85)" : "var(--color-surface-2)");
+                const keyBorder = color
+                  ? `1px solid ${color.border}`
+                  : isDark ? "1px solid rgba(255,255,255,0.08)" : "none";
+                const keyGlow = color && isDark ? color.glow : "none";
                 return (
                   <motion.button key={key} whileTap={{scale:0.9}}
                     onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)}
-                    style={{width:isWide?58:34,height:48,borderRadius:8,border:"none",background:color?(state==="absent"?absentBg:color.bg):"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:14,fontWeight:700,cursor:"pointer",outline:"none"}}>
+                    style={{width:isWide?58:34,height:48,borderRadius:8,border:keyBorder,background:keyBg,
+                      color:color?color.text:isDark?"rgba(255,255,255,0.75)":"var(--color-text-secondary)",
+                      fontSize:isWide?10:13,fontWeight:700,cursor:"pointer",outline:"none",
+                      boxShadow:keyGlow,
+                      fontFamily:"var(--font-mono)",letterSpacing:isWide?"0.04em":"0.08em"}}>
                     {key}
                   </motion.button>
                 );
@@ -294,10 +331,10 @@ function WordSlingPageInner() {
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-            style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
+            style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+          <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
           <button onClick={()=>setStage(s=>s+1)}
-            style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
         </div>
       </GameShell>
 
