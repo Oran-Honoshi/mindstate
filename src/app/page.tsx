@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 
@@ -116,8 +117,23 @@ const PLANS = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const { user } = useAuthStore();
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+  const [ctaHref, setCtaHref] = useState("/onboard");
   const accountHref = user ? "/profile" : "/auth/signin";
   const accountLabel = user ? "Profile" : "Sign In";
+
+  useEffect(() => {
+    const onboarded = localStorage.getItem("onboarded") === "1";
+    if (!onboarded) {
+      router.push("/onboard");
+      return;
+    }
+    setCtaHref("/games");
+    setReady(true);
+  }, [router]);
+
+  if (!ready) return null;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
@@ -174,7 +190,7 @@ export default function LandingPage() {
           Six precision games. One daily practice.
         </p>
         <HeroMemory/>
-        <Link href="/onboard" style={{
+        <Link href={ctaHref} style={{
           padding: "14px 32px",
           borderRadius: "var(--radius)",
           background: "var(--color-accent-primary)",

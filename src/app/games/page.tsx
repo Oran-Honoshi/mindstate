@@ -13,6 +13,7 @@ import {
   Flame, Shield, Infinity, Trophy, Download, Accessibility, Brain, Users
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   generateTangoBoard, validateBoard, buildSeed,
   type Cell, type TangoBoard, type CellStatus
@@ -670,11 +671,22 @@ function TrustpilotBadge() {
 export default function LandingPage() {
   const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, setTheme } = useSettingsStore();
   const { user, profile } = useAuthStore();
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
 
   // PWA install prompt — intercepts Chrome's bottom-sheet and gives us control
   const { isInstallable, triggerInstall } = usePWAInstall();
+
+  useEffect(() => {
+    const onboarded = localStorage.getItem("onboarded") === "1";
+    if (!onboarded) {
+      router.push("/onboard");
+      return;
+    }
+    setReady(true);
+  }, [router]);
 
   useEffect(() => {
     if (!user || isPro) return;
@@ -697,6 +709,8 @@ export default function LandingPage() {
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
   }, []);
+
+  if (!ready) return null;
 
   return (
     <div className="home-page" style={{ minHeight:"100vh", color:"var(--color-text-primary)" }}>
