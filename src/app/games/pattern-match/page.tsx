@@ -25,6 +25,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -40,6 +41,7 @@ function getDifficulty(s:number):Difficulty{
 
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [hintsUsed, setHintsUsed] = useState(0);
   const[board,setBoard]=useState<PatternBoard|null>(null);
@@ -168,6 +170,17 @@ function PatternMatchGameInner(){
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating puzzle...</p></div>);
 
+  const isDark = theme === "dark";
+  const panelBg = isDark
+    ? {background:`radial-gradient(circle, rgba(0,255,255,0.07) 1px, transparent 1px), rgba(6,13,24,0.92)`, backgroundSize:"18px 18px"}
+    : theme === "paper"
+    ? {background:`radial-gradient(circle, rgba(100,80,60,0.10) 1px, transparent 1px), var(--color-surface)`, backgroundSize:"18px 18px"}
+    : {background:"var(--color-surface)"};
+  const panelShadow = isDark
+    ? "0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 13%, transparent), 0 16px 48px rgba(0,0,0,0.5)"
+    : "0 2px 8px rgba(0,0,0,0.04)";
+  const panelBorder = isDark ? "none" : "0.5px solid var(--color-border)";
+
   const hintsLeft=xpState.maxHints-xpState.hintsUsed;
   const totalItems=board.sequence.length+1;
   const seqGap=10;
@@ -188,25 +201,35 @@ function PatternMatchGameInner(){
       >
         <GamePageSchema slug="pattern-match" />
 
-        <div style={{background:"var(--color-surface)",borderRadius:20,border:"0.5px solid var(--color-border)",padding:"24px 20px",width:"100%",maxWidth:560,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-          <p style={{fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16}}>What comes next?</p>
+        <div style={{...panelBg,borderRadius:20,border:panelBorder,padding:"24px 20px",width:"100%",maxWidth:560,boxShadow:panelShadow}}>
+          <p style={{fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16,fontFamily:"var(--font-mono)"}}>What comes next?</p>
           <div style={{display:"flex",alignItems:"center",gap:seqGap,flexWrap:"wrap",justifyContent:"center"}}>
             {board.sequence.map((item,i)=>(
               <motion.div key={i} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}} transition={{delay:i*0.08,type:"spring",stiffness:400,damping:25}}
-                style={{width:itemSize,height:itemSize,borderRadius:14,background:"var(--color-surface-2)",border:"1.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:item.color?Math.round(itemSize*0.5):Math.round(itemSize*0.3),fontWeight:700,color:item.color??"var(--color-text-primary)",flexShrink:0,fontFamily:"var(--font-mono)"}}>
+                style={{width:itemSize,height:itemSize,borderRadius:14,
+                  background:isDark?"rgba(10,20,36,0.85)":"var(--color-surface-2)",
+                  border:isDark?"1.5px solid rgba(0,255,255,0.12)":"1.5px solid var(--color-border)",
+                  boxShadow:isDark?"inset 0 1px 0 rgba(255,255,255,0.04)":"none",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:item.color?Math.round(itemSize*0.5):Math.round(itemSize*0.3),
+                  fontWeight:700,color:item.color??"var(--color-text-primary)",flexShrink:0,fontFamily:"var(--font-mono)"}}>
                 {item.value}
               </motion.div>
             ))}
             <motion.div initial={{scale:0}} animate={{scale:1}} transition={{delay:board.sequence.length*0.08,type:"spring"}}
-              style={{width:itemSize,height:itemSize,borderRadius:14,border:`2.5px dashed ${solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(itemSize*0.4),color:solutionRevealed?"var(--color-error)":"var(--color-text-secondary)",flexShrink:0}}>
+              style={{width:itemSize,height:itemSize,borderRadius:14,
+                border:`2.5px dashed ${solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"}`,
+                boxShadow:isDark&&!solutionRevealed?"0 0 10px rgba(0,255,255,0.15)":"none",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:Math.round(itemSize*0.4),color:solutionRevealed?"var(--color-error)":"var(--color-accent-primary)",flexShrink:0,fontFamily:"var(--font-mono)",fontWeight:700}}>
               {solutionRevealed?board.answer.value:"?"}
             </motion.div>
           </div>
           {(showRule||solutionRevealed)&&(
             <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
               style={{marginTop:16,padding:"10px 14px",background:solutionRevealed?"color-mix(in srgb, var(--color-error) 6%, transparent)":"color-mix(in srgb, var(--color-accent-secondary) 8%, transparent)",borderRadius:12,border:`0.5px solid ${solutionRevealed?"color-mix(in srgb, var(--color-error) 20%, transparent)":"color-mix(in srgb, var(--color-accent-secondary) 30%, transparent)"}`}}>
-              <p style={{fontSize:12,color:solutionRevealed?"var(--color-error)":"var(--color-text-secondary)",fontWeight:600}}>
-                {solutionRevealed?"Solution: ":"Hint: "}{board.rule}
+              <p style={{fontSize:12,color:solutionRevealed?"var(--color-error)":"var(--color-accent-secondary)",fontWeight:600,fontFamily:"var(--font-mono)"}}>
+                {solutionRevealed?"SOLUTION: ":"HINT: "}{board.rule}
               </p>
             </motion.div>
           )}
@@ -218,41 +241,59 @@ function PatternMatchGameInner(){
             const ansKey=`${board.answer.value}-${board.answer.color??""}`;
             const isSelected=selected===key;
             const isAnswer=key===ansKey;
+            const isCorrectSel = isSelected && correct === true;
+            const isWrongSel = isSelected && correct === false && !solutionRevealed;
             const bg=solutionRevealed
-              ?(isAnswer?"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))":"var(--color-surface-2)")
-              :isSelected?(correct?"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"):"var(--color-surface)";
+              ?(isAnswer
+                ? isDark?"color-mix(in srgb, var(--color-accent-secondary) 10%, rgba(6,13,24,0.92))":"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))"
+                : isDark?"rgba(10,18,32,0.7)":"var(--color-surface-2)")
+              :isCorrectSel
+                ?(isDark?"color-mix(in srgb, var(--color-accent-secondary) 10%, rgba(6,13,24,0.92))":"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))")
+                :isWrongSel
+                  ?(isDark?"color-mix(in srgb, var(--color-error) 12%, rgba(6,13,24,0.92))":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))")
+                  :(isDark?"rgba(10,18,32,0.75)":"var(--color-surface)");
             const border=solutionRevealed
-              ?(isAnswer?"var(--color-accent-secondary)":"var(--color-border)")
-              :isSelected?(correct?"var(--color-accent-secondary)":"color-mix(in srgb, var(--color-error) 40%, transparent)"):"var(--color-border)";
+              ?(isAnswer?"var(--color-accent-secondary)":isDark?"rgba(255,255,255,0.07)":"var(--color-border)")
+              :isCorrectSel?"var(--color-accent-secondary)"
+              :isWrongSel?"color-mix(in srgb, var(--color-error) 40%, transparent)"
+              :(isDark?"rgba(0,255,255,0.1)":"var(--color-border)");
+            const btnShadow = isDark
+              ? isCorrectSel || (solutionRevealed && isAnswer)
+                ? "0 0 16px rgba(57,255,20,0.25), 0 0 0 1px rgba(57,255,20,0.5)"
+                : isWrongSel
+                  ? "0 0 12px rgba(255,68,68,0.2)"
+                  : "0 2px 8px rgba(0,0,0,0.35)"
+              : "none";
             return(
               <motion.button key={i} onClick={()=>handleAnswer(opt)}
                 whileTap={solutionRevealed?{}:{scale:0.96}}
-                animate={isSelected&&!correct&&!solutionRevealed?{x:[-4,4,-4,4,0]}:{}}
+                whileHover={solutionRevealed?{}:{boxShadow: isDark?"0 0 0 1.5px rgba(0,255,255,0.35), 0 0 16px rgba(0,255,255,0.12)":"0 4px 12px rgba(0,0,0,0.08)", scale:1.02}}
+                animate={isWrongSel?{x:[-4,4,-4,4,0]}:{}}
                 transition={{duration:0.3}}
-                style={{padding:"18px",borderRadius:16,border:`1.5px solid ${border}`,background:bg,cursor:solutionRevealed?"default":"pointer",outline:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"all 0.2s",opacity:solutionRevealed&&!isAnswer?0.45:1}}>
-                <span style={{fontSize:opt.color?32:20,fontWeight:700,color:opt.color??"var(--color-text-primary)",fontFamily:"var(--font-mono)"}}>{opt.value}</span>
-                {solutionRevealed&&isAnswer&&<span style={{fontSize:16}}>✓</span>}
-                {!solutionRevealed&&isSelected&&correct&&<span style={{fontSize:16}}>✓</span>}
-                {!solutionRevealed&&isSelected&&!correct&&<span style={{fontSize:16}}>✗</span>}
+                style={{padding:"18px",borderRadius:16,border:`1.5px solid ${border}`,background:bg,cursor:solutionRevealed?"default":"pointer",outline:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"background 0.2s, border-color 0.2s",opacity:solutionRevealed&&!isAnswer?0.4:1,boxShadow:btnShadow}}>
+                <span style={{fontSize:opt.color?32:20,fontWeight:700,color:opt.color??(isCorrectSel||(solutionRevealed&&isAnswer)?"var(--color-accent-secondary)":"var(--color-text-primary)"),fontFamily:"var(--font-mono)"}}>{opt.value}</span>
+                {(solutionRevealed&&isAnswer)||isCorrectSel?<span style={{fontSize:14,color:"var(--color-accent-secondary)"}}>✓</span>:null}
+                {isWrongSel&&<span style={{fontSize:14,color:"var(--color-error)"}}>✗</span>}
               </motion.button>
             );
           })}
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <button onClick={handleHint} disabled={hintsLeft===0||completed||selected!==null||solutionRevealed}
-            style={{display:"flex",alignItems:"center",gap:6,padding:"10px 18px",borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:hintsLeft>0&&!solutionRevealed?"pointer":"not-allowed",fontSize:12,fontWeight:600,color:hintsLeft>0?"var(--color-text-primary)":"var(--color-text-secondary)",opacity:hintsLeft===0||solutionRevealed?0.5:1}}>
-            <Lightbulb size={14}/> Hint ({hintsLeft})
-          </button>
+          <motion.button onClick={handleHint} disabled={hintsLeft===0||completed||selected!==null||solutionRevealed}
+            whileHover={hintsLeft>0&&!solutionRevealed?{boxShadow:isDark?"0 0 10px rgba(57,255,20,0.18)":"none"}:{}}
+            style={{display:"flex",alignItems:"center",gap:6,padding:"10px 18px",borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:hintsLeft>0&&!solutionRevealed?"pointer":"not-allowed",fontSize:11,fontWeight:600,color:hintsLeft>0?"var(--color-text-primary)":"var(--color-text-secondary)",opacity:hintsLeft===0||solutionRevealed?0.5:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase"}}>
+            <Lightbulb size={13}/> HINT ({hintsLeft})
+          </motion.button>
           <AnimatePresence>
-            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"var(--color-accent-secondary)",fontWeight:600}}>−25% XP</motion.span>}
+            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"var(--color-accent-secondary)",fontWeight:600,fontFamily:"var(--font-mono)"}}>−25% XP</motion.span>}
           </AnimatePresence>
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+          <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
         </div>
       </GameShell>
 
