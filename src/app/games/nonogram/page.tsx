@@ -23,6 +23,7 @@ import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -38,6 +39,7 @@ function getDifficulty(stage: number): Difficulty {
 
 function NonogramGameInner() {
   const{user}=useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<NonogramBoard|null>(null);
   const[grid,setGrid]=useState<(boolean|null)[][]>([]);
@@ -191,6 +193,19 @@ function NonogramGameInner() {
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const CLUE_W=Math.min(60,maxW*0.25);
   const cellSize=Math.floor((maxW-CLUE_W)/board.size);
+  const cellBorder = theme==="dark" ? "rgba(255,255,255,0.06)" : "var(--color-border)";
+
+  // Compute completed rows and cols for mint flash
+  const completedRows = new Set<number>();
+  const completedCols = new Set<number>();
+  if (!solutionRevealed) {
+    for (let r = 0; r < board.size; r++) {
+      if (grid[r]?.every((v, c) => v === board.solution[r][c])) completedRows.add(r);
+    }
+    for (let c = 0; c < board.size; c++) {
+      if (board.solution.every((row, r) => grid[r]?.[c] === row[c])) completedCols.add(c);
+    }
+  }
 
   return(
     <>
@@ -210,51 +225,107 @@ function NonogramGameInner() {
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
-            Solution revealed · XP set to 1 · Retry to score properly
+            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:12,fontWeight:600,color:"var(--color-error)",fontFamily:"var(--font-mono)"}}>
+            SOLUTION REVEALED · XP SET TO 1 · RETRY TO SCORE
           </motion.div>
         )}
 
-        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
-          <div style={{display:"flex",marginLeft:CLUE_W}}>
-            {board.colClues.map((clue,c)=>(
-              <div key={c} style={{width:cellSize,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",paddingBottom:4,minHeight:40}}>
-                {clue.map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(cellSize*0.4,11),fontWeight:700,color:"var(--color-text-secondary)",lineHeight:1.3,fontFamily:"var(--font-mono)"}}>{n}</span>
-                ))}
-              </div>
-            ))}
-          </div>
-          {board.solution.map((_,r)=>(
-            <div key={r} style={{display:"flex",alignItems:"center"}}>
-              <div style={{width:CLUE_W,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:3,paddingRight:6,minHeight:cellSize}}>
-                {board.rowClues[r].map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(12,cellSize*0.45),fontWeight:700,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)"}}>{n}</span>
-                ))}
-              </div>
-              {board.solution[r].map((_,c)=>{
-                const val=grid[r]?.[c];
-                const isSol = solutionRevealed && board.solution[r][c] === true;
-                const check = checkState?.get(`${r},${c}`);
-                return(
-                  <motion.button key={c} onClick={()=>handleCell(r,c)} whileTap={solutionRevealed?{}:{scale:0.9}}
-                    style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSol?"color-mix(in srgb, var(--color-error) 15%, var(--color-surface))":val===true?"var(--color-text-primary)":val===false?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)",
-                      borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none",
-                      cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.2s"}}>
-                    {val===true&&!check&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"var(--color-text-primary)",borderRadius:1}}/>}
-                    {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"var(--color-error)",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
-                  </motion.button>
+        <div style={{
+          padding: 10, borderRadius: 16,
+          background: theme==="dark"
+            ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+            : theme==="light"
+            ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+            : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`,
+          backgroundSize: "18px 18px",
+          border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+          boxShadow: theme==="dark"
+            ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+            : "0 4px 20px rgba(0,0,0,0.06)",
+          display: "inline-block",
+        }}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
+            <div style={{display:"flex",marginLeft:CLUE_W}}>
+              {board.colClues.map((clue,c)=>{
+                const isDoneCol = completedCols.has(c);
+                return (
+                  <div key={c} style={{width:cellSize,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",paddingBottom:4,minHeight:40}}>
+                    {clue.map((n,i)=>(
+                      <span key={i} style={{
+                        fontSize:Math.min(cellSize*0.4,11),fontWeight:700,
+                        color: isDoneCol ? "var(--color-accent-secondary)" : "var(--color-text-secondary)",
+                        lineHeight:1.3,fontFamily:"var(--font-mono)",
+                        transition:"color 0.3s",
+                      }}>{n}</span>
+                    ))}
+                  </div>
                 );
               })}
             </div>
-          ))}
+            {board.solution.map((_,r)=>{
+              const isDoneRow = completedRows.has(r);
+              return (
+                <div key={r} style={{display:"flex",alignItems:"center"}}>
+                  <div style={{width:CLUE_W,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:3,paddingRight:6,minHeight:cellSize}}>
+                    {board.rowClues[r].map((n,i)=>(
+                      <span key={i} style={{
+                        fontSize:Math.min(12,cellSize*0.45),fontWeight:700,
+                        color: isDoneRow ? "var(--color-accent-secondary)" : "var(--color-text-secondary)",
+                        fontFamily:"var(--font-mono)",transition:"color 0.3s",
+                      }}>{n}</span>
+                    ))}
+                  </div>
+                  {board.solution[r].map((_,c)=>{
+                    const val=grid[r]?.[c];
+                    const isSol = solutionRevealed && board.solution[r][c] === true;
+                    const check = checkState?.get(`${r},${c}`);
+                    const isDoneCol = completedCols.has(c);
+                    const isCellDone = isDoneRow || isDoneCol;
+                    const filledBg = check==="correct" ? "var(--color-accent-secondary)"
+                      : check==="incorrect" ? "var(--color-error)"
+                      : isSol ? "color-mix(in srgb, var(--color-error) 15%, var(--color-surface))"
+                      : val===true ? (isCellDone ? "color-mix(in srgb, var(--color-accent-secondary) 30%, var(--color-accent-primary))" : "var(--color-accent-primary)")
+                      : val===false ? "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"
+                      : theme==="dark" ? "rgba(6,13,24,0.85)" : "var(--color-surface)";
+                    return(
+                      <motion.button key={c} onClick={()=>handleCell(r,c)}
+                        whileTap={solutionRevealed?{}:{scale:0.88}}
+                        style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
+                          background: filledBg,
+                          borderRight:`0.5px solid ${cellBorder}`,borderBottom:`0.5px solid ${cellBorder}`,borderTop:"none",borderLeft:"none",
+                          cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.25s"}}>
+                        {val===true&&!check&&(
+                          <span style={{
+                            width:cellSize-4,height:cellSize-4,display:"block",
+                            background:isSol?"var(--color-error)":isCellDone?"var(--color-accent-secondary)":"var(--color-accent-primary)",
+                            borderRadius:2,
+                            boxShadow: theme==="dark" && !isSol
+                              ? (isCellDone
+                                ? "0 0 8px 2px rgba(57,255,20,0.45)"
+                                : "0 0 8px 2px rgba(0,255,255,0.35)")
+                              : "none",
+                            transition:"background 0.3s, box-shadow 0.3s",
+                          }}/>
+                        )}
+                        {val===false&&!solutionRevealed&&(
+                          <span style={{
+                            fontSize:Math.round(cellSize*0.55),
+                            color:"var(--color-error)",fontWeight:900,lineHeight:1,userSelect:"none",opacity:0.7,
+                          }}>✕</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:4}}>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 18px",borderRadius:10,border:"1px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,fontFamily:"var(--font-mono)",color:"var(--color-text-secondary)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase" as const,opacity:stage===1?0.38:1}}>← PREV</button>
+          <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>STAGE {stage}/{TOTAL_STAGES}</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 18px",borderRadius:10,border:"1px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,fontFamily:"var(--font-mono)",color:"var(--color-text-secondary)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase" as const}}>NEXT <ChevronRight size={12}/></button>
         </div>
       </GameShell>
 
