@@ -350,15 +350,16 @@ function TangoGameInner() {
                         width: "100%", height: "100%",
                         borderRadius: Math.round(cellSize * 0.22),
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        border: "1.5px solid",
-                        background: isSolution ? "rgba(255,68,68,0.06)" : isGiven ? "#F8F7F5" : hasError ? "rgba(255,68,68,0.08)" : "white",
-                        borderColor: isSolution ? "rgba(255,68,68,0.3)" : isGiven ? "#EDE9E4" : value ? "#DDD6F8" : "#EDE9E4",
+                        border: isGiven ? "1.5px solid var(--color-border)" : "1.5px solid",
+                        borderLeft: isGiven ? "3px solid var(--color-accent-primary)" : undefined,
+                        background: isSolution ? "color-mix(in srgb, var(--color-error) 6%, transparent)" : isGiven ? "var(--color-surface-2)" : hasError ? "color-mix(in srgb, var(--color-error) 10%, transparent)" : "var(--color-surface)",
+                        borderColor: isGiven ? undefined : isSolution ? "color-mix(in srgb, var(--color-error) 30%, transparent)" : value ? "color-mix(in srgb, var(--color-accent-primary) 30%, transparent)" : "var(--color-border)",
                         cursor: isGiven || solutionRevealed ? "default" : "pointer",
                         outline: "none",
                       }}>
                       {value === "S" && <SunIcon size={Math.round(cellSize * 0.48)} />}
                       {value === "M" && <MoonIcon size={Math.round(cellSize * 0.48)} />}
-                      {!value && <div style={{ width: Math.round(cellSize * 0.14), height: Math.round(cellSize * 0.14), borderRadius: "50%", background: isGiven ? "#CCC7BE" : "#E8E4DE" }} />}
+                      {!value && <div style={{ width: Math.round(cellSize * 0.14), height: Math.round(cellSize * 0.14), borderRadius: "50%", background: isGiven ? "var(--color-text-secondary)" : "color-mix(in srgb, var(--color-text-secondary) 50%, transparent)" }} />}
                     </motion.button>
                     {rightC && c < board.size - 1 && (
                       <div style={{
@@ -368,7 +369,8 @@ function TangoGameInner() {
                         zIndex: 10,
                         fontSize: Math.max(8, Math.round(cellSize * 0.22)),
                         fontWeight: 800,
-                        color: rightC === "same" ? "var(--color-accent-primary)" : "#F87171",
+                        color: rightC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
+                        background: "var(--color-surface-2)",
                         lineHeight: 1,
                         pointerEvents: "none",
                       }}>
@@ -383,7 +385,8 @@ function TangoGameInner() {
                         zIndex: 10,
                         fontSize: Math.max(8, Math.round(cellSize * 0.22)),
                         fontWeight: 800,
-                        color: bottomC === "same" ? "var(--color-accent-primary)" : "#F87171",
+                        color: bottomC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
+                        background: "var(--color-surface-2)",
                         lineHeight: 1,
                         pointerEvents: "none",
                       }}>
