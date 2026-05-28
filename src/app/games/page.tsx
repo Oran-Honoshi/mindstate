@@ -21,6 +21,7 @@ import {
 import { playClick, playSuccess } from "@/lib/audio/soundEngine";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
+import { createClient } from "@/lib/supabase/client";
 import { GameIcon, SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
@@ -668,14 +669,9 @@ function TrustpilotBadge() {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-function isOnboarded() {
-  if (localStorage.getItem("onboarded") === "1") return true;
-  return document.cookie.split(";").some(c => c.trim().startsWith("onboarded=1"));
-}
-
 export default function LandingPage() {
   const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, setTheme } = useSettingsStore();
-  const { user, profile, loading } = useAuthStore();
+  const { user, profile } = useAuthStore();
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
@@ -685,21 +681,22 @@ export default function LandingPage() {
   const { isInstallable, triggerInstall } = usePWAInstall();
 
   useEffect(() => {
-    if (loading) return; // wait for Supabase session to hydrate
-
-    if (user) {
-      // Logged-in users are always considered onboarded (covers OAuth flow)
-      localStorage.setItem("onboarded", "1");
+    async function check() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        localStorage.setItem("onboarded", "1");
+        setReady(true);
+        return;
+      }
+      if (localStorage.getItem("onboarded") !== "1") {
+        router.push("/onboard");
+        return;
+      }
       setReady(true);
-      return;
     }
-
-    if (!isOnboarded()) {
-      router.push("/onboard");
-      return;
-    }
-    setReady(true);
-  }, [user, loading, router]);
+    check();
+  }, [router]);
 
   useEffect(() => {
     if (!user || isPro) return;

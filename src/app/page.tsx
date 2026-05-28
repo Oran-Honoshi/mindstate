@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { createClient } from "@/lib/supabase/client";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 
 // ── Hero Memory: 3 pairs, unscored, 3 cols × 2 rows ───────────────────────────
@@ -115,13 +116,8 @@ const PLANS = [
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-function isOnboarded() {
-  if (localStorage.getItem("onboarded") === "1") return true;
-  return document.cookie.split(";").some(c => c.trim().startsWith("onboarded=1"));
-}
-
 export default function LandingPage() {
-  const { user, loading } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [ctaHref, setCtaHref] = useState("/onboard");
@@ -129,23 +125,24 @@ export default function LandingPage() {
   const accountLabel = user ? "Profile" : "Sign In";
 
   useEffect(() => {
-    if (loading) return; // wait for Supabase session to hydrate
-
-    if (user) {
-      // Logged-in users are always considered onboarded (covers OAuth flow)
-      localStorage.setItem("onboarded", "1");
+    async function check() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        localStorage.setItem("onboarded", "1");
+        setCtaHref("/games");
+        setReady(true);
+        return;
+      }
+      if (localStorage.getItem("onboarded") !== "1") {
+        router.push("/onboard");
+        return;
+      }
       setCtaHref("/games");
       setReady(true);
-      return;
     }
-
-    if (!isOnboarded()) {
-      router.push("/onboard");
-      return;
-    }
-    setCtaHref("/games");
-    setReady(true);
-  }, [user, loading, router]);
+    check();
+  }, [router]);
 
   if (!ready) return null;
 
