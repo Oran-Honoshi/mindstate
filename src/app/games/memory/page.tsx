@@ -210,7 +210,7 @@ function MemoryGameInner() {
           setTimeout(() => triggerConfetti(), 80);
           markStageCompleted(GAME_SLUG, stage);
           const next = getNextUncompletedStage(GAME_SLUG, TOTAL_STAGES);
-                    setNextUncompleted(next);
+          setNextUncompleted(next);
           if (shouldShowGameCompleteModal(GAME_SLUG, TOTAL_STAGES)) setTimeout(() => setShowGameComplete(true), 1800);
           if (user) {
             updateStreak(user.id);
@@ -255,9 +255,26 @@ function MemoryGameInner() {
     Math.floor((boardWidth - (cols - 1) * gap) / cols)
   );
 
+  const matchedPairs = Math.round(cards.filter(c => c.matched).length / 2);
+  const totalPairs = cards.length / 2;
+
+  const diffColor = diff === "hard"
+    ? "var(--color-error)"
+    : diff === "medium"
+    ? "var(--color-accent-primary)"
+    : "var(--color-accent-secondary)";
+
+  const boardBg = theme === "dark"
+    ? "radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18"
+    : `radial-gradient(circle, color-mix(in srgb, var(--color-accent-primary) 8%, transparent) 1px, transparent 1px), var(--color-surface)`;
+
+  const boardShadow = theme === "dark"
+    ? "0 0 0 1px rgba(0,255,255,0.04), 0 20px 64px rgba(0,0,0,0.5)"
+    : "0 4px 20px rgba(0,0,0,0.06)";
+
   if (!xpState) return (
     <div style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <p style={{ color:"var(--color-text-secondary)", fontSize:13 }}>Generating board...</p>
+      <p style={{ color:"var(--color-text-secondary)", fontSize:13, fontFamily:"var(--font-mono)" }}>GENERATING BOARD...</p>
     </div>
   );
 
@@ -274,70 +291,200 @@ function MemoryGameInner() {
         onUndo={handleUndo}
         onHint={handleHint}
       >
+        {/* Matrix board panel */}
         <div style={{
-          display:"grid",
-          gridTemplateColumns:`repeat(${cols}, ${cellSize}px)`,
-          gap,
-          width:"100%",
-          maxWidth: cols * cellSize + (cols - 1) * gap,
-          overflow:"hidden",
+          padding: 14,
+          borderRadius: 16,
+          background: boardBg,
+          backgroundSize: "18px 18px",
+          border: "1px solid color-mix(in srgb, var(--color-accent-primary) 18%, transparent)",
+          boxShadow: boardShadow,
         }}>
-          {cards.map(card => {
-            const iconData = ICONS[card.iconIdx];
-            const Icon = iconData.icon;
-            const cardColor = theme === "dark" ? iconData.darkColor : iconData.color;
-            const isRevealed = card.flipped || card.matched;
-            return (
-              <motion.button key={card.id}
-                onClick={() => handleFlip(card.id)}
-                whileTap={!card.flipped && !card.matched ? {scale: 0.92} : {}}
-                style={{
-                  width: cellSize, height: cellSize, borderRadius: "var(--radius)",
-                  border: card.matched || card.flipped
-                    ? "2px solid var(--color-accent-secondary)"
-                    : "2px solid var(--color-accent-primary)",
-                  background: isRevealed ? "var(--color-surface)" : "var(--color-surface-2)",
-                  cursor: card.matched ? "default" : "pointer",
-                  outline: "none", display:"flex", alignItems:"center", justifyContent:"center",
-                  boxShadow: card.matched
-                    ? "0 0 0 3px var(--color-accent-secondary)"
-                    : "0 2px 8px rgba(0,0,0,0.12)",
-                  transition: "border 0.15s, background 0.15s, box-shadow 0.15s",
-                }}>
-                {isRevealed && (
-                  <Icon
-                    size={Math.round(cellSize * 0.45)}
-                    color={cardColor}
-                    strokeWidth={theme === "dark" ? 1.5 : 1.8}
-                    style={theme === "dark" ? { filter: `drop-shadow(0 0 ${card.matched ? "8px" : "4px"} ${cardColor}80)` } : {}}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+            gap,
+            width: cols * cellSize + (cols - 1) * gap,
+          }}>
+            {cards.map(card => {
+              const iconData = ICONS[card.iconIdx];
+              const Icon = iconData.icon;
+              const cardColor = theme === "dark" ? iconData.darkColor : iconData.color;
+              const isRevealed = card.flipped || card.matched;
+
+              const glowAnimate = card.matched && theme === "dark"
+                ? { boxShadow: [
+                    "0 0 8px 1px rgba(57,255,20,0.28)",
+                    "0 0 18px 3px rgba(57,255,20,0.52)",
+                    "0 0 8px 1px rgba(57,255,20,0.28)",
+                  ] }
+                : card.flipped && !card.matched && theme === "dark"
+                ? { boxShadow: [
+                    "0 0 6px 1px rgba(0,255,255,0.18)",
+                    "0 0 14px 2px rgba(0,255,255,0.36)",
+                    "0 0 6px 1px rgba(0,255,255,0.18)",
+                  ] }
+                : { boxShadow: "0px 0px 0px 0px rgba(0,0,0,0)" };
+
+              const glowTransition = card.matched && theme === "dark"
+                ? { duration: 2.5, repeat: Infinity, ease: "easeInOut" as const }
+                : card.flipped && !card.matched && theme === "dark"
+                ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" as const }
+                : { duration: 0.25, ease: "easeOut" as const };
+
+              return (
+                <motion.button
+                  key={card.id}
+                  onClick={() => handleFlip(card.id)}
+                  whileTap={!card.matched && !card.flipped ? { scale: 0.91 } : {}}
+                  animate={glowAnimate}
+                  transition={{ boxShadow: glowTransition, scale: { duration: 0.1, ease: "easeOut" } }}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                    position: "relative",
+                    background: "transparent",
+                    border: "none",
+                    borderRadius: 10,
+                    padding: 0,
+                    cursor: card.matched ? "default" : "pointer",
+                    outline: "none",
+                    flexShrink: 0,
+                    perspective: "700px",
+                  }}
+                >
+                  {/* 3D flip container */}
+                  <div style={{
+                    position: "absolute",
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    transformStyle: "preserve-3d",
+                    transition: "transform 0.44s cubic-bezier(0.25,0.46,0.45,0.94)",
+                    transform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
+                  }}>
+                    {/* Back face: dot-matrix node */}
+                    <div style={{
+                      position: "absolute",
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      borderRadius: 10,
+                      background: theme === "dark"
+                        ? "radial-gradient(circle, rgba(0,255,255,0.18) 1px, transparent 1px), #080f1c"
+                        : `radial-gradient(circle, color-mix(in srgb, var(--color-accent-primary) 12%, transparent) 1px, transparent 1px), var(--color-surface-2)`,
+                      backgroundSize: "7px 7px",
+                      border: "1.5px solid color-mix(in srgb, var(--color-accent-primary) 24%, transparent)",
+                    }} />
+
+                    {/* Front face: icon */}
+                    <div style={{
+                      position: "absolute",
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      borderRadius: 10,
+                      background: card.matched
+                        ? "color-mix(in srgb, var(--color-accent-secondary) 9%, var(--color-surface))"
+                        : "var(--color-surface)",
+                      border: card.matched
+                        ? "1.5px solid var(--color-accent-secondary)"
+                        : "1.5px solid var(--color-accent-primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "border 0.3s ease-out, background 0.3s ease-out",
+                    }}>
+                      <Icon
+                        size={Math.round(cellSize * 0.42)}
+                        color={cardColor}
+                        strokeWidth={1.5}
+                        style={{
+                          filter: `drop-shadow(0 0 ${card.matched ? "7px" : "4px"} ${cardColor}${card.matched ? "c0" : "70"})`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:12 }}>
+        {/* Scoreboard row */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+          fontSize: 11,
+          fontFamily: "var(--font-mono)",
+          letterSpacing: "0.07em",
+          color: "var(--color-text-secondary)",
+          marginTop: 4,
+        }}>
+          <span>
+            PAIRS{" "}
+            <span style={{ color: matchedPairs > 0 ? "var(--color-accent-secondary)" : "inherit", fontWeight: 700 }}>
+              {matchedPairs}
+            </span>
+            <span style={{ opacity: 0.5 }}>/{totalPairs}</span>
+          </span>
+          <span style={{ opacity: 0.3 }}>│</span>
+          <span>
+            STAGE{" "}
+            <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{stage}</span>
+          </span>
+          <span style={{ opacity: 0.3 }}>│</span>
+          <span style={{ color: diffColor, fontWeight: 700 }}>{diff.toUpperCase()}</span>
+        </div>
+
+        {/* Nav controls */}
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:4 }}>
           <button onClick={() => stage > 1 && setStage(s => s-1)} disabled={stage === 1}
-            style={{ padding:"7px 14px", borderRadius:"var(--radius)", border:"1px solid var(--color-border)",
-              background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>
-            ← Prev
+            style={{
+              padding: "7px 14px", borderRadius: 10,
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              cursor: stage > 1 ? "pointer" : "not-allowed",
+              fontSize: 12, fontFamily: "var(--font-mono)",
+              color: "var(--color-text-secondary)",
+              opacity: stage === 1 ? 0.4 : 1,
+            }}>
+            ← PREV
           </button>
           <button onClick={() => loadStage(stage)}
-            style={{ padding:"7px 12px", borderRadius:"var(--radius)", border:"1px solid var(--color-border)",
-              background:"var(--color-surface)", cursor:"pointer", fontSize:11, color:"var(--color-text-secondary)" }}>
-            Restart
+            style={{
+              padding: "7px 12px", borderRadius: 10,
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              cursor: "pointer", fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-text-secondary)",
+            }}>
+            RESTART
           </button>
           <button onClick={() => setShowMap(true)}
-            style={{ padding:"7px 12px", borderRadius:"var(--radius)", border:"1px solid var(--color-border)",
-              background:"var(--color-surface)", cursor:"pointer", fontSize:11, color:"var(--color-text-secondary)", fontWeight:600 }}>
-            Map
+            style={{
+              padding: "7px 12px", borderRadius: 10,
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              cursor: "pointer", fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-text-secondary)", fontWeight: 600,
+            }}>
+            MAP
           </button>
           <button onClick={() => setStage(s => s+1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"7px 14px", borderRadius:"var(--radius)",
-              border:"1px solid var(--color-border)", background:"var(--color-surface)",
-              cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>
-            Next <ChevronRight size={13}/>
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              padding: "7px 14px", borderRadius: 10,
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              cursor: "pointer", fontSize: 12,
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-text-secondary)", fontWeight: 600,
+            }}>
+            NEXT <ChevronRight size={13}/>
           </button>
         </div>
       </GameShell>
