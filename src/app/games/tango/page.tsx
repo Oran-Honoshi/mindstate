@@ -27,9 +27,9 @@ import { SunIcon, MoonIcon } from "@/components/icons/GameIcons";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
-import { GameInstructions } from "@/components/ui/GameInstructions";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
@@ -54,6 +54,7 @@ function formatTime(totalSeconds: number): string {
 
 function TangoGameInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<TangoBoard | null>(null);
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>([]);
@@ -227,15 +228,12 @@ function TangoGameInner() {
       if (timerRef.current) clearInterval(timerRef.current);
       playSuccess();
       setTimeout(() => triggerConfetti(), 80);
-
       markStageCompleted(GAME_SLUG, stage);
       const next = getNextUncompletedStage(GAME_SLUG, TOTAL_STAGES);
       setNextUncompleted(next);
-
       if (shouldShowGameCompleteModal(GAME_SLUG, TOTAL_STAGES)) {
         setTimeout(() => setShowGameComplete(true), 1800);
       }
-
       if (user) {
         updateStreak(user.id);
         saveScore({
@@ -286,17 +284,21 @@ function TangoGameInner() {
 
   if (!board || !xpState) return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "var(--color-text-secondary)", fontSize: 13 }}>Generating board...</p>
+      <p style={{ color: "var(--color-text-secondary)", fontSize: 13, fontFamily: "var(--font-mono)" }}>GENERATING BOARD...</p>
     </div>
   );
 
-  const diff = getDifficulty(stage);
   const cellSize = Math.floor((maxW - (board.size - 1) * 10) / board.size);
+  const cellRadius = Math.round(cellSize * 0.22);
 
   const cm = new Map<string, "same" | "diff">();
   board.constraints.forEach((c) =>
     cm.set(`${c.row1}-${c.col1}-${c.row2}-${c.col2}`, c.type)
   );
+
+  const boardBg = theme === "dark"
+    ? "radial-gradient(circle, rgba(0,255,255,0.07) 1px, transparent 1px), #060d18"
+    : `radial-gradient(circle, color-mix(in srgb, var(--color-accent-primary) 7%, transparent) 1px, transparent 1px), var(--color-surface)`;
 
   return (
     <>
@@ -316,7 +318,7 @@ function TangoGameInner() {
 
         {solutionRevealed && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "rgba(255,68,68,0.08)", border: "0.5px solid rgba(255,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "var(--color-error)", marginBottom: 8 }}>
+            style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "color-mix(in srgb, var(--color-error) 8%, transparent)", border: "0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--color-error)", marginBottom: 8 }}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
@@ -327,95 +329,187 @@ function TangoGameInner() {
           <span>· Equal per row & col · No 3 in a row</span>
         </div>
 
-        <div style={{ width: "100%", maxWidth: maxW, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.size},${cellSize}px)`, gap: 10 }}>
-            {board.puzzle.map((_, r) =>
-              board.puzzle[r].map((_, c) => {
-                const given = board.puzzle[r][c];
-                const isGiven = given !== null;
-                const value = playerGrid[r][c];
-                const key = `${r}-${c}`;
-                const hasError = errorRows.has(r) || errorCols.has(c);
-                const isSolution = solutionRevealed && !isGiven;
-                const rightC = cm.get(`${r}-${c}-${r}-${c + 1}`);
-                const bottomC = cm.get(`${r}-${c}-${r + 1}-${c}`);
-                return (
-                  <div key={key} style={{ position: "relative", width: cellSize, height: cellSize }}>
-                    <motion.button
-                      onClick={() => handleCellClick(r, c)}
-                      whileTap={!isGiven && !solutionRevealed ? { scale: 0.88 } : {}}
-                      animate={squish === key ? { scaleX: [1, 0.86, 1.08, 1], scaleY: [1, 1.1, 0.94, 1] } : {}}
-                      transition={{ duration: 0.32 }}
-                      style={{
-                        width: "100%", height: "100%",
-                        borderRadius: Math.round(cellSize * 0.22),
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        border: isGiven ? "1.5px solid var(--color-border)" : "1.5px solid",
-                        borderLeft: isGiven ? "3px solid var(--color-accent-primary)" : undefined,
-                        background: isSolution ? "color-mix(in srgb, var(--color-error) 6%, transparent)" : isGiven ? "var(--color-surface-2)" : hasError ? "color-mix(in srgb, var(--color-error) 10%, transparent)" : "var(--color-surface)",
-                        borderColor: isGiven ? undefined : isSolution ? "color-mix(in srgb, var(--color-error) 30%, transparent)" : value ? "color-mix(in srgb, var(--color-accent-primary) 30%, transparent)" : "var(--color-border)",
-                        cursor: isGiven || solutionRevealed ? "default" : "pointer",
-                        outline: "none",
-                      }}>
-                      {value === "S" && <SunIcon size={Math.round(cellSize * 0.48)} />}
-                      {value === "M" && <MoonIcon size={Math.round(cellSize * 0.48)} />}
-                      {!value && <div style={{ width: Math.round(cellSize * 0.14), height: Math.round(cellSize * 0.14), borderRadius: "50%", background: isGiven ? "var(--color-text-secondary)" : "color-mix(in srgb, var(--color-text-secondary) 50%, transparent)" }} />}
-                    </motion.button>
-                    {rightC && c < board.size - 1 && (
-                      <div style={{
-                        position: "absolute",
-                        right: -(Math.max(6, Math.round(cellSize * 0.2))),
-                        top: "50%", transform: "translateY(-50%)",
-                        zIndex: 10,
-                        fontSize: Math.max(8, Math.round(cellSize * 0.22)),
-                        fontWeight: 800,
-                        color: rightC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
-                        background: "var(--color-surface-2)",
-                        lineHeight: 1,
-                        pointerEvents: "none",
-                      }}>
-                        {rightC === "same" ? "=" : "×"}
-                      </div>
-                    )}
-                    {bottomC && r < board.size - 1 && (
-                      <div style={{
-                        position: "absolute",
-                        bottom: -(Math.max(6, Math.round(cellSize * 0.2))),
-                        left: "50%", transform: "translateX(-50%)",
-                        zIndex: 10,
-                        fontSize: Math.max(8, Math.round(cellSize * 0.22)),
-                        fontWeight: 800,
-                        color: bottomC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
-                        background: "var(--color-surface-2)",
-                        lineHeight: 1,
-                        pointerEvents: "none",
-                      }}>
-                        {bottomC === "same" ? "=" : "×"}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
+        {/* Board panel */}
+        <div style={{
+          padding: 14,
+          borderRadius: 16,
+          background: boardBg,
+          backgroundSize: "18px 18px",
+          border: "1px solid color-mix(in srgb, var(--color-accent-primary) 16%, transparent)",
+          boxShadow: theme === "dark"
+            ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+            : "0 4px 20px rgba(0,0,0,0.06)",
+        }}>
+          <div style={{ width: "100%", maxWidth: maxW, overflow: "hidden" }}>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.size},${cellSize}px)`, gap: 10 }}>
+              {board.puzzle.map((_, r) =>
+                board.puzzle[r].map((_, c) => {
+                  const given = board.puzzle[r][c];
+                  const isGiven = given !== null;
+                  const value = playerGrid[r][c];
+                  const key = `${r}-${c}`;
+                  const cellKey = `${r},${c}`;
+                  const hasError = errorRows.has(r) || errorCols.has(c);
+                  const isErrorCell = errorCells.has(cellKey);
+                  const isSolution = solutionRevealed && !isGiven;
+                  const rightC = cm.get(`${r}-${c}-${r}-${c + 1}`);
+                  const bottomC = cm.get(`${r}-${c}-${r + 1}-${c}`);
+
+                  const cellBg = isSolution
+                    ? "color-mix(in srgb, var(--color-error) 6%, transparent)"
+                    : isGiven
+                    ? "var(--color-surface-2)"
+                    : hasError
+                    ? "color-mix(in srgb, var(--color-error) 10%, transparent)"
+                    : value === "S"
+                    ? "color-mix(in srgb, rgba(251,191,36,1) 6%, var(--color-surface))"
+                    : value === "M"
+                    ? "color-mix(in srgb, rgba(147,197,253,1) 6%, var(--color-surface))"
+                    : "var(--color-surface)";
+
+                  const cellBorder = isSolution
+                    ? "1.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)"
+                    : isGiven
+                    ? "1.5px solid color-mix(in srgb, var(--color-accent-primary) 22%, var(--color-border))"
+                    : isErrorCell || hasError
+                    ? "1.5px solid color-mix(in srgb, var(--color-error) 40%, transparent)"
+                    : value
+                    ? "1.5px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent)"
+                    : "1.5px solid var(--color-border)";
+
+                  return (
+                    <div key={key} style={{ position: "relative", width: cellSize, height: cellSize }}>
+                      {/* Ambient glow layer */}
+                      {theme === "dark" && (isErrorCell || (value && !isGiven)) && (
+                        <motion.div
+                          animate={{ opacity: [0.35, 0.85, 0.35] }}
+                          transition={{
+                            duration: isErrorCell ? 0.8 : value === "S" ? 2.6 : 2.0,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                          style={{
+                            position: "absolute",
+                            inset: -4,
+                            borderRadius: cellRadius + 4,
+                            pointerEvents: "none",
+                            zIndex: 0,
+                            background: isErrorCell
+                              ? "radial-gradient(circle, rgba(255,68,68,0.35), transparent 68%)"
+                              : value === "S"
+                              ? "radial-gradient(circle, rgba(251,191,36,0.28), transparent 68%)"
+                              : "radial-gradient(circle, rgba(147,197,253,0.28), transparent 68%)",
+                          }}
+                        />
+                      )}
+
+                      <motion.button
+                        onClick={() => handleCellClick(r, c)}
+                        whileTap={!isGiven && !solutionRevealed ? { scale: 0.88 } : {}}
+                        whileHover={!isGiven && !solutionRevealed && !value ? { boxShadow: "inset 0 0 0 1.5px rgba(0,255,255,0.32)" } : {}}
+                        animate={squish === key ? { scaleX: [1, 0.86, 1.08, 1], scaleY: [1, 1.1, 0.94, 1] } : {}}
+                        transition={{ duration: 0.32 }}
+                        style={{
+                          position: "relative", zIndex: 1,
+                          width: "100%", height: "100%",
+                          borderRadius: cellRadius,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          border: cellBorder,
+                          background: cellBg,
+                          cursor: isGiven || solutionRevealed ? "default" : "pointer",
+                          outline: "none",
+                        }}>
+                        {value === "S" && <SunIcon size={Math.round(cellSize * 0.48)} />}
+                        {value === "M" && <MoonIcon size={Math.round(cellSize * 0.48)} />}
+                        {!value && (
+                          <div style={{
+                            width: Math.round(cellSize * 0.14),
+                            height: Math.round(cellSize * 0.14),
+                            borderRadius: "50%",
+                            background: isGiven
+                              ? "var(--color-text-secondary)"
+                              : "color-mix(in srgb, var(--color-text-secondary) 50%, transparent)",
+                          }} />
+                        )}
+                      </motion.button>
+
+                      {/* Constraint chip — right */}
+                      {rightC && c < board.size - 1 && (
+                        <div style={{
+                          position: "absolute",
+                          right: -(Math.max(10, Math.round(cellSize * 0.24))),
+                          top: "50%", transform: "translateY(-50%)",
+                          zIndex: 10,
+                          padding: "2px 5px",
+                          borderRadius: 20,
+                          background: theme === "dark"
+                            ? "color-mix(in srgb, #0a1220 85%, transparent)"
+                            : "var(--color-surface)",
+                          border: `1px solid ${rightC === "same"
+                            ? "color-mix(in srgb, var(--color-text-primary) 28%, transparent)"
+                            : "color-mix(in srgb, var(--color-error) 45%, transparent)"}`,
+                          backdropFilter: "blur(6px)",
+                          fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+                          fontWeight: 800,
+                          fontFamily: "var(--font-mono)",
+                          color: rightC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
+                          lineHeight: 1,
+                          pointerEvents: "none",
+                        }}>
+                          {rightC === "same" ? "=" : "×"}
+                        </div>
+                      )}
+
+                      {/* Constraint chip — bottom */}
+                      {bottomC && r < board.size - 1 && (
+                        <div style={{
+                          position: "absolute",
+                          bottom: -(Math.max(10, Math.round(cellSize * 0.24))),
+                          left: "50%", transform: "translateX(-50%)",
+                          zIndex: 10,
+                          padding: "2px 5px",
+                          borderRadius: 20,
+                          background: theme === "dark"
+                            ? "color-mix(in srgb, #0a1220 85%, transparent)"
+                            : "var(--color-surface)",
+                          border: `1px solid ${bottomC === "same"
+                            ? "color-mix(in srgb, var(--color-text-primary) 28%, transparent)"
+                            : "color-mix(in srgb, var(--color-error) 45%, transparent)"}`,
+                          backdropFilter: "blur(6px)",
+                          fontSize: Math.max(8, Math.round(cellSize * 0.22)),
+                          fontWeight: 800,
+                          fontFamily: "var(--font-mono)",
+                          color: bottomC === "same" ? "var(--color-text-primary)" : "var(--color-error)",
+                          lineHeight: 1,
+                          pointerEvents: "none",
+                        }}>
+                          {bottomC === "same" ? "=" : "×"}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
           <button onClick={() => stage > 1 && setStage((s) => s - 1)} disabled={stage === 1}
-            style={{ padding: "7px 14px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
-            ← Prev
+            style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
+            ← PREV
           </button>
           <button onClick={() => loadStage(stage)}
-            style={{ padding: "7px 12px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, color: "var(--color-text-secondary)" }}>
-            Restart
+            style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
+            RESTART
           </button>
           <button onClick={() => setShowMap(true)}
-            style={{ padding: "7px 12px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 600 }}>
-            Map
+            style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
+            MAP
           </button>
           <button onClick={() => setStage((s) => s + 1)}
-            style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: "var(--radius)", border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600 }}>
-            Next <ChevronRight size={13} />
+            style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
+            NEXT <ChevronRight size={13} />
           </button>
         </div>
       </GameShell>
