@@ -22,6 +22,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -39,6 +40,13 @@ function shareResult(stage:number,score:number,best:number){const text=` MindEle
 type Grid=number[][];
 const TILE_COLORS:Record<number,{bg:string;color:string}>={0:{bg:"#EDE0C8",color:"transparent"},2:{bg:"#EEE4DA",color:"#776E65"},4:{bg:"#EDE0C8",color:"#776E65"},8:{bg:"#F2B179",color:"white"},16:{bg:"#F59563",color:"white"},32:{bg:"#F67C5F",color:"white"},64:{bg:"#F65E3B",color:"white"},128:{bg:"#EDCF72",color:"white"},256:{bg:"#EDCC61",color:"white"},512:{bg:"#EDC850",color:"white"},1024:{bg:"#EDC53F",color:"white"},2048:{bg:"#EDC22E",color:"white"},4096:{bg:"#3C3A32",color:"white"},8192:{bg:"#3C3A32",color:"white"}};
 function getColor(v:number):{bg:string;color:string}{return TILE_COLORS[v]??{bg:"#3C3A32",color:"white"};}
+function getTileGlow(val:number,isDark:boolean):string{
+  if(!isDark||val<8)return"none";
+  const{bg}=getColor(val);
+  const sz=val>=2048?22:val>=512?16:val>=128?12:val>=32?8:6;
+  const op=val>=2048?"dd":val>=512?"aa":val>=128?"88":val>=32?"66":"44";
+  return`0 0 ${sz}px ${bg}${op}, 0 2px 6px rgba(0,0,0,0.5)`;
+}
 function initGrid(seed:number):Grid{const g=Array.from({length:4},()=>Array(4).fill(0));addTile(g,seed);addTile(g,seed+1);return g;}
 function addTile(g:Grid,seed:number){const empty:number[][]=[];g.forEach((row,r)=>row.forEach((v,c)=>{if(v===0)empty.push([r,c]);}));if(!empty.length)return;const idx=Math.abs(seed*1664525+1013904223)%empty.length;const[r,c]=empty[Math.abs(idx)%empty.length];g[r][c]=Math.random()<0.9?2:4;}
 function compress(row:number[]):{row:number[];merged:boolean}{const nums=row.filter(v=>v!==0);let merged=false;for(let i=0;i<nums.length-1;i++){if(nums[i]===nums[i+1]){nums[i]*=2;nums.splice(i+1,1);merged=true;}}while(nums.length<4)nums.push(0);return{row:nums,merged};}
@@ -48,6 +56,7 @@ function hasLost(g:Grid){if(g.some(r=>r.some(v=>v===0)))return false;for(let r=0
 
 function TwentyFortyEightProPageInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
   const[showMap,setShowMap]=useState(false);
   const[showTokenModal,setShowTokenModal]=useState(false);
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
@@ -151,8 +160,17 @@ function TwentyFortyEightProPageInner(){
     window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey);
   },[handleMove]);
 
+  const isDark=theme==="dark";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,360):320;
-  const cellSize=Math.floor((maxW-12)/4);
+  const cellSize=Math.floor((maxW-20)/4);
+  const boardBg=isDark
+    ?{background:`radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 1px), #060d18`,backgroundSize:"18px 18px"}
+    :theme==="paper"
+    ?{background:`radial-gradient(circle, rgba(100,80,60,0.1) 1px, transparent 1px), #f0e8d8`,backgroundSize:"18px 18px"}
+    :{background:"var(--color-surface-2)"};
+  const boardShadow=isDark
+    ?"0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 14%, transparent), 0 20px 60px rgba(0,0,0,0.6)"
+    :"0 8px 24px rgba(0,0,0,0.15)";
 
   return(
     <>
@@ -169,24 +187,28 @@ function TwentyFortyEightProPageInner(){
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,padding:"16px 16px 32px"}}>
-          <div style={{display:"flex",gap:12}}>
-            {[{label:"Score",value:score},{label:"Best Tile",value:bestTile}].map(s=>(
-              <div key={s.label} style={{background:"var(--color-surface-2)",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
-                <p style={{fontSize:10,fontWeight:700,color:"var(--color-text-secondary)",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
-                <p style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
+          <div style={{display:"flex",gap:10}}>
+            {[{label:"SCORE",value:score.toLocaleString()},{label:"BEST",value:bestTile.toLocaleString()}].map(s=>(
+              <div key={s.label} style={{
+                background:isDark?"rgba(6,13,24,0.85)":"var(--color-surface-2)",
+                border:isDark?"1px solid rgba(0,255,255,0.1)":"none",
+                borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:100,
+                boxShadow:isDark?"inset 0 1px 0 rgba(255,255,255,0.04)":"none"}}>
+                <p style={{fontSize:10,fontWeight:700,color:"var(--color-text-secondary)",letterSpacing:"0.12em",marginBottom:2,fontFamily:"var(--font-mono)"}}>{s.label}</p>
+                <p style={{fontSize:22,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-mono)",letterSpacing:"-0.02em"}}>{s.value}</p>
               </div>
             ))}
           </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
-              Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:11,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340,fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+              TARGET: {target} · KEEP HIGHEST TILE IN CORNER · XP SET TO 1
             </motion.div>
           )}
 
           <div
-            style={{background:"var(--color-surface-2)",borderRadius:16,padding:8,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",touchAction:"none",opacity:solutionRevealed?0.7:1}}
+            style={{...boardBg,borderRadius:16,padding:10,boxShadow:boardShadow,touchAction:"none",opacity:solutionRevealed?0.7:1,border:isDark?"1px solid color-mix(in srgb, var(--color-accent-primary) 12%, transparent)":"none"}}
             onTouchStart={e=>{const t=e.touches[0];touchStart.current={x:t.clientX,y:t.clientY};}}
             onTouchEnd={e=>{
               if(!touchStart.current)return;
@@ -200,10 +222,19 @@ function TwentyFortyEightProPageInner(){
             <div style={{display:"grid",gridTemplateColumns:`repeat(4,${cellSize}px)`,gap:8}}>
               {grid.map((row,r)=>row.map((val,c)=>{
                 const{bg,color}=getColor(val);
+                const tileGlow=getTileGlow(val,isDark);
                 const fontSize=val>=1000?cellSize*0.28:cellSize*0.38;
+                const emptyBg=isDark?"rgba(4,10,20,0.85)":"#EDE0C8";
                 return(
-                  <motion.div key={`${r}-${c}-${val}`} initial={val>0?{scale:0.8,opacity:0}:{}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}}
-                    style={{width:cellSize,height:cellSize,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color,fontFamily:"var(--font-mono)",boxShadow:val>=8?"0 2px 8px rgba(0,0,0,0.2)":"none"}}>
+                  <motion.div key={`${r}-${c}-${val}`}
+                    initial={val>0?{scale:0.72,opacity:0}:{}}
+                    animate={{scale:1,opacity:1}}
+                    transition={{type:"spring",stiffness:420,damping:22}}
+                    style={{width:cellSize,height:cellSize,borderRadius:8,background:val===0?emptyBg:bg,
+                      display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,
+                      color:val===0?"transparent":color,fontFamily:"var(--font-mono)",
+                      boxShadow:tileGlow,
+                      border:isDark&&val===0?"1px solid rgba(255,255,255,0.04)":"none"}}>
                     {val||""}
                   </motion.div>
                 );
@@ -211,23 +242,29 @@ function TwentyFortyEightProPageInner(){
             </div>
           </div>
 
-          <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>
-            {solutionRevealed?"Board locked · Retry to play properly":"Arrow keys or swipe to move · Reach "+target+" to win"}
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center",fontFamily:"var(--font-mono)",letterSpacing:"0.04em"}}>
+            {solutionRevealed?"BOARD LOCKED · RETRY TO PLAY PROPERLY":"ARROWS OR SWIPE · REACH "+target+" TO WIN"}
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,48px)",gridTemplateRows:"repeat(2,48px)",gap:6}}>
-            {[{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}].map(btn=>(
-              <button key={btn.dir} onClick={()=>handleMove(btn.dir as any)} disabled={solutionRevealed}
-                style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1}}>
+            {([{dir:"up",label:"↑",col:2,row:1},{dir:"left",label:"←",col:1,row:2},{dir:"down",label:"↓",col:2,row:2},{dir:"right",label:"→",col:3,row:2}] as const).map(btn=>(
+              <motion.button key={btn.dir} onClick={()=>handleMove(btn.dir)} disabled={solutionRevealed}
+                whileHover={!solutionRevealed?{boxShadow:isDark?"0 0 12px rgba(0,255,255,0.15)":"none",scale:1.06}:{}}
+                style={{gridColumn:btn.col,gridRow:btn.row,width:48,height:48,borderRadius:12,
+                  border:isDark?"1px solid rgba(0,255,255,0.12)":"0.5px solid var(--color-border)",
+                  background:isDark?"rgba(6,13,24,0.8)":"var(--color-surface)",
+                  fontSize:18,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:solutionRevealed?0.4:1,
+                  color:"var(--color-text-primary)",outline:"none",
+                  boxShadow:isDark?"inset 0 1px 0 rgba(255,255,255,0.04)":"none"}}>
                 {btn.label}
-              </button>
+              </motion.button>
             ))}
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
+            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
           </div>
         </div>
       </GameShell>
@@ -235,21 +272,35 @@ function TwentyFortyEightProPageInner(){
       <AnimatePresence>
         {(gameState==="won"||gameState==="lost")&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              {gameState==="won"?<Trophy size={48} color="#F59E0B" style={{margin:"0 auto 16px"}}/>:<div style={{fontSize:48,marginBottom:16}}>😔</div>}
-              <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>{gameState==="won"?`${target} Reached!`:"Game Over"}</h2>
-              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Score: {score.toLocaleString()} · Best: {bestTile}</p>
+            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
+            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} transition={{type:"spring",stiffness:380,damping:28}}
+              style={{background:isDark?"rgba(8,16,28,0.97)":"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",
+                boxShadow:isDark
+                  ?gameState==="won"
+                    ?"0 0 0 1px rgba(237,194,46,0.3), 0 32px 80px rgba(0,0,0,0.7), 0 0 48px rgba(237,194,46,0.08)"
+                    :"0 0 0 1px rgba(255,68,68,0.15), 0 32px 80px rgba(0,0,0,0.7)"
+                  :"0 32px 80px rgba(0,0,0,0.2)",
+                border:isDark?"none":"0.5px solid var(--color-border)"}}>
+              {gameState==="won"
+                ?<Trophy size={44} color="#EDC22E" style={{margin:"0 auto 16px",filter:isDark?"drop-shadow(0 0 12px #EDC22E88)":"none"}}/>
+                :<div style={{fontSize:40,marginBottom:16,fontFamily:"var(--font-mono)"}}>✕</div>}
+              <h2 style={{fontSize:24,fontWeight:700,
+                color:isDark?(gameState==="won"?"#EDC22E":"var(--color-error)"):"var(--color-text-primary)",
+                fontFamily:"var(--font-mono)",marginBottom:6,letterSpacing:"0.04em"}}>
+                {gameState==="won"?`${target} REACHED`:"GAME OVER"}
+              </h2>
+              <p style={{fontSize:11,color:"var(--color-text-secondary)",marginBottom:24,fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>
+                SCORE: {score.toLocaleString()} · BEST: {bestTile}
+              </p>
               {gameState==="won"&&(
-                <div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}>
-                  <p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
-                  <p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p>
+                <div style={{background:isDark?"rgba(237,194,46,0.07)":"var(--color-surface-2)",border:isDark?"1px solid rgba(237,194,46,0.22)":"none",borderRadius:16,padding:20,marginBottom:20,boxShadow:isDark?"0 0 20px rgba(237,194,46,0.06)":"none"}}>
+                  <p style={{fontSize:10,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4,letterSpacing:"0.1em",fontFamily:"var(--font-mono)"}}>XP EARNED</p>
+                  <p style={{fontSize:48,fontWeight:700,color:isDark?"#EDC22E":"var(--color-accent-primary)",fontFamily:"var(--font-mono)"}}>{finalXP}</p>
                 </div>
               )}
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
-                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase"}}>RETRY</button>
+                <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:11,fontWeight:700,color:"#060d18",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",boxShadow:isDark?"0 0 16px rgba(0,255,255,0.2)":"none"}}>NEXT <ChevronRight size={13}/></button>
               </div>
             </motion.div>
           </motion.div>
