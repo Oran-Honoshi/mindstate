@@ -24,6 +24,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -35,6 +36,7 @@ function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math
 
 function GravitySortPageInner(){
   const{user}=useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<GravityBoard|null>(null);
   const[blocks,setBlocks]=useState<number[][]>([]);
@@ -163,8 +165,25 @@ function GravitySortPageInner(){
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p></div>);
 
-  const gap=8;
+  const gap=10;
   const blockSize=Math.min(56,Math.floor((boardWidth-(board.cols-1)*gap)/board.cols));
+
+  const boardBg = theme === "dark"
+    ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+    : theme === "light"
+    ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+    : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`;
+
+  const navBtnStyle = {
+    padding: "8px 18px", borderRadius: 10,
+    border: "1px solid var(--color-border)",
+    background: "var(--color-surface)",
+    cursor: "pointer", fontSize: 11,
+    fontFamily: "var(--font-mono)",
+    color: "var(--color-text-secondary)",
+    fontWeight: 600, letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+  };
 
   return(
     <>
@@ -181,43 +200,126 @@ function GravitySortPageInner(){
         onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20,padding:"16px 16px 32px"}}>
-          <div style={{fontSize:12,color:"var(--color-text-secondary)"}}>Moves: {moves}</div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
 
-          {!solutionRevealed&&<div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>Click a column to pick up its top block · Click another to drop it<br/>Sort each color into its own column</div>}
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+            MOVES {moves} · CLICK COLUMN TO LIFT TOP BALL · CLICK AGAIN TO DROP
+          </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400}}>
-              Strategy: Move top block to its matching color column · Use free columns as buffers · XP set to 1
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:12,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400,fontFamily:"var(--font-mono)"}}>
+              STRATEGY: MOVE TOP BALL TO ITS COLOR COLUMN · USE FREE COLUMNS AS BUFFERS
             </motion.div>
           )}
 
-          <div style={{display:"flex",gap:gap,flexWrap:"wrap",justifyContent:"center"}}>
-            {board.colors.map((color,i)=>(<div key={i} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:color,opacity:0.4,marginBottom:2}}/><span style={{fontSize:9,color:"var(--color-text-secondary)"}}>col {i+1}</span></div>))}
-            {Array.from({length:board.cols-board.colors.length},(_,i)=>(<div key={`e-${i}`} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:"var(--color-border)",marginBottom:2}}/><span style={{fontSize:9,color:"var(--color-text-secondary)"}}>free</span></div>))}
-          </div>
-
-          <div style={{display:"flex",gap:gap,alignItems:"flex-end",maxWidth:"100%",overflow:"hidden"}}>
-            {blocks.map((col,ci)=>{
-              const isSelected=selected===ci;
-              const isSorted=col.length>0&&col.every(b=>b===ci)&&ci<board.colors.length;
-              const check=checkState?.get(ci);
-              const borderColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSelected?"var(--color-accent-primary)":isSorted?"var(--color-accent-secondary)":"var(--color-border)";
-              return(
-                <motion.div key={ci} onClick={()=>handleColClick(ci)} animate={isSelected?{y:-8}:{y:0}} transition={{type:"spring",stiffness:400,damping:25}}
-                  style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(0,255,255,0.06)":"var(--color-surface)",borderRadius:14,padding:6,border:`2px solid ${borderColor}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
-                  {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"↑"}</motion.div>))}
-                  {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>✓</div>}
-                </motion.div>
-              );
-            })}
+          <div style={{
+            padding: 14, borderRadius: 18,
+            background: boardBg, backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+            boxShadow: theme === "dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}>
+            <div style={{display:"flex",gap:gap,alignItems:"flex-end"}}>
+              {blocks.map((col,ci)=>{
+                const isSelected=selected===ci;
+                const isSorted=col.length>0&&col.every(b=>b===ci)&&ci<board.colors.length;
+                const check=checkState?.get(ci);
+                const colColor = ci < board.colors.length ? board.colors[ci] : undefined;
+                const borderColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSelected?"var(--color-accent-primary)":isSorted?"var(--color-accent-secondary)":"var(--color-border)";
+                return(
+                  <motion.div key={ci}
+                    onClick={()=>handleColClick(ci)}
+                    animate={
+                      isSorted && theme === "dark" ? {
+                        y: 0,
+                        boxShadow: [
+                          `0 0 0 2px rgba(57,255,20,0.35), 0 4px 20px rgba(0,0,0,0.45)`,
+                          `0 0 0 2px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.28), 0 4px 20px rgba(0,0,0,0.45)`,
+                          `0 0 0 2px rgba(57,255,20,0.35), 0 4px 20px rgba(0,0,0,0.45)`,
+                        ],
+                      } : isSelected ? {
+                        y: -10,
+                        boxShadow: `0 0 0 2px rgba(0,255,255,0.9), 0 0 18px rgba(0,255,255,0.22), 0 8px 24px rgba(0,0,0,0.45)`,
+                      } : {
+                        y: 0,
+                        boxShadow: `0 2px 8px rgba(0,0,0,0.3)`,
+                      }
+                    }
+                    transition={isSorted && theme === "dark" ? {
+                      boxShadow: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
+                      y: { type: "spring", stiffness: 400, damping: 25 },
+                    } : { type: "spring", stiffness: 400, damping: 25 }}
+                    style={{
+                      cursor: solutionRevealed ? "not-allowed" : "pointer",
+                      display: "flex", flexDirection: "column-reverse", gap: 5,
+                      width: blockSize,
+                      minHeight: board.rows * blockSize + board.rows * 5,
+                      background: theme === "dark"
+                        ? isSelected ? "rgba(0,255,255,0.06)" : "rgba(6,13,24,0.7)"
+                        : isSelected ? "color-mix(in srgb, var(--color-accent-primary) 6%, var(--color-surface))" : "var(--color-surface)",
+                      borderRadius: 14, padding: 6,
+                      border: `2px solid ${borderColor}`,
+                      transition: "border-color 0.2s, background 0.2s",
+                      position: "relative", flexShrink: 0,
+                      opacity: solutionRevealed ? 0.8 : 1,
+                    }}>
+                    {colColor && (
+                      <div style={{
+                        position: "absolute", bottom: -12, left: "50%", transform: "translateX(-50%)",
+                        width: blockSize * 0.55, height: 4, borderRadius: 2,
+                        background: colColor,
+                        opacity: 0.65,
+                        boxShadow: theme === "dark" ? `0 0 6px ${colColor}99` : "none",
+                      }}/>
+                    )}
+                    {col.map((block,bi)=>(
+                      <motion.div key={`${ci}-${bi}`}
+                        initial={{scale:0.7,opacity:0}}
+                        animate={{scale:1,opacity:1}}
+                        transition={{type:"spring",stiffness:400,damping:25}}
+                        style={{
+                          width: blockSize - 12, height: blockSize - 12,
+                          borderRadius: "50%",
+                          background: board.colors[block],
+                          alignSelf: "center",
+                          boxShadow: theme === "dark"
+                            ? `0 0 ${blockSize / 3}px ${board.colors[block]}cc, 0 0 ${blockSize / 6}px ${board.colors[block]}, 0 3px 8px rgba(0,0,0,0.4)`
+                            : `0 3px 10px ${board.colors[block]}60`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0, position: "relative",
+                        }}>
+                        {bi === col.length - 1 && isSelected && (
+                          <span style={{fontSize: 13, color: "rgba(255,255,255,0.9)", fontWeight: 700}}>↑</span>
+                        )}
+                      </motion.div>
+                    ))}
+                    {isSorted && (
+                      <div style={{
+                        position: "absolute", top: -16, left: "50%", transform: "translateX(-50%)",
+                        fontSize: 12, color: "var(--color-accent-secondary)",
+                        fontFamily: "var(--font-mono)", fontWeight: 700,
+                      }}>✓</div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
+              style={{...navBtnStyle, opacity:stage===1?0.38:1, cursor:stage===1?"not-allowed":"pointer"}}>
+              ← PREV
+            </button>
+            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>
+              STAGE {stage}/{TOTAL_STAGES}
+            </span>
+            <button onClick={()=>setStage(s=>s+1)}
+              style={{...navBtnStyle, display:"flex", alignItems:"center", gap:4, cursor:"pointer"}}>
+              NEXT <ChevronRight size={12}/>
+            </button>
           </div>
         </div>
       </GameShell>
