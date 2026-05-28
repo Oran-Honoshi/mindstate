@@ -24,6 +24,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -33,11 +34,37 @@ function formatTime(totalSeconds: number): string {
 
 function getDifficulty(s:number):Difficulty{if(s===1)return"medium";const h=Math.abs(Math.imul(s*2654435761,s^0x9e3779b9))%100;return h<20?"easy":h<70?"medium":"hard";}
 
-const TILE_COLORS:Record<number,{bg:string;text:string}>={0:{bg:"#F1EDE8",text:"transparent"},1:{bg:"#DBEAFE",text:"#1D4ED8"},2:{bg:"#BBF7D0",text:"#15803D"},4:{bg:"#FED7AA",text:"#C2410C"},8:{bg:"#FDE68A",text:"#B45309"},16:{bg:"#E9D5FF",text:"#7C3AED"},32:{bg:"#FECDD3",text:"#BE123C"},64:{bg:"#99F6E4",text:"#0F766E"},128:{bg:"var(--color-accent-primary)",text:"white"},256:{bg:"var(--color-accent-primary)",text:"white"},512:{bg:"var(--color-error)",text:"white"},1024:{bg:"#F59E0B",text:"white"}};
-function tileColor(v:number):{bg:string;text:string}{return TILE_COLORS[v]??{bg:"#374151",text:"white"};}
+// Light palette — warm pastels
+const TILE_COLORS_LIGHT:Record<number,{bg:string;text:string}>={
+  0:{bg:"#F1EDE8",text:"transparent"},
+  1:{bg:"#DBEAFE",text:"#1D4ED8"},2:{bg:"#BBF7D0",text:"#15803D"},
+  4:{bg:"#FED7AA",text:"#C2410C"},8:{bg:"#FDE68A",text:"#B45309"},
+  16:{bg:"#E9D5FF",text:"#7C3AED"},32:{bg:"#FECDD3",text:"#BE123C"},
+  64:{bg:"#99F6E4",text:"#0F766E"},
+  128:{bg:"var(--color-accent-primary)",text:"#000"},
+  256:{bg:"var(--color-accent-primary)",text:"#000"},
+  512:{bg:"var(--color-error)",text:"white"},
+  1024:{bg:"#F59E0B",text:"white"},
+};
+// Dark palette — translucent neon tints
+const TILE_COLORS_DARK:Record<number,{bg:string;text:string}>={
+  0:{bg:"rgba(255,255,255,0.03)",text:"transparent"},
+  1:{bg:"rgba(59,130,246,0.22)",text:"#93C5FD"},
+  2:{bg:"rgba(34,197,94,0.22)",text:"#86EFAC"},
+  4:{bg:"rgba(249,115,22,0.22)",text:"#FED7AA"},
+  8:{bg:"rgba(234,179,8,0.22)",text:"#FDE68A"},
+  16:{bg:"rgba(168,85,247,0.22)",text:"#D8B4FE"},
+  32:{bg:"rgba(244,63,94,0.22)",text:"#FCA5A5"},
+  64:{bg:"rgba(20,184,166,0.22)",text:"#5EEAD4"},
+  128:{bg:"rgba(0,255,255,0.28)",text:"var(--color-accent-primary)"},
+  256:{bg:"rgba(0,255,255,0.38)",text:"var(--color-accent-primary)"},
+  512:{bg:"rgba(255,68,68,0.28)",text:"var(--color-error)"},
+  1024:{bg:"rgba(245,158,11,0.35)",text:"#F59E0B"},
+};
 
 function HexMergePageInner(){
   const{user}=useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<HexBoard|null>(null);
   const[cells,setCells]=useState<Map<string,number>>(new Map());
@@ -154,6 +181,26 @@ function HexMergePageInner(){
 
   function hexPoints(cx:number,cy:number,size:number):string{return Array.from({length:6},(_,i)=>{const angle=Math.PI/180*(60*i-30);return`${cx+size*Math.cos(angle)},${cy+size*Math.sin(angle)}`;}).join(" ");}
 
+  const palette = theme === "dark" ? TILE_COLORS_DARK : TILE_COLORS_LIGHT;
+  function tileColor(v:number):{bg:string;text:string}{return palette[v]??{bg: theme==="dark"?"rgba(100,100,120,0.3)":"#374151",text:"white"};}
+
+  const boardBg = theme === "dark"
+    ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+    : theme === "light"
+    ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+    : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`;
+
+  const navBtnStyle = {
+    padding: "8px 18px", borderRadius: 10,
+    border: "1px solid var(--color-border)",
+    background: "var(--color-surface)",
+    cursor: "pointer", fontSize: 11,
+    fontFamily: "var(--font-mono)",
+    color: "var(--color-text-secondary)",
+    fontWeight: 600, letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+  };
+
   return(
     <>
       <GameShell
@@ -169,20 +216,39 @@ function HexMergePageInner(){
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
-          <div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Best: {bestTile||"—"} · Target: {target}</div>
-
-          {!solutionRevealed&&<div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Click a tile to select · Click a matching neighbor to merge · Reach {target}</div>}
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+            BEST {bestTile||"—"} · TARGET {target} · CLICK TILE → CLICK MATCHING NEIGHBOR TO MERGE
+          </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:380}}>
-              Target: {target} · Strategy: merge equal tiles outward from center · XP set to 1
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:12,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:380,fontFamily:"var(--font-mono)"}}>
+              TARGET {target} · STRATEGY: MERGE EQUAL TILES OUTWARD FROM CENTER
             </motion.div>
           )}
 
-          <div style={{width:"100%",maxWidth:boardWidth,overflow:"hidden"}}>
+          <div style={{
+            padding: 10, borderRadius: 20,
+            background: boardBg, backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+            boxShadow: theme === "dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}>
             <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`}
-              style={{width:"100%",height:"auto",borderRadius:20,border:"1.5px solid var(--color-border)",background:"var(--color-surface)",boxShadow:"0 8px 24px rgba(0,0,0,0.07)",display:"block",opacity:solutionRevealed?0.75:1}}>
+              style={{width:"100%",height:"auto",borderRadius:14,display:"block",opacity:solutionRevealed?0.72:1}}>
+              {theme === "dark" && (
+                <defs>
+                  <filter id="glow-hex-high" x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="glow-hex-sel" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+              )}
               {hexCells.map(([q,r,cx,cy])=>{
                 const val=cells.get(`${q},${r}`)??0;
                 const isSel=!solutionRevealed&&selected?.[0]===q&&selected?.[1]===r;
@@ -190,11 +256,33 @@ function HexMergePageInner(){
                 const isHint=!isSel&&hintCell?.[0]===q&&hintCell?.[1]===r;
                 const{bg,text}=tileColor(val);
                 const canMerge=isAdj&&val>0&&cells.get(`${selected![0]},${selected![1]}`)===val;
+                const isHighValue = val >= 64;
+                const glowIntensity = val >= 512 ? 2.2 : val >= 128 ? 1.5 : val >= 64 ? 0.9 : 0;
                 return(
                   <g key={`${q},${r}`} onClick={()=>handleCellClick(q,r)} style={{cursor:val>0&&!solutionRevealed?"pointer":"default"}}>
-                    <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":bg} stroke={isSel?"var(--color-accent-primary)":isHint?"var(--color-accent-secondary)":canMerge?"var(--color-accent-secondary)":"var(--color-border)"} strokeWidth={isSel||isHint||canMerge?2.5:1}
-                      style={isHint?{filter:`drop-shadow(0 0 ${hexSize*0.3}px var(--color-accent-secondary))`}:undefined}/>
-                    {val>0&&(<text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:val>=100?hexSize*0.3:hexSize*0.38,fontWeight:700,fill:text,userSelect:"none",fontFamily:"var(--font-mono)"}}>{val}</text>)}
+                    <polygon points={hexPoints(cx,cy,hexSize-2)}
+                      fill={isSel ? (theme==="dark" ? "rgba(0,255,255,0.14)" : "color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))") : bg}
+                      stroke={isSel?"var(--color-accent-primary)":isHint?"var(--color-accent-secondary)":canMerge?"var(--color-accent-secondary)":theme==="dark"?"rgba(255,255,255,0.08)":"var(--color-border)"}
+                      strokeWidth={isSel ? 2.5 : isHint||canMerge ? 2 : 1}
+                      filter={theme==="dark" ? (isSel ? "url(#glow-hex-sel)" : isHighValue ? "url(#glow-hex-high)" : undefined) : undefined}
+                      style={{
+                        filter: theme==="dark" && isHighValue && !isSel
+                          ? `drop-shadow(0 0 ${hexSize * glowIntensity * 0.14}px ${bg})`
+                          : isSel && theme==="dark"
+                          ? "drop-shadow(0 0 8px rgba(0,255,255,0.6))"
+                          : undefined,
+                      }}
+                    />
+                    {val>0&&(
+                      <text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle"
+                        style={{
+                          fontSize: val>=100 ? hexSize*0.3 : hexSize*0.38,
+                          fontWeight: 700, fill: text, userSelect: "none",
+                          fontFamily: "var(--font-mono)",
+                        }}>
+                        {val}
+                      </text>
+                    )}
                   </g>
                 );
               })}
@@ -202,9 +290,17 @@ function HexMergePageInner(){
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
+              style={{...navBtnStyle, opacity:stage===1?0.38:1, cursor:stage===1?"not-allowed":"pointer"}}>
+              ← PREV
+            </button>
+            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>
+              STAGE {stage}/{TOTAL_STAGES}
+            </span>
+            <button onClick={()=>setStage(s=>s+1)}
+              style={{...navBtnStyle, display:"flex", alignItems:"center", gap:4, cursor:"pointer"}}>
+              NEXT <ChevronRight size={12}/>
+            </button>
           </div>
         </div>
       </GameShell>
