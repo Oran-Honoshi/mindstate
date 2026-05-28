@@ -210,7 +210,7 @@ function NonogramGameInner() {
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
@@ -220,7 +220,7 @@ function NonogramGameInner() {
             {board.colClues.map((clue,c)=>(
               <div key={c} style={{width:cellSize,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",paddingBottom:4,minHeight:40}}>
                 {clue.map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(cellSize*0.4,11),fontWeight:700,color:"var(--color-text-secondary)",lineHeight:1.3}}>{n}</span>
+                  <span key={i} style={{fontSize:Math.min(cellSize*0.4,11),fontWeight:700,color:"var(--color-text-secondary)",lineHeight:1.3,fontFamily:"var(--font-mono)"}}>{n}</span>
                 ))}
               </div>
             ))}
@@ -229,7 +229,7 @@ function NonogramGameInner() {
             <div key={r} style={{display:"flex",alignItems:"center"}}>
               <div style={{width:CLUE_W,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:3,paddingRight:6,minHeight:cellSize}}>
                 {board.rowClues[r].map((n,i)=>(
-                  <span key={i} style={{fontSize:Math.min(12,cellSize*0.45),fontWeight:700,color:"var(--color-text-secondary)"}}>{n}</span>
+                  <span key={i} style={{fontSize:Math.min(12,cellSize*0.45),fontWeight:700,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)"}}>{n}</span>
                 ))}
               </div>
               {board.solution[r].map((_,c)=>{
@@ -239,10 +239,10 @@ function NonogramGameInner() {
                 return(
                   <motion.button key={c} onClick={()=>handleCell(r,c)} whileTap={solutionRevealed?{}:{scale:0.9}}
                     style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSol?"rgba(255,68,68,0.15)":val===true?"#1C1917":val===false?"#FEF2F2":"white",
-                      borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",borderTop:"none",borderLeft:"none",
+                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSol?"color-mix(in srgb, var(--color-error) 15%, var(--color-surface))":val===true?"var(--color-text-primary)":val===false?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)",
+                      borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none",
                       cursor:solutionRevealed?"default":"pointer",outline:"none",transition:"background 0.2s"}}>
-                    {val===true&&!check&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"#1C1917",borderRadius:1}}/>}
+                    {val===true&&!check&&<span style={{width:cellSize-4,height:cellSize-4,display:"block",background:isSol?"var(--color-error)":"var(--color-text-primary)",borderRadius:1}}/>}
                     {val===false&&!solutionRevealed&&<span style={{fontSize:Math.round(cellSize*0.6),color:"var(--color-error)",fontWeight:900,lineHeight:1,userSelect:"none"}}>✕</span>}
                   </motion.button>
                 );

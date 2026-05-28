@@ -193,19 +193,19 @@ function PatternMatchGameInner(){
           <div style={{display:"flex",alignItems:"center",gap:seqGap,flexWrap:"wrap",justifyContent:"center"}}>
             {board.sequence.map((item,i)=>(
               <motion.div key={i} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}} transition={{delay:i*0.08,type:"spring",stiffness:400,damping:25}}
-                style={{width:itemSize,height:itemSize,borderRadius:14,background:"var(--color-surface-2)",border:"1.5px solid #E2E8F0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:item.color?Math.round(itemSize*0.5):Math.round(itemSize*0.3),fontWeight:700,color:item.color??"#1C1917",flexShrink:0}}>
+                style={{width:itemSize,height:itemSize,borderRadius:14,background:"var(--color-surface-2)",border:"1.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:item.color?Math.round(itemSize*0.5):Math.round(itemSize*0.3),fontWeight:700,color:item.color??"var(--color-text-primary)",flexShrink:0,fontFamily:"var(--font-mono)"}}>
                 {item.value}
               </motion.div>
             ))}
             <motion.div initial={{scale:0}} animate={{scale:1}} transition={{delay:board.sequence.length*0.08,type:"spring"}}
-              style={{width:itemSize,height:itemSize,borderRadius:14,border:`2.5px dashed ${solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(itemSize*0.4),color:solutionRevealed?"var(--color-error)":"#C7D2FE",flexShrink:0}}>
+              style={{width:itemSize,height:itemSize,borderRadius:14,border:`2.5px dashed ${solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(itemSize*0.4),color:solutionRevealed?"var(--color-error)":"var(--color-text-secondary)",flexShrink:0}}>
               {solutionRevealed?board.answer.value:"?"}
             </motion.div>
           </div>
           {(showRule||solutionRevealed)&&(
             <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-              style={{marginTop:16,padding:"10px 14px",background:solutionRevealed?"rgba(255,68,68,0.06)":"rgba(245,158,11,0.08)",borderRadius:12,border:`0.5px solid ${solutionRevealed?"rgba(255,68,68,0.2)":"rgba(245,158,11,0.3)"}`}}>
-              <p style={{fontSize:12,color:solutionRevealed?"var(--color-error)":"#B45309",fontWeight:600}}>
+              style={{marginTop:16,padding:"10px 14px",background:solutionRevealed?"color-mix(in srgb, var(--color-error) 6%, transparent)":"color-mix(in srgb, var(--color-accent-secondary) 8%, transparent)",borderRadius:12,border:`0.5px solid ${solutionRevealed?"color-mix(in srgb, var(--color-error) 20%, transparent)":"color-mix(in srgb, var(--color-accent-secondary) 30%, transparent)"}`}}>
+              <p style={{fontSize:12,color:solutionRevealed?"var(--color-error)":"var(--color-text-secondary)",fontWeight:600}}>
                 {solutionRevealed?"Solution: ":"Hint: "}{board.rule}
               </p>
             </motion.div>
@@ -219,18 +219,18 @@ function PatternMatchGameInner(){
             const isSelected=selected===key;
             const isAnswer=key===ansKey;
             const bg=solutionRevealed
-              ?(isAnswer?"#F0FDF4":"var(--color-surface-2)")
-              :isSelected?(correct?"#F0FDF4":"#FEF2F2"):"white";
+              ?(isAnswer?"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))":"var(--color-surface-2)")
+              :isSelected?(correct?"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"):"var(--color-surface)";
             const border=solutionRevealed
-              ?(isAnswer?"#86EFAC":"#E2E8F0")
-              :isSelected?(correct?"#86EFAC":"#FCA5A5"):"#E2E8F0";
+              ?(isAnswer?"var(--color-accent-secondary)":"var(--color-border)")
+              :isSelected?(correct?"var(--color-accent-secondary)":"color-mix(in srgb, var(--color-error) 40%, transparent)"):"var(--color-border)";
             return(
               <motion.button key={i} onClick={()=>handleAnswer(opt)}
                 whileTap={solutionRevealed?{}:{scale:0.96}}
                 animate={isSelected&&!correct&&!solutionRevealed?{x:[-4,4,-4,4,0]}:{}}
                 transition={{duration:0.3}}
                 style={{padding:"18px",borderRadius:16,border:`1.5px solid ${border}`,background:bg,cursor:solutionRevealed?"default":"pointer",outline:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"all 0.2s",opacity:solutionRevealed&&!isAnswer?0.45:1}}>
-                <span style={{fontSize:opt.color?32:20,fontWeight:700,color:opt.color??"#1C1917"}}>{opt.value}</span>
+                <span style={{fontSize:opt.color?32:20,fontWeight:700,color:opt.color??"var(--color-text-primary)",fontFamily:"var(--font-mono)"}}>{opt.value}</span>
                 {solutionRevealed&&isAnswer&&<span style={{fontSize:16}}>✓</span>}
                 {!solutionRevealed&&isSelected&&correct&&<span style={{fontSize:16}}>✓</span>}
                 {!solutionRevealed&&isSelected&&!correct&&<span style={{fontSize:16}}>✗</span>}
@@ -241,11 +241,11 @@ function PatternMatchGameInner(){
 
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <button onClick={handleHint} disabled={hintsLeft===0||completed||selected!==null||solutionRevealed}
-            style={{display:"flex",alignItems:"center",gap:6,padding:"10px 18px",borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:hintsLeft>0&&!solutionRevealed?"pointer":"not-allowed",fontSize:12,fontWeight:600,color:hintsLeft>0?"#374151":"#C4C0B8",opacity:hintsLeft===0||solutionRevealed?0.5:1}}>
+            style={{display:"flex",alignItems:"center",gap:6,padding:"10px 18px",borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:hintsLeft>0&&!solutionRevealed?"pointer":"not-allowed",fontSize:12,fontWeight:600,color:hintsLeft>0?"var(--color-text-primary)":"var(--color-text-secondary)",opacity:hintsLeft===0||solutionRevealed?0.5:1}}>
             <Lightbulb size={14}/> Hint ({hintsLeft})
           </button>
           <AnimatePresence>
-            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>−25% XP</motion.span>}
+            {hintFlash&&<motion.span initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}} exit={{opacity:0}} style={{fontSize:11,color:"var(--color-accent-secondary)",fontWeight:600}}>−25% XP</motion.span>}
           </AnimatePresence>
         </div>
 

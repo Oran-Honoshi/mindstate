@@ -42,8 +42,8 @@ function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:nu
   const maxC=Math.max(...piece.cells.map(([,c])=>c))+1;
   return(
     <motion.button onClick={onClick} whileTap={{scale:0.92}}
-      style={{padding:8,borderRadius:14,border:`2px solid ${selected?piece.color:"#E2E8F0"}`,
-        background:selected?`${piece.color}15`:"white",cursor:"pointer",outline:"none",
+      style={{padding:8,borderRadius:14,border:`2px solid ${selected?piece.color:"var(--color-border)"}`,
+        background:selected?`${piece.color}15`:"var(--color-surface)",cursor:"pointer",outline:"none",
         boxShadow:selected?`0 4px 12px ${piece.color}40`:"0 2px 6px rgba(0,0,0,0.04)"}}>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${maxC},${cellSize}px)`,gap:2,gridTemplateRows:`repeat(${maxR},${cellSize}px)`}}>
         {Array.from({length:maxR},(_,r)=>Array.from({length:maxC},(_,c)=>{
@@ -272,12 +272,12 @@ function PatchesGameInner(){
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{border:"2px solid #E2E8F0",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}
+        <div style={{border:"2px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}
           onMouseLeave={()=>setHoverCells(new Set())}>
           <div style={{display:"grid",gridTemplateColumns:`repeat(${board.cols},${cellSize}px)`}}>
             {Array.from({length:board.rows},(_,r)=>Array.from({length:board.cols},(_,c)=>{
@@ -293,8 +293,8 @@ function PatchesGameInner(){
                   onMouseEnter={()=>handleCellHover(r,c)}
                   style={{width:cellSize,height:cellSize,
                     cursor:solutionRevealed?"default":selectedPiece!==null||pid!==undefined?"pointer":"default",
-                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":piece?(solutionRevealed?`${piece.color}cc`:piece.color):isHover&&selPiece?`${selPiece.color}50`:"#F8F7F5",
-                    borderRight:"0.5px solid #E2E8F0",borderBottom:"0.5px solid #E2E8F0",
+                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":piece?(solutionRevealed?`${piece.color}cc`:piece.color):isHover&&selPiece?`${selPiece.color}50`:"var(--color-surface)",
+                    borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",
                     borderTop:"none",borderLeft:"none",transition:"background 0.2s"}}>
                 </div>
               );
@@ -308,7 +308,7 @@ function PatchesGameInner(){
             <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
               {board.pieces.map(piece=>{
                 if(placedPieces.has(piece.id))return(
-                  <div key={piece.id} style={{padding:8,borderRadius:14,border:"2px solid #E2E8F0",background:"var(--color-surface-2)",opacity:0.4}}>
+                  <div key={piece.id} style={{padding:8,borderRadius:14,border:"2px solid var(--color-border)",background:"var(--color-surface-2)",opacity:0.4}}>
                     <div style={{width:24,height:24,borderRadius:6,background:piece.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white"}}></div>
                   </div>
                 );

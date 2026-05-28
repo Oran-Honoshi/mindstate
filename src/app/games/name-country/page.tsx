@@ -22,6 +22,7 @@ import { consumeToken } from "@/lib/games/tokenEngine";
 import { useBoardWidth } from "@/hooks/useScreenWidth";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -43,6 +44,8 @@ const KB=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J"
 
 function NameCountryInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
+  const absentBg=theme==="dark"?"var(--color-surface-2)":"#4B5563";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<CountryGameBoard|null>(null);
   const[guesses,setGuesses]=useState<string[]>([]);
@@ -185,14 +188,14 @@ function NameCountryInner(){
 
         {lost&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}}
-            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(255,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(255,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"var(--color-error)",textAlign:"center"}}>
+            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"color-mix(in srgb, var(--color-error) 8%, transparent)":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",border:`1px solid color-mix(in srgb, var(--color-error) 20%, transparent)`,fontSize:14,fontWeight:700,color:"var(--color-error)",textAlign:"center"}}>
             {solutionRevealed?"Solution: ":"It was: "}{board.flag} {board.answer} · Capital: {board.capital}
           </motion.div>
         )}
 
         {shownHints.length>0&&!solutionRevealed&&(
           <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",gap:6}}>
-            {shownHints.map((hint,i)=>(<motion.div key={i} initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{padding:"8px 16px",borderRadius:12,background:"#FFFBEB",border:"1px solid #FDE68A",fontSize:13,fontWeight:600,color:"#92400E"}}>💡 {hint}</motion.div>))}
+            {shownHints.map((hint,i)=>(<motion.div key={i} initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{padding:"8px 16px",borderRadius:12,background:"color-mix(in srgb, #F59E0B 12%, var(--color-surface))",border:"1px solid color-mix(in srgb, #F59E0B 30%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)"}}>💡 {hint}</motion.div>))}
           </div>
         )}
 
@@ -204,7 +207,7 @@ function NameCountryInner(){
               <motion.div key={gi} animate={shake&&gi===guesses.length?{x:[-6,6,-4,4,0]}:{}} style={{display:"flex",gap:5}}>
                 {Array.from({length:board.wordLength},(_,li)=>{
                   const letter=guess[li]??"";const result=res?.[li];const color=result?TILE[result]:null;
-                  return(<motion.div key={li} animate={result?{rotateX:[0,-90,0]}:{}} transition={{delay:li*0.1,duration:0.3}} style={{width:cellSize,height:cellSize,borderRadius:7,border:`2px solid ${color?color.border:letter?"var(--color-accent-primary)":"var(--color-border)"}`,background:color?color.bg:"var(--color-surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(cellSize*0.4),fontWeight:700,color:color?color.text:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{letter}</motion.div>);
+                  return(<motion.div key={li} animate={result?{rotateX:[0,-90,0]}:{}} transition={{delay:li*0.1,duration:0.3}} style={{width:cellSize,height:cellSize,borderRadius:7,border:`2px solid ${color?color.border:letter?"var(--color-accent-primary)":"var(--color-border)"}`,background:color?(result==="absent"?absentBg:color.bg):"var(--color-surface)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(cellSize*0.4),fontWeight:700,color:color?color.text:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{letter}</motion.div>);
                 })}
               </motion.div>
             );
@@ -215,7 +218,7 @@ function NameCountryInner(){
           <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%",maxWidth:480}}>
             {KB.map((row,ri)=>(
               <div key={ri} style={{display:"flex",justifyContent:"center",gap:5}}>
-                {row.map(key=>{const state=letterStates.get(key);const color=state?TILE[state]:null;const isWide=key==="ENTER"||key==="⌫";return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?color.bg:"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);})}
+                {row.map(key=>{const state=letterStates.get(key);const color=state?TILE[state]:null;const isWide=key==="ENTER"||key==="⌫";return(<motion.button key={key} whileTap={{scale:0.9}} onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)} style={{width:isWide?58:34,height:46,borderRadius:8,border:"none",background:color?(state==="absent"?absentBg:color.bg):"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:13,fontWeight:700,cursor:"pointer"}}>{key}</motion.button>);})}
               </div>
             ))}
           </div>
