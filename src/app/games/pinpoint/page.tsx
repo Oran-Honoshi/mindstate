@@ -15,6 +15,7 @@ import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -66,6 +67,7 @@ function getInitialClues(diff: Difficulty): number {
 
 function PinpointInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
@@ -174,6 +176,8 @@ function PinpointInner() {
 
   if (!xpState) return null;
 
+  const isDark = theme === "dark";
+
   return (
     <>
       <GameShell
@@ -189,30 +193,40 @@ function PinpointInner() {
       >
         <GamePageSchema slug="pinpoint" />
 
-        <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>
-          {guesses.length}/{maxGuesses} guesses · {revealedClues}/{puzzle.clues.length} clues revealed
+        <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.05em" }}>
+          {guesses.length}/{maxGuesses} GUESSES · {revealedClues}/{puzzle.clues.length} CLUES
         </p>
 
         <div style={{ width:"100%", maxWidth:480, display:"flex", flexDirection:"column", gap:8 }}>
           {puzzle.clues.slice(0, revealedClues).map((clue, i) => (
             <motion.div key={i}
-              initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }}
-              transition={{ delay: i * 0.05 }}
+              initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }}
+              transition={{ delay: i * 0.06, type:"spring", stiffness:320, damping:28 }}
               style={{
                 padding:"12px 16px", borderRadius:14,
-                background: i === 0 ? "var(--color-surface-2)" : "var(--color-surface)",
-                border: "0.5px solid var(--color-border)",
+                background: isDark
+                  ? i === 0 ? "rgba(0,255,255,0.05)" : "rgba(10,20,36,0.8)"
+                  : i === 0 ? "var(--color-surface-2)" : "var(--color-surface)",
+                border: isDark
+                  ? i === 0 ? "1px solid rgba(0,255,255,0.18)" : "0.5px solid rgba(255,255,255,0.07)"
+                  : "0.5px solid var(--color-border)",
+                boxShadow: isDark && i === 0 ? "0 0 14px rgba(0,255,255,0.08)" : "none",
                 display:"flex", alignItems:"flex-start", gap:10,
               }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--color-accent-primary)", minWidth:20, paddingTop:1 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"var(--color-accent-primary)", minWidth:20, paddingTop:1, fontFamily:"var(--font-mono)" }}>
                 {puzzle.clues.length - i}
               </span>
               <p style={{ fontSize:14, color:"var(--color-text-primary)", lineHeight:1.5 }}>{clue}</p>
             </motion.div>
           ))}
           {revealedClues < puzzle.clues.length && !completed && !lost && (
-            <div style={{ padding:"12px 16px", borderRadius:14, background:"var(--color-surface-2)", border:"0.5px dashed var(--color-border)", textAlign:"center" }}>
-              <p style={{ fontSize:12, color:"var(--color-text-secondary)" }}>{puzzle.clues.length - revealedClues} more clue{puzzle.clues.length - revealedClues > 1 ? "s" : ""} available · guess wrong to reveal</p>
+            <div style={{ padding:"12px 16px", borderRadius:14,
+              background: isDark ? "rgba(6,13,24,0.6)" : "var(--color-surface-2)",
+              border: isDark ? "1px dashed rgba(0,255,255,0.1)" : "0.5px dashed var(--color-border)",
+              textAlign:"center" }}>
+              <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.05em" }}>
+                {puzzle.clues.length - revealedClues} MORE CLUE{puzzle.clues.length - revealedClues > 1 ? "S" : ""} · GUESS WRONG TO REVEAL
+              </p>
             </div>
           )}
         </div>
@@ -220,17 +234,26 @@ function PinpointInner() {
         {guesses.length > 0 && (
           <div style={{ width:"100%", maxWidth:480, display:"flex", flexDirection:"column", gap:6 }}>
             {guesses.map((g, i) => (
-              <div key={i} style={{ padding:"8px 16px", borderRadius:10, background:"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))", border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize:13, fontWeight:600, color:"var(--color-error)" }}>
+              <motion.div key={i} initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:i*0.04}}
+                style={{ padding:"8px 16px", borderRadius:10,
+                  background: isDark
+                    ? "color-mix(in srgb, var(--color-error) 10%, rgba(6,13,24,0.9))"
+                    : "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",
+                  border:"0.5px solid color-mix(in srgb, var(--color-error) 22%, transparent)",
+                  fontSize:12, fontWeight:700, color:"var(--color-error)", fontFamily:"var(--font-mono)", letterSpacing:"0.08em" }}>
                 ✕ {g}
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
 
         {lost && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-            style={{ padding:"12px 24px", borderRadius:14, background:"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))", border:"1px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize:16, fontWeight:700, color:"var(--color-error)" }}>
-            The answer was: {puzzle.answer}
+            style={{ padding:"12px 24px", borderRadius:14,
+              background: isDark ? "color-mix(in srgb, var(--color-error) 10%, rgba(6,13,24,0.95))" : "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",
+              border:"1px solid color-mix(in srgb, var(--color-error) 25%, transparent)",
+              fontSize:14, fontWeight:700, color:"var(--color-error)", fontFamily:"var(--font-mono)", letterSpacing:"0.08em" }}>
+            ANSWER: {puzzle.answer}
           </motion.div>
         )}
 
@@ -241,28 +264,41 @@ function PinpointInner() {
               value={guess}
               onChange={e => setGuess(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleGuess(); }}
-              placeholder="Type your answer..."
+              placeholder="TYPE YOUR ANSWER..."
               style={{
                 flex:1, padding:"12px 16px", borderRadius:12,
-                border:"1.5px solid var(--color-border)", background:"var(--color-surface)",
-                fontSize:15, color:"var(--color-text-primary)", outline:"none",
-                textTransform:"uppercase",
+                border: isDark ? "1.5px solid rgba(0,255,255,0.25)" : "1.5px solid var(--color-border)",
+                background: isDark ? "rgba(6,13,24,0.9)" : "var(--color-surface)",
+                fontSize:14, color:"var(--color-text-primary)", outline:"none",
+                textTransform:"uppercase", fontFamily:"var(--font-mono)", letterSpacing:"0.1em",
+                boxShadow: isDark ? "inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 0 rgba(0,255,255,0)" : "none",
+                transition:"border-color 0.2s, box-shadow 0.2s",
+              }}
+              onFocus={e => {
+                if(isDark){e.currentTarget.style.borderColor="rgba(0,255,255,0.7)";e.currentTarget.style.boxShadow="0 0 0 3px rgba(0,255,255,0.08)";}
+              }}
+              onBlur={e => {
+                if(isDark){e.currentTarget.style.borderColor="rgba(0,255,255,0.25)";e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,0.04)";}
               }}
             />
             <button onClick={handleGuess}
-              style={{ padding:"12px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>
-              Guess
+              style={{ padding:"12px 20px", borderRadius:12, border:"none",
+                background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",
+                color:"#060d18", fontSize:12, fontWeight:700, cursor:"pointer",
+                fontFamily:"var(--font-mono)", letterSpacing:"0.08em", textTransform:"uppercase",
+                boxShadow: isDark ? "0 0 14px rgba(0,255,255,0.25)" : "none" }}>
+              GUESS
             </button>
           </motion.div>
         )}
 
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
-            style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:12, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1 }}>← Prev</button>
-          <span style={{ fontSize:12, color:"var(--color-text-secondary)" }}>Stage {stage} of 100</span>
+            style={{ padding:"8px 16px", borderRadius:10, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:11, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1, fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600 }}>← PREV</button>
+          <span style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.06em" }}>STAGE {stage} / {TOTAL_STAGES}</span>
           <button onClick={() => setStage(s => s + 1)}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>
-            Next <ChevronRight size={13}/>
+            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:10, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600 }}>
+            NEXT <ChevronRight size={13}/>
           </button>
         </div>
       </GameShell>
@@ -270,29 +306,42 @@ function PinpointInner() {
       <AnimatePresence>
         {completed && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(14px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, padding:24 }}>
+            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", backdropFilter:"blur(16px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, padding:24 }}>
             <motion.div initial={{ scale:0.9, y:20 }} animate={{ scale:1, y:0 }}
               transition={{ type:"spring", stiffness:380, damping:28 }}
-              style={{ background:"var(--color-surface)", borderRadius:28, padding:36, maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 32px 80px rgba(0,0,0,0.2)" }}>
-              <div style={{ fontSize:56, marginBottom:12 }}>🎉</div>
-              <h2 style={{ fontSize:26, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:4 }}>
+              style={{ background: isDark ? "rgba(8,16,28,0.97)" : "var(--color-surface)",
+                borderRadius:28, padding:36, maxWidth:340, width:"100%", textAlign:"center",
+                boxShadow: isDark
+                  ? "0 0 0 1px rgba(57,255,20,0.25), 0 32px 80px rgba(0,0,0,0.6), 0 0 40px rgba(57,255,20,0.08)"
+                  : "0 32px 80px rgba(0,0,0,0.2)",
+                border: isDark ? "none" : "0.5px solid var(--color-border)" }}>
+              <div style={{ fontSize:48, marginBottom:12 }}>✓</div>
+              <h2 style={{ fontSize:28, fontWeight:700, color: isDark ? "var(--color-accent-secondary)" : "var(--color-text-primary)", fontFamily:"var(--font-mono)", marginBottom:4, letterSpacing:"0.05em" }}>
                 {puzzle.answer}
               </h2>
-              <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:24 }}>
-                {guesses.length} guess{guesses.length !== 1 ? "es" : ""} · {revealedClues} clue{revealedClues !== 1 ? "s" : ""} used · {finalElapsed}
+              <p style={{ fontSize:11, color:"var(--color-text-secondary)", marginBottom:24, fontFamily:"var(--font-mono)", letterSpacing:"0.06em" }}>
+                {guesses.length} GUESS{guesses.length !== 1 ? "ES" : ""} · {revealedClues} CLUE{revealedClues !== 1 ? "S" : ""} · {finalElapsed}
               </p>
-              <div style={{ background:"var(--color-surface-2)", borderRadius:16, padding:20, marginBottom:20 }}>
-                <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase" }}>XP Earned</p>
-                <p style={{ fontSize:52, fontWeight:700, color:"var(--color-accent-primary)", fontFamily:"var(--font-sans)" }}>{finalXP}</p>
+              <div style={{ background: isDark ? "rgba(57,255,20,0.06)" : "var(--color-surface-2)",
+                border: isDark ? "1px solid rgba(57,255,20,0.2)" : "none",
+                borderRadius:16, padding:20, marginBottom:20,
+                boxShadow: isDark ? "0 0 20px rgba(57,255,20,0.07)" : "none" }}>
+                <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontWeight:600, marginBottom:4, letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"var(--font-mono)" }}>XP EARNED</p>
+                <p style={{ fontSize:52, fontWeight:700, color: isDark ? "var(--color-accent-secondary)" : "var(--color-accent-primary)", fontFamily:"var(--font-mono)" }}>{finalXP}</p>
               </div>
               <div style={{ display:"flex", gap:10 }}>
                 <button onClick={() => loadStage(stage)}
-                  style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:13, fontWeight:600, color:"var(--color-text-secondary)", cursor:"pointer" }}>
-                  Retry
+                  style={{ flex:1, padding:13, borderRadius:14, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", cursor:"pointer", fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase" }}>
+                  RETRY
                 </button>
                 <button onClick={() => { setCompleted(false); setStage(s => s + 1); }}
-                  style={{ flex:2, padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                  Next Stage →
+                  style={{ flex:2, padding:13, borderRadius:14, border:"none",
+                    background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",
+                    fontSize:11, fontWeight:700, color:"#060d18", cursor:"pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+                    fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase",
+                    boxShadow: isDark ? "0 0 18px rgba(0,255,255,0.22)" : "none" }}>
+                  NEXT STAGE →
                 </button>
               </div>
             </motion.div>
