@@ -18,6 +18,7 @@ import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
+import{useSettingsStore}from"@/store/settingsStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import{updateStreak}from"@/lib/supabase/streaks";
 import{generateQueensBoard,validateQueens,solveQueens,type QueensBoard}from"@/lib/games/queensGenerator";
@@ -58,22 +59,21 @@ const REGION_COLORS_DARK=[
   {fill:"rgba(16,185,129,0.10)",  border:"rgba(52,211,153,0.4)",  queen:"#34D399"},
 ];
 
-function useIsDark(){
-  const[dark,setDark]=useState(false);
-  useEffect(()=>{
-    const check=()=>setDark(document.documentElement.getAttribute("data-theme")==="dark");
-    check();
-    const obs=new MutationObserver(check);
-    obs.observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
-    return()=>obs.disconnect();
-  },[]);
-  return dark;
-}
+const REGION_COLORS_PAPER=[
+  {fill:"#F5EBD5",border:"#C4A882",queen:"#7A5230"},
+  {fill:"#E6EFDC",border:"#8BAF7A",queen:"#3D6B2A"},
+  {fill:"#DCE5EF",border:"#A8B5C4",queen:"#2C4D6B"},
+  {fill:"#EFE0E9",border:"#C4A8B5",queen:"#6B2D4A"},
+  {fill:"#E4EDDB",border:"#B5C4A8",queen:"#4A5C2A"},
+  {fill:"#EDE4D8",border:"#C4B8A8",queen:"#6B4A30"},
+  {fill:"#D8EAE8",border:"#8CBFB8",queen:"#2C5C57"},
+  {fill:"#F0E6D0",border:"#C4A870",queen:"#7A5A20"},
+];
 
 function QueensGameInner(){
   const{user}=useAuthStore();
-  const isDark=useIsDark();
-  const REGION_COLORS=isDark?REGION_COLORS_DARK:REGION_COLORS_LIGHT;
+  const{theme}=useSettingsStore();
+  const REGION_COLORS=theme==="dark"?REGION_COLORS_DARK:theme==="paper"?REGION_COLORS_PAPER:REGION_COLORS_LIGHT;
 
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<QueensBoard|null>(null);
@@ -261,26 +261,24 @@ function QueensGameInner(){
       >
         <GamePageSchema slug={GAME_SLUG}/>
 
-        <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center",marginBottom:8,
-          ...(isDark?{color:"rgba(148,163,184,0.7)"}:{})}}>
+        <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center",marginBottom:8}}>
           Tap once = mark · Tap twice = queen · Tap three = clear · One queen per row, column and region
         </div>
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:"var(--radius)",background:"rgba(255,68,68,0.08)",
-              border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",marginBottom:8}}>
+            style={{padding:"8px 20px",borderRadius:"var(--radius)",background:"color-mix(in srgb, var(--color-error) 8%, transparent)",
+              border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",marginBottom:8}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
         <div style={{
-          border:isDark?"1px solid rgba(0,255,255,0.15)":"2px solid #374151",
+          border:"1px solid var(--color-border)",
           borderRadius:14,overflow:"hidden",
-          boxShadow:isDark
-            ?"0 0 40px rgba(0,255,255,0.08), 0 8px 32px rgba(0,0,0,0.6)"
-            :"var(--shadow-md)",
-          ...(isDark?{background:"rgba(10,10,22,0.4)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}:{}),
+          boxShadow:"var(--shadow-md)",
+          background:"color-mix(in srgb, var(--color-surface) 80%, transparent)",
+          backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
         }}>
           {grid.map((row,r)=>(
             <div key={r} style={{display:"flex"}}>
@@ -298,19 +296,19 @@ function QueensGameInner(){
                     style={{
                       width:cellSize,height:cellSize,
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      background:hasError?"rgba(255,68,68,0.2)":pal.fill,
+                      background:hasError?"color-mix(in srgb, var(--color-error) 20%, transparent)":pal.fill,
                       cursor:solutionRevealed?"default":"pointer",outline:"none",
-                      borderRight:rightBorder?`${isDark?"1.5":"2"}px solid ${pal.border}`:`0.5px solid ${isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.1)"}`,
-                      borderBottom:bottomBorder?`${isDark?"1.5":"2"}px solid ${pal.border}`:`0.5px solid ${isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.1)"}`,
+                      borderRight:rightBorder?`2px solid ${pal.border}`:`0.5px solid color-mix(in srgb, var(--color-border) 60%, transparent)`,
+                      borderBottom:bottomBorder?`2px solid ${pal.border}`:`0.5px solid color-mix(in srgb, var(--color-border) 60%, transparent)`,
                       borderTop:"none",borderLeft:"none",
                       transition:"background 0.15s",position:"relative",
                     }}>
                     {isMark&&(
                       <span style={{
-                        color:isDark?"rgba(255,68,68,0.45)":"#64748B",
+                        color:"var(--color-error)",
                         fontWeight:700,lineHeight:1,
                         fontSize:Math.round(cellSize*0.35),
-                        ...(isDark?{textShadow:"0 0 6px rgba(255,68,68,0.3)"}:{}),
+                        textShadow:"0 0 6px color-mix(in srgb, var(--color-error) 30%, transparent)",
                       }}>✕</span>
                     )}
                     {isQueen&&(
@@ -320,8 +318,9 @@ function QueensGameInner(){
                           color:isSolution?"var(--color-error)":hasError?"var(--color-error)":pal.queen,
                           lineHeight:1,
                           fontSize:Math.round(cellSize*0.5),
-                          ...(isDark&&!hasError&&!isSolution?{filter:`drop-shadow(0 0 6px ${pal.queen})`}:{}),
-                          ...(isDark&&hasError?{color:"var(--color-error)",filter:"drop-shadow(0 0 8px rgba(255,68,68,0.8))"}:{}),
+                          filter:hasError||isSolution
+                            ?`drop-shadow(0 0 8px color-mix(in srgb, var(--color-error) 80%, transparent))`
+                            :`drop-shadow(0 0 6px ${pal.queen})`,
                         }}>
                         ♛
                       </motion.span>
