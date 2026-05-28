@@ -195,9 +195,9 @@ function WordClimbInner() {
             <div key={i} style={{
               padding:"10px 24px", borderRadius:12, fontSize:18, fontWeight:700,
               fontFamily:"var(--font-sans)", letterSpacing:"0.1em",
-              background: word === endWord ? "#F0FDF4" : i === 0 ? "var(--color-surface-2)" : "var(--color-surface)",
-              border: `1.5px solid ${word === endWord ? "#86EFAC" : "var(--color-border)"}`,
-              color: word === endWord ? "#16A34A" : "var(--color-text-primary)",
+              background: word === endWord ? "color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))" : i === 0 ? "var(--color-surface-2)" : "var(--color-surface)",
+              border: `1.5px solid ${word === endWord ? "var(--color-accent-secondary)" : "var(--color-border)"}`,
+              color: word === endWord ? "var(--color-accent-secondary)" : "var(--color-text-primary)",
             }}>
               {word}
             </div>

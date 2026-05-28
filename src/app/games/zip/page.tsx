@@ -299,7 +299,7 @@ function ZipGameInner() {
 
         {solutionRevealed && (
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
@@ -337,11 +337,11 @@ function ZipGameInner() {
                     width:cellSize,height:cellSize,borderRadius:Math.round(cellSize*0.22),
                     display:"flex",alignItems:"center",justifyContent:"center",border:"1.5px solid",
                     transition:"background 0.2s",
-                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isLast?(solutionRevealed?"#FEF2F2":"#EEF2FF"):isVisitedWp?"#F0FDF4":inPath?(solutionRevealed?"rgba(255,68,68,0.05)":"#F5F7FF"):"white",
-                    borderColor:check?"transparent":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#86EFAC":inPath?(solutionRevealed?"rgba(255,68,68,0.3)":"#C7D2FE"):"#E2E8F0",
+                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isLast?(solutionRevealed?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))"):isVisitedWp?"color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))":inPath?(solutionRevealed?"color-mix(in srgb, var(--color-error) 5%, var(--color-surface))":"color-mix(in srgb, var(--color-accent-primary) 5%, var(--color-surface))"):"var(--color-surface)",
+                    borderColor:check?"transparent":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"var(--color-accent-secondary)":inPath?(solutionRevealed?"color-mix(in srgb, var(--color-error) 30%, transparent)":"color-mix(in srgb, var(--color-accent-primary) 50%, transparent)"):"var(--color-border)",
                     cursor:solutionRevealed?"default":"pointer",
-                    fontSize:Math.round(cellSize*0.34),fontWeight:700,
-                    color:check?"var(--color-on-accent)":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"#16A34A":wp?"var(--color-accent-primary)":"#94A3B8",
+                    fontSize:Math.round(cellSize*0.34),fontWeight:700,fontFamily:"var(--font-mono)",
+                    color:check?"var(--color-on-accent)":isLast?(solutionRevealed?"var(--color-error)":"var(--color-accent-primary)"):isVisitedWp?"var(--color-accent-secondary)":wp?"var(--color-accent-primary)":"var(--color-text-secondary)",
                     userSelect:"none",WebkitUserSelect:"none",
                   }}>
                   {wp ?? ""}

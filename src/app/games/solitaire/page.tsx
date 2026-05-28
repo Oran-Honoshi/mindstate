@@ -37,12 +37,12 @@ function makeDeck(seed:number):Card[]{const suits:Suit[]=["♥","♦","♣","♠
 function isRed(suit:Suit){return suit==="♥"||suit==="♦";}
 function canStack(card:Card,onto:Card|null):boolean{if(!onto)return card.value===13;return isRed(card.suit)!==isRed(onto.suit)&&card.value===onto.value-1;}
 function canFoundation(card:Card,top:Card|null):boolean{if(!top)return card.value===1;return card.suit===top.suit&&card.value===top.value+1;}
-function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
+function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"var(--color-text-primary)";}
 
 function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean}){
   const w=small?36:48,h=small?52:68;
   if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>);
-  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"#EEF2FF":"white",border:`1.5px solid ${selected?"var(--color-accent-primary)":"#E2E8F0"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px #4F6EF7":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
+  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":"var(--color-surface)",border:`1.5px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px var(--color-accent-primary)":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
     <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span>
     <span style={{fontSize:small?14:16,color:cardColor(card.suit),lineHeight:1}}>{card.suit}</span>
   </motion.div>);
@@ -213,7 +213,7 @@ function SolitairePageInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.1)",border:"0.5px solid rgba(255,68,68,0.3)",fontSize:13,fontWeight:600,color:"#FCA5A5",textAlign:"center"}}>
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center"}}>
               Strategy: Build foundations A→K · Expose face-down cards · Move Kings to empty columns · XP set to 1
             </motion.div>
           )}

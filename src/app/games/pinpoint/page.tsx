@@ -220,7 +220,7 @@ function PinpointInner() {
         {guesses.length > 0 && (
           <div style={{ width:"100%", maxWidth:480, display:"flex", flexDirection:"column", gap:6 }}>
             {guesses.map((g, i) => (
-              <div key={i} style={{ padding:"8px 16px", borderRadius:10, background:"#FEF2F2", border:"0.5px solid #FECACA", fontSize:13, fontWeight:600, color:"var(--color-error)" }}>
+              <div key={i} style={{ padding:"8px 16px", borderRadius:10, background:"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))", border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize:13, fontWeight:600, color:"var(--color-error)" }}>
                 ✕ {g}
               </div>
             ))}
@@ -229,7 +229,7 @@ function PinpointInner() {
 
         {lost && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-            style={{ padding:"12px 24px", borderRadius:14, background:"#FEF2F2", border:"1px solid #FECACA", fontSize:16, fontWeight:700, color:"var(--color-error)" }}>
+            style={{ padding:"12px 24px", borderRadius:14, background:"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))", border:"1px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize:16, fontWeight:700, color:"var(--color-error)" }}>
             The answer was: {puzzle.answer}
           </motion.div>
         )}

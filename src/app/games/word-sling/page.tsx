@@ -23,6 +23,7 @@ import { useAuthStore } from "@/store/authStore";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -50,6 +51,8 @@ const KEYBOARD_ROWS = [
 
 function WordSlingPageInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
+  const absentBg = theme === "dark" ? "var(--color-surface-2)" : "#4B5563";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<WordleBoard | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -226,7 +229,7 @@ function WordSlingPageInner() {
         <GamePageSchema slug="word-sling" />
 
         {hintLetters.size > 0 && (
-          <div style={{ fontSize:13, color:"#F59E0B", fontWeight:600 }}>
+          <div style={{ fontSize:13, color:"var(--color-accent-secondary)", fontWeight:600 }}>
             Hint: position{hintLetters.size>1?"s":""} {[...hintLetters].map(i=>i+1).join(", ")} = {[...hintLetters].map(i=>board.answer[i]).join(", ")}
           </div>
         )}
@@ -249,7 +252,7 @@ function WordSlingPageInner() {
                       style={{
                         width:cellSize, height:cellSize,
                         border:`2px solid ${color?color.border:letter?"var(--color-accent-primary)":"var(--color-border)"}`,
-                        borderRadius:8, background:color?color.bg:"var(--color-surface)",
+                        borderRadius:8, background:color?(result==="absent"?absentBg:color.bg):"var(--color-surface)",
                         display:"flex", alignItems:"center", justifyContent:"center",
                         fontSize:Math.round(cellSize*0.42), fontWeight:700,
                         color:color?color.text:"var(--color-text-primary)", fontFamily:"var(--font-sans)",
@@ -265,7 +268,7 @@ function WordSlingPageInner() {
 
         {(lost||solutionRevealed) && (
           <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"rgba(255,68,68,0.08)":"#FEF2F2",border:`1px solid ${solutionRevealed?"rgba(255,68,68,0.2)":"#FECACA"}`,fontSize:14,fontWeight:700,color:"var(--color-error)"}}>
+            style={{padding:"10px 20px",borderRadius:14,background:solutionRevealed?"color-mix(in srgb, var(--color-error) 8%, transparent)":"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))",border:`1px solid color-mix(in srgb, var(--color-error) 20%, transparent)`,fontSize:14,fontWeight:700,color:"var(--color-error)"}}>
             {solutionRevealed?"Solution: ":"The word was: "}{board.answer}
           </motion.div>
         )}
@@ -280,7 +283,7 @@ function WordSlingPageInner() {
                 return (
                   <motion.button key={key} whileTap={{scale:0.9}}
                     onClick={()=>handleKey(key==="⌫"?"Backspace":key==="ENTER"?"Enter":key)}
-                    style={{width:isWide?58:34,height:48,borderRadius:8,border:"none",background:color?color.bg:"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:14,fontWeight:700,cursor:"pointer",outline:"none"}}>
+                    style={{width:isWide?58:34,height:48,borderRadius:8,border:"none",background:color?(state==="absent"?absentBg:color.bg):"var(--color-surface-2)",color:color?color.text:"var(--color-text-secondary)",fontSize:isWide?11:14,fontWeight:700,cursor:"pointer",outline:"none"}}>
                     {key}
                   </motion.button>
                 );

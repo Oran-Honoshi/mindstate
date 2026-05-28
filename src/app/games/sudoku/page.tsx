@@ -295,12 +295,12 @@ function SudokuGameInner() {
 
         {solutionRevealed&&(
           <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-            style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+            style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
             Solution revealed · XP set to 1 · Retry to score properly
           </motion.div>
         )}
 
-        <div style={{ border:"2px solid #374151", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}>
+        <div style={{ border:"2px solid var(--color-border)", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}>
           <div style={{ display:"grid", gridTemplateColumns:`repeat(${puzzleData.size},${cellSize}px)` }}>
             {puzzleData.puzzle.map((row, r) => row.map((given, c) => {
               const value = playerBoard[r][c];
@@ -320,27 +320,27 @@ function SudokuGameInner() {
                   style={{
                     width:cellSize, height:cellSize,
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize: puzzleData.size===6 ? 18 : 14, fontWeight:700,
+                    fontSize: puzzleData.size===6 ? 18 : 14, fontWeight:700, fontFamily:"var(--font-mono)",
                     outline:"none", cursor: isGiven || solutionRevealed ? "default" : "pointer",
                     transition:"background 0.2s",
                     background: check==="correct" ? "var(--color-accent-secondary)"
                       : check==="incorrect" ? "var(--color-error)"
-                      : isSolution ? "rgba(255,68,68,0.04)"
-                      : showFeedback&&feedbackCells.has(`${r}-${c}`) ? "#DCFCE7"
-                      : showFeedback&&wrongCells.has(`${r}-${c}`) ? "#FEF2F2"
-                      : isSelected ? "#EEF2FF"
-                      : isError ? "#FEF2F2"
-                      : sameVal ? "#F5F7FF"
+                      : isSolution ? "color-mix(in srgb, var(--color-error) 4%, var(--color-surface))"
+                      : showFeedback&&feedbackCells.has(`${r}-${c}`) ? "color-mix(in srgb, var(--color-accent-secondary) 10%, var(--color-surface))"
+                      : showFeedback&&wrongCells.has(`${r}-${c}`) ? "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"
+                      : isSelected ? "color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))"
+                      : isError ? "color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"
+                      : sameVal ? "color-mix(in srgb, var(--color-accent-primary) 5%, var(--color-surface))"
                       : isGiven ? "var(--color-surface-2)" : "var(--color-surface)",
                     color: check ? "var(--color-on-accent)"
                       : isSolution ? "var(--color-error)"
-                      : isGiven ? "#1C1917"
+                      : isGiven ? "var(--color-text-primary)"
                       : isError ? "var(--color-error)"
-                      : value ? "var(--color-accent-primary)" : "#CBD5E1",
-                    borderRight: rightBox ? "2px solid #374151" : "0.5px solid #E2E8F0",
-                    borderBottom: bottomBox ? "2px solid #374151" : "0.5px solid #E2E8F0",
+                      : value ? "var(--color-accent-primary)" : "var(--color-border)",
+                    borderRight: rightBox ? "2px solid var(--color-text-secondary)" : "0.5px solid var(--color-border)",
+                    borderBottom: bottomBox ? "2px solid var(--color-text-secondary)" : "0.5px solid var(--color-border)",
                     borderTop:"none", borderLeft:"none",
-                    boxShadow: isSelected ? "inset 0 0 0 2px #4F6EF7" : "none",
+                    boxShadow: isSelected ? "inset 0 0 0 2px var(--color-accent-primary)" : "none",
                   }}>
                   {value ?? ""}
                 </motion.button>
@@ -353,7 +353,7 @@ function SudokuGameInner() {
           <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
             {nums.map(n => (
               <button key={n} onClick={() => handleInput(n)}
-                style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:16, fontWeight:700, color:"var(--color-text-secondary)", cursor:"pointer", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
+                style={{ width:44, height:44, borderRadius:12, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", fontSize:16, fontWeight:700, color:"var(--color-text-secondary)", cursor:"pointer", boxShadow:"0 2px 6px rgba(0,0,0,0.04)", fontFamily:"var(--font-mono)" }}>
                 {n}
               </button>
             ))}
