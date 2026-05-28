@@ -188,14 +188,14 @@ function GravitySortPageInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400}}>
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400}}>
               Strategy: Move top block to its matching color column · Use free columns as buffers · XP set to 1
             </motion.div>
           )}
 
           <div style={{display:"flex",gap:gap,flexWrap:"wrap",justifyContent:"center"}}>
             {board.colors.map((color,i)=>(<div key={i} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:color,opacity:0.4,marginBottom:2}}/><span style={{fontSize:9,color:"var(--color-text-secondary)"}}>col {i+1}</span></div>))}
-            {Array.from({length:board.cols-board.colors.length},(_,i)=>(<div key={`e-${i}`} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:"#E2E8F0",marginBottom:2}}/><span style={{fontSize:9,color:"var(--color-text-secondary)"}}>free</span></div>))}
+            {Array.from({length:board.cols-board.colors.length},(_,i)=>(<div key={`e-${i}`} style={{width:blockSize,textAlign:"center"}}><div style={{width:blockSize,height:6,borderRadius:3,background:"var(--color-border)",marginBottom:2}}/><span style={{fontSize:9,color:"var(--color-text-secondary)"}}>free</span></div>))}
           </div>
 
           <div style={{display:"flex",gap:gap,alignItems:"flex-end",maxWidth:"100%",overflow:"hidden"}}>
@@ -203,10 +203,10 @@ function GravitySortPageInner(){
               const isSelected=selected===ci;
               const isSorted=col.length>0&&col.every(b=>b===ci)&&ci<board.colors.length;
               const check=checkState?.get(ci);
-              const borderColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSelected?"var(--color-accent-primary)":isSorted?"#22C55E":"#E2E8F0";
+              const borderColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isSelected?"var(--color-accent-primary)":isSorted?"var(--color-accent-secondary)":"var(--color-border)";
               return(
                 <motion.div key={ci} onClick={()=>handleColClick(ci)} animate={isSelected?{y:-8}:{y:0}} transition={{type:"spring",stiffness:400,damping:25}}
-                  style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(0,255,255,0.06)":"#F8F7F5",borderRadius:14,padding:6,border:`2px solid ${borderColor}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
+                  style={{cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",flexDirection:"column-reverse",gap:4,width:blockSize,minHeight:board.rows*blockSize+board.rows*4,background:isSelected?"rgba(0,255,255,0.06)":"var(--color-surface)",borderRadius:14,padding:6,border:`2px solid ${borderColor}`,transition:"border-color 0.2s,background 0.2s",position:"relative",flexShrink:0,opacity:solutionRevealed?0.8:1}}>
                   {col.map((block,bi)=>(<motion.div key={`${ci}-${bi}`} initial={{scale:0.8,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}} style={{width:"100%",height:blockSize-12,borderRadius:10,background:board.colors[block],boxShadow:`0 3px 10px ${board.colors[block]}60`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{bi===col.length-1&&isSelected&&"↑"}</motion.div>))}
                   {isSorted&&<div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:16}}>✓</div>}
                 </motion.div>

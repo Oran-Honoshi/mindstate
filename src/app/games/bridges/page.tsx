@@ -201,13 +201,13 @@ function BridgesGameInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
               Solution revealed · XP set to 1 · Retry to score properly
             </motion.div>
           )}
 
           <svg width={board.size*cellSize} height={board.size*cellSize}
-            style={{borderRadius:16,border:"1.5px solid #E2E8F0",background:"#FAFAF9",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
+            style={{borderRadius:16,border:"1.5px solid var(--color-border)",background:"var(--color-surface)",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
             {board.islands.map(island=>board.islands.map(other=>{
               if(other.id<=island.id)return null;
               const sameRow=island.r===other.r,sameCol=island.c===other.c;
@@ -223,17 +223,17 @@ function BridgesGameInner(){
               const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
               const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
               const midX=(x1+x2)/2,midY=(y1+y2)/2;
-              const bridgeColor=solutionRevealed?"var(--color-error)":"#374151";
+              const bridgeColor=solutionRevealed?"var(--color-error)":"var(--color-text-primary)";
               return(
                 <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:solutionRevealed?"default":"pointer"}}>
                   <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
                   {bridge&&(
                     <>
                       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={bridgeColor} strokeWidth={bridge.count===2?3:2} opacity={0.7}/>
-                      {bridge.count===2&&<line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FAFAF9" strokeWidth={1}/>}
+                      {bridge.count===2&&<line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-surface)" strokeWidth={1}/>}
                     </>
                   )}
-                  {!bridge&&!solutionRevealed&&<circle cx={midX} cy={midY} r={cellSize*0.12} fill="#E2E8F0" opacity={0.6}/>}
+                  {!bridge&&!solutionRevealed&&<circle cx={midX} cy={midY} r={cellSize*0.12} fill="var(--color-border)" opacity={0.6}/>}
                 </g>
               );
             }))}
@@ -242,12 +242,12 @@ function BridgesGameInner(){
               const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
               const r=cellSize*0.3;
               const check=checkState?.get(island.id);
-              const bgColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":status==="done"?"#22C55E":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
+              const bgColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":status==="done"?"var(--color-accent-secondary)":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
               return(
                 <g key={island.id}>
                   <circle cx={x} cy={y} r={r} fill={bgColor} opacity={status==="done"?1:0.85} stroke={check?"var(--color-text-primary)":"none"} strokeWidth={check?2:0}/>
                   <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
-                    style={{fontSize:Math.round(r*1.1),fontWeight:700,fill:"white",userSelect:"none"}}>
+                    style={{fontSize:Math.round(r*1.1),fontWeight:700,fill:"white",userSelect:"none",fontFamily:"var(--font-mono)"}}>
                     {island.required}
                   </text>
                 </g>

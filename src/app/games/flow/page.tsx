@@ -351,14 +351,14 @@ function FlowGameInner() {
 
           {solutionRevealed && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "rgba(255,68,68,0.08)", border: "0.5px solid rgba(255,68,68,0.2)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
+              style={{ padding: "8px 20px", borderRadius: "var(--radius)", background: "color-mix(in srgb, var(--color-error) 8%, transparent)", border: "0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
               Solution revealed · XP set to 1 · Retry to score properly
             </motion.div>
           )}
 
           <div
             style={{
-              border: "2px solid #E2E8F0", borderRadius: "var(--radius)", overflow: "hidden",
+              border: "2px solid var(--color-border)", borderRadius: "var(--radius)", overflow: "hidden",
               boxShadow: "0 8px 32px rgba(0,0,0,0.08)", cursor: "crosshair",
               userSelect: "none", touchAction: "none",
             }}
@@ -391,8 +391,8 @@ function FlowGameInner() {
                       style={{
                         width: cellSize, height: cellSize,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        background: check === "correct" ? "var(--color-accent-secondary)" : check === "incorrect" ? "var(--color-error)" : cellColor ? cellColor + "30" : "#FAFAF9",
-                        borderRight: "0.5px solid #F0EDE8", borderBottom: "0.5px solid #F0EDE8",
+                        background: check === "correct" ? "var(--color-accent-secondary)" : check === "incorrect" ? "var(--color-error)" : cellColor ? cellColor + "30" : "var(--color-surface)",
+                        borderRight: "0.5px solid var(--color-border)", borderBottom: "0.5px solid var(--color-border)",
                         borderTop: "none", borderLeft: "none", position: "relative",
                         transition: "background 0.2s",
                       }}>

@@ -41,7 +41,7 @@ function cardColor(suit:Suit):string{return suit==="♥"||suit==="♦"?"#DC2626"
 
 function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;onClick?:()=>void;faceDown?:boolean}){
   return(<motion.button onClick={onClick} whileHover={onClick?{y:-6}:{}} whileTap={onClick?{scale:0.95}:{}}
-    style={{width:52,height:76,borderRadius:8,border:`2px solid ${selected?"var(--color-accent-primary)":"#E2E8F0"}`,background:faceDown?"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))":selected?"#EEF2FF":"white",cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:selected?"0 4px 12px rgba(0,255,255,0.2)":"0 2px 6px rgba(0,0,0,0.06)",flexShrink:0}}>
+    style={{width:52,height:76,borderRadius:8,border:`2px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`,background:faceDown?"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))":selected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":"var(--color-surface)",cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:selected?"0 4px 12px rgba(0,255,255,0.2)":"0 2px 6px rgba(0,0,0,0.06)",flexShrink:0}}>
     {!faceDown&&<><span style={{fontSize:13,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span><span style={{fontSize:18,color:cardColor(card.suit),lineHeight:1,marginTop:2}}>{card.suit}</span></>}
   </motion.button>);
 }
@@ -180,7 +180,7 @@ function HeartsPageInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.1)",border:"0.5px solid rgba(255,68,68,0.3)",fontSize:13,fontWeight:600,color:"#FCA5A5",textAlign:"center",maxWidth:400}}>
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400}}>
               Strategy revealed · XP set to 1 · Avoid ♥ and Q♠ · Play low cards
             </motion.div>
           )}
@@ -203,7 +203,7 @@ function HeartsPageInner(){
           </div>
 
           {selected!==null&&phase==="play"&&!solutionRevealed&&(
-            <button onClick={playCard} style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--color-surface)",fontSize:14,fontWeight:700,color:"#1A6B3A",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
+            <button onClick={playCard} style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--color-surface)",fontSize:14,fontWeight:700,color:"var(--color-accent-secondary)",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
               Play {hand[selected].label}{hand[selected].suit}
             </button>
           )}

@@ -171,22 +171,22 @@ function TwentyFortyEightProPageInner(){
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,padding:"16px 16px 32px"}}>
           <div style={{display:"flex",gap:12}}>
             {[{label:"Score",value:score},{label:"Best Tile",value:bestTile}].map(s=>(
-              <div key={s.label} style={{background:"#BBADA0",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
-                <p style={{fontSize:10,fontWeight:700,color:"#EEE4DA",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
-                <p style={{fontSize:20,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
+              <div key={s.label} style={{background:"var(--color-surface-2)",borderRadius:12,padding:"10px 20px",textAlign:"center",minWidth:90}}>
+                <p style={{fontSize:10,fontWeight:700,color:"var(--color-text-secondary)",letterSpacing:"0.1em",marginBottom:2}}>{s.label.toUpperCase()}</p>
+                <p style={{fontSize:20,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)"}}>{s.value.toLocaleString()}</p>
               </div>
             ))}
           </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:340}}>
               Target: {target} · Strategy: keep highest tile in a corner, build in rows · XP set to 1
             </motion.div>
           )}
 
           <div
-            style={{background:"#BBADA0",borderRadius:16,padding:8,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",touchAction:"none",opacity:solutionRevealed?0.7:1}}
+            style={{background:"var(--color-surface-2)",borderRadius:16,padding:8,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",touchAction:"none",opacity:solutionRevealed?0.7:1}}
             onTouchStart={e=>{const t=e.touches[0];touchStart.current={x:t.clientX,y:t.clientY};}}
             onTouchEnd={e=>{
               if(!touchStart.current)return;
@@ -203,7 +203,7 @@ function TwentyFortyEightProPageInner(){
                 const fontSize=val>=1000?cellSize*0.28:cellSize*0.38;
                 return(
                   <motion.div key={`${r}-${c}-${val}`} initial={val>0?{scale:0.8,opacity:0}:{}} animate={{scale:1,opacity:1}} transition={{type:"spring",stiffness:400,damping:25}}
-                    style={{width:cellSize,height:cellSize,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color,boxShadow:val>=8?"0 2px 8px rgba(0,0,0,0.2)":"none"}}>
+                    style={{width:cellSize,height:cellSize,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color,fontFamily:"var(--font-mono)",boxShadow:val>=8?"0 2px 8px rgba(0,0,0,0.2)":"none"}}>
                     {val||""}
                   </motion.div>
                 );
