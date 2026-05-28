@@ -23,6 +23,7 @@ import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -38,6 +39,7 @@ function getDifficulty(s:number):Difficulty{
 
 function BridgesGameInner(){
   const{user}=useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<BridgesBoard|null>(null);
   const[placed,setPlaced]=useState<Bridge[]>([]);
@@ -175,11 +177,28 @@ function BridgesGameInner(){
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,480):400;
   const cellSize=Math.floor(maxW/board.size);
 
+  const boardBg = theme === "dark"
+    ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+    : theme === "light"
+    ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+    : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`;
+
   function getBridgeBetween(a:number,b:number){return placed.find(br=>(br.from===a&&br.to===b)||(br.from===b&&br.to===a));}
   function islandStatus(island:{required:number;id:number}){
     const total=placed.filter(b=>b.from===island.id||b.to===island.id).reduce((s,b)=>s+b.count,0);
     return total===island.required?"done":total>island.required?"over":"under";
   }
+
+  const navBtnStyle = {
+    padding: "8px 18px", borderRadius: 10,
+    border: "1px solid var(--color-border)",
+    background: "var(--color-surface)",
+    cursor: "pointer", fontSize: 11,
+    fontFamily: "var(--font-mono)",
+    color: "var(--color-text-secondary)",
+    fontWeight: 600, letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+  };
 
   return(
     <>
@@ -197,68 +216,149 @@ function BridgesGameInner(){
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
-          <div style={{fontSize:11,color:"var(--color-text-secondary)"}}>Click between islands to add bridges · Each island shows its required count</div>
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+            CLICK BETWEEN ISLANDS · CLICK AGAIN FOR DOUBLE BRIDGE
+          </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
-              Solution revealed · XP set to 1 · Retry to score properly
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",fontFamily:"var(--font-mono)"}}>
+              SOLUTION REVEALED · XP SET TO 1 · RETRY TO SCORE
             </motion.div>
           )}
 
-          <svg width={board.size*cellSize} height={board.size*cellSize}
-            style={{borderRadius:16,border:"1.5px solid var(--color-border)",background:"var(--color-surface)",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
-            {board.islands.map(island=>board.islands.map(other=>{
-              if(other.id<=island.id)return null;
-              const sameRow=island.r===other.r,sameCol=island.c===other.c;
-              if(!sameRow&&!sameCol)return null;
-              const blocked=board.islands.some(mid=>{
-                if(mid.id===island.id||mid.id===other.id)return false;
-                if(sameRow&&mid.r===island.r&&Math.min(island.c,other.c)<mid.c&&mid.c<Math.max(island.c,other.c))return true;
-                if(sameCol&&mid.c===island.c&&Math.min(island.r,other.r)<mid.r&&mid.r<Math.max(island.r,other.r))return true;
-                return false;
-              });
-              if(blocked)return null;
-              const bridge=getBridgeBetween(island.id,other.id);
-              const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
-              const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
-              const midX=(x1+x2)/2,midY=(y1+y2)/2;
-              const bridgeColor=solutionRevealed?"var(--color-error)":"var(--color-text-primary)";
-              return(
-                <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:solutionRevealed?"default":"pointer"}}>
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
-                  {bridge&&(
-                    <>
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={bridgeColor} strokeWidth={bridge.count===2?3:2} opacity={0.7}/>
-                      {bridge.count===2&&<line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-surface)" strokeWidth={1}/>}
-                    </>
-                  )}
-                  {!bridge&&!solutionRevealed&&<circle cx={midX} cy={midY} r={cellSize*0.12} fill="var(--color-border)" opacity={0.6}/>}
-                </g>
-              );
-            }))}
-            {board.islands.map(island=>{
-              const status=islandStatus(island);
-              const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
-              const r=cellSize*0.3;
-              const check=checkState?.get(island.id);
-              const bgColor=check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":status==="done"?"var(--color-accent-secondary)":status==="over"?"var(--color-error)":"var(--color-accent-primary)";
-              return(
-                <g key={island.id}>
-                  <circle cx={x} cy={y} r={r} fill={bgColor} opacity={status==="done"?1:0.85} stroke={check?"var(--color-text-primary)":"none"} strokeWidth={check?2:0}/>
-                  <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
-                    style={{fontSize:Math.round(r*1.1),fontWeight:700,fill:"white",userSelect:"none",fontFamily:"var(--font-mono)"}}>
-                    {island.required}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+          <div style={{
+            padding: 14, borderRadius: 16,
+            background: boardBg, backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 16%, transparent)",
+            boxShadow: theme === "dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}>
+            <svg width={board.size*cellSize} height={board.size*cellSize}
+              style={{borderRadius:10,display:"block",overflow:"visible"}}>
+              {theme === "dark" && (
+                <defs>
+                  <filter id="glow-bridge" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="glow-island" x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+              )}
+
+              {board.islands.map(island=>board.islands.map(other=>{
+                if(other.id<=island.id)return null;
+                const sameRow=island.r===other.r,sameCol=island.c===other.c;
+                if(!sameRow&&!sameCol)return null;
+                const blocked=board.islands.some(mid=>{
+                  if(mid.id===island.id||mid.id===other.id)return false;
+                  if(sameRow&&mid.r===island.r&&Math.min(island.c,other.c)<mid.c&&mid.c<Math.max(island.c,other.c))return true;
+                  if(sameCol&&mid.c===island.c&&Math.min(island.r,other.r)<mid.r&&mid.r<Math.max(island.r,other.r))return true;
+                  return false;
+                });
+                if(blocked)return null;
+                const bridge=getBridgeBetween(island.id,other.id);
+                const x1=(island.c+0.5)*cellSize,y1=(island.r+0.5)*cellSize;
+                const x2=(other.c+0.5)*cellSize,y2=(other.r+0.5)*cellSize;
+                const midX=(x1+x2)/2,midY=(y1+y2)/2;
+                const bridgeColor=solutionRevealed?"var(--color-error)":"var(--color-accent-primary)";
+                const isHoriz=island.r===other.r;
+                const off=3.5;
+                const [dx,dy]=isHoriz?[0,off]:[off,0];
+                const glowFilter=theme==="dark"?"url(#glow-bridge)":"none";
+                const bridgeStatus = bridge
+                  ? (islandStatus(island) === "done" && islandStatus(other) === "done" ? "done" : "placed")
+                  : null;
+                const bridgeOpacity = bridgeStatus === "done" ? 1 : 0.82;
+                const bridgeLineColor = bridgeStatus === "done"
+                  ? (solutionRevealed ? "var(--color-error)" : "var(--color-accent-secondary)")
+                  : bridgeColor;
+                return(
+                  <g key={`${island.id}-${other.id}`} onClick={()=>toggleBridge(island.id,other.id)} style={{cursor:solutionRevealed?"default":"pointer"}}>
+                    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={cellSize*0.7}/>
+                    {bridge&&bridge.count===1&&(
+                      <line x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke={bridgeLineColor} strokeWidth={2.5} opacity={bridgeOpacity}
+                        filter={glowFilter}/>
+                    )}
+                    {bridge&&bridge.count===2&&(
+                      <>
+                        <line x1={x1-dx} y1={y1-dy} x2={x2-dx} y2={y2-dy}
+                          stroke={bridgeLineColor} strokeWidth={2} opacity={bridgeOpacity}
+                          filter={glowFilter}/>
+                        <line x1={x1+dx} y1={y1+dy} x2={x2+dx} y2={y2+dy}
+                          stroke={bridgeLineColor} strokeWidth={2} opacity={bridgeOpacity}
+                          filter={glowFilter}/>
+                      </>
+                    )}
+                    {!bridge&&!solutionRevealed&&(
+                      <circle cx={midX} cy={midY} r={cellSize*0.09}
+                        fill="var(--color-border)" opacity={0.5}/>
+                    )}
+                  </g>
+                );
+              }))}
+
+              {board.islands.map(island=>{
+                const status=islandStatus(island);
+                const x=(island.c+0.5)*cellSize,y=(island.r+0.5)*cellSize;
+                const r=cellSize*0.3;
+                const check=checkState?.get(island.id);
+                const isDone=status==="done";
+                const isOver=status==="over";
+                const bgColor=check==="correct"
+                  ?"var(--color-accent-secondary)"
+                  :check==="incorrect"
+                  ?"var(--color-error)"
+                  :isDone
+                  ?"var(--color-accent-secondary)"
+                  :isOver
+                  ?"var(--color-error)"
+                  :"var(--color-accent-primary)";
+                return(
+                  <g key={island.id}>
+                    {isDone&&theme==="dark"&&(
+                      <motion.circle
+                        cx={x} cy={y} r={r+5}
+                        fill="transparent"
+                        stroke="var(--color-accent-secondary)"
+                        strokeWidth={1.5}
+                        initial={{opacity:0}}
+                        animate={{opacity:[0.3,0.9,0.3]}}
+                        transition={{duration:1.8,repeat:Infinity,ease:"easeInOut"}}
+                      />
+                    )}
+                    <circle cx={x} cy={y} r={r}
+                      fill={bgColor}
+                      opacity={isDone?1:0.9}
+                      filter={isDone&&theme==="dark"?"url(#glow-island)":"none"}
+                    />
+                    <text x={x} y={y+1} textAnchor="middle" dominantBaseline="middle"
+                      style={{fontSize:Math.round(r*1.1),fontWeight:700,fill:"#000",userSelect:"none",fontFamily:"var(--font-mono)"}}>
+                      {island.required}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
+              style={{...navBtnStyle,opacity:stage===1?0.38:1,cursor:stage===1?"not-allowed":"pointer"}}>
+              ← PREV
+            </button>
+            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>
+              STAGE {stage}/{TOTAL_STAGES}
+            </span>
+            <button onClick={()=>setStage(s=>s+1)}
+              style={{...navBtnStyle,display:"flex",alignItems:"center",gap:4,cursor:"pointer"}}>
+              NEXT <ChevronRight size={12}/>
+            </button>
           </div>
         </div>
       </GameShell>
