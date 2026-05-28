@@ -22,6 +22,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -37,17 +38,35 @@ function mulberry32(seed:number){return function(){seed|=0;seed=(seed+0x6d2b79f5
 function seedToNum(s:string):number{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return Math.abs(h);}
 function shuffleCards(cards:Card[],seed:number):Card[]{const rng=mulberry32(seed);const a=[...cards];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function cardPoints(card:Card):number{if(card.suit==="♥")return 1;if(card.suit==="♠"&&card.label==="Q")return 13;return 0;}
-function cardColor(suit:Suit):string{return suit==="♥"||suit==="♦"?"#DC2626":"#1C1917";}
+function cardColor(suit:Suit):string{return suit==="♥"||suit==="♦"?"#DC2626":"var(--color-text-primary)";}
+function isDangerous(card:Card):boolean{return card.suit==="♥"||(card.suit==="♠"&&card.label==="Q");}
 
-function CardUI({card,selected,onClick,faceDown}:{card:Card;selected?:boolean;onClick?:()=>void;faceDown?:boolean}){
+function CardUI({card,selected,onClick,faceDown,isDark}:{card:Card;selected?:boolean;onClick?:()=>void;faceDown?:boolean;isDark?:boolean}){
+  const danger = !faceDown && isDangerous(card);
+  const cardBg = faceDown
+    ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))"
+    : isDark
+      ? selected ? "color-mix(in srgb, var(--color-accent-primary) 10%, rgba(8,16,28,0.97))" : "rgba(14,24,40,0.95)"
+      : selected ? "color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))" : "var(--color-surface)";
+  const cardBorder = faceDown
+    ? "1.5px solid rgba(255,255,255,0.25)"
+    : isDark
+      ? selected ? "1.5px solid rgba(0,255,255,0.85)" : danger ? "1px solid rgba(220,38,38,0.25)" : "1px solid rgba(255,255,255,0.1)"
+      : `2px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`;
+  const cardShadow = isDark && !faceDown
+    ? selected ? "0 0 0 1px rgba(0,255,255,0.45), 0 0 14px rgba(0,255,255,0.18), 0 4px 14px rgba(0,0,0,0.5)"
+      : danger ? "0 0 8px rgba(220,38,38,0.18), 0 2px 8px rgba(0,0,0,0.4)"
+      : "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)"
+    : selected ? "0 4px 12px rgba(0,255,255,0.2)" : "0 2px 6px rgba(0,0,0,0.06)";
   return(<motion.button onClick={onClick} whileHover={onClick?{y:-6}:{}} whileTap={onClick?{scale:0.95}:{}}
-    style={{width:52,height:76,borderRadius:8,border:`2px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`,background:faceDown?"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))":selected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":"var(--color-surface)",cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:selected?"0 4px 12px rgba(0,255,255,0.2)":"0 2px 6px rgba(0,0,0,0.06)",flexShrink:0}}>
-    {!faceDown&&<><span style={{fontSize:13,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span><span style={{fontSize:18,color:cardColor(card.suit),lineHeight:1,marginTop:2}}>{card.suit}</span></>}
+    style={{width:52,height:76,borderRadius:8,border:cardBorder,background:cardBg,cursor:onClick?"pointer":"default",outline:"none",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start",padding:"4px 5px",boxShadow:cardShadow,flexShrink:0}}>
+    {!faceDown&&<><span style={{fontSize:13,fontWeight:700,color:cardColor(card.suit),lineHeight:1,fontFamily:"var(--font-mono)"}}>{card.label}</span><span style={{fontSize:18,color:cardColor(card.suit),lineHeight:1,marginTop:2}}>{card.suit}</span></>}
   </motion.button>);
 }
 
 function HeartsPageInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[completed,setCompleted]=useState(false);
   const[showMap,setShowMap]=useState(false);
@@ -152,7 +171,19 @@ function HeartsPageInner(){
 
   if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Dealing cards...</p></div>);
 
+  const isDark = theme === "dark";
   const won=phase==="done"&&playerScore<=cpuScore;
+  const boardBg = isDark
+    ? {background:`radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 1px), #060d18`, backgroundSize:"18px 18px"}
+    : theme === "paper"
+    ? {background:`radial-gradient(circle, rgba(60,80,60,0.10) 1px, transparent 1px), #1a3a28`, backgroundSize:"18px 18px"}
+    : {background:`linear-gradient(135deg, #0F4C2A, #1A6B3A)`};
+  const boardShadow = isDark
+    ? "0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 13%, transparent), 0 20px 60px rgba(0,0,0,0.6)"
+    : "0 8px 32px rgba(0,0,0,0.2)";
+  const emptySlotBorder = isDark ? "2px dashed rgba(0,255,255,0.12)" : "2px dashed rgba(255,255,255,0.2)";
+  const overlayColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.5)";
+  const labelColor = isDark ? "rgba(0,255,255,0.45)" : "rgba(255,255,255,0.6)";
 
   return(
     <>
@@ -168,64 +199,90 @@ function HeartsPageInner(){
         onHint={handleHint}
       >
         <GamePageSchema slug={GAME_SLUG} />
-        <div style={{background:"linear-gradient(135deg,#0F4C2A,#1A6B3A)",minHeight:"100%",padding:"16px 16px 32px",display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
-          <div style={{display:"flex",gap:16,width:"100%",maxWidth:540}}>
-            {[{label:"You",score:playerScore},{label:"CPU",score:cpuScore}].map(s=>(
-              <div key={s.label} style={{flex:1,background:"rgba(255,255,255,0.1)",borderRadius:16,padding:"12px 16px",backdropFilter:"blur(8px)",border:"0.5px solid rgba(255,255,255,0.15)"}}>
-                <p style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginBottom:4}}>{s.label}</p>
-                <p style={{fontSize:24,fontWeight:700,color:"white",fontFamily:"var(--font-sans)"}}>{s.score} <span style={{fontSize:14,color:"var(--color-error)"}}>pts</span></p>
+        <div style={{...boardBg,minHeight:"100%",padding:"16px 16px 32px",display:"flex",flexDirection:"column",alignItems:"center",gap:16,borderRadius:20,width:"100%",maxWidth:560,boxShadow:boardShadow,border:isDark?"1px solid color-mix(in srgb, var(--color-accent-primary) 12%, transparent)":"none"}}>
+          <div style={{display:"flex",gap:12,width:"100%",maxWidth:500}}>
+            {[{label:"YOU",score:playerScore,isPlayer:true},{label:"CPU",score:cpuScore,isPlayer:false}].map(s=>(
+              <div key={s.label} style={{flex:1,
+                background:isDark?"rgba(6,13,24,0.8)":"rgba(255,255,255,0.1)",
+                borderRadius:16,padding:"12px 16px",
+                backdropFilter:"blur(8px)",
+                border:isDark?"1px solid rgba(0,255,255,0.1)":"0.5px solid rgba(255,255,255,0.15)",
+                boxShadow:isDark?"inset 0 1px 0 rgba(255,255,255,0.03)":"none"}}>
+                <p style={{fontSize:10,color:labelColor,marginBottom:4,fontFamily:"var(--font-mono)",letterSpacing:"0.1em"}}>{s.label}</p>
+                <p style={{fontSize:24,fontWeight:700,color:isDark?"var(--color-text-primary)":"white",fontFamily:"var(--font-mono)",letterSpacing:"-0.02em"}}>{s.score}<span style={{fontSize:12,color:"var(--color-error)",marginLeft:4}}>pts</span></p>
               </div>
             ))}
           </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400}}>
-              Strategy revealed · XP set to 1 · Avoid ♥ and Q♠ · Play low cards
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:11,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:400,fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+              STRATEGY: AVOID ♥ AND Q♠ · PLAY LOW CARDS · XP SET TO 1
             </motion.div>
           )}
 
           <div style={{display:"flex",gap:-8,justifyContent:"center"}}>
-            {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(<div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}><CardUI card={{suit:"♠",value:0,label:""}} faceDown/></div>))}
-            {cpuHand.length>7&&<span style={{color:"rgba(255,255,255,0.5)",fontSize:12,alignSelf:"center",marginLeft:8}}>+{cpuHand.length-7}</span>}
+            {cpuHand.slice(0,Math.min(7,cpuHand.length)).map((_,i)=>(<div key={i} style={{marginLeft:i>0?-20:0,zIndex:i}}><CardUI card={{suit:"♠",value:0,label:""}} faceDown isDark={isDark}/></div>))}
+            {cpuHand.length>7&&<span style={{color:labelColor,fontSize:11,alignSelf:"center",marginLeft:8,fontFamily:"var(--font-mono)"}}>+{cpuHand.length-7}</span>}
           </div>
 
-          <div style={{background:"rgba(0,0,0,0.2)",borderRadius:20,padding:"20px 32px",display:"flex",gap:32,alignItems:"center",minHeight:120}}>
-            <div style={{textAlign:"center"}}><p style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginBottom:8}}>CPU plays</p>{trick.cpu?<CardUI card={trick.cpu}/>:<div style={{width:52,height:76,borderRadius:8,border:"2px dashed rgba(255,255,255,0.2)"}}/>}</div>
-            <div style={{fontSize:24,color:"rgba(255,255,255,0.3)"}}>VS</div>
-            <div style={{textAlign:"center"}}><p style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginBottom:8}}>Your play</p>{trick.player?<CardUI card={trick.player}/>:<div style={{width:52,height:76,borderRadius:8,border:"2px dashed rgba(255,255,255,0.2)"}}/>}</div>
+          <div style={{background:isDark?"rgba(0,0,0,0.35)":"rgba(0,0,0,0.2)",borderRadius:20,padding:"20px 32px",display:"flex",gap:32,alignItems:"center",minHeight:120,
+            border:isDark?"1px solid rgba(255,255,255,0.05)":"none",
+            backdropFilter:isDark?"blur(4px)":"none"}}>
+            <div style={{textAlign:"center"}}>
+              <p style={{fontSize:10,color:labelColor,marginBottom:8,fontFamily:"var(--font-mono)",letterSpacing:"0.1em"}}>CPU</p>
+              {trick.cpu?<CardUI card={trick.cpu} isDark={isDark}/>:<div style={{width:52,height:76,borderRadius:8,border:emptySlotBorder}}/>}
+            </div>
+            <div style={{fontSize:18,color:isDark?"rgba(0,255,255,0.2)":"rgba(255,255,255,0.3)",fontFamily:"var(--font-mono)",fontWeight:700}}>VS</div>
+            <div style={{textAlign:"center"}}>
+              <p style={{fontSize:10,color:labelColor,marginBottom:8,fontFamily:"var(--font-mono)",letterSpacing:"0.1em"}}>YOU</p>
+              {trick.player?<CardUI card={trick.player} isDark={isDark}/>:<div style={{width:52,height:76,borderRadius:8,border:emptySlotBorder}}/>}
+            </div>
           </div>
 
-          {message&&<motion.p initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{fontSize:14,color:"rgba(255,255,255,0.85)",fontWeight:600,textAlign:"center"}}>{message}</motion.p>}
+          {message&&<motion.p initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{fontSize:13,color:overlayColor,fontWeight:600,textAlign:"center",fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>{message}</motion.p>}
 
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",maxWidth:400}}>
-            {hand.map((card,i)=>(<CardUI key={`${card.suit}${card.label}`} card={card} selected={selected===i} onClick={phase==="play"&&!solutionRevealed?()=>setSelected(selected===i?null:i):undefined}/>))}
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",maxWidth:420}}>
+            {hand.map((card,i)=>(<CardUI key={`${card.suit}${card.label}`} card={card} isDark={isDark} selected={selected===i} onClick={phase==="play"&&!solutionRevealed?()=>setSelected(selected===i?null:i):undefined}/>))}
           </div>
 
           {selected!==null&&phase==="play"&&!solutionRevealed&&(
-            <button onClick={playCard} style={{padding:"12px 32px",borderRadius:14,border:"none",background:"var(--color-surface)",fontSize:14,fontWeight:700,color:"var(--color-accent-secondary)",cursor:"pointer",boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
-              Play {hand[selected].label}{hand[selected].suit}
-            </button>
+            <motion.button onClick={playCard} whileHover={{scale:1.04,boxShadow:isDark?"0 0 18px rgba(57,255,20,0.22)":"none"}}
+              style={{padding:"12px 32px",borderRadius:14,border:isDark?"1px solid rgba(57,255,20,0.3)":"none",
+                background:isDark?"rgba(57,255,20,0.1)":"var(--color-surface)",
+                fontSize:12,fontWeight:700,color:isDark?"var(--color-accent-secondary)":"var(--color-accent-secondary)",cursor:"pointer",
+                fontFamily:"var(--font-mono)",letterSpacing:"0.08em",textTransform:"uppercase",
+                boxShadow:isDark?"0 0 10px rgba(57,255,20,0.08)":"0 4px 12px rgba(0,0,0,0.2)"}}>
+              PLAY {hand[selected].label}{hand[selected].suit}
+            </motion.button>
           )}
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"rgba(255,255,255,0.6)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:12,color:"rgba(255,255,255,0.7)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:labelColor,opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+            <span style={{fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
+            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
           </div>
         </div>
       </GameShell>
 
       <AnimatePresence>
-        {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.3)"}}>
-            <div style={{fontSize:48,marginBottom:16}}>{won?"🏆":"😔"}</div>
-            <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>{won?"You Win!":"CPU Wins"}</h2>
-            <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Your score: {playerScore} · CPU: {cpuScore}</p>
-            {won&&<div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}><p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p><p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p></div>}
+        {phase==="done"&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
+          <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}} transition={{type:"spring",stiffness:380,damping:28}}
+            style={{background:isDark?"rgba(8,16,28,0.97)":"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",
+              boxShadow:isDark
+                ?won?"0 0 0 1px rgba(57,255,20,0.22), 0 32px 80px rgba(0,0,0,0.65), 0 0 40px rgba(57,255,20,0.07)":"0 0 0 1px rgba(255,68,68,0.15), 0 32px 80px rgba(0,0,0,0.65)"
+                :"0 32px 80px rgba(0,0,0,0.3)",
+              border:isDark?"none":"0.5px solid var(--color-border)"}}>
+            <div style={{fontSize:40,marginBottom:12,fontFamily:"var(--font-mono)"}}>{won?"♠":"♥"}</div>
+            <h2 style={{fontSize:24,fontWeight:700,color:isDark?(won?"var(--color-accent-secondary)":"var(--color-error)"):"var(--color-text-primary)",fontFamily:"var(--font-mono)",marginBottom:6,letterSpacing:"0.04em"}}>{won?"YOU WIN":"CPU WINS"}</h2>
+            <p style={{fontSize:11,color:"var(--color-text-secondary)",marginBottom:24,fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>YOU {playerScore}pts · CPU {cpuScore}pts</p>
+            {won&&<div style={{background:isDark?"rgba(57,255,20,0.06)":"var(--color-surface-2)",border:isDark?"1px solid rgba(57,255,20,0.18)":"none",borderRadius:16,padding:20,marginBottom:20,boxShadow:isDark?"0 0 20px rgba(57,255,20,0.06)":"none"}}>
+              <p style={{fontSize:10,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4,letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"var(--font-mono)"}}>XP EARNED</p>
+              <p style={{fontSize:48,fontWeight:700,color:isDark?"var(--color-accent-secondary)":"var(--color-accent-primary)",fontFamily:"var(--font-mono)"}}>{finalXP}</p>
+            </div>}
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
-              <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+              <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase"}}>RETRY</button>
+              <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:11,fontWeight:700,color:"#060d18",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",boxShadow:isDark?"0 0 16px rgba(0,255,255,0.18)":"none"}}>NEXT <ChevronRight size={13}/></button>
             </div>
           </motion.div>
         </motion.div>)}
