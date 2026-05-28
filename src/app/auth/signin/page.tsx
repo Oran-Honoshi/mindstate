@@ -27,12 +27,12 @@ export default function SignInPage() {
 
   async function handleGoogle() {
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo:`${window.location.origin}/auth/callback` } });
+    await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo:`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` } });
   }
 
   async function handleFacebook() {
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({ provider:"facebook", options:{ redirectTo:`${window.location.origin}/auth/callback` } });
+    await supabase.auth.signInWithOAuth({ provider:"facebook", options:{ redirectTo:`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` } });
   }
 
   return (

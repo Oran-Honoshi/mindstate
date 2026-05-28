@@ -1,4 +1,4 @@
-const CACHE = "mindstate-v1";
+const CACHE = "app-v3";
 const STATIC = [
   "/",
   "/games",
@@ -26,6 +26,8 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  const { pathname } = new URL(e.request.url);
+  if (pathname.startsWith("/auth") || pathname.startsWith("/api/")) return;
   if (e.request.url.includes("supabase.co")) return; // never cache API
 
   e.respondWith(
