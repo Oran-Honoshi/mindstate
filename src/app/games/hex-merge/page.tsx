@@ -175,14 +175,14 @@ function HexMergePageInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:380}}>
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center",maxWidth:380}}>
               Target: {target} · Strategy: merge equal tiles outward from center · XP set to 1
             </motion.div>
           )}
 
           <div style={{width:"100%",maxWidth:boardWidth,overflow:"hidden"}}>
             <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`}
-              style={{width:"100%",height:"auto",borderRadius:20,border:"1.5px solid #E2E8F0",background:"#FAFAF9",boxShadow:"0 8px 24px rgba(0,0,0,0.07)",display:"block",opacity:solutionRevealed?0.75:1}}>
+              style={{width:"100%",height:"auto",borderRadius:20,border:"1.5px solid var(--color-border)",background:"var(--color-surface)",boxShadow:"0 8px 24px rgba(0,0,0,0.07)",display:"block",opacity:solutionRevealed?0.75:1}}>
               {hexCells.map(([q,r,cx,cy])=>{
                 const val=cells.get(`${q},${r}`)??0;
                 const isSel=!solutionRevealed&&selected?.[0]===q&&selected?.[1]===r;
@@ -192,9 +192,9 @@ function HexMergePageInner(){
                 const canMerge=isAdj&&val>0&&cells.get(`${selected![0]},${selected![1]}`)===val;
                 return(
                   <g key={`${q},${r}`} onClick={()=>handleCellClick(q,r)} style={{cursor:val>0&&!solutionRevealed?"pointer":"default"}}>
-                    <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"#EEF2FF":bg} stroke={isSel?"var(--color-accent-primary)":isHint?"var(--color-accent-secondary)":canMerge?"#22C55E":"#E2E8F0"} strokeWidth={isSel||isHint||canMerge?2.5:1}
+                    <polygon points={hexPoints(cx,cy,hexSize-2)} fill={isSel?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":bg} stroke={isSel?"var(--color-accent-primary)":isHint?"var(--color-accent-secondary)":canMerge?"var(--color-accent-secondary)":"var(--color-border)"} strokeWidth={isSel||isHint||canMerge?2.5:1}
                       style={isHint?{filter:`drop-shadow(0 0 ${hexSize*0.3}px var(--color-accent-secondary))`}:undefined}/>
-                    {val>0&&(<text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:val>=100?hexSize*0.3:hexSize*0.38,fontWeight:700,fill:text,userSelect:"none"}}>{val}</text>)}
+                    {val>0&&(<text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="middle" style={{fontSize:val>=100?hexSize*0.3:hexSize*0.38,fontWeight:700,fill:text,userSelect:"none",fontFamily:"var(--font-mono)"}}>{val}</text>)}
                   </g>
                 );
               })}

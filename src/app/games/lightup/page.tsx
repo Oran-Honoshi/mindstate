@@ -21,6 +21,7 @@ import{playClick,playSuccess,playError}from"@/lib/audio/soundEngine";
 import{triggerConfetti}from"@/components/effects/Confetti";
 import{saveScore}from"@/lib/supabase/scores";
 import{useAuthStore}from"@/store/authStore";
+import{useSettingsStore}from"@/store/settingsStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
@@ -39,6 +40,8 @@ function getDifficulty(s:number):Difficulty{
 
 function LightUpPageInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
+  const blackCellBg=theme==="dark"?"var(--color-surface-2)":"#374151";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<LightBoard|null>(null);
   const[grid,setGrid]=useState<LightCell[][]>([]);
@@ -218,12 +221,12 @@ function LightUpPageInner(){
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
               Solution revealed · XP set to 1 · Retry to score properly
             </motion.div>
           )}
 
-          <div style={{border:"2px solid #374151",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}>
+          <div style={{border:"2px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}>
             <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${cellSize}px)`}}>
               {grid.map((row,r)=>row.map((cell,c)=>{
                 const k=`${r},${c}`;
@@ -235,8 +238,8 @@ function LightUpPageInner(){
                 if(cell.type==="black"){
                   const bc=cell as{type:"black";clue:number|null};
                   return(
-                    <div key={k} style={{width:cellSize,height:cellSize,background:isBlackErr?"#7F1D1D":"#374151",display:"flex",alignItems:"center",justifyContent:"center",borderRight:"0.5px solid #4B5563",borderBottom:"0.5px solid #4B5563",borderTop:"none",borderLeft:"none"}}>
-                      {bc.clue!=null&&bc.clue>=0&&<span style={{fontSize:Math.round(cellSize*0.4),fontWeight:700,color:isBlackErr?"#FCA5A5":"#F9FAFB"}}>{bc.clue}</span>}
+                    <div key={k} style={{width:cellSize,height:cellSize,background:isBlackErr?"color-mix(in srgb, var(--color-error) 60%, var(--color-surface-2))":blackCellBg,display:"flex",alignItems:"center",justifyContent:"center",borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none"}}>
+                      {bc.clue!=null&&bc.clue>=0&&<span style={{fontSize:Math.round(cellSize*0.4),fontWeight:700,color:isBlackErr?"var(--color-error)":"white",fontFamily:"var(--font-mono)"}}>{bc.clue}</span>}
                     </div>
                   );
                 }
@@ -245,8 +248,8 @@ function LightUpPageInner(){
                   <motion.button key={k} onClick={()=>handleCell(r,c)}
                     whileTap={solutionRevealed?{}:{scale:0.9}}
                     style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isConflict?"#FEF2F2":isSolBulb?"rgba(255,68,68,0.08)":isLit?"#FFFBEB":"#FAFAF9",
-                      borderRight:"0.5px solid #E8E4DE",borderBottom:"0.5px solid #E8E4DE",borderTop:"none",borderLeft:"none",
+                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isConflict?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":isSolBulb?"color-mix(in srgb, var(--color-error) 8%, transparent)":isLit?"color-mix(in srgb, #F59E0B 15%, var(--color-surface))":"var(--color-surface)",
+                      borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none",
                       cursor:solutionRevealed?"default":"pointer",outline:"none",fontSize:Math.round(cellSize*0.5),
                       transition:"background 0.2s",
                       boxShadow:isLit&&!isBulb?`inset 0 0 ${cellSize/2}px rgba(253,224,71,0.3)`:"none"}}>

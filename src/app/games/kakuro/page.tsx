@@ -17,6 +17,7 @@ import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
@@ -34,6 +35,8 @@ function getDifficulty(s: number): Difficulty { return s<=300?"easy":s<=700?"med
 
 function KakuroGameInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
+  const clueBg = theme === "dark" ? "var(--color-surface-2)" : "#374151";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<KakuroBoard | null>(null);
   const [userGrid, setUserGrid] = useState<(number|null)[][]>([]);
@@ -283,25 +286,25 @@ function KakuroGameInner() {
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
               Solution revealed · XP set to 1 · Retry to score properly
             </motion.div>
           )}
 
-          <div style={{ border:"2px solid #374151", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 24px rgba(0,0,0,0.08)" }}>
+          <div style={{ border:"2px solid var(--color-border)", borderRadius:12, overflow:"hidden", boxShadow:"0 8px 24px rgba(0,0,0,0.08)" }}>
             <div style={{ display:"grid", gridTemplateColumns:`repeat(${board.size},${cellSize}px)` }}>
               {board.grid.map((row, r) => row.map((cell, c) => {
                 if (cell.type === "black") return (
-                  <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:"#374151", borderRight:"0.5px solid #4B5563", borderBottom:"0.5px solid #4B5563", borderTop:"none", borderLeft:"none" }}/>
+                  <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none" }}/>
                 );
                 if (cell.type === "clue") {
                   const clue = cell as { type:"clue"; right?:number; down?:number };
                   return (
-                    <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:"#374151", borderRight:"0.5px solid #4B5563", borderBottom:"0.5px solid #4B5563", borderTop:"none", borderLeft:"none", position:"relative", overflow:"hidden" }}>
+                    <div key={`${r}-${c}`} style={{ width:cellSize, height:cellSize, background:clueBg, borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none", position:"relative", overflow:"hidden" }}>
                       <svg width={cellSize} height={cellSize}>
-                        <line x1={0} y1={0} x2={cellSize} y2={cellSize} stroke="#4B5563" strokeWidth={1}/>
-                        {clue.down!==undefined&&<text x={cellSize*0.25} y={cellSize*0.45} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"#F9FAFB"}}>{clue.down}</text>}
-                        {clue.right!==undefined&&<text x={cellSize*0.75} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"#F9FAFB"}}>{clue.right}</text>}
+                        <line x1={0} y1={0} x2={cellSize} y2={cellSize} stroke="var(--color-border)" strokeWidth={1}/>
+                        {clue.down!==undefined&&<text x={cellSize*0.25} y={cellSize*0.45} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"white",fontFamily:"var(--font-mono)"}}>{clue.down}</text>}
+                        {clue.right!==undefined&&<text x={cellSize*0.75} y={cellSize*0.72} textAnchor="middle" dominantBaseline="middle" style={{fontSize:Math.min(cellSize*0.3,11),fontWeight:700,fill:"white",fontFamily:"var(--font-mono)"}}>{clue.right}</text>}
                       </svg>
                     </div>
                   );
@@ -319,10 +322,10 @@ function KakuroGameInner() {
                     style={{ width:cellSize, height:cellSize, display:"flex", alignItems:"center", justifyContent:"center",
                       fontSize:Math.round(cellSize*0.45), fontWeight:700,
                       cursor: solutionRevealed ? "default" : "pointer", outline:"none",
-                      background: check==="correct" ? "var(--color-accent-secondary)" : check==="incorrect" ? "var(--color-error)" : isSolution?"rgba(255,68,68,0.04)":isSelected?"#EEF2FF":hasError?"#FEF2F2":"var(--color-surface)",
-                      color: check ? "var(--color-bg)" : isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"#CBD5E1",
-                      borderRight:"0.5px solid #E2E8F0", borderBottom:"0.5px solid #E2E8F0", borderTop:"none", borderLeft:"none",
-                      boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px #4F6EF7":"none",
+                      background: check==="correct" ? "var(--color-accent-secondary)" : check==="incorrect" ? "var(--color-error)" : isSolution?"color-mix(in srgb, var(--color-error) 4%, var(--color-surface))":isSelected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":hasError?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)",
+                      color: check ? "var(--color-bg)" : isSolution?"var(--color-error)":hasError?"var(--color-error)":val?"var(--color-accent-primary)":"var(--color-border)",
+                      borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)", borderTop:"none", borderLeft:"none",
+                      boxShadow: isSelected&&!solutionRevealed?"inset 0 0 0 2px var(--color-accent-primary)":"none",
                       transition: "background 0.2s" }}>
                     {val ?? ""}
                   </motion.button>

@@ -43,10 +43,10 @@ function PipeSVG({ cell, size, isCorrect, showFeedback }: {
 }) {
   const c = size / 2;
   const w = Math.max(4, size * 0.18);
-  const color = showFeedback ? (isCorrect ? "#22C55E" : "var(--color-accent-primary)") : "var(--color-accent-primary)";
+  const color = showFeedback ? (isCorrect ? "var(--color-accent-secondary)" : "var(--color-accent-primary)") : "var(--color-accent-primary)";
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {showFeedback && <rect x={0} y={0} width={size} height={size} fill={isCorrect?"rgba(34,197,94,0.08)":"rgba(0,255,255,0.05)"} rx={6}/>}
+      {showFeedback && <rect x={0} y={0} width={size} height={size} fill={isCorrect?"color-mix(in srgb, var(--color-accent-secondary) 8%, transparent)":"rgba(0,255,255,0.05)"} rx={6}/>}
       {cell.connections[0] && <rect x={c-w/2} y={0} width={w} height={c+w/2} fill={color} rx={w/3}/>}
       {cell.connections[1] && <rect x={c-w/2} y={c-w/2} width={size-c+w/2} height={w} fill={color} rx={w/3}/>}
       {cell.connections[2] && <rect x={c-w/2} y={c-w/2} width={w} height={size-c+w/2} fill={color} rx={w/3}/>}
@@ -230,7 +230,7 @@ function LogicPathPageInner() {
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
               Solution revealed · XP set to 1 · Retry to score properly
             </motion.div>
           )}
@@ -243,7 +243,7 @@ function LogicPathPageInner() {
               Pipe segment
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-              <div style={{ width:16, height:16, borderRadius:4, background:"rgba(34,197,94,0.1)", border:"1.5px solid #22C55E" }}/>
+              <div style={{ width:16, height:16, borderRadius:4, background:"color-mix(in srgb, var(--color-accent-secondary) 10%, transparent)", border:"1.5px solid var(--color-accent-secondary)" }}/>
               Correct
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:5 }}><Lock size={11}/> Locked</div>
@@ -258,9 +258,9 @@ function LogicPathPageInner() {
                   onClick={() => handleRotate(r, c)}
                   style={{
                     width:cellSize, height:cellSize, borderRadius:10,
-                    background: cell.locked ? (solutionRevealed?"rgba(255,68,68,0.05)":"var(--color-surface-2)")
-                      : showFeedback&&correct ? "rgba(34,197,94,0.08)" : "var(--color-surface)",
-                    border:`1.5px solid ${cell.locked?(solutionRevealed?"rgba(255,68,68,0.2)":"var(--color-border)"):showFeedback&&correct?"#86EFAC":"var(--color-border)"}`,
+                    background: cell.locked ? (solutionRevealed?"color-mix(in srgb, var(--color-error) 5%, transparent)":"var(--color-surface-2)")
+                      : showFeedback&&correct ? "color-mix(in srgb, var(--color-accent-secondary) 8%, transparent)" : "var(--color-surface)",
+                    border:`1.5px solid ${cell.locked?(solutionRevealed?"color-mix(in srgb, var(--color-error) 20%, transparent)":"var(--color-border)"):showFeedback&&correct?"color-mix(in srgb, var(--color-accent-secondary) 60%, transparent)":"var(--color-border)"}`,
                     cursor: cell.locked||solutionRevealed ? "not-allowed" : "pointer",
                     display:"flex", alignItems:"center", justifyContent:"center",
                     position:"relative", transition:"all 0.15s",
@@ -274,7 +274,7 @@ function LogicPathPageInner() {
 
           {!solutionRevealed&&(
             <button onClick={() => setShowFeedback(f => !f)}
-              style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--color-border)", background:showFeedback?"rgba(34,197,94,0.08)":"var(--color-surface)", fontSize:12, fontWeight:600, color:showFeedback?"#22C55E":"var(--color-text-secondary)", cursor:"pointer" }}>
+              style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:20, border:"0.5px solid var(--color-border)", background:showFeedback?"color-mix(in srgb, var(--color-accent-secondary) 8%, transparent)":"var(--color-surface)", fontSize:12, fontWeight:600, color:showFeedback?"var(--color-accent-secondary)":"var(--color-text-secondary)", cursor:"pointer" }}>
               {showFeedback ? "Feedback On" : "Check Progress"}
             </button>
           )}

@@ -291,18 +291,18 @@ function MinesweeperGameInner() {
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,fontSize:12,color:"var(--color-text-secondary)"}}>
-            <span style={{display:"flex",alignItems:"center",gap:4,color:"#DC2626"}}><Bomb size={13}/> {minesLeft} mines left</span>
+            <span style={{display:"flex",alignItems:"center",gap:4,color:"var(--color-error)"}}><Bomb size={13}/> {minesLeft} mines left</span>
             <span>· Left click = reveal · Right click = flag</span>
           </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"rgba(255,68,68,0.08)",border:"0.5px solid rgba(255,68,68,0.2)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
               Mines flagged · Safe cells revealed · XP set to 1
             </motion.div>
           )}
 
-          <div style={{border:"1.5px solid #E2E8F0",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
+          <div style={{border:"1.5px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
             <div style={{display:"grid",gridTemplateColumns:`repeat(${board.cols},${cellSize}px)`}}>
               {board.cells.map((row,r)=>row.map((cell,c)=>{
                 const isRevealed = cell.state==="revealed";
@@ -321,13 +321,13 @@ function MinesweeperGameInner() {
                       background: check==="correct" ? "var(--color-accent-secondary)"
                         : check==="incorrect" ? "var(--color-error)"
                         : isRevealed
-                          ? (cell.isMine&&gameOver==="lose")?"#FEF2F2":"#F8F7F5"
-                          : isSolFlag ? "rgba(255,68,68,0.08)"
-                          : isFlagged ? "#FFFBEB" : "white",
-                      borderRight:"0.5px solid #E8E4DE", borderBottom:"0.5px solid #E8E4DE",
+                          ? (cell.isMine&&gameOver==="lose")?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)"
+                          : isSolFlag ? "color-mix(in srgb, var(--color-error) 8%, transparent)"
+                          : isFlagged ? "color-mix(in srgb, #F59E0B 12%, var(--color-surface))" : "var(--color-surface-2)",
+                      borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)",
                       borderTop:"none", borderLeft:"none",
-                      color: cell.isMine?"#DC2626":NUM_COLORS[cell.adjacent]??"transparent",
-                      boxShadow:!isRevealed&&!isFlagged&&!solutionRevealed?"inset 0 2px 0 rgba(255,255,255,0.8),inset 0 -1px 0 rgba(0,0,0,0.06)":"none",
+                      color: cell.isMine?"var(--color-error)":NUM_COLORS[cell.adjacent]??"transparent",
+                      boxShadow:!isRevealed&&!isFlagged&&!solutionRevealed?"inset 0 2px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(0,0,0,0.06)":"none",
                       transition: "background 0.2s",
                     }}>
                     {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={check?"var(--color-bg)":isSolFlag?"var(--color-error)":"#F59E0B"}/>}
