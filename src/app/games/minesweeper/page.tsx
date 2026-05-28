@@ -1,9 +1,9 @@
 "use client";
 const TOTAL_STAGES = 100;
 const GAME_SLUG = "minesweeper";
-import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStorage";
-import{ResumeModal}from"@/components/ui/ResumeModal";
-import{StageMap}from"@/components/ui/StageMap";
+import { saveGameState, loadGameState, clearGameState } from "@/lib/games/gameStateStorage";
+import { ResumeModal } from "@/components/ui/ResumeModal";
+import { StageMap } from "@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -15,9 +15,9 @@ import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { saveScore } from "@/lib/supabase/scores";
 import { useAuthStore } from "@/store/authStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { updateStreak } from "@/lib/supabase/streaks";
 import { consumeToken } from "@/lib/games/tokenEngine";
-import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
@@ -53,50 +53,60 @@ interface Cell { isMine: boolean; adjacent: number; state: CellState; }
 interface Board { rows: number; cols: number; mines: number; cells: Cell[][]; }
 
 function generateBoard(seed: string, difficulty: Difficulty, safeR: number, safeC: number): Board {
-  const configs = { easy:{rows:8,cols:8,mines:10}, medium:{rows:10,cols:10,mines:20}, hard:{rows:12,cols:12,mines:35} };
+  const configs = { easy: { rows: 8, cols: 8, mines: 10 }, medium: { rows: 10, cols: 10, mines: 20 }, hard: { rows: 12, cols: 12, mines: 35 } };
   const { rows, cols, mines } = configs[difficulty];
   const rng = mulberry32(seedToNumber(seed));
   const positions: number[] = [];
-  for (let i = 0; i < rows*cols; i++) {
-    const r = Math.floor(i/cols), c = i%cols;
-    if (Math.abs(r-safeR)<=1 && Math.abs(c-safeC)<=1) continue;
+  for (let i = 0; i < rows * cols; i++) {
+    const r = Math.floor(i / cols), c = i % cols;
+    if (Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1) continue;
     positions.push(i);
   }
-  for (let i = positions.length-1; i > 0; i--) {
-    const j = Math.floor(rng()*(i+1));
-    [positions[i],positions[j]] = [positions[j],positions[i]];
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
   }
   const mineSet = new Set(positions.slice(0, mines));
-  const cells: Cell[][] = Array.from({length:rows},(_,r)=>
-    Array.from({length:cols},(_,c)=>({ isMine:mineSet.has(r*cols+c), adjacent:0, state:"hidden" as CellState }))
+  const cells: Cell[][] = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) => ({ isMine: mineSet.has(r * cols + c), adjacent: 0, state: "hidden" as CellState }))
   );
-  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+  const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     if (cells[r][c].isMine) continue;
-    cells[r][c].adjacent = dirs.filter(([dr,dc])=>{
-      const nr=r+dr,nc=c+dc;
-      return nr>=0&&nr<rows&&nc>=0&&nc<cols&&cells[nr][nc].isMine;
+    cells[r][c].adjacent = dirs.filter(([dr, dc]) => {
+      const nr = r + dr, nc = c + dc;
+      return nr >= 0 && nr < rows && nc >= 0 && nc < cols && cells[nr][nc].isMine;
     }).length;
   }
   return { rows, cols, mines, cells };
 }
 
 function floodReveal(cells: Cell[][], r: number, c: number, rows: number, cols: number) {
-  if (r<0||r>=rows||c<0||c>=cols||cells[r][c].state!=="hidden"||cells[r][c].isMine) return;
-  cells[r][c] = {...cells[r][c], state:"revealed"};
+  if (r < 0 || r >= rows || c < 0 || c >= cols || cells[r][c].state !== "hidden" || cells[r][c].isMine) return;
+  cells[r][c] = { ...cells[r][c], state: "revealed" };
   if (cells[r][c].adjacent === 0) {
-    [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>floodReveal(cells,r+dr,c+dc,rows,cols));
+    [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]].forEach(([dr, dc]) => floodReveal(cells, r + dr, c + dc, rows, cols));
   }
 }
 
-const NUM_COLORS: Record<number,string> = {1:"#2563EB",2:"#16A34A",3:"#DC2626",4:"#7C3AED",5:"#C2410C",6:"#0891B2",7:"#1F2937",8:"#6B7280"};
+const NUM_COLORS: Record<number, string> = {
+  1: "var(--color-accent-primary)",
+  2: "var(--color-accent-secondary)",
+  3: "var(--color-error)",
+  4: "#A78BFA",
+  5: "#FB923C",
+  6: "#38BDF8",
+  7: "var(--color-text-secondary)",
+  8: "var(--color-text-secondary)",
+};
 
 function MinesweeperGameInner() {
   const { user } = useAuthStore();
+  const { theme } = useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
-  const [board, setBoard] = useState<Board|null>(null);
-  const [gameOver, setGameOver] = useState<"win"|"lose"|null>(null);
-  const [xpState, setXpState] = useState<XPState|null>(null);
+  const [board, setBoard] = useState<Board | null>(null);
+  const [gameOver, setGameOver] = useState<"win" | "lose" | null>(null);
+  const [xpState, setXpState] = useState<XPState | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [liveXP, setLiveXP] = useState(1000);
   const [finalElapsed, setFinalElapsed] = useState("0:00");
@@ -104,29 +114,33 @@ function MinesweeperGameInner() {
   const [firstClick, setFirstClick] = useState(true);
   const [flagCount, setFlagCount] = useState(0);
   const [showResume, setShowResume] = useState(false);
-  const [resumeData, setResumeData] = useState<Record<string,unknown>|null>(null);
+  const [resumeData, setResumeData] = useState<Record<string, unknown> | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [history, setHistory] = useState<{board: Board; firstClick: boolean; flagCount: number}[]>([]);
+  const [history, setHistory] = useState<{ board: Board; firstClick: boolean; flagCount: number }[]>([]);
   const [checkState, setCheckState] = useState<Map<string, "correct" | "incorrect"> | null>(null);
-  const checkTimerRef = useRef<ReturnType<typeof setTimeout>|null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  const [hitCell, setHitCell] = useState<[number, number] | null>(null);
+  const [boardShake, setBoardShake] = useState(false);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   usePageVisibility(
     () => { if (timerRef.current) clearInterval(timerRef.current); },
-    () => { if (xpState && !gameOver && !solutionRevealed) {
-      timerRef.current = setInterval(() => {
-        setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
-        setLiveXP(calculateXP(xpState).currentXP);
-      }, 500);
-    }}
+    () => {
+      if (xpState && !gameOver && !solutionRevealed) {
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
+          setLiveXP(calculateXP(xpState).currentXP);
+        }, 500);
+      }
+    }
   );
 
   const loadStage = useCallback((s: number) => {
-    saveGameState("minesweeper", {stage: s, savedAt: Date.now()});
+    saveGameState("minesweeper", { stage: s, savedAt: Date.now() });
     const diff = getDifficulty(s);
     const xp = createXPState(diff);
     setXpState(xp); setBoard(null); setGameOver(null);
@@ -135,6 +149,8 @@ function MinesweeperGameInner() {
     setSolutionRevealed(false);
     setHistory([]);
     setCheckState(null);
+    setHitCell(null);
+    setBoardShake(false);
     if (checkTimerRef.current) { clearTimeout(checkTimerRef.current); checkTimerRef.current = null; }
     setNextUncompleted(null);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -142,23 +158,22 @@ function MinesweeperGameInner() {
       setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
       setLiveXP(calculateXP(xp).currentXP);
     }, 500);
-    const configs = { easy:{rows:8,cols:8,mines:10}, medium:{rows:10,cols:10,mines:20}, hard:{rows:12,cols:12,mines:35} };
-    const {rows,cols} = configs[diff];
-    const empty: Cell[][] = Array.from({length:rows},()=>Array.from({length:cols},()=>({isMine:false,adjacent:0,state:"hidden" as CellState})));
-    setBoard({rows,cols,mines:configs[diff].mines,cells:empty});
-  },[]);
+    const configs = { easy: { rows: 8, cols: 8, mines: 10 }, medium: { rows: 10, cols: 10, mines: 20 }, hard: { rows: 12, cols: 12, mines: 35 } };
+    const { rows, cols } = configs[diff];
+    const empty: Cell[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ isMine: false, adjacent: 0, state: "hidden" as CellState })));
+    setBoard({ rows, cols, mines: configs[diff].mines, cells: empty });
+  }, []);
 
   const resumeChecked = useRef(false);
-
-  useEffect(()=>{
-    if(!resumeChecked.current){
-      resumeChecked.current=true;
-      const saved=loadGameState("minesweeper");
-      if(saved&&(saved.stage as number)>1){setResumeData(saved);setShowResume(true);return;}
+  useEffect(() => {
+    if (!resumeChecked.current) {
+      resumeChecked.current = true;
+      const saved = loadGameState("minesweeper");
+      if (saved && (saved.stage as number) > 1) { setResumeData(saved); setShowResume(true); return; }
     }
     loadStage(stage);
-    return()=>{if(timerRef.current)clearInterval(timerRef.current);};
-  },[stage,loadStage]);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [stage, loadStage]);
 
   function handleRevealSolution() {
     if (!board || !xpState) return;
@@ -166,7 +181,7 @@ function MinesweeperGameInner() {
       ...cell,
       state: cell.isMine ? "flagged" as CellState : "revealed" as CellState,
     })));
-    setBoard({...board, cells});
+    setBoard({ ...board, cells });
     setSolutionRevealed(true);
     setXpState(prev => prev ? { ...prev, startTime: Date.now() - prev.decayDuration * 1000 } : prev);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -177,8 +192,8 @@ function MinesweeperGameInner() {
     if (board.cells[r][c].state === "flagged") return;
     if (board.cells[r][c].state === "revealed") return;
 
-    setHistory(h => [...h.slice(-19), {board: {...board, cells: board.cells.map(row => row.map(c => ({...c})))}, firstClick, flagCount}]);
-    let cells = board.cells.map(row => [...row.map(c => ({...c}))]);
+    setHistory(h => [...h.slice(-19), { board: { ...board, cells: board.cells.map(row => row.map(c => ({ ...c }))) }, firstClick, flagCount }]);
+    let cells = board.cells.map(row => [...row.map(c => ({ ...c }))]);
 
     if (firstClick) {
       setFirstClick(false);
@@ -186,31 +201,35 @@ function MinesweeperGameInner() {
       const newBoard = generateBoard(`minesweeper-${diff}-${stage}`, diff, r, c);
       cells = newBoard.cells;
       floodReveal(cells, r, c, board.rows, board.cols);
-      setBoard({...newBoard, cells});
+      setBoard({ ...newBoard, cells });
       return;
     }
 
     if (cells[r][c].isMine) {
-      cells = cells.map(row=>row.map(cell=>cell.isMine?{...cell,state:"revealed" as CellState}:cell));
-      setBoard({...board,cells});
+      cells = cells.map(row => row.map(cell => cell.isMine ? { ...cell, state: "revealed" as CellState } : cell));
+      setBoard({ ...board, cells });
       setGameOver("lose"); playError();
+      setHitCell([r, c]);
+      setBoardShake(true);
+      setTimeout(() => setHitCell(null), 700);
+      setTimeout(() => setBoardShake(false), 600);
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
 
     floodReveal(cells, r, c, board.rows, board.cols);
-    setBoard({...board,cells});
-    saveGameState("minesweeper",{stage,cells,rows:board.rows,cols:board.cols,mines:board.mines,hintsUsed,startTime:xpState?.startTime,savedAt:Date.now()});
+    setBoard({ ...board, cells });
+    saveGameState("minesweeper", { stage, cells, rows: board.rows, cols: board.cols, mines: board.mines, hintsUsed, startTime: xpState?.startTime, savedAt: Date.now() });
     playClick();
 
-    const revealed = cells.flat().filter(c=>c.state==="revealed").length;
-    if (revealed === board.rows*board.cols-board.mines && xpState) {
+    const revealed = cells.flat().filter(c => c.state === "revealed").length;
+    if (revealed === board.rows * board.cols - board.mines && xpState) {
       const earned = finalizeXP(xpState); setFinalXP(earned); setGameOver("win");
       setFinalElapsed(formatTime(Math.floor((Date.now() - xpState.startTime) / 1000)));
       if (timerRef.current) clearInterval(timerRef.current);
-      playSuccess(); setTimeout(()=>triggerConfetti(),80);
-      markStageCompleted("minesweeper",stage);
-      if (user) saveScore({user_id:user.id,game_slug:"minesweeper",stage_number:stage,difficulty:getDifficulty(stage),xp_earned:earned,time_taken:Math.floor((Date.now()-xpState.startTime)/1000),hints_used:hintsUsed});
+      playSuccess(); setTimeout(() => triggerConfetti(), 80);
+      markStageCompleted("minesweeper", stage);
+      if (user) saveScore({ user_id: user.id, game_slug: "minesweeper", stage_number: stage, difficulty: getDifficulty(stage), xp_earned: earned, time_taken: Math.floor((Date.now() - xpState.startTime) / 1000), hints_used: hintsUsed });
     }
   }
 
@@ -218,11 +237,11 @@ function MinesweeperGameInner() {
     e.preventDefault();
     if (!board || gameOver || solutionRevealed) return;
     if (board.cells[r][c].state === "revealed") return;
-    setHistory(h => [...h.slice(-19), {board: {...board, cells: board.cells.map(row => row.map(c => ({...c})))}, firstClick, flagCount}]);
-    const cells = board.cells.map(row=>[...row.map(c=>({...c}))]);
-    if (cells[r][c].state === "flagged") { cells[r][c].state="hidden"; setFlagCount(f=>f-1); }
-    else { cells[r][c].state="flagged"; setFlagCount(f=>f+1); }
-    setBoard({...board,cells});
+    setHistory(h => [...h.slice(-19), { board: { ...board, cells: board.cells.map(row => row.map(c => ({ ...c }))) }, firstClick, flagCount }]);
+    const cells = board.cells.map(row => [...row.map(c => ({ ...c }))]);
+    if (cells[r][c].state === "flagged") { cells[r][c].state = "hidden"; setFlagCount(f => f - 1); }
+    else { cells[r][c].state = "flagged"; setFlagCount(f => f + 1); }
+    setBoard({ ...board, cells });
   }
 
   function handleUndo() {
@@ -251,30 +270,34 @@ function MinesweeperGameInner() {
 
   function handleHint() {
     if (!board || !xpState || hintsUsed >= 3 || gameOver || solutionRevealed) return;
-    const safeCells: [number,number][] = [];
-    board.cells.forEach((row,r)=>row.forEach((cell,c)=>{
-      if (!cell.isMine && cell.state==="hidden") safeCells.push([r,c]);
+    const safeCells: [number, number][] = [];
+    board.cells.forEach((row, r) => row.forEach((cell, c) => {
+      if (!cell.isMine && cell.state === "hidden") safeCells.push([r, c]);
     }));
     if (safeCells.length === 0) return;
-    const [r,c] = safeCells[Math.floor(Math.random()*safeCells.length)];
-    handleClick(r,c);
-    setHintsUsed(h=>h+1);
-    setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);
+    const [r, c] = safeCells[Math.floor(Math.random() * safeCells.length)];
+    handleClick(r, c);
+    setHintsUsed(h => h + 1);
+    setXpState(prev => prev ? { ...prev, hintsUsed: Math.min(prev.hintsUsed + 1, prev.maxHints) } : prev);
     playError();
   }
 
-  if (!board||!xpState) return(
-    <div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating board...</p>
+  if (!board || !xpState) return (
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "var(--color-text-secondary)", fontSize: 13, fontFamily: "var(--font-mono)" }}>GENERATING BOARD...</p>
     </div>
   );
 
   const diff = getDifficulty(stage);
-  const maxW = typeof window!=="undefined"?Math.min(window.innerWidth-32,480):440;
-  const cellSize = Math.max(Math.floor(maxW/board.cols), 28);
-  const minesLeft = board.mines-flagCount;
+  const maxW = typeof window !== "undefined" ? Math.min(window.innerWidth - 32, 480) : 440;
+  const cellSize = Math.max(Math.floor(maxW / board.cols), 28);
+  const minesLeft = board.mines - flagCount;
 
-  return(
+  const boardBg = theme === "dark"
+    ? "radial-gradient(circle, rgba(0,255,255,0.07) 1px, transparent 1px), #060d18"
+    : `radial-gradient(circle, color-mix(in srgb, var(--color-accent-primary) 6%, transparent) 1px, transparent 1px), var(--color-surface)`;
+
+  return (
     <>
       <GameShell
         slug={GAME_SLUG}
@@ -283,84 +306,142 @@ function MinesweeperGameInner() {
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
-        hintsRemaining={3-hintsUsed}
+        hintsRemaining={3 - hintsUsed}
         onUndo={handleUndo}
         onHint={handleHint}
         onCheck={handleCheck}
       >
         <GamePageSchema slug={GAME_SLUG} />
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,fontSize:12,color:"var(--color-text-secondary)"}}>
-            <span style={{display:"flex",alignItems:"center",gap:4,color:"var(--color-error)"}}><Bomb size={13}/> {minesLeft} mines left</span>
-            <span>· Left click = reveal · Right click = flag</span>
-          </div>
 
-          {solutionRevealed&&(
-            <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
-              Mines flagged · Safe cells revealed · XP set to 1
-            </motion.div>
-          )}
+        {/* Scoreboard row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20, fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.07em", color: "var(--color-text-secondary)" }}>
+          <span>
+            MINES{" "}
+            <span style={{ color: "var(--color-error)", fontWeight: 700 }}>{minesLeft}</span>
+          </span>
+          <span style={{ opacity: 0.3 }}>│</span>
+          <span>
+            FLAGS{" "}
+            <span style={{ color: "var(--color-accent-secondary)", fontWeight: 700 }}>{flagCount}</span>
+          </span>
+          <span style={{ opacity: 0.3 }}>│</span>
+          <span style={{ opacity: 0.5 }}>RIGHT-CLICK = FLAG</span>
+        </div>
 
-          <div style={{border:"1.5px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.07)"}}>
-            <div style={{display:"grid",gridTemplateColumns:`repeat(${board.cols},${cellSize}px)`}}>
-              {board.cells.map((row,r)=>row.map((cell,c)=>{
-                const isRevealed = cell.state==="revealed";
-                const isFlagged = cell.state==="flagged";
-                const isSolFlag = solutionRevealed && isFlagged && cell.isMine;
-                const check = checkState?.get(`${r},${c}`);
-                return (
-                  <motion.button key={`${r},${c}`}
-                    onClick={()=>handleClick(r,c)}
-                    onContextMenu={e=>handleFlag(e,r,c)}
-                    style={{
-                      width:cellSize, height:cellSize,
-                      display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:Math.round(cellSize*0.45), fontWeight:700,
-                      cursor: isRevealed||solutionRevealed ? "default" : "pointer", outline:"none",
-                      background: check==="correct" ? "var(--color-accent-secondary)"
-                        : check==="incorrect" ? "var(--color-error)"
-                        : isRevealed
-                          ? (cell.isMine&&gameOver==="lose")?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":"var(--color-surface)"
-                          : isSolFlag ? "color-mix(in srgb, var(--color-error) 8%, transparent)"
-                          : isFlagged ? "color-mix(in srgb, #F59E0B 12%, var(--color-surface))" : "var(--color-surface-2)",
-                      borderRight:"0.5px solid var(--color-border)", borderBottom:"0.5px solid var(--color-border)",
-                      borderTop:"none", borderLeft:"none",
-                      color: cell.isMine?"var(--color-error)":NUM_COLORS[cell.adjacent]??"transparent",
-                      boxShadow:!isRevealed&&!isFlagged&&!solutionRevealed?"inset 0 2px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(0,0,0,0.06)":"none",
-                      transition: "background 0.2s",
-                    }}>
-                    {isFlagged&&<Flag size={Math.round(cellSize*0.45)} color={check?"var(--color-bg)":isSolFlag?"var(--color-error)":"#F59E0B"}/>}
-                    {isRevealed&&cell.isMine&&<Bomb size={Math.round(cellSize*0.45)} color="#DC2626"/>}
-                    {isRevealed&&!cell.isMine&&(cell.adjacent>0?cell.adjacent:"")}
-                  </motion.button>
-                );
-              }))}
-            </div>
-          </div>
+        {solutionRevealed && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+            style={{ padding: "8px 20px", borderRadius: 12, background: "color-mix(in srgb, var(--color-error) 8%, transparent)", border: "0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--color-error)" }}>
+            Mines flagged · Safe cells revealed · XP set to 1
+          </motion.div>
+        )}
 
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1}
-              style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)}
-              style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+        {/* Board panel */}
+        <motion.div
+          animate={boardShake ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{
+            padding: 10,
+            borderRadius: 14,
+            background: boardBg,
+            backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+            boxShadow: theme === "dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${board.cols},${cellSize}px)`, gap: 2 }}>
+            {board.cells.map((row, r) => row.map((cell, c) => {
+              const isRevealed = cell.state === "revealed";
+              const isFlagged = cell.state === "flagged";
+              const isSolFlag = solutionRevealed && isFlagged && cell.isMine;
+              const check = checkState?.get(`${r},${c}`);
+              const isHit = hitCell && hitCell[0] === r && hitCell[1] === c;
+              const isWinFlag = gameOver === "win" && isFlagged;
+
+              return (
+                <motion.button key={`${r},${c}`}
+                  onClick={() => handleClick(r, c)}
+                  onContextMenu={e => handleFlag(e, r, c)}
+                  animate={
+                    isHit
+                      ? { boxShadow: ["0 0 0 rgba(255,68,68,0)", "0 0 24px 6px rgba(255,68,68,0.85)", "0 0 8px 2px rgba(255,68,68,0.3)", "0 0 0 rgba(255,68,68,0)"], scale: [1, 1.15, 0.95, 1] }
+                      : isWinFlag && theme === "dark"
+                      ? { boxShadow: ["0 0 6px 1px rgba(57,255,20,0.3)", "0 0 14px 2px rgba(57,255,20,0.65)", "0 0 6px 1px rgba(57,255,20,0.3)"] }
+                      : { boxShadow: "0px 0px 0px 0px rgba(0,0,0,0)" }
+                  }
+                  transition={
+                    isHit
+                      ? { duration: 0.65, ease: "easeOut" }
+                      : isWinFlag && theme === "dark"
+                      ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+                      : { duration: 0.3 }
+                  }
+                  style={{
+                    width: cellSize, height: cellSize,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: Math.round(cellSize * 0.45), fontWeight: 700, fontFamily: "var(--font-mono)",
+                    cursor: isRevealed || solutionRevealed ? "default" : "pointer", outline: "none",
+                    background: check === "correct" ? "var(--color-accent-secondary)"
+                      : check === "incorrect" ? "var(--color-error)"
+                      : isRevealed
+                      ? (cell.isMine && gameOver === "lose") ? "color-mix(in srgb, var(--color-error) 15%, var(--color-surface))" : "var(--color-surface)"
+                      : isSolFlag ? "color-mix(in srgb, var(--color-error) 8%, transparent)"
+                      : isFlagged ? "color-mix(in srgb, var(--color-accent-secondary) 12%, var(--color-surface))" : "var(--color-surface-2)",
+                    borderRadius: 6,
+                    border: isFlagged
+                      ? "1px solid color-mix(in srgb, var(--color-accent-secondary) 30%, transparent)"
+                      : isRevealed && cell.isMine && gameOver === "lose"
+                      ? "1px solid color-mix(in srgb, var(--color-error) 40%, transparent)"
+                      : "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",
+                    color: cell.isMine ? "var(--color-error)" : NUM_COLORS[cell.adjacent] ?? "transparent",
+                    boxShadow: !isRevealed && !isFlagged && !solutionRevealed
+                      ? "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -2px 0 rgba(0,0,0,0.18), inset 1px 0 rgba(255,255,255,0.06), inset -1px 0 rgba(0,0,0,0.08)"
+                      : undefined,
+                    transition: "background 0.15s",
+                  }}>
+                  {isFlagged && (
+                    <Flag
+                      size={Math.round(cellSize * 0.42)}
+                      color={check ? "var(--color-bg)" : isSolFlag ? "var(--color-error)" : "var(--color-accent-secondary)"}
+                    />
+                  )}
+                  {isRevealed && cell.isMine && <Bomb size={Math.round(cellSize * 0.42)} color="var(--color-error)" />}
+                  {isRevealed && !cell.isMine && (cell.adjacent > 0 ? cell.adjacent : "")}
+                </motion.button>
+              );
+            }))}
           </div>
+        </motion.div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+            style={{ padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
+            ← PREV
+          </button>
+          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
+            STAGE <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{stage}</span>
+            <span style={{ opacity: 0.5 }}>/{TOTAL_STAGES}</span>
+          </span>
+          <button onClick={() => setStage(s => s + 1)}
+            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
+            NEXT <ChevronRight size={13} />
+          </button>
         </div>
       </GameShell>
 
       <AnimatePresence>
-        {gameOver==="lose"&&(
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              <div style={{fontSize:48,marginBottom:16}}>💥</div>
-              <h2 style={{fontSize:24,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:6}}>Mine Hit</h2>
-              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>Better luck next time.</p>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Try Again</button>
-                <button onClick={()=>setStage(s=>s+1)} style={{flex:1,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer"}}>Next Stage</button>
+        {gameOver === "lose" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+              style={{ background: "var(--color-surface)", borderRadius: 28, padding: 36, maxWidth: 340, width: "100%", textAlign: "center", boxShadow: "0 32px 80px rgba(0,0,0,0.2)" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>💥</div>
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", marginBottom: 6 }}>Mine Hit</h2>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24 }}>Better luck next time.</p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => loadStage(stage)} style={{ flex: 1, padding: 13, borderRadius: 14, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer" }}>Try Again</button>
+                <button onClick={() => setStage(s => s + 1)} style={{ flex: 1, padding: 13, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer" }}>Next Stage</button>
               </div>
             </motion.div>
           </motion.div>
@@ -368,21 +449,21 @@ function MinesweeperGameInner() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {gameOver==="win"&&(
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:24}}>
-            <motion.div initial={{scale:0.9,y:20}} animate={{scale:1,y:0}}
-              style={{background:"var(--color-surface)",borderRadius:28,padding:36,maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.2)"}}>
-              <div style={{fontSize:48,marginBottom:16}}>✅</div>
-              <h2 style={{fontSize:26,fontWeight:700,color:"var(--color-text-primary)",fontFamily:"var(--font-sans)",marginBottom:4}}>Stage {stage} Clear</h2>
-              <p style={{fontSize:13,color:"var(--color-text-secondary)",marginBottom:24}}>{finalElapsed} · {diff}</p>
-              <div style={{background:"var(--color-surface-2)",borderRadius:16,padding:20,marginBottom:20}}>
-                <p style={{fontSize:11,color:"var(--color-text-secondary)",fontWeight:600,marginBottom:4}}>XP EARNED</p>
-                <p style={{fontSize:48,fontWeight:700,color:"var(--color-accent-primary)",fontFamily:"var(--font-sans)"}}>{finalXP}</p>
+        {gameOver === "win" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+              style={{ background: "var(--color-surface)", borderRadius: 28, padding: 36, maxWidth: 340, width: "100%", textAlign: "center", boxShadow: "0 32px 80px rgba(0,0,0,0.2)" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", marginBottom: 4 }}>Stage {stage} Clear</h2>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24 }}>{finalElapsed} · {diff}</p>
+              <div style={{ background: "var(--color-surface-2)", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+                <p style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600, marginBottom: 4, letterSpacing: "0.1em" }}>XP EARNED</p>
+                <p style={{ fontSize: 48, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-mono)" }}>{finalXP}</p>
               </div>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:13,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer"}}>Retry</button>
-                <button onClick={()=>{setGameOver(null);setStage(s=>s+1);}} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:13,fontWeight:700,color:"white",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Next Stage <ChevronRight size={14}/></button>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => loadStage(stage)} style={{ flex: 1, padding: 13, borderRadius: 14, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer" }}>Retry</button>
+                <button onClick={() => { setGameOver(null); setStage(s => s + 1); }} style={{ flex: 2, padding: 13, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>Next Stage <ChevronRight size={14} /></button>
               </div>
             </motion.div>
           </motion.div>
@@ -394,18 +475,11 @@ function MinesweeperGameInner() {
           gameSlug="minesweeper"
           stageName={`Stage ${resumeData.stage}`}
           savedAt={resumeData.savedAt as number}
-          onResume={()=>{
-            const s=resumeData!;
-            setShowResume(false);setResumeData(null);
-            setStage(s.stage as number);
-          }}
-          onStartFresh={()=>{
-            clearGameState("minesweeper");setShowResume(false);setResumeData(null);
-            loadStage(stage);
-          }}
+          onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); }}
+          onStartFresh={() => { clearGameState("minesweeper"); setShowResume(false); setResumeData(null); loadStage(stage); }}
         />
       )}
-      {showMap&&<StageMap gameSlug="minesweeper" totalStages={TOTAL_STAGES} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
+      {showMap && <StageMap gameSlug="minesweeper" totalStages={TOTAL_STAGES} currentStage={stage} onSelectStage={s => setStage(s)} onClose={() => setShowMap(false)} />}
       <GameCompleteModal
         open={showGameComplete}
         gameName="Minesweeper"
@@ -416,4 +490,4 @@ function MinesweeperGameInner() {
     </>
   );
 }
-export default function MinesweeperGame(){return<ErrorBoundary game="minesweeper"><MinesweeperGameInner/></ErrorBoundary>;}
+export default function MinesweeperGame() { return <ErrorBoundary game="minesweeper"><MinesweeperGameInner /></ErrorBoundary>; }
