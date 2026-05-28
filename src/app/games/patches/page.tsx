@@ -24,6 +24,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -37,18 +38,24 @@ function getDifficulty(s:number):Difficulty{
   return h<20?"easy":h<70?"medium":"hard";
 }
 
-function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:number;selected:boolean;onClick:()=>void}){
+function PiecePreview({piece,cellSize,selected,onClick,isDark}:{piece:Piece;cellSize:number;selected:boolean;onClick:()=>void;isDark:boolean}){
   const maxR=Math.max(...piece.cells.map(([r])=>r))+1;
   const maxC=Math.max(...piece.cells.map(([,c])=>c))+1;
+  const selBorder = selected ? "2px solid rgba(0,255,255,0.9)" : `2px solid ${isDark ? "rgba(255,255,255,0.08)" : "var(--color-border)"}`;
+  const selBg = selected ? (isDark ? "rgba(0,255,255,0.08)" : `${piece.color}15`) : (isDark ? "rgba(6,13,24,0.7)" : "var(--color-surface)");
+  const selShadow = selected
+    ? isDark ? `0 0 0 1px rgba(0,255,255,0.5), 0 0 16px rgba(0,255,255,0.22), 0 4px 12px rgba(0,0,0,0.4)` : `0 4px 12px ${piece.color}40`
+    : isDark ? "0 2px 8px rgba(0,0,0,0.3)" : "0 2px 6px rgba(0,0,0,0.04)";
   return(
     <motion.button onClick={onClick} whileTap={{scale:0.92}}
-      style={{padding:8,borderRadius:14,border:`2px solid ${selected?piece.color:"var(--color-border)"}`,
-        background:selected?`${piece.color}15`:"var(--color-surface)",cursor:"pointer",outline:"none",
-        boxShadow:selected?`0 4px 12px ${piece.color}40`:"0 2px 6px rgba(0,0,0,0.04)"}}>
+      whileHover={{scale:1.04,boxShadow: isDark ? `0 0 0 1.5px rgba(0,255,255,0.35), 0 0 12px rgba(0,255,255,0.12)` : `0 4px 14px ${piece.color}30`}}
+      style={{padding:8,borderRadius:14,border:selBorder,background:selBg,cursor:"pointer",outline:"none",boxShadow:selShadow,transition:"background 0.2s, border-color 0.2s"}}>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${maxC},${cellSize}px)`,gap:2,gridTemplateRows:`repeat(${maxR},${cellSize}px)`}}>
         {Array.from({length:maxR},(_,r)=>Array.from({length:maxC},(_,c)=>{
           const isCell=piece.cells.some(([pr,pc])=>pr===r&&pc===c);
-          return<div key={`${r}-${c}`} style={{width:cellSize,height:cellSize,borderRadius:3,background:isCell?piece.color:"transparent"}}/>;
+          return<div key={`${r}-${c}`} style={{width:cellSize,height:cellSize,borderRadius:3,
+            background:isCell ? piece.color : "transparent",
+            boxShadow: isCell && isDark ? `0 0 6px ${piece.color}99` : "none"}}/>;
         }))}
       </div>
     </motion.button>
@@ -57,6 +64,7 @@ function PiecePreview({piece,cellSize,selected,onClick}:{piece:Piece;cellSize:nu
 
 function PatchesGameInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<PatchesBoard|null>(null);
   const[placed,setPlaced]=useState<Map<string,number>>(new Map());
@@ -248,9 +256,20 @@ function PatchesGameInner(){
 
   if(!board||!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Generating puzzle...</p></div>);
 
+  const isDark = theme === "dark";
   const maxW=typeof window!=="undefined"?Math.min(window.innerWidth-48,400):360;
   const cellSize=Math.floor(maxW/board.cols);
   const remaining=board.pieces.filter(p=>!placedPieces.has(p.id));
+
+  const boardBg = isDark
+    ? {background:`radial-gradient(circle, rgba(0,255,255,0.07) 1px, transparent 1px), #060d18`, backgroundSize:"18px 18px"}
+    : theme === "paper"
+    ? {background:`radial-gradient(circle, rgba(100,80,60,0.12) 1px, transparent 1px), #f5f0e8`, backgroundSize:"18px 18px"}
+    : {background:`radial-gradient(circle, rgba(0,150,200,0.08) 1px, transparent 1px), #f0f4f8`, backgroundSize:"18px 18px"};
+
+  const boardWrapShadow = isDark
+    ? "0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 14%, transparent), 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)"
+    : "0 8px 24px rgba(0,0,0,0.08)";
 
   return(
     <>
@@ -277,9 +296,9 @@ function PatchesGameInner(){
           </motion.div>
         )}
 
-        <div style={{border:"2px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}
+        <div style={{...boardBg,borderRadius:16,padding:8,boxShadow:boardWrapShadow,border:isDark?"1px solid color-mix(in srgb, var(--color-accent-primary) 12%, transparent)":"1px solid var(--color-border)"}}
           onMouseLeave={()=>setHoverCells(new Set())}>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${board.cols},${cellSize}px)`}}>
+          <div style={{borderRadius:10,overflow:"hidden",display:"grid",gridTemplateColumns:`repeat(${board.cols},${cellSize}px)`}}>
             {Array.from({length:board.rows},(_,r)=>Array.from({length:board.cols},(_,c)=>{
               const k=`${r},${c}`;
               const pid=placed.get(k);
@@ -287,15 +306,34 @@ function PatchesGameInner(){
               const isHover=hoverCells.has(k);
               const selPiece=selectedPiece!==null?board.pieces.find(p=>p.id===selectedPiece):null;
               const check=checkState?.get(k);
+              const cellBorder = isDark ? "rgba(255,255,255,0.05)" : "var(--color-border)";
+              const emptyBg = isDark ? "rgba(6,13,24,0.82)" : "var(--color-surface)";
+              let bg: string;
+              if(check==="correct") bg = "var(--color-accent-secondary)";
+              else if(check==="incorrect") bg = "var(--color-error)";
+              else if(piece) bg = solutionRevealed ? `${piece.color}cc` : piece.color;
+              else if(isHover && selPiece) bg = isDark ? `${selPiece.color}40` : `${selPiece.color}50`;
+              else bg = emptyBg;
+              const cellGlow = piece && isDark && check !== "incorrect"
+                ? check === "correct"
+                  ? `inset 0 0 8px rgba(57,255,20,0.25), 0 0 6px rgba(57,255,20,0.15)`
+                  : `0 0 6px ${piece.color}60`
+                : "none";
               return(
                 <div key={k}
                   onClick={()=>handleCellClick(r,c)}
                   onMouseEnter={()=>handleCellHover(r,c)}
                   style={{width:cellSize,height:cellSize,
                     cursor:solutionRevealed?"default":selectedPiece!==null||pid!==undefined?"pointer":"default",
-                    background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":piece?(solutionRevealed?`${piece.color}cc`:piece.color):isHover&&selPiece?`${selPiece.color}50`:"var(--color-surface)",
-                    borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",
-                    borderTop:"none",borderLeft:"none",transition:"background 0.2s"}}>
+                    background:bg,
+                    boxShadow:cellGlow,
+                    borderRight:`0.5px solid ${cellBorder}`,borderBottom:`0.5px solid ${cellBorder}`,
+                    borderTop:"none",borderLeft:"none",transition:"background 0.2s, box-shadow 0.2s",
+                    outline: !piece && !isHover && isDark ? "none" : "none",
+                    position:"relative"}}>
+                  {!piece && !isHover && isDark && (
+                    <div style={{position:"absolute",inset:0,border:`1px dashed rgba(255,255,255,0.06)`,pointerEvents:"none"}}/>
+                  )}
                 </div>
               );
             }))}
@@ -308,20 +346,25 @@ function PatchesGameInner(){
             <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
               {board.pieces.map(piece=>{
                 if(placedPieces.has(piece.id))return(
-                  <div key={piece.id} style={{padding:8,borderRadius:14,border:"2px solid var(--color-border)",background:"var(--color-surface-2)",opacity:0.4}}>
-                    <div style={{width:24,height:24,borderRadius:6,background:piece.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white"}}></div>
+                  <div key={piece.id} style={{padding:8,borderRadius:14,
+                    border:isDark?"1.5px solid rgba(57,255,20,0.2)":"2px solid var(--color-border)",
+                    background:isDark?"rgba(57,255,20,0.04)":"var(--color-surface-2)",
+                    opacity:0.5,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:20,height:20,borderRadius:5,background:isDark?`${piece.color}80`:piece.color,
+                      boxShadow:isDark?`0 0 8px ${piece.color}60`:"none",
+                      display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"white",fontFamily:"var(--font-mono)",fontWeight:700}}>✓</div>
                   </div>
                 );
-                return<PiecePreview key={piece.id} piece={piece} cellSize={14} selected={selectedPiece===piece.id} onClick={()=>setSelectedPiece(selectedPiece===piece.id?null:piece.id)}/>;
+                return<PiecePreview key={piece.id} piece={piece} cellSize={14} isDark={isDark} selected={selectedPiece===piece.id} onClick={()=>setSelectedPiece(selectedPiece===piece.id?null:piece.id)}/>;
               })}
             </div>
           </div>
         )}
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+          <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
         </div>
       </GameShell>
 
