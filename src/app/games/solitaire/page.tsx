@@ -21,6 +21,7 @@ import{useAuthStore}from"@/store/authStore";
 import{consumeToken}from"@/lib/games/tokenEngine";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -39,17 +40,27 @@ function canStack(card:Card,onto:Card|null):boolean{if(!onto)return card.value==
 function canFoundation(card:Card,top:Card|null):boolean{if(!top)return card.value===1;return card.suit===top.suit&&card.value===top.value+1;}
 function cardColor(suit:Suit){return suit==="♥"||suit==="♦"?"#DC2626":"var(--color-text-primary)";}
 
-function CardUI({card,small,onClick,selected}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean}){
+function CardUI({card,small,onClick,selected,isDark}:{card:Card;small?:boolean;onClick?:()=>void;selected?:boolean;isDark?:boolean}){
   const w=small?36:48,h=small?52:68;
-  if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",border:"1.5px solid rgba(255,255,255,0.3)",flexShrink:0}}/>);
-  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:selected?"color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))":"var(--color-surface)",border:`1.5px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:selected?"0 0 0 2px var(--color-accent-primary)":"0 2px 4px rgba(0,0,0,0.08)",flexShrink:0}}>
-    <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1}}>{card.label}</span>
+  if(!card.faceUp)return(<div style={{width:w,height:h,borderRadius:6,background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",border:"1.5px solid rgba(255,255,255,0.25)",flexShrink:0,boxShadow:isDark?"0 2px 8px rgba(0,0,0,0.4)":"none"}}/>);
+  const cardBg = isDark
+    ? selected ? "color-mix(in srgb, var(--color-accent-primary) 10%, rgba(8,16,28,0.97))" : "rgba(14,24,40,0.97)"
+    : selected ? "color-mix(in srgb, var(--color-accent-primary) 12%, var(--color-surface))" : "var(--color-surface)";
+  const cardBorder = isDark
+    ? selected ? "1.5px solid rgba(0,255,255,0.85)" : "1px solid rgba(255,255,255,0.1)"
+    : `1.5px solid ${selected?"var(--color-accent-primary)":"var(--color-border)"}`;
+  const cardShadow = isDark
+    ? selected ? "0 0 0 1px rgba(0,255,255,0.5), 0 0 14px rgba(0,255,255,0.18), 0 4px 12px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)"
+    : selected ? "0 0 0 2px var(--color-accent-primary)" : "0 2px 4px rgba(0,0,0,0.08)";
+  return(<motion.div onClick={onClick} whileHover={onClick?{y:-3}:{}} style={{width:w,height:h,borderRadius:6,background:cardBg,border:cardBorder,cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",padding:"3px 4px",boxShadow:cardShadow,flexShrink:0}}>
+    <span style={{fontSize:small?11:12,fontWeight:700,color:cardColor(card.suit),lineHeight:1,fontFamily:"var(--font-mono)"}}>{card.label}</span>
     <span style={{fontSize:small?14:16,color:cardColor(card.suit),lineHeight:1}}>{card.suit}</span>
   </motion.div>);
 }
 
 function SolitairePageInner(){
   const{user}=useAuthStore();
+  const{theme}=useSettingsStore();
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[tableau,setTableau]=useState<Card[][]>([]);
   const[stock,setStock]=useState<Card[]>([]);
@@ -191,7 +202,21 @@ function SolitairePageInner(){
     drawCard();setHintsUsed(h=>h+1);setXpState(prev=>prev?{...prev,hintsUsed:Math.min(prev.hintsUsed+1,prev.maxHints)}:prev);playError();
   }
 
-  if(!xpState)return(<div style={{minHeight:"100vh",background:"#0F4C2A",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"rgba(255,255,255,0.5)",fontSize:13}}>Dealing cards...</p></div>);
+  if(!xpState)return(<div style={{minHeight:"100vh",background:"var(--color-bg)",display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"var(--color-text-secondary)",fontSize:13}}>Dealing cards...</p></div>);
+
+  const isDark = theme === "dark";
+  const boardBg = isDark
+    ? {background:`radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 1px), #060d18`, backgroundSize:"18px 18px"}
+    : theme === "paper"
+    ? {background:`radial-gradient(circle, rgba(60,80,60,0.10) 1px, transparent 1px), #1a3a28`, backgroundSize:"18px 18px"}
+    : {background:`linear-gradient(135deg, #0F4C2A, #1A6B3A)`};
+  const boardShadow = isDark
+    ? "0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 14%, transparent), 0 20px 60px rgba(0,0,0,0.6)"
+    : "0 8px 32px rgba(0,0,0,0.2)";
+  const emptySlotBorder = isDark ? "2px dashed rgba(0,255,255,0.15)" : "2px dashed rgba(255,255,255,0.2)";
+  const foundationBorder = (hasSelected: boolean) => isDark
+    ? hasSelected ? "2px solid rgba(0,255,255,0.45)" : "1.5px solid rgba(255,255,255,0.12)"
+    : hasSelected ? "2px solid rgba(255,255,255,0.5)" : "2px solid rgba(255,255,255,0.2)";
 
   return(
     <>
@@ -208,33 +233,41 @@ function SolitairePageInner(){
       >
         <GamePageSchema slug="solitaire" />
 
-        <div style={{background:"linear-gradient(135deg,#0F4C2A,#1A6B3A)",borderRadius:20,padding:16,width:"100%",maxWidth:620,display:"flex",flexDirection:"column",gap:12}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",textAlign:"center"}}>Moves: {moves}</div>
+        <div style={{...boardBg,borderRadius:20,padding:16,width:"100%",maxWidth:620,display:"flex",flexDirection:"column",gap:12,border:isDark?"1px solid color-mix(in srgb, var(--color-accent-primary) 12%, transparent)":"none",boxShadow:boardShadow}}>
+          <div style={{fontSize:11,color:isDark?"rgba(0,255,255,0.4)":"rgba(255,255,255,0.5)",textAlign:"center",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>MOVES: {moves}</div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)",textAlign:"center"}}>
-              Strategy: Build foundations A→K · Expose face-down cards · Move Kings to empty columns · XP set to 1
+              style={{padding:"10px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 10%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 30%, transparent)",fontSize:11,fontWeight:600,color:"var(--color-error)",textAlign:"center",fontFamily:"var(--font-mono)",letterSpacing:"0.05em"}}>
+              STRATEGY: BUILD FOUNDATIONS A→K · EXPOSE FACE-DOWN CARDS · XP SET TO 1
             </motion.div>
           )}
 
           <div style={{display:"flex",gap:6,alignItems:"flex-start",padding:"0 4px"}}>
-            <div onClick={drawCard} style={{width:48,height:68,borderRadius:6,cursor:solutionRevealed?"not-allowed":"pointer",border:"2px dashed rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:solutionRevealed?0.5:1}}>
-              {stock.length>0?<CardUI card={stock[stock.length-1]}/>:<RefreshCw size={18} color="rgba(255,255,255,0.4)"/>}
-            </div>
+            <motion.div onClick={drawCard} whileHover={!solutionRevealed?{scale:1.03}:{}}
+              style={{width:48,height:68,borderRadius:6,cursor:solutionRevealed?"not-allowed":"pointer",border:emptySlotBorder,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:solutionRevealed?0.5:1,boxShadow:isDark?"0 0 8px rgba(0,255,255,0.06)":"none"}}>
+              {stock.length>0?<CardUI card={stock[stock.length-1]} isDark={isDark}/>:<RefreshCw size={18} color={isDark?"rgba(0,255,255,0.3)":"rgba(255,255,255,0.4)"}/>}
+            </motion.div>
             <div onClick={handleWasteClick} style={{width:48,height:68,flexShrink:0}}>
-              {waste.length>0?<CardUI card={waste[waste.length-1]} selected={selected?.pile==="waste"} onClick={handleWasteClick}/>:<div style={{width:48,height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)"}}/>}
+              {waste.length>0?<CardUI card={waste[waste.length-1]} isDark={isDark} selected={selected?.pile==="waste"} onClick={handleWasteClick}/>:<div style={{width:48,height:68,borderRadius:6,border:emptySlotBorder}}/>}
             </div>
             <div style={{flex:1}}/>
-            {foundations.map((pile,i)=>{const top=pile[pile.length-1];const suits:Suit[]=["♥","♦","♣","♠"];return(<div key={i} onClick={()=>handleFoundationClick(i)} style={{width:48,height:68,borderRadius:6,border:`2px solid ${selected?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.2)"}`,cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{top?<CardUI card={top} onClick={()=>handleFoundationClick(i)}/>:<span style={{fontSize:20,color:"rgba(255,255,255,0.3)"}}>{suits[i]}</span>}</div>);})}
+            {foundations.map((pile,i)=>{const top=pile[pile.length-1];const suits:Suit[]=["♥","♦","♣","♠"];const isRedSuit=suits[i]==="♥"||suits[i]==="♦";const suitColor=isRedSuit?"#DC2626":(isDark?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.35)");return(<motion.div key={i} onClick={()=>handleFoundationClick(i)} whileHover={!solutionRevealed?{boxShadow:isDark?"0 0 12px rgba(57,255,20,0.18)":"none"}:{}}
+              style={{width:48,height:68,borderRadius:6,border:foundationBorder(!!selected),cursor:solutionRevealed?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+                background:isDark?"rgba(6,13,24,0.7)":"transparent",
+                boxShadow:isDark?"inset 0 1px 0 rgba(255,255,255,0.04)":"none"}}>
+              {top?<CardUI card={top} isDark={isDark} onClick={()=>handleFoundationClick(i)}/>:<span style={{fontSize:20,color:suitColor}}>{suits[i]}</span>}
+            </motion.div>);})}
           </div>
 
           <div style={{display:"flex",gap:4,alignItems:"flex-start",padding:"0 4px",overflowX:"auto"}}>
             {tableau.map((pile,col)=>(
               <div key={col} style={{flex:1,minWidth:44,position:"relative",minHeight:80}}>
-                {pile.length===0?(<div onClick={()=>handleTableauClick(col,0)} style={{width:"100%",height:68,borderRadius:6,border:"2px dashed rgba(255,255,255,0.2)",cursor:solutionRevealed?"not-allowed":"pointer"}}/>):(
+                {pile.length===0?(<motion.div onClick={()=>handleTableauClick(col,0)} whileHover={!solutionRevealed?{boxShadow:isDark?"0 0 12px rgba(57,255,20,0.14)":"none"}:{}}
+                  style={{width:"100%",height:68,borderRadius:6,border:emptySlotBorder,cursor:solutionRevealed?"not-allowed":"pointer",
+                    background:isDark?"rgba(6,13,24,0.5)":"transparent"}}/>):(
                   <div style={{position:"relative"}}>
-                    {pile.map((card,i)=>(<div key={`${card.suit}${card.label}${i}`} style={{position:"absolute",top:i*18,left:0,right:0,zIndex:i}}><CardUI card={card} small selected={selected?.pile==="tableau"&&selected.col===col&&selected.idx<=i&&card.faceUp} onClick={()=>handleTableauClick(col,i)}/></div>))}
+                    {pile.map((card,i)=>(<div key={`${card.suit}${card.label}${i}`} style={{position:"absolute",top:i*18,left:0,right:0,zIndex:i}}><CardUI card={card} small isDark={isDark} selected={selected?.pile==="tableau"&&selected.col===col&&selected.idx<=i&&card.faceUp} onClick={()=>handleTableauClick(col,i)}/></div>))}
                     <div style={{height:68+Math.max(0,pile.length-1)*18}}/>
                   </div>
                 )}
@@ -244,9 +277,9 @@ function SolitairePageInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-          <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of 100</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+          <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
+          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
         </div>
       </GameShell>
 
