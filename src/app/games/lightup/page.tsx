@@ -41,7 +41,7 @@ function getDifficulty(s:number):Difficulty{
 function LightUpPageInner(){
   const{user}=useAuthStore();
   const{theme}=useSettingsStore();
-  const blackCellBg=theme==="dark"?"var(--color-surface-2)":"#374151";
+  const blackCellBg=theme==="dark"?"rgba(4,10,20,0.97)":theme==="light"?"#374151":"#3a3530";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[board,setBoard]=useState<LightBoard|null>(null);
   const[grid,setGrid]=useState<LightCell[][]>([]);
@@ -214,57 +214,103 @@ function LightUpPageInner(){
       >
         <GamePageSchema slug={GAME_SLUG} />
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,padding:"16px 16px 32px"}}>
-          <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center"}}>
-            {litCount}/{totalWhite} lit · Click white cells to place ● bulbs · Light must reach every white cell<br/>
-            Black numbers = required adjacent bulbs · Bulbs can't light each other
+          <div style={{fontSize:11,color:"var(--color-text-secondary)",textAlign:"center",fontFamily:"var(--font-mono)",letterSpacing:"0.04em"}}>
+            LIT {litCount}/{totalWhite} · CLICK TO PLACE BULB ● · REACH ALL WHITE CELLS · BULBS CAN'T SEE EACH OTHER
           </div>
 
           {solutionRevealed&&(
             <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:13,fontWeight:600,color:"var(--color-error)"}}>
-              Solution revealed · XP set to 1 · Retry to score properly
+              style={{padding:"8px 20px",borderRadius:12,background:"color-mix(in srgb, var(--color-error) 8%, transparent)",border:"0.5px solid color-mix(in srgb, var(--color-error) 20%, transparent)",fontSize:12,fontWeight:600,color:"var(--color-error)",fontFamily:"var(--font-mono)"}}>
+              SOLUTION REVEALED · XP SET TO 1 · RETRY TO SCORE
             </motion.div>
           )}
 
-          <div style={{border:"2px solid var(--color-border)",borderRadius:14,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.08)"}}>
-            <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${cellSize}px)`}}>
-              {grid.map((row,r)=>row.map((cell,c)=>{
-                const k=`${r},${c}`;
-                const isLit=lighting.lit.has(k);
-                const isConflict=lighting.conflicts.has(k);
-                const isBlackErr=lighting.blackErrors.has(k);
-                const isSolBulb=solutionRevealed&&cell.type==="bulb";
-                const check=checkState?.get(k);
-                if(cell.type==="black"){
-                  const bc=cell as{type:"black";clue:number|null};
+          <div style={{
+            padding: 10, borderRadius: 16,
+            background: theme==="dark"
+              ? `radial-gradient(circle, rgba(0,255,255,0.09) 1px, transparent 1px), #060d18`
+              : theme==="light"
+              ? `radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px), #f8f9fb`
+              : `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), #f5f0e8`,
+            backgroundSize: "18px 18px",
+            border: "1px solid color-mix(in srgb, var(--color-accent-primary) 14%, transparent)",
+            boxShadow: theme==="dark"
+              ? "0 0 0 1px rgba(0,255,255,0.03), 0 20px 64px rgba(0,0,0,0.5)"
+              : "0 4px 20px rgba(0,0,0,0.06)",
+          }}>
+            <div style={{borderRadius:8,overflow:"hidden"}}>
+              <div style={{display:"grid",gridTemplateColumns:`repeat(${board.size},${cellSize}px)`}}>
+                {grid.map((row,r)=>row.map((cell,c)=>{
+                  const k=`${r},${c}`;
+                  const isLit=lighting.lit.has(k);
+                  const isConflict=lighting.conflicts.has(k);
+                  const isBlackErr=lighting.blackErrors.has(k);
+                  const isSolBulb=solutionRevealed&&cell.type==="bulb";
+                  const check=checkState?.get(k);
+                  const cellBorder=theme==="dark"?"rgba(255,255,255,0.05)":"var(--color-border)";
+                  if(cell.type==="black"){
+                    const bc=cell as{type:"black";clue:number|null};
+                    return(
+                      <div key={k} style={{width:cellSize,height:cellSize,background:isBlackErr?"color-mix(in srgb, var(--color-error) 50%, rgba(4,10,20,0.97))":blackCellBg,display:"flex",alignItems:"center",justifyContent:"center",borderRight:`0.5px solid ${cellBorder}`,borderBottom:`0.5px solid ${cellBorder}`,borderTop:"none",borderLeft:"none",boxShadow:isBlackErr&&theme==="dark"?"inset 0 0 8px rgba(255,68,68,0.4)":"none",transition:"box-shadow 0.3s"}}>
+                        {bc.clue!=null&&bc.clue>=0&&<span style={{fontSize:Math.round(cellSize*0.4),fontWeight:700,color:isBlackErr?"var(--color-error)":"rgba(255,255,255,0.82)",fontFamily:"var(--font-mono)"}}>{bc.clue}</span>}
+                      </div>
+                    );
+                  }
+                  const isBulb=cell.type==="bulb";
+                  const litBg = theme==="dark"
+                    ? `radial-gradient(circle, rgba(253,186,116,0.22) 0%, rgba(253,224,71,0.12) 60%, transparent 100%)`
+                    : "color-mix(in srgb, #F59E0B 14%, var(--color-surface))";
+                  const cellBg = check==="correct"?"var(--color-accent-secondary)"
+                    :check==="incorrect"?"var(--color-error)"
+                    :isConflict?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))"
+                    :isSolBulb?"color-mix(in srgb, var(--color-error) 8%, transparent)"
+                    :isLit ? litBg
+                    :"var(--color-surface)";
+                  const litGlow = isLit && !isBulb && theme==="dark"
+                    ? `inset 0 0 ${cellSize * 0.7}px rgba(253,186,116,0.35), 0 0 ${cellSize * 0.3}px rgba(253,224,71,0.12)`
+                    : isLit && !isBulb
+                    ? `inset 0 0 ${cellSize/2}px rgba(253,224,71,0.25)`
+                    : "none";
                   return(
-                    <div key={k} style={{width:cellSize,height:cellSize,background:isBlackErr?"color-mix(in srgb, var(--color-error) 60%, var(--color-surface-2))":blackCellBg,display:"flex",alignItems:"center",justifyContent:"center",borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none"}}>
-                      {bc.clue!=null&&bc.clue>=0&&<span style={{fontSize:Math.round(cellSize*0.4),fontWeight:700,color:isBlackErr?"var(--color-error)":"white",fontFamily:"var(--font-mono)"}}>{bc.clue}</span>}
-                    </div>
+                    <motion.button key={k} onClick={()=>handleCell(r,c)}
+                      whileTap={solutionRevealed?{}:{scale:0.88}}
+                      animate={isBulb && isConflict && theme==="dark" ? {
+                        boxShadow: [
+                          `inset 0 0 6px rgba(255,68,68,0.3), 0 0 8px rgba(255,68,68,0.15)`,
+                          `inset 0 0 16px rgba(255,68,68,0.7), 0 0 20px rgba(255,68,68,0.4)`,
+                          `inset 0 0 6px rgba(255,68,68,0.3), 0 0 8px rgba(255,68,68,0.15)`,
+                        ],
+                      } : {}}
+                      transition={{ duration: 0.65, repeat: Infinity, ease: "easeInOut" }}
+                      style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
+                        background: cellBg,
+                        borderRight:`0.5px solid ${cellBorder}`,borderBottom:`0.5px solid ${cellBorder}`,borderTop:"none",borderLeft:"none",
+                        cursor:solutionRevealed?"default":"pointer",outline:"none",
+                        fontSize:Math.round(cellSize*0.52),
+                        transition:"background 0.25s",
+                        boxShadow: (!isBulb || !isConflict) ? litGlow : undefined,
+                      }}>
+                      {isBulb&&!check&&(
+                        <span style={{
+                          color: isSolBulb ? "var(--color-error)" : isConflict ? "var(--color-error)" : "inherit",
+                          filter: theme==="dark" && !isConflict
+                            ? "drop-shadow(0 0 4px rgba(255,245,157,0.9)) drop-shadow(0 0 8px rgba(253,186,116,0.6))"
+                            : "none",
+                          transition: "filter 0.3s",
+                        }}>●</span>
+                      )}
+                      {isBulb&&check&&<span style={{color:check==="correct"?"var(--color-on-accent)":"white"}}>●</span>}
+                    </motion.button>
                   );
-                }
-                const isBulb=cell.type==="bulb";
-                return(
-                  <motion.button key={k} onClick={()=>handleCell(r,c)}
-                    whileTap={solutionRevealed?{}:{scale:0.9}}
-                    style={{width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
-                      background:check==="correct"?"var(--color-accent-secondary)":check==="incorrect"?"var(--color-error)":isConflict?"color-mix(in srgb, var(--color-error) 10%, var(--color-surface))":isSolBulb?"color-mix(in srgb, var(--color-error) 8%, transparent)":isLit?"color-mix(in srgb, #F59E0B 15%, var(--color-surface))":"var(--color-surface)",
-                      borderRight:"0.5px solid var(--color-border)",borderBottom:"0.5px solid var(--color-border)",borderTop:"none",borderLeft:"none",
-                      cursor:solutionRevealed?"default":"pointer",outline:"none",fontSize:Math.round(cellSize*0.5),
-                      transition:"background 0.2s",
-                      boxShadow:isLit&&!isBulb?`inset 0 0 ${cellSize/2}px rgba(253,224,71,0.3)`:"none"}}>
-                    {isBulb&&!check&&<span style={{filter:isConflict?"grayscale(1)":"none",color:isSolBulb?"var(--color-error)":"inherit"}}>●</span>}
-                    {isBulb&&check&&<span style={{color:check==="correct"?"var(--color-on-accent)":"white"}}>●</span>}
-                  </motion.button>
-                );
-              }))}
+                }))}
+              </div>
             </div>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:12,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1}}>← Prev</button>
-            <span style={{fontSize:12,color:"var(--color-text-secondary)"}}>Stage {stage} of {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:12,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:12,color:"var(--color-text-secondary)",fontWeight:600}}>Next <ChevronRight size={13}/></button>
+            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 18px",borderRadius:10,border:"1px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,fontFamily:"var(--font-mono)",color:"var(--color-text-secondary)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase" as const,opacity:stage===1?0.38:1}}>← PREV</button>
+            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>STAGE {stage}/{TOTAL_STAGES}</span>
+            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 18px",borderRadius:10,border:"1px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,fontFamily:"var(--font-mono)",color:"var(--color-text-secondary)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase" as const}}>NEXT <ChevronRight size={12}/></button>
           </div>
         </div>
       </GameShell>
