@@ -10,5 +10,12 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(`${origin}/games`);
+  const response = NextResponse.redirect(`${origin}/games`);
+  // Mark user as onboarded so the client-side gate never bounces OAuth users
+  response.cookies.set("onboarded", "1", {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  return response;
 }

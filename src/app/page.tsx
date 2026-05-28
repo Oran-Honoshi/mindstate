@@ -115,8 +115,13 @@ const PLANS = [
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
+function isOnboarded() {
+  if (localStorage.getItem("onboarded") === "1") return true;
+  return document.cookie.split(";").some(c => c.trim().startsWith("onboarded=1"));
+}
+
 export default function LandingPage() {
-  const { user } = useAuthStore();
+  const { user, loading } = useAuthStore();
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [ctaHref, setCtaHref] = useState("/onboard");
@@ -124,14 +129,23 @@ export default function LandingPage() {
   const accountLabel = user ? "Profile" : "Sign In";
 
   useEffect(() => {
-    const onboarded = localStorage.getItem("onboarded") === "1";
-    if (!onboarded) {
+    if (loading) return; // wait for Supabase session to hydrate
+
+    if (user) {
+      // Logged-in users are always considered onboarded (covers OAuth flow)
+      localStorage.setItem("onboarded", "1");
+      setCtaHref("/games");
+      setReady(true);
+      return;
+    }
+
+    if (!isOnboarded()) {
       router.push("/onboard");
       return;
     }
     setCtaHref("/games");
     setReady(true);
-  }, [router]);
+  }, [user, loading, router]);
 
   if (!ready) return null;
 

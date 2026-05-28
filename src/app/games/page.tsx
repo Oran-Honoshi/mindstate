@@ -668,9 +668,14 @@ function TrustpilotBadge() {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
+function isOnboarded() {
+  if (localStorage.getItem("onboarded") === "1") return true;
+  return document.cookie.split(";").some(c => c.trim().startsWith("onboarded=1"));
+}
+
 export default function LandingPage() {
   const { isSilentMode, toggleSilentMode, isAccessibilityMode, toggleAccessibilityMode, theme, setTheme } = useSettingsStore();
-  const { user, profile } = useAuthStore();
+  const { user, profile, loading } = useAuthStore();
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
@@ -680,13 +685,21 @@ export default function LandingPage() {
   const { isInstallable, triggerInstall } = usePWAInstall();
 
   useEffect(() => {
-    const onboarded = localStorage.getItem("onboarded") === "1";
-    if (!onboarded) {
+    if (loading) return; // wait for Supabase session to hydrate
+
+    if (user) {
+      // Logged-in users are always considered onboarded (covers OAuth flow)
+      localStorage.setItem("onboarded", "1");
+      setReady(true);
+      return;
+    }
+
+    if (!isOnboarded()) {
       router.push("/onboard");
       return;
     }
     setReady(true);
-  }, [router]);
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (!user || isPro) return;
