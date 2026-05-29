@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Zap, Target, Star, ArrowRight, LogIn, Flame, Calendar, Crown, TrendingUp } from "lucide-react";
@@ -34,7 +35,7 @@ const ACHIEVEMENTS = [
   { id:"top_scorer",   icon:"🥇", name:"High Achiever",     desc:"Accumulate 10,000 total XP",         check:(s:Score[])=>s.reduce((t,x)=>t+x.xp_earned,0)>=10000 },
 ];
 
-function StatCard({ icon:Icon, label, value, color }: { icon:any; label:string; value:string; color:string }) {
+function StatCard({ icon:Icon, label, value, color }: { icon:React.ComponentType<{ size?: number; color?: string }>; label:string; value:string; color:string }) {
   return (
     <div className="ms-card" style={{ padding:"16px 18px" }}>
       <div style={{ width:32, height:32, borderRadius:10, background:`${color}18`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>

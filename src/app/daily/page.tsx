@@ -10,7 +10,7 @@ import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { useAuthStore } from "@/store/authStore";
 import {
   DAILY_GAMES, getTodaysFeaturedGame, getDailyDate,
-  isDailyCompleted, formatTimeUntilReset, getDailyStageNumber, getDailyStageInfo,
+  isDailyCompleted, formatTimeUntilReset, getDailyStageInfo,
   type GameSlug,
 } from "@/lib/games/dailyChallenge";
 import { getStreak } from "@/lib/supabase/streaks";
