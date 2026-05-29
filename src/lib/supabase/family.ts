@@ -18,7 +18,7 @@ export async function joinFamilyGroup(inviteCode: string, userId: string) {
   const { data: group, error } = await supabase
     .from("family_groups")
     .select("*, family_members(count)")
-    .eq("invite_code", inviteCode.trim().toLowerCase())
+    .eq("invite_code", inviteCode.trim().toUpperCase())
     .single();
   if (error || !group) throw new Error("Invalid invite code");
   const memberCount = group.family_members?.[0]?.count ?? 0;

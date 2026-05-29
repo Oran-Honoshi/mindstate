@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
 import { createClient } from "@/lib/supabase/client";
+import { joinFamilyGroup } from "@/lib/supabase/family";
 
 export default function JoinPage() {
   const supabase = createClient();
@@ -48,10 +49,11 @@ export default function JoinPage() {
         if (existing) { setStatus("already"); return; }
       }
 
+      const adminName = (group.profiles as { username?: string } | null)?.username ?? "the admin";
       setGroupInfo({
         member_limit: group.member_limit,
         current,
-        admin: (group as any).profiles?.username ?? "the admin",
+        admin: adminName,
       });
 
       if (current >= group.member_limit) { setStatus("full"); return; }
@@ -64,29 +66,16 @@ export default function JoinPage() {
   async function joinGroup() {
     if (!user || !code) return;
     setStatus("joining");
-
-    const { data: group } = await supabase
-      .from("family_groups")
-      .select("id, member_limit")
-      .eq("invite_code", code.toUpperCase())
-      .single();
-
-    if (!group) { setStatus("invalid"); return; }
-
-    const { count } = await supabase
-      .from("family_members")
-      .select("*", { count: "exact", head: true })
-      .eq("group_id", group.id);
-
-    if ((count ?? 0) >= group.member_limit) { setStatus("full"); return; }
-
-    const { error } = await supabase
-      .from("family_members")
-      .insert({ group_id: group.id, user_id: user.id });
-
-    if (error) { setStatus("error"); return; }
-    setStatus("success");
-    setTimeout(() => router.push("/family"), 2000);
+    try {
+      await joinFamilyGroup(code, user.id);
+      setStatus("success");
+      setTimeout(() => router.push("/family"), 2000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("full")) setStatus("full");
+      else if (msg.includes("Already")) setStatus("already");
+      else setStatus("error");
+    }
   }
 
   return (

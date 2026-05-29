@@ -4,7 +4,7 @@ export interface Profile {
   avatar_url: string | null;
   lang_pref: string;
   is_silent_mode: boolean;
-  subscription_status: "free" | "individual" | "family";
+  subscription_status: "free" | "individual" | "family_s" | "family_l";
   created_at: string;
 }
 

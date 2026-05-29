@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Medal, Star, Zap, Crown, Users, Globe, ArrowRight } from "lucide-react";
+import { Trophy, Medal, Crown, Users, Globe, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
 import { GameIcon } from "@/components/icons/GameIcons";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/supabase/leaderboard";
+import { getUserFamilyGroup, getFamilyLeaderboard } from "@/lib/supabase/family";
 
 const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
 
@@ -59,27 +60,43 @@ function Avatar({ initial, index }: { initial: string; index: number }) {
   );
 }
 
+type FamilyEntry = { user_id: string; username: string; total_xp: number; games_played: number; best_stage_xp: number; rank: number };
+
 export default function LeaderboardPage() {
   const { user, profile } = useAuthStore();
   const [tab, setTab] = useState<"global"|"family">("global");
   const [selectedGame, setSelectedGame] = useState("all");
   const [period, setPeriod] = useState("all");
   const [globalEntries, setGlobalEntries] = useState<LeaderboardEntry[]>([]);
+  const [familyEntries, setFamilyEntries] = useState<FamilyEntry[]>([]);
+  const [familyGroupId, setFamilyGroupId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [userXP, setUserXP] = useState<number>(0);
 
   useEffect(() => {
     loadLeaderboard();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGame, period, tab, user]);
 
   async function loadLeaderboard() {
     setLoading(true);
     try {
-      const entries = await fetchLeaderboard(selectedGame, period, user?.id);
-      setGlobalEntries(entries);
-      const myEntry = entries.find(e => e.is_current_user);
-      if (myEntry) { setUserRank(myEntry.rank); setUserXP(myEntry.total_xp); }
+      if (tab === "family" && user) {
+        const group = await getUserFamilyGroup(user.id);
+        if (!group) { setFamilyGroupId(null); setFamilyEntries([]); }
+        else {
+          const groupData = (Array.isArray(group) ? group[0] : group) as { id: string };
+          setFamilyGroupId(groupData.id);
+          const entries = await getFamilyLeaderboard(groupData.id, selectedGame);
+          setFamilyEntries(entries);
+        }
+      } else {
+        const entries = await fetchLeaderboard(selectedGame, period, user?.id);
+        setGlobalEntries(entries);
+        const myEntry = entries.find(e => e.is_current_user);
+        if (myEntry) { setUserRank(myEntry.rank); setUserXP(myEntry.total_xp); }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -188,18 +205,73 @@ export default function LeaderboardPage() {
               </div>
             </div>
           ) : tab === "family" ? (
-            <div style={{ padding:"48px 24px", textAlign:"center" }}>
-              <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-                <Users size={24} color="var(--color-accent-primary)"/>
+            !user ? (
+              <div style={{ padding:"48px 24px", textAlign:"center" }}>
+                <Users size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
+                <p style={{ fontSize:15, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:16 }}>Sign in to see your family leaderboard</p>
+                <Link href="/auth/signin" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
+                  Sign In <ArrowRight size={14}/>
+                </Link>
               </div>
-              <p style={{ fontSize:16, fontWeight:600, color:"var(--color-text-primary)", marginBottom:6 }}>Family Leaderboard</p>
-              <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:20, maxWidth:320, margin:"0 auto 20px" }}>
-                Create or join a family group to see how you rank against your family members.
-              </p>
-              <Link href="/settings" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
-                Set Up Family Group <ArrowRight size={14}/>
-              </Link>
-            </div>
+            ) : !familyGroupId ? (
+              <div style={{ padding:"48px 24px", textAlign:"center" }}>
+                <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+                  <Users size={24} color="var(--color-accent-primary)"/>
+                </div>
+                <p style={{ fontSize:16, fontWeight:600, color:"var(--color-text-primary)", marginBottom:6 }}>No family group yet</p>
+                <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:20, maxWidth:320, margin:"0 auto 20px" }}>
+                  Create or join a family group to see how you rank against your family members.
+                </p>
+                <Link href="/family" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
+                  Set Up Family Group <ArrowRight size={14}/>
+                </Link>
+              </div>
+            ) : familyEntries.length === 0 ? (
+              <div style={{ padding:"48px 24px", textAlign:"center" }}>
+                <Trophy size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
+                <p style={{ fontSize:15, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:4 }}>No family scores yet</p>
+                <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>Be the first in your family to complete a stage!</p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px", gap:0, padding:"12px 20px", borderBottom:"0.5px solid var(--color-border)" }}>
+                  {["#","Player","Best Game","XP","Stages"].map((h,i)=>(
+                    <p key={i} style={{ fontSize:10, fontWeight:700, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", textAlign:i>1?"center":"left" }}>{h}</p>
+                  ))}
+                </div>
+                {familyEntries.map((entry, i) => (
+                  <motion.div key={entry.user_id}
+                    initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }}
+                    transition={{ delay:i*0.03 }}
+                    style={{
+                      display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px",
+                      alignItems:"center", padding:"14px 20px",
+                      borderBottom:"0.5px solid var(--color-border)",
+                      background:entry.user_id===user?.id?"linear-gradient(90deg,rgba(79,110,247,0.06),transparent)":"transparent",
+                    }}>
+                    <RankBadge rank={entry.rank}/>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <Avatar initial={entry.username[0] ?? "?"} index={i}/>
+                      <div>
+                        <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>
+                          {entry.username}
+                          {entry.user_id===user?.id&&<span style={{ fontSize:10, color:"var(--color-accent-primary)", marginLeft:6, fontWeight:500 }}>you</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"center" }}>
+                      <GameIcon slug={selectedGame === "all" ? "tango" : selectedGame} size={22}/>
+                    </div>
+                    <div style={{ textAlign:"center" }}>
+                      <p style={{ fontSize:13, fontWeight:700, color:"var(--color-accent-primary)" }}>{entry.total_xp.toLocaleString()}</p>
+                    </div>
+                    <div style={{ textAlign:"center" }}>
+                      <p style={{ fontSize:13, fontWeight:500, color:"var(--color-text-secondary)" }}>{entry.games_played}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )
           ) : globalEntries.length === 0 ? (
             <div style={{ padding:"48px 24px", textAlign:"center" }}>
               <Trophy size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
