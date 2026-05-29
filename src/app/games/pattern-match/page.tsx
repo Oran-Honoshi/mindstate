@@ -8,6 +8,7 @@ import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncomplete
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
+import{useSearchParams}from"next/navigation";
 import{motion,AnimatePresence}from"framer-motion";
 import{ChevronRight,Lightbulb}from"lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -42,6 +43,8 @@ function getDifficulty(s:number):Difficulty{
 function PatternMatchGameInner(){
   const{user}=useAuthStore();
   const{theme}=useSettingsStore();
+  const searchParams=useSearchParams();
+  const isDaily=searchParams.get("daily")==="1";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [hintsUsed, setHintsUsed] = useState(0);
   const[board,setBoard]=useState<PatternBoard|null>(null);
@@ -94,7 +97,7 @@ function PatternMatchGameInner(){
       setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));
       setLiveXP(calculateXP(xp).currentXP);
     },500);
-    if(user){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
+    if(user&&!isDaily){const ok=consumeToken(user.id);if(!ok){setShowTokenModal(true);return;}}
   },[user]);
 
   const resumeChecked = useRef(false);
@@ -291,9 +294,9 @@ function PatternMatchGameInner(){
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+          <button onClick={()=>{ if(stage>1){ clearGameState(GAME_SLUG); setStage(s=>s-1); } }} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:"var(--color-text-secondary)",opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
           <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
-          <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
+          <button onClick={()=>{ clearGameState(GAME_SLUG); setStage(s=>s+1); }} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",cursor:"pointer",fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
         </div>
       </GameShell>
 
@@ -301,8 +304,9 @@ function PatternMatchGameInner(){
       {showResume && resumeData && (
         <ResumeModal
           gameSlug="pattern-match"
-          stageName={`Stage ${resumeData.stage}`}
+          stageNumber={resumeData.stage as number}
           savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={()=>{
             const s=resumeData!;
             setShowResume(false);setResumeData(null);

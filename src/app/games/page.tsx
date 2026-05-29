@@ -592,18 +592,26 @@ function LandingSnapshot({ slug }: { slug: string }) {
 // ── Game Card ─────────────────────────────────────────────────────────────────
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
+  const router = useRouter();
+
+  function handleGameClick() {
+    const onboarded = typeof window !== "undefined" && localStorage.getItem("onboarded") === "1";
+    router.push(onboarded ? `/games/${game.slug}` : `/onboard?next=/games/${game.slug}`);
+  }
+
   return (
     <motion.div
       initial={{ opacity:0, y:20 }}
       whileInView={{ opacity:1, y:0 }}
       viewport={{ once:true }}
-      transition={{ delay:(i%4)*0.05 }}>
-      <Link href={`/games/${game.slug}`} style={{ display:"block", textDecoration:"none" }}>
-        <div
-          className="ms-card"
-          onMouseEnter={()=>setHovered(true)}
-          onMouseLeave={()=>setHovered(false)}
-          style={{ overflow:"hidden", cursor:"pointer" }}>
+      transition={{ delay:(i%4)*0.05 }}
+      onClick={handleGameClick}
+      style={{ cursor:"pointer" }}>
+      <div
+        className="ms-card"
+        onMouseEnter={()=>setHovered(true)}
+        onMouseLeave={()=>setHovered(false)}
+        style={{ overflow:"hidden" }}>
           <div style={{
             height:110,
             background:hovered
@@ -638,7 +646,6 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
             <p style={{ fontSize:11, color:"var(--color-text-secondary)", lineHeight:1.5 }}>{game.desc}</p>
           </div>
         </div>
-      </Link>
     </motion.div>
   );
 }

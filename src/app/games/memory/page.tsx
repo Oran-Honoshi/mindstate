@@ -7,6 +7,7 @@ import { StageMap } from "@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion } from "framer-motion";
 import { ChevronRight, Leaf, Flame, Droplets, Star, Moon, Sun, Cloud, Zap, Heart, Crown, Gem, Snowflake, Feather, Fish, Bird, Music, Palette, Coffee, Globe, Compass, Atom } from "lucide-react";
@@ -96,6 +97,8 @@ function makeBoard(seed: string, diff: Difficulty): Card[] {
 function MemoryGameInner() {
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
+  const searchParams = useSearchParams();
+  const isDaily = searchParams.get("daily") === "1";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -140,7 +143,7 @@ function MemoryGameInner() {
 
   const loadStage = useCallback((s: number) => {
     const currentUser = useAuthStore.getState().user;
-    if (currentUser) {
+    if (currentUser && !isDaily) {
       const ok = consumeToken(currentUser.id);
       if (!ok) { setShowTokenModal(true); return; }
     }
@@ -440,7 +443,7 @@ function MemoryGameInner() {
 
         {/* Nav controls */}
         <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:4 }}>
-          <button onClick={() => stage > 1 && setStage(s => s-1)} disabled={stage === 1}
+          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
             style={{
               padding: "7px 14px", borderRadius: 10,
               border: "1px solid var(--color-border)",
@@ -474,7 +477,7 @@ function MemoryGameInner() {
             }}>
             MAP
           </button>
-          <button onClick={() => setStage(s => s+1)}
+          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
             style={{
               display: "flex", alignItems: "center", gap: 4,
               padding: "7px 14px", borderRadius: 10,
@@ -492,7 +495,8 @@ function MemoryGameInner() {
       <OutOfTokensModal gameName="Memory" open={showTokenModal} onClose={() => setShowTokenModal(false)}/>
 
       {showResume && resumeData && (
-        <ResumeModal gameSlug={GAME_SLUG} stageName={`Stage ${resumeData.stage}`} savedAt={resumeData.savedAt as number}
+        <ResumeModal gameSlug={GAME_SLUG} stageNumber={resumeData.stage as number} savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); if (s.cards) setTimeout(() => setCards(s.cards as Card[]), 150); }}
           onStartFresh={() => { clearGameState(GAME_SLUG); setShowResume(false); setResumeData(null); loadStage(stage); }}/>
       )}

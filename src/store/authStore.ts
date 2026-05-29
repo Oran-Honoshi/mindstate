@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
+import { syncTokensFromSupabase } from "@/lib/games/tokenEngine";
 
 interface AuthState {
   user: User | null;
@@ -34,5 +35,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       .eq("id", userId)
       .single();
     if (data) set({ profile: data });
+    void syncTokensFromSupabase(userId);
   },
 }));

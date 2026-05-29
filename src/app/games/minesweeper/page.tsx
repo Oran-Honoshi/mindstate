@@ -415,7 +415,7 @@ function MinesweeperGameInner() {
         </motion.div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
             style={{ padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← PREV
           </button>
@@ -423,7 +423,7 @@ function MinesweeperGameInner() {
             STAGE <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{stage}</span>
             <span style={{ opacity: 0.5 }}>/{TOTAL_STAGES}</span>
           </span>
-          <button onClick={() => setStage(s => s + 1)}
+          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
             style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             NEXT <ChevronRight size={13} />
           </button>
@@ -441,7 +441,7 @@ function MinesweeperGameInner() {
               <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 24 }}>Better luck next time.</p>
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={() => loadStage(stage)} style={{ flex: 1, padding: 13, borderRadius: 14, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", fontSize: 13, fontWeight: 600, color: "var(--color-text-secondary)", cursor: "pointer" }}>Try Again</button>
-                <button onClick={() => setStage(s => s + 1)} style={{ flex: 1, padding: 13, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer" }}>Next Stage</button>
+                <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }} style={{ flex: 1, padding: 13, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer" }}>Next Stage</button>
               </div>
             </motion.div>
           </motion.div>
@@ -473,8 +473,9 @@ function MinesweeperGameInner() {
       {showResume && resumeData && (
         <ResumeModal
           gameSlug="minesweeper"
-          stageName={`Stage ${resumeData.stage}`}
+          stageNumber={resumeData.stage as number}
           savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); }}
           onStartFresh={() => { clearGameState("minesweeper"); setShowResume(false); setResumeData(null); loadStage(stage); }}
         />

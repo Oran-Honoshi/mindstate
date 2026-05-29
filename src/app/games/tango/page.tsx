@@ -495,7 +495,7 @@ function TangoGameInner() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-          <button onClick={() => stage > 1 && setStage((s) => s - 1)} disabled={stage === 1}
+          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage((s) => s - 1); } }} disabled={stage === 1}
             style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← PREV
           </button>
@@ -507,7 +507,7 @@ function TangoGameInner() {
             style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             MAP
           </button>
-          <button onClick={() => setStage((s) => s + 1)}
+          <button onClick={() => { clearGameState(GAME_SLUG); setStage((s) => s + 1); }}
             style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             NEXT <ChevronRight size={13} />
           </button>
@@ -519,8 +519,9 @@ function TangoGameInner() {
       {showResume && resumeData && (
         <ResumeModal
           gameSlug={GAME_SLUG}
-          stageName={`Stage ${resumeData.stage}`}
+          stageNumber={resumeData.stage as number}
           savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => {
             const s = resumeData!;
             setShowResume(false); setResumeData(null);

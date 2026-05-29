@@ -7,6 +7,7 @@ import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncomplete
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
 import{useState,useEffect,useCallback,useRef}from"react";
+import{useSearchParams}from"next/navigation";
 import{motion,AnimatePresence}from"framer-motion";
 import{ChevronRight}from"lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -67,6 +68,8 @@ function CardUI({card,selected,onClick,faceDown,isDark}:{card:Card;selected?:boo
 function HeartsPageInner(){
   const{user}=useAuthStore();
   const{theme}=useSettingsStore();
+  const searchParams=useSearchParams();
+  const isDaily=searchParams.get("daily")==="1";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const[completed,setCompleted]=useState(false);
   const[showMap,setShowMap]=useState(false);
@@ -108,7 +111,7 @@ function HeartsPageInner(){
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
     timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
-    if(user)consumeToken(user.id);
+    if(user&&!isDaily)consumeToken(user.id);
   },[user]);
 
   useEffect(()=>{loadStage(stage);return()=>{if(timerRef.current)clearInterval(timerRef.current);};},[stage,loadStage]);
@@ -258,9 +261,9 @@ function HeartsPageInner(){
           )}
 
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>stage>1&&setStage(s=>s-1)} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:labelColor,opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
+            <button onClick={()=>{ if(stage>1){ clearGameState(GAME_SLUG); setStage(s=>s-1); } }} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:labelColor,opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
             <span style={{fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
-            <button onClick={()=>setStage(s=>s+1)} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
+            <button onClick={()=>{ clearGameState(GAME_SLUG); setStage(s=>s+1); }} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
           </div>
         </div>
       </GameShell>
@@ -282,7 +285,7 @@ function HeartsPageInner(){
             </div>}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>loadStage(stage)} style={{flex:1,padding:13,borderRadius:14,border:"0.5px solid var(--color-border)",background:"var(--color-surface)",fontSize:11,fontWeight:600,color:"var(--color-text-secondary)",cursor:"pointer",fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase"}}>RETRY</button>
-              <button onClick={()=>setStage(s=>s+1)} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:11,fontWeight:700,color:"#060d18",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",boxShadow:isDark?"0 0 16px rgba(0,255,255,0.18)":"none"}}>NEXT <ChevronRight size={13}/></button>
+              <button onClick={()=>{ clearGameState(GAME_SLUG); setStage(s=>s+1); }} style={{flex:2,padding:13,borderRadius:14,border:"none",background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-secondary))",fontSize:11,fontWeight:700,color:"#060d18",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",boxShadow:isDark?"0 0 16px rgba(0,255,255,0.18)":"none"}}>NEXT <ChevronRight size={13}/></button>
             </div>
           </motion.div>
         </motion.div>)}

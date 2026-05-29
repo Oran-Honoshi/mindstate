@@ -468,14 +468,14 @@ function FlowGameInner() {
           </motion.div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+            <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
               style={{ ...navBtnStyle, opacity: stage === 1 ? 0.38 : 1, cursor: stage === 1 ? "not-allowed" : "pointer" }}>
               ← PREV
             </button>
             <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", fontWeight: 600, letterSpacing: "0.06em" }}>
               STAGE {stage}/{TOTAL_STAGES}
             </span>
-            <button onClick={() => setStage(s => s + 1)}
+            <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
               style={{ ...navBtnStyle, display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
               NEXT <ChevronRight size={12} />
             </button>
@@ -486,7 +486,8 @@ function FlowGameInner() {
       <OutOfTokensModal gameName="Flow" open={showTokenModal} onClose={() => setShowTokenModal(false)} />
 
       {showResume && resumeData && (
-        <ResumeModal gameSlug={GAME_SLUG} stageName={`Stage ${resumeData.stage}`} savedAt={resumeData.savedAt as number}
+        <ResumeModal gameSlug={GAME_SLUG} stageNumber={resumeData.stage as number} savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); }}
           onStartFresh={() => { clearGameState(GAME_SLUG); setShowResume(false); setResumeData(null); loadStage(stage); }} />
       )}

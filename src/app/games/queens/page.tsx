@@ -7,6 +7,7 @@ import { StageMap } from "@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -73,6 +74,8 @@ const REGION_COLORS_PAPER = [
 function QueensGameInner() {
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
+  const searchParams = useSearchParams();
+  const isDaily = searchParams.get("daily") === "1";
   const REGION_COLORS = theme === "dark" ? REGION_COLORS_DARK : theme === "paper" ? REGION_COLORS_PAPER : REGION_COLORS_LIGHT;
 
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
@@ -122,7 +125,7 @@ function QueensGameInner() {
 
   const loadStage = useCallback((s: number) => {
     const currentUser = useAuthStore.getState().user;
-    if (currentUser) { const ok = consumeToken(currentUser.id); if (!ok) { setShowTokenModal(true); return; } }
+    if (currentUser && !isDaily) { const ok = consumeToken(currentUser.id); if (!ok) { setShowTokenModal(true); return; } }
     saveGameState(GAME_SLUG, { stage: s, savedAt: Date.now() });
     const diff = getDifficulty(s);
     const b = generateQueensBoard(`queens-${diff}-${s}`, diff);
@@ -375,7 +378,7 @@ function QueensGameInner() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-          <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
             style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← PREV
           </button>
@@ -387,7 +390,7 @@ function QueensGameInner() {
             style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             MAP
           </button>
-          <button onClick={() => setStage(s => s + 1)}
+          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
             style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             NEXT <ChevronRight size={13} />
           </button>
@@ -397,7 +400,8 @@ function QueensGameInner() {
       <OutOfTokensModal gameName="Queens" open={showTokenModal} onClose={() => setShowTokenModal(false)} />
 
       {showResume && resumeData && (
-        <ResumeModal gameSlug={GAME_SLUG} stageName={`Stage ${resumeData.stage}`} savedAt={resumeData.savedAt as number}
+        <ResumeModal gameSlug={GAME_SLUG} stageNumber={resumeData.stage as number} savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => { const s = resumeData!; setShowResume(false); setResumeData(null); setStage(s.stage as number); if (s.grid) setTimeout(() => setGrid(s.grid as number[][]), 150); }}
           onStartFresh={() => { clearGameState(GAME_SLUG); setShowResume(false); setResumeData(null); loadStage(stage); }} />
       )}

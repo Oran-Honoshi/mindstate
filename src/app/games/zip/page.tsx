@@ -7,6 +7,7 @@ import { StageMap } from "@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
@@ -96,6 +97,8 @@ function generateZipBoard(seed: string, difficulty: Difficulty): ZipBoard {
 function ZipGameInner() {
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
+  const searchParams = useSearchParams();
+  const isDaily = searchParams.get("daily") === "1";
   const [stage, setStage] = useState(() => Math.max(1, getLastStage(GAME_SLUG)));
   const [board, setBoard] = useState<ZipBoard | null>(null);
   const [userPath, setUserPath] = useState<Pos[]>([]);
@@ -151,7 +154,7 @@ function ZipGameInner() {
       setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
       setLiveXP(calculateXP(xp).currentXP);
     }, 500);
-    if (user) { const ok = consumeToken(user.id); if (!ok) { setShowTokenModal(true); return; } }
+    if (user && !isDaily) { const ok = consumeToken(user.id); if (!ok) { setShowTokenModal(true); return; } }
   }, [user]);
 
   const resumeChecked = useRef(false);
@@ -449,7 +452,7 @@ function ZipGameInner() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => stage > 1 && setStage(s => s - 1)} disabled={stage === 1}
+          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
             style={{ padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
             ← PREV
           </button>
@@ -457,7 +460,7 @@ function ZipGameInner() {
             STAGE <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{stage}</span>
             <span style={{ opacity: 0.5 }}>/100</span>
           </span>
-          <button onClick={() => setStage(s => s + 1)}
+          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
             style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             NEXT <ChevronRight size={13} />
           </button>
@@ -467,8 +470,9 @@ function ZipGameInner() {
       {showResume && resumeData && (
         <ResumeModal
           gameSlug="zip"
-          stageName={`Stage ${resumeData.stage}`}
+          stageNumber={resumeData.stage as number}
           savedAt={resumeData.savedAt as number}
+          onDismiss={() => { setShowResume(false); setResumeData(null); }}
           onResume={() => {
             const s = resumeData!;
             setShowResume(false); setResumeData(null);

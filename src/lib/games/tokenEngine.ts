@@ -1,12 +1,25 @@
 // src/lib/games/tokenEngine.ts
 // ─── Token engine — controls free daily play limits ───────────────────────────
 
+import { createBrowserClient } from "@supabase/ssr";
+
 const TOKEN_KEY = "me_tokens"; // localStorage key
 const RESET_KEY = "me_tokens_reset";
 
 // ── LAUNCH CONFIG ────────────────────────────────────────────────────────────
 export const FREE_DAILY_TOKENS = 5; // Free users get 5 plays per day
 const TOKEN_RESET_HOURS = 24;       // Reset every 24 hours
+
+// ── Supabase (lazy singleton) ─────────────────────────────────────────────────
+let _sb: ReturnType<typeof createBrowserClient> | null = null;
+function sb() {
+  if (_sb) return _sb;
+  _sb = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  return _sb;
+}
 
 // ── Core helpers ─────────────────────────────────────────────────────────────
 
@@ -36,6 +49,42 @@ function setLastReset(userId: string, ts: number) {
   localStorage.setItem(storageKey(userId, "reset"), String(ts));
 }
 
+// ── Supabase sync helpers ─────────────────────────────────────────────────────
+
+async function pushToSupabase(userId: string, remaining: number): Promise<void> {
+  try {
+    await sb()
+      .from("profiles")
+      .update({
+        tokens_remaining: remaining,
+        tokens_reset_at: new Date(getLastReset(userId) || Date.now()).toISOString(),
+      })
+      .eq("id", userId);
+  } catch {}
+}
+
+/**
+ * Reads the authoritative token count from Supabase and syncs to localStorage.
+ * Call this once after the user logs in to prevent localStorage-clearing exploits.
+ */
+export async function syncTokensFromSupabase(userId: string): Promise<void> {
+  try {
+    const { data } = await sb()
+      .from("profiles")
+      .select("tokens_remaining, tokens_reset_at")
+      .eq("id", userId)
+      .single();
+    if (!data) return;
+    const resetAt = new Date(data.tokens_reset_at as string).getTime();
+    const hoursSinceReset = (Date.now() - resetAt) / (1000 * 60 * 60);
+    // Only apply DB value if the DB reset window is still current
+    if (hoursSinceReset < TOKEN_RESET_HOURS) {
+      setTokens(userId, data.tokens_remaining as number);
+      setLastReset(userId, resetAt);
+    }
+  } catch {}
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -50,6 +99,7 @@ export function getTokensRemaining(userId: string): number {
   if (lastReset === 0 || hoursSinceReset >= TOKEN_RESET_HOURS) {
     setTokens(userId, FREE_DAILY_TOKENS);
     setLastReset(userId, now);
+    void pushToSupabase(userId, FREE_DAILY_TOKENS);
     return FREE_DAILY_TOKENS;
   }
 
@@ -59,11 +109,14 @@ export function getTokensRemaining(userId: string): number {
 /**
  * Attempts to consume 1 token.
  * Returns true if token was consumed, false if no tokens left.
+ * Syncs the new count to Supabase (fire-and-forget).
  */
 export function consumeToken(userId: string): boolean {
   const remaining = getTokensRemaining(userId);
   if (remaining <= 0) return false;
-  setTokens(userId, remaining - 1);
+  const newCount = remaining - 1;
+  setTokens(userId, newCount);
+  void pushToSupabase(userId, newCount);
   return true;
 }
 
@@ -75,6 +128,7 @@ export function addBonusTokens(userId: string, amount: number) {
   const current = getTokensRemaining(userId);
   const newCount = Math.min(current + amount, FREE_DAILY_TOKENS * 3);
   setTokens(userId, newCount);
+  void pushToSupabase(userId, newCount);
 }
 
 /**
@@ -89,7 +143,6 @@ export function msUntilReset(userId: string): number {
 
 /**
  * Returns seconds until next token reset.
- * Alias kept for OutOfTokensModal compatibility.
  */
 export function secondsUntilReset(userId: string): number {
   return Math.ceil(msUntilReset(userId) / 1000);
@@ -97,7 +150,6 @@ export function secondsUntilReset(userId: string): number {
 
 /**
  * Formats reset countdown as "Xh Ym" or "Xm Ys".
- * Alias kept for OutOfTokensModal compatibility.
  */
 export function formatResetTime(userId: string): string {
   const ms = msUntilReset(userId);
