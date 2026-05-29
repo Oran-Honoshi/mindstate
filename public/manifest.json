@@ -1,11 +1,11 @@
 {
-  "name": "MindState",
-  "short_name": "MindState",
+  "name": "Mind Element",
+  "short_name": "Mind Element",
   "description": "Sharper Every Day — 20 precision logic games for the modern mind.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FDFCFB",
-  "theme_color": "#4F6EF7",
+  "background_color": "#121212",
+  "theme_color": "#121212",
   "orientation": "portrait-primary",
   "lang": "en",
   "icons": [
