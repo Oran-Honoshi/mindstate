@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { FAQSchema, OrganizationSchema, WebAppSchema, HowToSchema } from "@/app/seo-schema";
 import { createClient } from "@/lib/supabase/client";
 import { GamesNav } from "@/features/games/GamesNav";
@@ -9,27 +8,14 @@ import { GameGrid } from "@/features/games/GameGrid";
 import { PricingSection } from "@/features/games/PricingSection";
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
-
-  // Session check: if logged in mark onboarded, if not onboarded redirect
   useEffect(() => {
     async function check() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        localStorage.setItem("onboarded", "1");
-        setReady(true);
-        return;
-      }
-      if (localStorage.getItem("onboarded") !== "1") {
-        router.push("/onboard");
-        return;
-      }
-      setReady(true);
+      if (session) localStorage.setItem("onboarded", "1");
     }
     check();
-  }, [router]);
+  }, []);
 
   // Paddle script loader
   useEffect(() => {
@@ -48,8 +34,6 @@ export default function LandingPage() {
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
   }, []);
-
-  if (!ready) return null;
 
   return (
     <div className="home-page" style={{ minHeight: "100vh", color: "var(--color-text-primary)" }}>

@@ -43,7 +43,7 @@ export function GamesNav() {
       </Link>
 
       <div className="nav-links-desktop" style={{ gap: 4 }}>
-        {[["Games", "/games"], ["Leaderboard", "/leaderboard"], ["Family", "/family"], ["Pricing", "/pricing"]].map(([l, h]) => (
+        {[["Games", "/games"], ["Daily", "/daily"], ["Leaderboard", "/leaderboard"], ["Family", "/family"], ["Pricing", "/pricing"]].map(([l, h]) => (
           <Link key={l} href={h}
             style={{ fontSize: 14, color: "var(--color-text-secondary)", padding: "7px 14px", borderRadius: 10, textDecoration: "none", fontWeight: 500 }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--color-text-primary)"}
@@ -105,7 +105,7 @@ export function GamesNav() {
               style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "7px 12px", borderRadius: 10, textDecoration: "none" }}>
               Sign in
             </Link>
-            <Link href={user ? "/games" : "/onboard"}
+            <Link href="/games"
               style={{ fontSize: 13, fontWeight: 700, color: "var(--color-on-accent)", padding: "8px 14px", borderRadius: 12, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", textDecoration: "none", boxShadow: "0 3px 10px rgba(79,110,247,0.3)", whiteSpace: "nowrap" }}>
               Start Playing
             </Link>
