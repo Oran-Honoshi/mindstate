@@ -5,7 +5,7 @@ import{saveGameState,loadGameState,clearGameState}from"@/lib/games/gameStateStor
 import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
@@ -309,4 +309,4 @@ function NameCityInner(){
     </>
   );
 }
-export default function NameCityPage(){return<ErrorBoundary game="name-city"><NameCityInner/></ErrorBoundary>;}
+export default function NameCityPage(){return<ErrorBoundary game="name-city"><Suspense fallback={<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100dvh",background:"var(--color-bg)",color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontSize:14}}>Loading...</div>}><NameCityInner/></Suspense></ErrorBoundary>;}

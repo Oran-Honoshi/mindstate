@@ -6,7 +6,7 @@ import{StageMap}from"@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 /* eslint-disable react-hooks/exhaustive-deps */
-import{useState,useEffect,useCallback,useRef}from"react";
+import{useState,useEffect,useCallback,useRef, Suspense }from"react";
 import{useSearchParams}from"next/navigation";
 import{motion,AnimatePresence}from"framer-motion";
 import{ChevronRight}from"lucide-react";
@@ -316,4 +316,4 @@ function HexMergePageInner(){
     </>
   );
 }
-export default function HexMergePage(){return<ErrorBoundary game="hex-merge"><HexMergePageInner/></ErrorBoundary>;}
+export default function HexMergePage(){return<ErrorBoundary game="hex-merge"><Suspense fallback={<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100dvh",background:"var(--color-bg)",color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontSize:14}}>Loading...</div>}><HexMergePageInner/></Suspense></ErrorBoundary>;}

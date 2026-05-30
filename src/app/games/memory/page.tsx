@@ -6,7 +6,7 @@ import { ResumeModal } from "@/components/ui/ResumeModal";
 import { StageMap } from "@/components/ui/StageMap";
 import { getLastStage, markStageCompleted, getLastStageRemote, getNextUncompletedStage, shouldShowGameCompleteModal } from "@/lib/games/stageProgress";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion } from "framer-motion";
@@ -526,5 +526,5 @@ function MemoryGameInner() {
 }
 
 export default function MemoryGame() {
-  return <ErrorBoundary game={GAME_SLUG}><MemoryGameInner/></ErrorBoundary>;
+  return <ErrorBoundary game={GAME_SLUG}><Suspense fallback={<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100dvh",background:"var(--color-bg)",color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontSize:14}}>Loading...</div>}><MemoryGameInner/></Suspense></ErrorBoundary>;
 }
