@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, SkipForward } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { incrementReviewSession } from "@/components/modals/RatingModal";
 import { incrementShareSession } from "@/hooks/useShareTrigger";
 
@@ -44,6 +45,8 @@ export function CompletionPopup({
   onShare,
 }: CompletionPopupProps) {
   const xp = finalXP ?? xpEarned ?? 0;
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Show "Go to Latest" only when it would go somewhere different from stage+1
   const showGoToLatest =
@@ -51,11 +54,20 @@ export function CompletionPopup({
     nextUncompletedStage != null &&
     nextUncompletedStage !== stage + 1;
 
-  // ── Fire review + share triggers whenever a stage is completed ──
+  // ── Fire review + share triggers, then route to /complete ──
   useEffect(() => {
     if (!open) return;
     incrementReviewSession();
     incrementShareSession();
+
+    // Navigate to dedicated complete page for any /games/[slug] route
+    const match = pathname.match(/^\/games\/([^/]+)/);
+    if (match) {
+      const slug = match[1];
+      const params = new URLSearchParams({ xp: String(xp), time: elapsed, hints: "0" });
+      router.push(`/complete/${slug}/${stage}?${params.toString()}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;

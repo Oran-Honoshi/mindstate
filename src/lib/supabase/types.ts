@@ -6,6 +6,9 @@ export interface Profile {
   is_silent_mode: boolean;
   subscription_status: "free" | "individual" | "family_s" | "family_l";
   created_at: string;
+  current_streak?: number | null;
+  longest_streak?: number | null;
+  last_played_date?: string | null;
 }
 
 export interface Score {

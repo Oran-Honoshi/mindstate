@@ -1,315 +1,106 @@
 "use client";
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Flame, ChevronRight } from "lucide-react";
+import { GamesNav } from "@/features/games/GamesNav";
+import { GamesHubCatalog } from "@/features/games/GamesHubCatalog";
+import { HeroMemory } from "@/features/games/HeroMemory";
+import { GAMES } from "@/features/games/GameGrid";
 import { useAuthStore } from "@/store/authStore";
-import { createClient } from "@/lib/supabase/client";
-import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
+import { getTodaysFeaturedGame } from "@/lib/games/dailyChallenge";
 
-// ── Hero Memory: 3 pairs, unscored, 3 cols × 2 rows ───────────────────────────
-const HERO_SYMBOLS = ["◆", "●", "▲"];
-
-function HeroMemory() {
-  const [cards] = useState(() => {
-    const arr = [...HERO_SYMBOLS, ...HERO_SYMBOLS];
-    let s = 1234;
-    for (let i = arr.length - 1; i > 0; i--) {
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      const j = Math.abs(s) % (i + 1);
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr.map((value, id) => ({ id, value }));
-  });
-  const [flipped, setFlipped] = useState<number[]>([]);
-  const [matched, setMatched] = useState<Set<number>>(new Set());
-
-  function flip(id: number) {
-    if (flipped.includes(id) || matched.has(id) || flipped.length === 2) return;
-    const next = [...flipped, id];
-    setFlipped(next);
-    if (next.length === 2) {
-      const [a, b] = next.map(fid => cards.find(c => c.id === fid)!);
-      if (a.value === b.value) {
-        setMatched(m => new Set([...m, a.id, b.id]));
-        setFlipped([]);
-      } else {
-        setTimeout(() => setFlipped([]), 700);
-      }
-    }
-  }
-
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 64px)", gap: 10 }}>
-      {cards.map(c => {
-        const open = flipped.includes(c.id) || matched.has(c.id);
-        return (
-          <button
-            key={c.id}
-            onClick={() => flip(c.id)}
-            aria-label={open ? `Card ${c.value}` : "Face-down card"}
-            style={{
-              width: 64, height: 64,
-              borderRadius: "var(--radius)",
-              border: "1px solid var(--color-border)",
-              background: open ? "var(--color-surface)" : "var(--color-accent-primary)",
-              color: "var(--color-text-primary)",
-              fontSize: 26, fontWeight: 700,
-              cursor: matched.has(c.id) ? "default" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "background 0.2s",
-              fontFamily: "var(--font-sans)",
-            }}
-          >
-            {open ? c.value : ""}
-          </button>
-        );
-      })}
-    </div>
-  );
+function todayLabel() {
+  return new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 }
 
-// ── Game catalog ──────────────────────────────────────────────────────────────
-type Difficulty = "Easy" | "Medium" | "Hard";
-const GAMES: { slug: string; name: string; difficulty: Difficulty }[] = [
-  { slug: "2048-pro",      name: "2048 Pro",         difficulty: "Hard"   },
-  { slug: "bridges",       name: "Bridges",          difficulty: "Medium" },
-  { slug: "flow",          name: "Flow",             difficulty: "Medium" },
-  { slug: "gravity-sort",  name: "Gravity Sort",     difficulty: "Hard"   },
-  { slug: "hearts",        name: "Hearts",           difficulty: "Easy"   },
-  { slug: "hex-merge",     name: "Hex Merge",        difficulty: "Hard"   },
-  { slug: "kakuro",        name: "Kakuro",           difficulty: "Medium" },
-  { slug: "lightup",       name: "Light Up",         difficulty: "Medium" },
-  { slug: "logic-path",    name: "Logic Path",       difficulty: "Hard"   },
-  { slug: "memory",        name: "Memory",           difficulty: "Easy"   },
-  { slug: "minesweeper",   name: "Minesweeper",      difficulty: "Medium" },
-  { slug: "name-city",     name: "Name the City",    difficulty: "Easy"   },
-  { slug: "name-country",  name: "Name the Country", difficulty: "Easy"   },
-  { slug: "nonogram",      name: "Nonogram",         difficulty: "Medium" },
-  { slug: "patches",       name: "Patches",          difficulty: "Hard"   },
-  { slug: "pattern-match", name: "Pattern Match",    difficulty: "Hard"   },
-  { slug: "pinpoint",      name: "Pinpoint",         difficulty: "Easy"   },
-  { slug: "queens",        name: "Queens",           difficulty: "Medium" },
-  { slug: "solitaire",     name: "Solitaire",        difficulty: "Easy"   },
-  { slug: "sudoku",        name: "Mini Sudoku",      difficulty: "Easy"   },
-  { slug: "tango",         name: "Tango",            difficulty: "Easy"   },
-  { slug: "word-climb",    name: "Word Climb",       difficulty: "Medium" },
-  { slug: "word-sling",    name: "Word Sling",       difficulty: "Hard"   },
-  { slug: "zip",           name: "Zip",              difficulty: "Hard"   },
-];
-
-function GameTileIcon() {
-  return (
-    <svg width={36} height={36} viewBox="0 0 36 36" aria-hidden="true">
-      <rect x={3}  y={3}  width={13} height={13} rx={2} fill="var(--color-accent-primary)"   opacity={0.85}/>
-      <rect x={20} y={3}  width={13} height={13} rx={2} fill="var(--color-accent-secondary)" opacity={0.85}/>
-      <rect x={3}  y={20} width={13} height={13} rx={2} fill="var(--color-accent-secondary)" opacity={0.85}/>
-      <rect x={20} y={20} width={13} height={13} rx={2} fill="var(--color-accent-primary)"   opacity={0.85}/>
-    </svg>
-  );
-}
-
-// ── Pricing ───────────────────────────────────────────────────────────────────
-const PLANS = [
-  { name: "Individual", price: "$2",  blurb: "All 24 games, 100 stages each", priceId: "pri_01ks5tm2jqs69wrg92jxrc936b", highlight: false },
-  { name: "Family 3",   price: "$5",  blurb: "Up to 3 members",               priceId: "pri_01ks5tnfpxvgdh2gkfm0k5pry8", highlight: true  },
-  { name: "Family 7",   price: "$10", blurb: "Up to 7 members",               priceId: "pri_01ks5tpt6wsyn05gexnpade0a0", highlight: false },
-];
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-export default function LandingPage() {
-  const { user } = useAuthStore();
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
-  const [ctaHref, setCtaHref] = useState("/onboard");
-  const accountHref = user ? "/profile" : "/auth/signin";
-  const accountLabel = user ? "Profile" : "Sign In";
-
-  useEffect(() => {
-    async function check() {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        localStorage.setItem("onboarded", "1");
-        setCtaHref("/games");
-        setReady(true);
-        return;
-      }
-      if (localStorage.getItem("onboarded") !== "1") {
-        router.push("/onboard");
-        return;
-      }
-      setCtaHref("/games");
-      setReady(true);
-    }
-    check();
-  }, [router]);
-
-  if (!ready) return null;
+export default function GamesHubPage() {
+  const { user, profile } = useAuthStore();
+  const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
+  const streak = profile?.current_streak ?? 0;
+  const dailyGame = getTodaysFeaturedGame();
+  const dailyName = GAMES.find(g => g.slug === dailyGame)?.name ?? dailyGame;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", paddingTop: 56 }}>
+      <GamesNav />
 
-      {/* NAV */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 50,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "14px 24px",
-        background: "var(--color-bg)",
-        borderBottom: "1px solid var(--color-border)",
-      }}>
-        <Link href="/" style={{
-          fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 18,
-          color: "var(--color-text-primary)", textDecoration: "none", letterSpacing: "-0.01em",
-        }}>
-          Mind Element
-        </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link href="/games" style={{ color: "var(--color-text-primary)", fontWeight: 600, textDecoration: "none", fontSize: 14, fontFamily: "var(--font-sans)" }}>
-            Games
-          </Link>
-          <ThemeSwitcher/>
-          <Link href={accountHref} style={{
-            padding: "8px 16px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--color-border)",
-            background: "transparent",
-            color: "var(--color-text-primary)",
-            fontSize: 14, fontWeight: 600,
-            textDecoration: "none",
-            fontFamily: "var(--font-sans)",
-          }}>
-            {accountLabel}
-          </Link>
-        </div>
-      </nav>
+      {user ? (
+        <>
+          {/* Greeting */}
+          <section style={{ padding: "32px 24px 0" }}>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: 22, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 4 }}>
+              Welcome back, {profile?.username ?? "there"}.
+            </p>
+            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 14 }}>
+              {todayLabel()}
+            </p>
+            {streak > 0 && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)" }}>
+                <Flame size={13} color="#F59E0B" />
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#F59E0B" }}>Streak {streak} days</span>
+              </div>
+            )}
+          </section>
 
-      {/* HERO */}
-      <section style={{
-        display: "flex", flexDirection: "column", alignItems: "center",
-        gap: 28, padding: "96px 24px 80px", textAlign: "center",
-      }}>
-        <h1 style={{
-          fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 48,
-          color: "var(--color-text-primary)", lineHeight: 1.1, margin: 0,
-        }}>
-          Sharper Every Day
-        </h1>
-        <p style={{
-          fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: 18,
-          color: "var(--color-text-secondary)", margin: 0, maxWidth: 520,
-        }}>
-          Six precision games. One daily practice.
-        </p>
-        <HeroMemory/>
-        <Link href={ctaHref} style={{
-          padding: "14px 32px",
-          borderRadius: "var(--radius)",
-          background: "var(--color-accent-primary)",
-          color: "var(--color-on-accent)",
-          fontWeight: 700, fontSize: 16,
-          textDecoration: "none",
-          fontFamily: "var(--font-sans)",
-        }}>
-          Start Training
-        </Link>
-      </section>
-
-      {/* GAMES */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 24px" }}>
-        <h2 style={{
-          fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 32,
-          color: "var(--color-text-primary)", textAlign: "center", margin: "0 0 40px",
-        }}>
-          24 Games. One Platform.
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {GAMES.map(g => (
-            <Link key={g.slug} href={`/games/${g.slug}`} style={{
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-              padding: 20, textDecoration: "none",
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius)",
-              color: "var(--color-text-primary)",
-              fontFamily: "var(--font-sans)",
-            }}>
-              <GameTileIcon/>
-              <span style={{ fontSize: 14, fontWeight: 600, textAlign: "center" }}>{g.name}</span>
-              <span style={{
-                fontSize: 11, fontWeight: 600,
-                padding: "2px 10px",
-                borderRadius: "var(--radius)",
-                background: "var(--color-surface-2)",
-                color: "var(--color-text-secondary)",
-                letterSpacing: "0.04em",
-              }}>
-                {g.difficulty}
-              </span>
+          {/* Daily challenge banner */}
+          <section style={{ padding: "20px 24px 0" }}>
+            <Link
+              href={`/games/${dailyGame}?daily=1`}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "16px 20px", borderRadius: 16, textDecoration: "none",
+                background: "linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary))",
+              }}
+            >
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(0,0,0,0.6)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>
+                  Today&apos;s Challenge
+                </p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "#000", fontFamily: "var(--font-sans)" }}>
+                  {dailyName}
+                </p>
+              </div>
+              <ChevronRight size={22} color="rgba(0,0,0,0.7)" />
             </Link>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* PRICING */}
-      <section style={{ maxWidth: 980, margin: "0 auto", padding: "64px 24px" }}>
-        <h2 style={{
-          fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 32,
-          color: "var(--color-text-primary)", textAlign: "center", margin: "0 0 40px",
-        }}>
-          Simple Pricing
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PLANS.map(p => (
-            <div key={p.name} style={{
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
-              padding: 28,
-              background: "var(--color-surface)",
-              border: p.highlight
-                ? "2px solid var(--color-accent-primary)"
-                : "1px solid var(--color-border)",
-              borderRadius: "var(--radius)",
-              color: "var(--color-text-primary)",
-              fontFamily: "var(--font-sans)",
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-secondary)", letterSpacing: "0.04em" }}>
-                {p.name}
-              </span>
-              <span style={{ fontSize: 40, fontWeight: 700, fontFamily: "var(--font-sans)", lineHeight: 1 }}>
-                {p.price}
-                <span style={{ fontSize: 14, fontWeight: 400, color: "var(--color-text-secondary)" }}>/month</span>
-              </span>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", textAlign: "center", margin: 0 }}>
-                {p.blurb}
-              </p>
-              <button
-                onClick={() => console.log("paddle checkout", p.priceId)}
-                style={{
-                  marginTop: 8, padding: "10px 24px",
-                  borderRadius: "var(--radius)",
-                  background: "var(--color-accent-primary)",
-                  color: "var(--color-on-accent)",
-                  fontWeight: 700, fontSize: 14,
-                  border: "none", cursor: "pointer",
-                  fontFamily: "var(--font-sans)",
-                }}
-              >
-                Choose {p.name}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+          <GamesHubCatalog isPro={isPro} />
+        </>
+      ) : (
+        <>
+          {/* Marketing hero */}
+          <section style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28, padding: "96px 24px 80px", textAlign: "center" }}>
+            <h1 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 48, color: "var(--color-text-primary)", lineHeight: 1.1, margin: 0 }}>
+              Sharper Every Day
+            </h1>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: 18, color: "var(--color-text-secondary)", margin: 0, maxWidth: 520 }}>
+              Six precision games. One daily practice.
+            </p>
+            <HeroMemory />
+            <Link href="/auth/signup" style={{ padding: "14px 32px", borderRadius: "var(--radius)", background: "var(--color-accent-primary)", color: "var(--color-on-accent)", fontWeight: 700, fontSize: 16, textDecoration: "none", fontFamily: "var(--font-sans)" }}>
+              Start Training
+            </Link>
+          </section>
 
-      {/* FOOTER */}
-      <footer style={{
-        padding: 32, textAlign: "center",
-        color: "var(--color-text-secondary)",
-        borderTop: "1px solid var(--color-border)",
-        fontFamily: "var(--font-sans)",
-        fontSize: 14,
-      }}>
-        Mind Element · Professional Brain Training
-      </footer>
+          <GamesHubCatalog isPro={false} />
+
+          {/* Pricing CTA */}
+          <section style={{ maxWidth: 640, margin: "0 auto", padding: "48px 24px", textAlign: "center" }}>
+            <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 28, color: "var(--color-text-primary)", marginBottom: 12 }}>
+              Simple Pricing
+            </h2>
+            <p style={{ fontSize: 15, color: "var(--color-text-secondary)", marginBottom: 24 }}>
+              Individual $2/mo · Family 3 at $5/mo · Family 7 at $10/mo
+            </p>
+            <Link href="/pricing" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 24px", borderRadius: "var(--radius)", background: "var(--color-accent-primary)", color: "var(--color-on-accent)", fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "var(--font-sans)" }}>
+              See Plans <ChevronRight size={14} />
+            </Link>
+          </section>
+
+          <footer style={{ padding: 32, textAlign: "center", color: "var(--color-text-secondary)", borderTop: "1px solid var(--color-border)", fontFamily: "var(--font-sans)", fontSize: 14 }}>
+            Mind Element · Professional Brain Training
+          </footer>
+        </>
+      )}
     </div>
   );
 }

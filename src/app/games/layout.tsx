@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { BottomNav } from "@/components/nav/BottomNav";
 
 export default function GamesLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +19,10 @@ export default function GamesLayout({ children }: { children: React.ReactNode })
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 55% at 15% 25%,rgba(16,244,160,0.07) 0%,transparent 65%)" }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 65% at 85% 75%,rgba(168,85,247,0.09) 0%,transparent 60%)" }} />
       </div>
-      {children}
+      <div style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom))" }}>
+        {children}
+      </div>
+      <BottomNav />
     </>
   );
 }
