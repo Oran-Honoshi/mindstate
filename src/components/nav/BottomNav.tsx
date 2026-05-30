@@ -13,6 +13,9 @@ const TABS = [
 export function BottomNav() {
   const pathname = usePathname();
 
+  // Hide during active gameplay — /games/[slug] routes, but not the hub at /games
+  if (pathname.startsWith("/games/")) return null;
+
   return (
     <nav
       style={{
