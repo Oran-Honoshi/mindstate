@@ -1,339 +1,167 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Medal, Crown, Users, Globe, ArrowRight } from "lucide-react";
+import { Globe, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
-import { useAuthStore } from "@/store/authStore";
 import { GameIcon } from "@/components/icons/GameIcons";
+import { useAuthStore } from "@/store/authStore";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/supabase/leaderboard";
 import { getUserFamilyGroup, getFamilyLeaderboard } from "@/lib/supabase/family";
-
-const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
+import { GlobalLeaderboard, FamilyLeaderboard, FamilyEmptyState } from "@/features/leaderboard/LeaderboardTable";
 
 const GAMES = [
-  { slug:"all",          name:"All Games"   },
-  { slug:"tango",        name:"Tango"       },
-  { slug:"memory",       name:"Memory"      },
-  { slug:"queens",       name:"Queens"      },
-  { slug:"sudoku",       name:"Mini Sudoku" },
-  { slug:"zip",          name:"Zip"         },
-  { slug:"minesweeper",  name:"Minesweeper" },
+  { slug:"all", name:"All Games" }, { slug:"tango", name:"Tango" },
+  { slug:"memory", name:"Memory" }, { slug:"queens", name:"Queens" },
+  { slug:"sudoku", name:"Mini Sudoku" }, { slug:"zip", name:"Zip" },
+  { slug:"minesweeper", name:"Minesweeper" },
 ];
-
-const PERIODS = [
-  { key:"all",   label:"All Time" },
-  { key:"week",  label:"This Week" },
-  { key:"today", label:"Today"    },
-];
-
-function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#FDE68A,#F59E0B)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(245,158,11,0.35)" }}>
-      <Crown size={15} color="white"/>
-    </div>
-  );
-  if (rank === 2) return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#CBD5E1,#94A3B8)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <Medal size={15} color="white"/>
-    </div>
-  );
-  if (rank === 3) return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#FED7AA,#C2410C)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <Medal size={15} color="white"/>
-    </div>
-  );
-  return (
-    <div style={{ width:32, height:32, borderRadius:"50%", background:"var(--color-surface-2)", display:"flex", alignItems:"center", justifyContent:"center", border:"0.5px solid var(--color-border)" }}>
-      <span style={{ fontSize:12, fontWeight:700, color:"var(--color-text-secondary)" }}>{rank}</span>
-    </div>
-  );
-}
-
-function Avatar({ initial, index }: { initial: string; index: number }) {
-  const colors = ["linear-gradient(135deg,var(--color-accent-primary),#7C4FD4)","linear-gradient(135deg,#7C9E87,#4A7C59)","linear-gradient(135deg,#C4785A,#A0522D)","linear-gradient(135deg,#4DB6AC,#0D9488)","linear-gradient(135deg,#E87070,#C04040)"];
-  return (
-    <div style={{ width:36, height:36, borderRadius:"50%", background:colors[index%colors.length], display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"white", flexShrink:0 }}>
-      {initial.toUpperCase()}
-    </div>
-  );
-}
+const PERIODS = [{ key:"all", label:"All Time" }, { key:"week", label:"This Week" }, { key:"today", label:"Today" }];
 
 type FamilyEntry = { user_id: string; username: string; total_xp: number; games_played: number; best_stage_xp: number; rank: number };
 
 export default function LeaderboardPage() {
   const { user, profile } = useAuthStore();
-  const [tab, setTab] = useState<"global"|"family">("global");
-  const [selectedGame, setSelectedGame] = useState("all");
-  const [period, setPeriod] = useState("all");
-  const [globalEntries, setGlobalEntries] = useState<LeaderboardEntry[]>([]);
-  const [familyEntries, setFamilyEntries] = useState<FamilyEntry[]>([]);
-  const [familyGroupId, setFamilyGroupId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userRank, setUserRank] = useState<number | null>(null);
-  const [userXP, setUserXP] = useState<number>(0);
+  const [tab, setTab]               = useState<"global"|"family">("global");
+  const [selectedGame, setGame]     = useState("all");
+  const [period, setPeriod]         = useState("all");
+  const [globalEntries, setGlobal]  = useState<LeaderboardEntry[]>([]);
+  const [familyEntries, setFamily]  = useState<FamilyEntry[]>([]);
+  const [familyGroupId, setGroupId] = useState<string | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [userRank, setUserRank]     = useState<number | null>(null);
+  const [userXP, setUserXP]         = useState(0);
 
   useEffect(() => {
-    loadLeaderboard();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setLoading(true);
+    (async () => {
+      try {
+        if (tab === "family" && user) {
+          const group = await getUserFamilyGroup(user.id);
+          if (!group) { setGroupId(null); setFamily([]); }
+          else {
+            const g = (Array.isArray(group) ? group[0] : group) as { id: string };
+            setGroupId(g.id);
+            setFamily(await getFamilyLeaderboard(g.id, selectedGame));
+          }
+        } else {
+          const entries = await fetchLeaderboard(selectedGame, period, user?.id);
+          setGlobal(entries);
+          const mine = entries.find(e => e.is_current_user);
+          if (mine) { setUserRank(mine.rank); setUserXP(mine.total_xp); }
+        }
+      } catch (e) { console.error(e); }
+      setLoading(false);
+    })();
   }, [selectedGame, period, tab, user]);
 
-  async function loadLeaderboard() {
-    setLoading(true);
-    try {
-      if (tab === "family" && user) {
-        const group = await getUserFamilyGroup(user.id);
-        if (!group) { setFamilyGroupId(null); setFamilyEntries([]); }
-        else {
-          const groupData = (Array.isArray(group) ? group[0] : group) as { id: string };
-          setFamilyGroupId(groupData.id);
-          const entries = await getFamilyLeaderboard(groupData.id, selectedGame);
-          setFamilyEntries(entries);
-        }
-      } else {
-        const entries = await fetchLeaderboard(selectedGame, period, user?.id);
-        setGlobalEntries(entries);
-        const myEntry = entries.find(e => e.is_current_user);
-        if (myEntry) { setUserRank(myEntry.rank); setUserXP(myEntry.total_xp); }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
-  }
-
   return (
-    <div className="leaderboard-page" style={{ minHeight:"100vh", background:"var(--color-bg)" }}>
-      <Navbar/>
-      <main style={{ maxWidth:760, margin:"0 auto", padding:"76px 16px 48px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)" }}>
+      <Navbar />
+      <main style={{ maxWidth: 680, margin: "0 auto", padding: "76px 16px 48px" }}>
 
         {/* Header */}
-        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:28 }}>
-          <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", color:"var(--color-text-secondary)", marginBottom:8 }}>Rankings</p>
-          <h1 style={{ fontSize:36, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:6 }}>
-            Leaderboard
-          </h1>
-          <p style={{ fontSize:14, color:"var(--color-text-secondary)" }}>See how you stack up against players worldwide.</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 8 }}>RANKINGS</p>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--color-text-primary)",
+            letterSpacing: "-0.01em", lineHeight: 1.1, marginBottom: 6 }}>Leaderboard</h1>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>See how you rank against players worldwide.</p>
         </motion.div>
 
-        {/* User's own rank card */}
+        {/* Your rank strip */}
         {user && userRank && (
-          <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
-            style={{ background:ACCENT, borderRadius:20, padding:"18px 22px", marginBottom:24, display:"flex", alignItems:"center", justifyContent:"space-between", color:"white" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:700 }}>
-                {(profile?.username ?? "Y")[0].toUpperCase()}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+            style={{ padding: "16px 20px", borderRadius: 10, marginBottom: 20,
+              background: "var(--color-surface)", border: "1px solid var(--color-accent-primary)",
+              display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)" }}>
+              {profile?.username ?? "You"}
+            </p>
+            <div style={{ display: "flex", gap: 24 }}>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-accent-primary)" }}>#{userRank}</p>
+                <p style={{ fontSize: 9, letterSpacing: "0.08em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>RANK</p>
               </div>
-              <div>
-                <p style={{ fontSize:12, opacity:0.75, marginBottom:2 }}>Your ranking</p>
-                <p style={{ fontSize:18, fontWeight:700 }}>{profile?.username ?? "You"}</p>
-              </div>
-            </div>
-            <div style={{ display:"flex", gap:24 }}>
-              <div style={{ textAlign:"center" }}>
-                <p style={{ fontSize:22, fontWeight:700 }}>#{userRank}</p>
-                <p style={{ fontSize:10, opacity:0.7 }}>Global rank</p>
-              </div>
-              <div style={{ textAlign:"center" }}>
-                <p style={{ fontSize:22, fontWeight:700 }}>{userXP.toLocaleString()}</p>
-                <p style={{ fontSize:10, opacity:0.7 }}>Total XP</p>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-accent-primary)" }}>{userXP.toLocaleString()}</p>
+                <p style={{ fontSize: 9, letterSpacing: "0.08em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>XP</p>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Tabs */}
-        <div style={{ display:"flex", gap:4, marginBottom:20, background:"var(--color-surface-2)", padding:4, borderRadius:14 }}>
-          {[
-            { key:"global", label:"Global", icon:Globe },
-            { key:"family", label:"Family", icon:Users },
-          ].map(t => (
-            <button key={t.key} onClick={()=>setTab(t.key as any)}
-              style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6,
-                padding:"10px 16px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600,
-                background:tab===t.key?"var(--color-surface)":"transparent",
-                color:tab===t.key?"var(--color-text-primary)":"var(--color-text-secondary)",
-                boxShadow:tab===t.key?"0 2px 8px rgba(0,0,0,0.12)":"none",
-                transition:"all 0.2s",
-              }}>
-              <t.icon size={14}/> {t.label}
+        {/* Global / Family tabs */}
+        <div style={{ display: "flex", gap: 3, marginBottom: 18, background: "var(--color-surface-2)", padding: 3, borderRadius: 10 }}>
+          {[{ key:"global", label:"Global", Icon:Globe }, { key:"family", label:"Family", Icon:Users }].map(t => (
+            <button key={t.key} onClick={() => setTab(t.key as "global"|"family")}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "9px 0", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
+                background: tab === t.key ? "var(--color-surface)" : "transparent",
+                color: tab === t.key ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+                transition: "all 0.15s" }}>
+              <t.Icon size={13} /> {t.label}
             </button>
           ))}
         </div>
 
-        {/* Filters */}
-        <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
-          <div style={{ display:"flex", gap:6, overflowX:"auto", flex:1 }}>
+        {/* Game + period filters */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 5, overflowX: "auto", flex: 1 }}>
             {GAMES.map(g => (
-              <button key={g.slug} onClick={()=>setSelectedGame(g.slug)}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", borderRadius:10,
-                  border:"0.5px solid", cursor:"pointer", fontSize:12, fontWeight:500, whiteSpace:"nowrap",
-                  background:selectedGame===g.slug?"var(--color-surface)":"transparent",
-                  borderColor:selectedGame===g.slug?"rgba(79,110,247,0.3)":"var(--color-border)",
-                  color:selectedGame===g.slug?"var(--color-accent-primary)":"var(--color-text-secondary)",
-                  boxShadow:selectedGame===g.slug?"0 2px 6px rgba(79,110,247,0.12)":"none",
-                }}>
-                {g.slug!=="all"&&<GameIcon slug={g.slug} size={16}/>}
+              <button key={g.slug} onClick={() => setGame(g.slug)}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 6,
+                  border: "1px solid", cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+                  background: selectedGame === g.slug ? "rgba(0,255,255,0.06)" : "transparent",
+                  borderColor: selectedGame === g.slug ? "rgba(0,255,255,0.3)" : "var(--color-border)",
+                  color: selectedGame === g.slug ? "var(--color-accent-primary)" : "var(--color-text-secondary)",
+                  transition: "all 0.12s" }}>
+                {g.slug !== "all" && <GameIcon slug={g.slug} size={14} />}
                 {g.name}
               </button>
             ))}
           </div>
-          <div style={{ display:"flex", gap:4, background:"var(--color-surface-2)", padding:3, borderRadius:10 }}>
+          <div style={{ display: "flex", gap: 3, background: "var(--color-surface-2)", padding: 3, borderRadius: 8 }}>
             {PERIODS.map(p => (
-              <button key={p.key} onClick={()=>setPeriod(p.key)}
-                style={{ padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer",
-                  fontSize:11, fontWeight:600,
-                  background:period===p.key?"var(--color-surface)":"transparent",
-                  color:period===p.key?"var(--color-text-primary)":"var(--color-text-secondary)",
-                  transition:"all 0.15s",
-                }}>
+              <button key={p.key} onClick={() => setPeriod(p.key)}
+                style={{ padding: "5px 9px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 10, fontWeight: 600,
+                  background: period === p.key ? "var(--color-surface)" : "transparent",
+                  color: period === p.key ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+                  fontFamily: "var(--font-mono)", letterSpacing: "0.04em", transition: "all 0.12s" }}>
                 {p.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Leaderboard list */}
-        <div className="ms-card" style={{ overflow:"hidden", padding:0 }}>
+        {/* Table */}
+        <div className="ms-card" style={{ overflow: "hidden", padding: 0 }}>
           {loading ? (
-            <div style={{ padding:"48px 24px", textAlign:"center" }}>
-              <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:8 }}>
-                {[1,2,3,4,5].map(i=>(
-                  <div key={i} style={{ height:60, width:680, maxWidth:"100%", background:"var(--color-surface-2)", borderRadius:12 }}/>
-                ))}
-              </div>
+            <div style={{ padding: "32px 24px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {[1,2,3,4,5].map(i => <div key={i} style={{ height: 52, borderRadius: 6, background: "var(--color-surface-2)" }} />)}
             </div>
           ) : tab === "family" ? (
-            !user ? (
-              <div style={{ padding:"48px 24px", textAlign:"center" }}>
-                <Users size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
-                <p style={{ fontSize:15, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:16 }}>Sign in to see your family leaderboard</p>
-                <Link href="/auth/signin" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
-                  Sign In <ArrowRight size={14}/>
-                </Link>
-              </div>
-            ) : !familyGroupId ? (
-              <div style={{ padding:"48px 24px", textAlign:"center" }}>
-                <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(79,110,247,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-                  <Users size={24} color="var(--color-accent-primary)"/>
-                </div>
-                <p style={{ fontSize:16, fontWeight:600, color:"var(--color-text-primary)", marginBottom:6 }}>No family group yet</p>
-                <p style={{ fontSize:13, color:"var(--color-text-secondary)", marginBottom:20, maxWidth:320, margin:"0 auto 20px" }}>
-                  Create or join a family group to see how you rank against your family members.
-                </p>
-                <Link href="/family" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
-                  Set Up Family Group <ArrowRight size={14}/>
-                </Link>
-              </div>
-            ) : familyEntries.length === 0 ? (
-              <div style={{ padding:"48px 24px", textAlign:"center" }}>
-                <Trophy size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
-                <p style={{ fontSize:15, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:4 }}>No family scores yet</p>
-                <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>Be the first in your family to complete a stage!</p>
-              </div>
-            ) : (
-              <div>
-                <div style={{ display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px", gap:0, padding:"12px 20px", borderBottom:"0.5px solid var(--color-border)" }}>
-                  {["#","Player","Best Game","XP","Stages"].map((h,i)=>(
-                    <p key={i} style={{ fontSize:10, fontWeight:700, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", textAlign:i>1?"center":"left" }}>{h}</p>
-                  ))}
-                </div>
-                {familyEntries.map((entry, i) => (
-                  <motion.div key={entry.user_id}
-                    initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }}
-                    transition={{ delay:i*0.03 }}
-                    style={{
-                      display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px",
-                      alignItems:"center", padding:"14px 20px",
-                      borderBottom:"0.5px solid var(--color-border)",
-                      background:entry.user_id===user?.id?"linear-gradient(90deg,rgba(79,110,247,0.06),transparent)":"transparent",
-                    }}>
-                    <RankBadge rank={entry.rank}/>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <Avatar initial={entry.username[0] ?? "?"} index={i}/>
-                      <div>
-                        <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>
-                          {entry.username}
-                          {entry.user_id===user?.id&&<span style={{ fontSize:10, color:"var(--color-accent-primary)", marginLeft:6, fontWeight:500 }}>you</span>}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"center" }}>
-                      <GameIcon slug={selectedGame === "all" ? "tango" : selectedGame} size={22}/>
-                    </div>
-                    <div style={{ textAlign:"center" }}>
-                      <p style={{ fontSize:13, fontWeight:700, color:"var(--color-accent-primary)" }}>{entry.total_xp.toLocaleString()}</p>
-                    </div>
-                    <div style={{ textAlign:"center" }}>
-                      <p style={{ fontSize:13, fontWeight:500, color:"var(--color-text-secondary)" }}>{entry.games_played}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )
-          ) : globalEntries.length === 0 ? (
-            <div style={{ padding:"48px 24px", textAlign:"center" }}>
-              <Trophy size={40} color="var(--color-border)" style={{ margin:"0 auto 16px", display:"block" }}/>
-              <p style={{ fontSize:15, fontWeight:600, color:"var(--color-text-secondary)", marginBottom:4 }}>No scores yet</p>
-              <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>Be the first to complete a stage!</p>
-              <Link href="/games" style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:16, padding:"10px 20px", borderRadius:12, background:ACCENT, color:"white", textDecoration:"none", fontSize:13, fontWeight:600 }}>
-                Play Now <ArrowRight size={14}/>
-              </Link>
-            </div>
+            (user && familyGroupId)
+              ? <FamilyLeaderboard entries={familyEntries} currentUserId={user.id} selectedGame={selectedGame} />
+              : <FamilyEmptyState isSignedIn={!!user} hasFamilyGroup={!!familyGroupId} />
           ) : (
-            <div>
-              {/* Header row */}
-              <div style={{ display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px", gap:0, padding:"12px 20px", borderBottom:"0.5px solid var(--color-border)" }}>
-                {["#","Player","Best Game","XP","Stages"].map((h,i)=>(
-                  <p key={i} style={{ fontSize:10, fontWeight:700, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", textAlign:i>1?"center":"left" }}>{h}</p>
-                ))}
-              </div>
-              {globalEntries.map((entry, i) => (
-                <motion.div key={entry.user_id}
-                  initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }}
-                  transition={{ delay:i*0.03 }}
-                  style={{
-                    display:"grid", gridTemplateColumns:"48px 1fr 100px 80px 80px",
-                    alignItems:"center", padding:"14px 20px",
-                    borderBottom:"0.5px solid var(--color-border)",
-                    background:entry.is_current_user?"linear-gradient(90deg,rgba(79,110,247,0.06),transparent)":"transparent",
-                  }}>
-                  <RankBadge rank={entry.rank}/>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <Avatar initial={entry.avatar_initial} index={i}/>
-                    <div>
-                      <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>
-                        {entry.username}
-                        {entry.is_current_user&&<span style={{ fontSize:10, color:"var(--color-accent-primary)", marginLeft:6, fontWeight:500 }}>you</span>}
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{ display:"flex", justifyContent:"center" }}>
-                    <GameIcon slug={entry.best_game} size={22}/>
-                  </div>
-                  <div style={{ textAlign:"center" }}>
-                    <p style={{ fontSize:13, fontWeight:700, color:"var(--color-accent-primary)" }}>{entry.total_xp.toLocaleString()}</p>
-                  </div>
-                  <div style={{ textAlign:"center" }}>
-                    <p style={{ fontSize:13, fontWeight:500, color:"var(--color-text-secondary)" }}>{entry.games_played}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <GlobalLeaderboard entries={globalEntries} currentUserId={user?.id} selectedGame={selectedGame} />
           )}
         </div>
 
-        {/* CTA for non-signed-in users */}
         {!user && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.3 }}
-            style={{ marginTop:24, background:ACCENT, borderRadius:20, padding:"24px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            style={{ marginTop: 20, padding: "18px 20px", borderRadius: 10,
+              border: "1px solid var(--color-border)", background: "var(--color-surface)",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
-              <p style={{ fontSize:16, fontWeight:700, color:"white", marginBottom:4 }}>Join the competition</p>
-              <p style={{ fontSize:13, color:"rgba(255,255,255,0.75)" }}>Create a free account to save your scores and appear on the leaderboard.</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 3 }}>Join the competition</p>
+              <p style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Create a free account to appear on the leaderboard.</p>
             </div>
-            <Link href="/auth/signup" style={{ padding:"11px 22px", borderRadius:14, background:"white", color:"var(--color-accent-primary)", fontWeight:700, fontSize:13, textDecoration:"none", flexShrink:0 }}>
-              Sign Up Free
+            <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px",
+              borderRadius: 8, background: "var(--color-accent-primary)", color: "#000",
+              fontWeight: 700, fontSize: 12, textDecoration: "none", flexShrink: 0 }}>
+              Sign Up Free <ArrowRight size={13} />
             </Link>
           </motion.div>
         )}

@@ -90,9 +90,7 @@ export function StepTheme({ onFinish }: Props) {
   const isPaper = theme === "paper";
   const br = isPaper ? 4 : 20;
 
-  const panelStyle: CSSProperties = isDark
-    ? { background: "rgba(8,16,28,0.92)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }
-    : { background: "var(--color-surface)", border: "1px solid var(--color-border)" };
+  const panelStyle: CSSProperties = { background: "var(--color-surface)", border: "1px solid var(--color-border)" };
 
   return (
     <motion.div
@@ -119,16 +117,13 @@ export function StepTheme({ onFinish }: Props) {
           border: "none",
           cursor: "pointer",
           borderRadius: isPaper ? 4 : 12,
-          background: isDark
-            ? "linear-gradient(135deg, rgba(0,255,255,0.88), rgba(57,255,20,0.72))"
-            : "var(--color-accent-primary)",
-          color: isDark ? "#060d18" : "var(--color-on-accent)",
+          background: "var(--color-accent-primary)",
+          color: "#000",
           fontFamily: "var(--font-mono)",
           fontWeight: 700,
           fontSize: 13,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          boxShadow: isDark ? "0 0 22px rgba(0,255,255,0.28)" : "var(--shadow-sm)",
         }}
       >
         Start Playing

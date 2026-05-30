@@ -30,9 +30,7 @@ export function StepIntent({ selected, onSelect, onNext }: Props) {
   const isPaper = theme === "paper";
   const br = isPaper ? 4 : 20;
 
-  const panelStyle: CSSProperties = isDark
-    ? { background: "rgba(8,16,28,0.92)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }
-    : { background: "var(--color-surface)", border: "1px solid var(--color-border)" };
+  const panelStyle: CSSProperties = { background: "var(--color-surface)", border: "1px solid var(--color-border)" };
 
   const pillStyle = (id: string): CSSProperties => {
     const isActive = selected === id;
@@ -88,20 +86,13 @@ export function StepIntent({ selected, onSelect, onNext }: Props) {
           border: "none",
           cursor: selected ? "pointer" : "not-allowed",
           borderRadius: isPaper ? 4 : 12,
-          background: selected
-            ? isDark
-              ? "linear-gradient(135deg, rgba(0,255,255,0.88), rgba(57,255,20,0.72))"
-              : "var(--color-accent-primary)"
-            : isDark ? "rgba(255,255,255,0.06)" : "var(--color-surface-2)",
-          color: selected
-            ? isDark ? "#060d18" : "var(--color-on-accent)"
-            : "var(--color-text-secondary)",
+          background: selected ? "var(--color-accent-primary)" : "var(--color-surface-2)",
+          color: selected ? "#000" : "var(--color-text-secondary)",
           fontFamily: "var(--font-mono)",
           fontWeight: 700,
           fontSize: 13,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          boxShadow: selected && isDark ? "0 0 20px rgba(0,255,255,0.25)" : "none",
           transition: "all 0.2s ease",
           opacity: selected ? 1 : 0.5,
         }}
