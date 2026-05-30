@@ -76,8 +76,8 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
             <>
               {/* Has tokens */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Zap size={22} color="white" fill="white" />
+                <div style={{ width: 48, height: 48, borderRadius: 16, background: "var(--color-accent-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Zap size={22} color="#000" fill="#000" />
                 </div>
                 <div>
                   <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>
@@ -96,7 +96,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
                   </p>
                 </div>
                 <div style={{ height: 6, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg,var(--color-accent-primary),var(--color-accent-primary))", width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
+                  <div style={{ height: "100%", borderRadius: 3, background: "var(--color-accent-primary)", width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
                 </div>
                 <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
                   <Clock size={10} style={{ display: "inline", marginRight: 4 }}/>
@@ -106,7 +106,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
 
               <button
                 onClick={onConfirm}
-                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
+                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "var(--color-accent-primary)", fontSize: 14, fontWeight: 700, color: "#000", cursor: "pointer", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 20px rgba(0,255,255,0.2)" }}>
                 Play Now <ChevronRight size={15} />
               </button>
 
@@ -136,7 +136,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               </div>
 
               <Link href="/pricing" onClick={onClose}
-                style={{ display: "block", textAlign: "center", padding: 14, borderRadius: 14, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", marginBottom: 10, boxShadow: "0 6px 20px rgba(79,110,247,0.3)" }}>
+                style={{ display: "block", textAlign: "center", padding: 14, borderRadius: 14, background: "var(--color-accent-primary)", fontSize: 14, fontWeight: 700, color: "#000", textDecoration: "none", marginBottom: 10, boxShadow: "0 6px 20px rgba(0,255,255,0.2)" }}>
                 Upgrade to Pro — Unlimited Plays
               </Link>
 

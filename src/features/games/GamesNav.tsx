@@ -62,7 +62,7 @@ export function GamesNav() {
           </div>
         )}
         {user && isPro && (
-          <div className="hide-mobile-flex" style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, background: "rgba(79,110,247,0.1)", border: "0.5px solid rgba(79,110,247,0.2)" }}>
+          <div className="hide-mobile-flex" style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, background: "rgba(0,255,255,0.1)", border: "0.5px solid rgba(0,255,255,0.2)" }}>
             <Infinity size={12} color="var(--color-accent-primary)"/>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-accent-primary)" }}>Pro</span>
           </div>
@@ -92,7 +92,7 @@ export function GamesNav() {
         </button>
         {user ? (
           <Link href="/profile" style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px 5px 5px", borderRadius: 13, border: "0.5px solid rgba(0,0,0,0.09)", background: "var(--color-surface)", textDecoration: "none", cursor: "pointer" }}>
-            <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white" }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--color-accent-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>
               {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
             </div>
             <span className="hide-mobile-flex" style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -106,7 +106,7 @@ export function GamesNav() {
               Sign in
             </Link>
             <Link href="/games"
-              style={{ fontSize: 13, fontWeight: 700, color: "var(--color-on-accent)", padding: "8px 14px", borderRadius: 12, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", textDecoration: "none", boxShadow: "0 3px 10px rgba(79,110,247,0.3)", whiteSpace: "nowrap" }}>
+              style={{ fontSize: 13, fontWeight: 700, color: "var(--color-on-accent)", padding: "8px 14px", borderRadius: 12, background: "var(--color-accent-primary)", textDecoration: "none", boxShadow: "0 3px 10px rgba(0,255,255,0.2)", whiteSpace: "nowrap" }}>
               Start Playing
             </Link>
           </div>

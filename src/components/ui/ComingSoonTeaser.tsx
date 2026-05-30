@@ -13,15 +13,15 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         style={{
-          background: "linear-gradient(135deg,rgba(79,110,247,0.06),rgba(156,107,232,0.08))",
-          borderRadius: 20, border: "0.5px solid rgba(79,110,247,0.2)",
+          background: "rgba(0,255,255,0.05)",
+          borderRadius: 20, border: "0.5px solid rgba(0,255,255,0.15)",
           padding: "20px 24px",
           display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "rgba(79,110,247,0.1)",
+            background: "rgba(0,255,255,0.08)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <Sparkles size={18} color="var(--color-accent-primary)" />
@@ -58,11 +58,7 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
           fontFamily: "var(--font-sans)", marginBottom: 12, lineHeight: 1.15,
         }}>
           With our ongoing and future development plan,
-          <span style={{
-            display: "block",
-            background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-          }}>
+          <span style={{ display: "block", color: "var(--color-accent-primary)" }}>
             you will always be challenged.
           </span>
         </h2>
@@ -77,14 +73,14 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
           {
             icon: Gamepad2,
             color: "var(--color-accent-primary)",
-            bg: "rgba(79,110,247,0.08)",
+            bg: "rgba(0,255,255,0.06)",
             title: "Dozens more games are under development",
             body: "New logic disciplines, new mechanics, new ways to challenge your mind. The vault keeps growing.",
           },
           {
             icon: Layers,
             color: "var(--color-accent-primary)",
-            bg: "rgba(156,107,232,0.08)",
+            bg: "rgba(0,255,255,0.06)",
             title: "Hundreds of new stages to existing games",
             body: "Every current game will receive hundreds of additional stages across all difficulty tiers — easy, medium, and hard.",
           },
@@ -137,16 +133,16 @@ export function ComingSoonTeaser({ compact = false }: { compact?: boolean }) {
         transition={{ delay: 0.24 }}
         style={{
           borderRadius: 22, padding: "28px 32px",
-          background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
-          boxShadow: "0 16px 40px rgba(79,110,247,0.25)",
+          background: "var(--color-accent-primary)",
+          boxShadow: "0 16px 40px rgba(0,255,255,0.18)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: 24, flexWrap: "wrap",
         }}>
         <div>
-          <p style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 6 }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "#000", marginBottom: 6 }}>
             Be first to everything new.
           </p>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, maxWidth: 480 }}>
+          <p style={{ fontSize: 14, color: "rgba(0,0,0,0.6)", lineHeight: 1.6, maxWidth: 480 }}>
             Pro subscribers get access to every new game and stage the moment it ships. Start with a 3-day free trial.
           </p>
         </div>

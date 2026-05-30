@@ -99,7 +99,7 @@ body {
 }
 
 [dir="rtl"] { text-align: right; }
-::selection { background: rgba(79,110,247,0.15); }
+::selection { background: rgba(0,255,255,0.25); }
 :focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--color-surface-2); }
@@ -206,7 +206,7 @@ body {
 
 /* ── Memory card — dark mode ── */
 [data-theme="dark"] .memory-card-back {
-  background: linear-gradient(135deg, rgba(79,110,247,0.6), rgba(156,107,232,0.6)) !important;
+  background: linear-gradient(135deg, rgba(0,255,255,0.5), rgba(0,255,255,0.35)) !important;
   border: 1px solid rgba(34,211,238,0.2) !important;
   box-shadow: 0 0 16px rgba(34,211,238,0.1) !important;
 }

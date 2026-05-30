@@ -34,7 +34,7 @@ function SectionCard({ title, icon:Icon, children }: { title:string; icon:any; c
     <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
       className="ms-card" style={{ padding:"18px 20px", marginBottom:14 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
-        <div style={{ width:30, height:30, borderRadius:9, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:30, height:30, borderRadius:9, background:"rgba(0,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <Icon size={14} color="var(--color-accent-primary)"/>
         </div>
         <h2 style={{ fontSize:14, fontWeight:700, color:"var(--color-text-primary)" }}>{title}</h2>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                 style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"0.5px solid var(--color-border)", fontSize:14, color:"var(--color-text-secondary)", background:"var(--color-surface-2)", cursor:"not-allowed" }}/>
             </div>
             <button onClick={saveProfile} disabled={saving}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:12, border:"none", background:ACCENT, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:12, border:"none", background:ACCENT, color:"#000", fontSize:13, fontWeight:700, cursor:"pointer" }}>
               {saved ? <><Check size={14}/> Saved!</> : saving ? "Saving..." : "Save Changes"}
             </button>
           </SectionCard>
@@ -130,7 +130,7 @@ export default function SettingsPage() {
                 <button key={lang.code} onClick={()=>setLanguage(lang.code as Language)}
                   style={{ padding:"5px 10px", borderRadius:10, border:"0.5px solid", fontSize:12, fontWeight:600, cursor:"pointer", transition:"all 0.15s",
                     background:language===lang.code?ACCENT:"var(--color-surface-2)",
-                    color:language===lang.code?"white":"var(--color-text-secondary)",
+                    color:language===lang.code?"#000":"var(--color-text-secondary)",
                     borderColor:language===lang.code?"transparent":"var(--color-border)" }}>
                   {lang.flag} {lang.label}
                 </button>
@@ -143,7 +143,7 @@ export default function SettingsPage() {
         <SectionCard title="Daily Plays" icon={Zap}>
           {isPro ? (
             <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 0" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"rgba(0,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <InfinityIcon size={18} color="var(--color-accent-primary)"/>
               </div>
               <div>
@@ -161,7 +161,7 @@ export default function SettingsPage() {
               <div style={{ height:6, background:"var(--color-surface-2)", borderRadius:3, overflow:"hidden", margin:"8px 0 12px" }}>
                 <div style={{ height:"100%", borderRadius:3, background:ACCENT, width:`${(tokens/FREE_DAILY_TOKENS)*100}%`, transition:"width 0.4s" }}/>
               </div>
-              <Link href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:14, background:"rgba(79,110,247,0.06)", border:"0.5px solid rgba(79,110,247,0.15)", textDecoration:"none" }}>
+              <Link href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:14, background:"rgba(0,255,255,0.06)", border:"0.5px solid rgba(0,255,255,0.15)", textDecoration:"none" }}>
                 <span style={{ fontSize:13, fontWeight:600, color:"var(--color-accent-primary)" }}>Upgrade to Pro for unlimited plays</span>
                 <ChevronRight size={14} color="var(--color-accent-primary)"/>
               </Link>
@@ -185,7 +185,7 @@ export default function SettingsPage() {
                 Active
               </span>
             ) : (
-              <Link href="/pricing" style={{ padding:"8px 16px", borderRadius:12, background:ACCENT, color:"white", fontSize:12, fontWeight:700, textDecoration:"none" }}>
+              <Link href="/pricing" style={{ padding:"8px 16px", borderRadius:12, background:ACCENT, color:"#000", fontSize:12, fontWeight:700, textDecoration:"none" }}>
                 Upgrade
               </Link>
             )}
@@ -220,7 +220,7 @@ export default function SettingsPage() {
         {!user && (
           <div style={{ textAlign:"center", padding:"32px 0" }}>
             <p style={{ color:"var(--color-text-secondary)", fontSize:13, marginBottom:16 }}>Sign in to manage your settings</p>
-            <Link href="/auth/signin" style={{ padding:"11px 24px", borderRadius:14, background:ACCENT, color:"white", fontWeight:700, fontSize:13, textDecoration:"none" }}>
+            <Link href="/auth/signin" style={{ padding:"11px 24px", borderRadius:14, background:ACCENT, color:"#000", fontWeight:700, fontSize:13, textDecoration:"none" }}>
               Sign In
             </Link>
           </div>

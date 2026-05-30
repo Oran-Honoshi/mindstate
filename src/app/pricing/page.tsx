@@ -122,10 +122,10 @@ export default function PricingPage() {
               <motion.div key={plan.name}
                 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 style={{
-                  background: plan.highlight ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)",
+                  background: plan.highlight ? "var(--color-accent-primary)" : "var(--color-surface)",
                   border: plan.highlight ? "none" : "0.5px solid var(--color-border)",
                   borderRadius: 24, padding: "32px 28px",
-                  boxShadow: plan.highlight ? "0 24px 56px rgba(79,110,247,0.3)" : "var(--shadow-sm)",
+                  boxShadow: plan.highlight ? "0 24px 56px rgba(0,255,255,0.2)" : "var(--shadow-sm)",
                   position: "relative", display: "flex", flexDirection: "column",
                 }}>
 
@@ -135,25 +135,25 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <div style={{ width: 44, height: 44, borderRadius: 14, background: plan.highlight ? "rgba(255,255,255,0.2)" : `${plan.color}18`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                  <Icon size={20} color={plan.highlight ? "white" : plan.color} />
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: plan.highlight ? "rgba(0,0,0,0.1)" : `${plan.color}18`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                  <Icon size={20} color={plan.highlight ? "#000" : plan.color} />
                 </div>
 
-                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: plan.highlight ? "rgba(255,255,255,0.65)" : "var(--color-text-secondary)", marginBottom: 8 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: plan.highlight ? "rgba(0,0,0,0.55)" : "var(--color-text-secondary)", marginBottom: 8 }}>
                   {plan.name}
                 </p>
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-sans)", color: plan.highlight ? "white" : "var(--color-text-primary)", lineHeight: 1 }}>
+                  <span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-sans)", color: plan.highlight ? "#000" : "var(--color-text-primary)", lineHeight: 1 }}>
                     {plan.price}
                   </span>
-                  <span style={{ fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.6)" : "var(--color-text-secondary)" }}>
+                  <span style={{ fontSize: 14, color: plan.highlight ? "rgba(0,0,0,0.5)" : "var(--color-text-secondary)" }}>
                     {plan.period}
                   </span>
                 </div>
 
                 {plan.trial && (
-                  <p style={{ fontSize: 12, color: plan.highlight ? "rgba(255,255,255,0.55)" : "var(--color-text-secondary)", marginBottom: 24 }}>
+                  <p style={{ fontSize: 12, color: plan.highlight ? "rgba(0,0,0,0.5)" : "var(--color-text-secondary)", marginBottom: 24 }}>
                     3-day free trial · then billed monthly
                   </p>
                 )}
@@ -165,9 +165,9 @@ export default function PricingPage() {
 
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.88)" : "var(--color-text-secondary)" }}>
-                      <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(255,255,255,0.2)" : "#EEF2FF" }}>
-                        <Check size={10} color={plan.highlight ? "white" : "var(--color-accent-primary)"} />
+                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(0,0,0,0.75)" : "var(--color-text-secondary)" }}>
+                      <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(0,0,0,0.1)" : "#EEF2FF" }}>
+                        <Check size={10} color={plan.highlight ? "#000" : "var(--color-accent-primary)"} />
                       </div>
                       {f}
                     </li>

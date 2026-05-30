@@ -59,13 +59,13 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{ overflow: "hidden" }}>
-        <div style={{ height: 110, background: hovered ? "linear-gradient(135deg,rgba(79,110,247,0.07),rgba(156,107,232,0.09))" : "rgba(79,110,247,0.03)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", transition: "background 0.25s", overflow: "hidden" }}>
+        <div style={{ height: 110, background: hovered ? "rgba(0,255,255,0.06)" : "rgba(0,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", transition: "background 0.25s", overflow: "hidden" }}>
           <GameSnapshot slug={game.slug}/>
           <AnimatePresence>
             {hovered && (
               <motion.div
                 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
-                style={{ position: "absolute", inset: 0, background: "rgba(79,110,247,0.88)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4, backdropFilter: "blur(4px)" }}>
+                style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4, backdropFilter: "blur(4px)" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Start Training</span>
                 <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}>Uses 1 daily session</span>
               </motion.div>
@@ -94,7 +94,7 @@ export function GameGrid() {
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
             <h2 style={{ fontSize: 40, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)", lineHeight: 1.1 }}>
               An Evolving Vault.<br/>
-              <em style={{ fontStyle: "italic", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>One Subscription.</em>
+              <em style={{ fontStyle: "italic", color: "var(--color-accent-primary)" }}>One Subscription.</em>
             </h2>
             <Link href="/games" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "11px 20px", borderRadius: 14, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
               View All Games <ArrowRight size={14}/>
@@ -140,7 +140,7 @@ export function GameGrid() {
       {/* ── FULL WIDTH PHOTO CTA ── */}
       <section style={{ position: "relative", height: 460, overflow: "hidden" }}>
         <img src={WORK_M_IMG} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }}/>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(79,110,247,0.87),rgba(156,107,232,0.78))" }}/>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)" }}/>
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 48px" }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 48, color: "white", marginBottom: 14, lineHeight: 1.08 }}>

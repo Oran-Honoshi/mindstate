@@ -81,7 +81,7 @@ export function Navbar() {
                   display: "flex", alignItems: "center", gap: 5,
                   padding: "7px 12px", borderRadius: 10, textDecoration: "none",
                   fontSize: 13, fontWeight: 500, transition: "all 0.15s",
-                  background: isActive(link.href) ? "rgba(79,110,247,0.08)" : "transparent",
+                  background: isActive(link.href) ? "rgba(0,255,255,0.08)" : "transparent",
                   color: isActive(link.href) ? "var(--color-accent-primary)" : "#64748B",
                 }}>
                 {link.label}
@@ -121,9 +121,9 @@ export function Navbar() {
               </Link>
               <Link href="/auth/signup"
                 style={{
-                  fontSize: 13, fontWeight: 700, color: "white",
+                  fontSize: 13, fontWeight: 700, color: "#000",
                   padding: "7px 14px", borderRadius: 11, background: ACCENT,
-                  textDecoration: "none", boxShadow: "0 3px 8px rgba(79,110,247,0.25)",
+                  textDecoration: "none", boxShadow: "0 3px 8px rgba(0,255,255,0.2)",
                 }}>
                 Start Free
               </Link>
@@ -142,7 +142,7 @@ export function Navbar() {
                   <div style={{
                     width: 24, height: 24, borderRadius: "50%", background: ACCENT,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 10, fontWeight: 700, color: "white", flexShrink: 0,
+                    fontSize: 10, fontWeight: 700, color: "#000", flexShrink: 0,
                   }}>
                     {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
                   </div>
@@ -220,7 +220,7 @@ export function Navbar() {
                 style={{
                   width: 30, height: 30, borderRadius: "50%", background: ACCENT,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 700, color: "white",
+                  fontSize: 11, fontWeight: 700, color: "#000",
                   border: "none", cursor: "pointer", marginLeft: 2,
                 }}>
                 {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
@@ -236,9 +236,9 @@ export function Navbar() {
                 </Link>
                 <Link href="/auth/signup"
                   style={{
-                    fontSize: 13, fontWeight: 700, color: "white",
+                    fontSize: 13, fontWeight: 700, color: "#000",
                     padding: "7px 14px", borderRadius: 11, background: ACCENT,
-                    textDecoration: "none", boxShadow: "0 3px 8px rgba(79,110,247,0.25)",
+                    textDecoration: "none", boxShadow: "0 3px 8px rgba(0,255,255,0.2)",
                   }}>
                   Start Free
                 </Link>
@@ -293,7 +293,7 @@ export function Navbar() {
                       padding: "12px 14px", borderRadius: 12, textDecoration: "none",
                       fontSize: 14, fontWeight: 500,
                       color: isActive(link.href) ? "var(--color-accent-primary)" : "#374151",
-                      background: isActive(link.href) ? "rgba(79,110,247,0.07)" : "transparent",
+                      background: isActive(link.href) ? "rgba(0,255,255,0.07)" : "transparent",
                     }}>
                     <link.icon size={16} />
                     {link.label}
@@ -341,7 +341,7 @@ export function Navbar() {
                       style={{
                         display: "block", textAlign: "center", padding: "12px",
                         borderRadius: 12, background: ACCENT,
-                        fontSize: 13, fontWeight: 700, color: "white", textDecoration: "none",
+                        fontSize: 13, fontWeight: 700, color: "#000", textDecoration: "none",
                       }}>
                       Start Free
                     </Link>

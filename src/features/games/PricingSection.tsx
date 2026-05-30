@@ -67,22 +67,22 @@ export function PricingSection() {
         <div className="pricing-grid" style={{ alignItems: "start", maxWidth: 860, margin: "0 auto" }}>
           {PLANS.map((plan, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              style={{ borderRadius: 24, padding: 28, position: "relative", background: plan.highlight ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)", border: plan.highlight ? "none" : "0.5px solid var(--color-border)", boxShadow: plan.highlight ? "0 24px 56px rgba(79,110,247,0.3)" : "var(--shadow-sm)", color: plan.highlight ? "white" : "var(--color-text-primary)" }}>
+              style={{ borderRadius: 24, padding: 28, position: "relative", background: plan.highlight ? "var(--color-accent-primary)" : "var(--color-surface)", border: plan.highlight ? "none" : "0.5px solid var(--color-border)", boxShadow: plan.highlight ? "0 24px 56px rgba(0,255,255,0.2)" : "var(--shadow-sm)", color: plan.highlight ? "#000" : "var(--color-text-primary)" }}>
               {plan.highlight && (
                 <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", fontSize: 10, fontWeight: 700, color: "var(--color-accent-primary)", background: "white", padding: "4px 14px", borderRadius: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", whiteSpace: "nowrap" }}>
                   Most Popular
                 </div>
               )}
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12, color: plan.highlight ? "rgba(255,255,255,0.65)" : "var(--color-text-secondary)" }}>{plan.name}</p>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12, color: plan.highlight ? "rgba(0,0,0,0.55)" : "var(--color-text-secondary)" }}>{plan.name}</p>
               <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 22 }}>
                 <span style={{ fontSize: 52, fontWeight: 700, lineHeight: 1, fontFamily: "var(--font-sans)" }}>{plan.price}</span>
                 <span style={{ fontSize: 14, paddingBottom: 7, opacity: 0.6 }}>{plan.period}</span>
               </div>
               <ul style={{ listStyle: "none", marginBottom: 24, display: "flex", flexDirection: "column", gap: 10 }}>
                 {plan.features.map((f, j) => (
-                  <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(255,255,255,0.88)" : "var(--color-text-secondary)" }}>
-                    <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(255,255,255,0.2)" : "#EEF2FF" }}>
-                      <Check size={10} color={plan.highlight ? "white" : "var(--color-accent-primary)"}/>
+                  <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: plan.highlight ? "rgba(0,0,0,0.75)" : "var(--color-text-secondary)" }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: plan.highlight ? "rgba(0,0,0,0.1)" : "#EEF2FF" }}>
+                      <Check size={10} color={plan.highlight ? "#000" : "var(--color-accent-primary)"}/>
                     </div>
                     {f}
                   </li>

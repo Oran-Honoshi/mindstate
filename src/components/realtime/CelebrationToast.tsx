@@ -35,11 +35,11 @@ export function CelebrationToast({ record, onDismiss }: CelebrationToastProps) {
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
       style={{
-        background: "white",
+        background: "var(--color-surface)",
         borderRadius: 20,
         padding: "14px 18px",
-        boxShadow: "0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(79,110,247,0.15)",
-        border: "0.5px solid rgba(79,110,247,0.2)",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,255,255,0.1)",
+        border: "0.5px solid rgba(0,255,255,0.15)",
         display: "flex",
         alignItems: "center",
         gap: 12,
@@ -51,11 +51,11 @@ export function CelebrationToast({ record, onDismiss }: CelebrationToastProps) {
     >
       <div style={{
         width: 40, height: 40, borderRadius: "50%",
-        background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
+        background: "var(--color-accent-primary)",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
-        <Trophy size={18} color="white"/>
+        <Trophy size={18} color="#000"/>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#1C1917", marginBottom: 2 }}>

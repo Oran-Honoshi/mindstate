@@ -48,7 +48,7 @@ export function LandingNav() {
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
           <img src="/icons/icon-192.png" alt="MindElement"
             style={{ width:34, height:34, borderRadius:"22.5%", objectFit:"cover",
-              boxShadow:"0 2px 8px rgba(79,110,247,0.2)" }}/>
+              boxShadow:"0 2px 8px rgba(0,0,0,0.12)" }}/>
           <span style={{ fontWeight:700, fontSize:18, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>
             MindElement
           </span>
@@ -75,9 +75,9 @@ export function LandingNav() {
           </button>
           {user ? (
             <Link href="/games"
-              style={{ fontSize:13, fontWeight:700, color:"white", textDecoration:"none",
+              style={{ fontSize:13, fontWeight:700, color:"#000", textDecoration:"none",
                 padding:"8px 18px", borderRadius:10,
-                background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" }}>
+                background:"var(--color-accent-primary)" }}>
               Open App
             </Link>
           ) : (<>
@@ -88,9 +88,9 @@ export function LandingNav() {
               Sign in
             </Link>
             <Link href="/auth/signup"
-              style={{ fontSize:13, fontWeight:700, color:"white", textDecoration:"none",
+              style={{ fontSize:13, fontWeight:700, color:"#000", textDecoration:"none",
                 padding:"8px 18px", borderRadius:10,
-                background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" }}>
+                background:"var(--color-accent-primary)" }}>
               Start Free
             </Link>
           </>)}
@@ -123,8 +123,8 @@ export function LandingNav() {
               </Link>
               <Link href="/auth/signup" onClick={()=>setMobileOpen(false)}
                 style={{ flex:1, textAlign:"center", padding:"11px", borderRadius:12,
-                  background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
-                  fontSize:13, fontWeight:700, color:"white", textDecoration:"none" }}>
+                  background:"var(--color-accent-primary)",
+                  fontSize:13, fontWeight:700, color:"#000", textDecoration:"none" }}>
                 Start Free
               </Link>
             </div>

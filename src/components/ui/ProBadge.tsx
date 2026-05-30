@@ -60,8 +60,8 @@ export function ProBanner({ feature }: { feature: string }) {
           width: "100%", padding: "12px 16px", borderRadius: 14,
           border: "none", cursor: "pointer", display: "flex",
           alignItems: "center", justifyContent: "space-between",
-          background: "linear-gradient(135deg,rgba(79,110,247,0.08),rgba(156,107,232,0.1))",
-          borderTop: "1px solid rgba(79,110,247,0.15)",
+          background: "rgba(0,255,255,0.06)",
+          borderTop: "1px solid rgba(0,255,255,0.15)",
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Lock size={14} color="var(--color-accent-primary)" />

@@ -176,7 +176,7 @@ function ZipSnapshot({ solved }: { solved: boolean }) {
           const wp=waypoints[k];
           const inPath=pathSet.has(k);
           return(
-            <div key={k} style={{width:26,height:26,background:inPath?"rgba(79,110,247,0.1)":"var(--color-surface-2)",border:"0.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
+            <div key={k} style={{width:26,height:26,background:inPath?"rgba(0,255,255,0.1)":"var(--color-surface-2)",border:"0.5px solid var(--color-border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
               {wp||""}
             </div>
           );
@@ -218,7 +218,7 @@ function PatternSnapshot({ solved }: { solved: boolean }) {
         </div>
       ))}
       <div style={{fontSize:14,color:"var(--color-text-secondary)"}}>→</div>
-      <div style={{width:28,height:28,borderRadius:8,border:`2px ${solved?"solid":"dashed"} var(--color-accent-primary)`,background:solved?"rgba(79,110,247,0.1)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
+      <div style={{width:28,height:28,borderRadius:8,border:`2px ${solved?"solid":"dashed"} var(--color-accent-primary)`,background:solved?"rgba(0,255,255,0.1)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"var(--color-accent-primary)"}}>
         {solved?ans:"?"}
       </div>
     </div>
@@ -742,7 +742,7 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {info.rules.map((rule,i) => (
                       <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-                        <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(79,110,247,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"var(--color-accent-primary)", flexShrink:0, marginTop:1 }}>
+                        <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(0,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"var(--color-accent-primary)", flexShrink:0, marginTop:1 }}>
                           {i+1}
                         </div>
                         <p style={{ fontSize:13, color:"var(--color-text-secondary)", lineHeight:1.55 }}>{rule}</p>
@@ -779,7 +779,7 @@ export function GameInstructions({ game, onOpen, onClose, standalone }: GameInst
                 </div>
 
                 <button onClick={handleClose}
-                  style={{ width:"100%", padding:13, borderRadius:14, border:"none", background:"linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", fontSize:13, fontWeight:700, color:"white", cursor:"pointer" }}>
+                  style={{ width:"100%", padding:13, borderRadius:14, border:"none", background:"var(--color-accent-primary)", fontSize:13, fontWeight:700, color:"#000", cursor:"pointer" }}>
                   Got it — Let's Play
                 </button>
               </div>

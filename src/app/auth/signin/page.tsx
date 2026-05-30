@@ -39,8 +39,8 @@ export default function SignInPage() {
     <div className="auth-page" style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px" }}>
       <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }} style={{ width:"100%", maxWidth:380 }}>
         <Link href="/" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, textDecoration:"none", marginBottom:32 }}>
-          <div style={{ width:32, height:32, borderRadius:"22.5%", background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(79,110,247,0.3)" }}>
-            <Brain size={16} color="white"/>
+          <div style={{ width:32, height:32, borderRadius:"22.5%", background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(0,255,255,0.2)" }}>
+            <Brain size={16} color="#000"/>
           </div>
           <span style={{ fontWeight:700, fontSize:18, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>MindElement</span>
         </Link>
@@ -73,7 +73,7 @@ export default function SignInPage() {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              style={{ width:"100%", padding:"13px", borderRadius:14, border:"none", background:ACCENT, color:"white", fontSize:14, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
+              style={{ width:"100%", padding:"13px", borderRadius:14, border:"none", background:ACCENT, color:"#000", fontSize:14, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
               {loading?"Signing in...":"Sign In"}
             </button>
           </form>

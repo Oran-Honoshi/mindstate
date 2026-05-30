@@ -24,7 +24,7 @@ export function StreakToast({ streak, bonusAwarded, onDismiss }: StreakToastProp
       transition={{ type:"spring", stiffness:400, damping:28 }}
       style={{
         position:"fixed", top:80, left:"50%", transform:"translateX(-50%)",
-        zIndex:9999, background:"white", borderRadius:20,
+        zIndex:9999, background:"var(--color-surface)", borderRadius:20,
         padding:"14px 20px", boxShadow:"0 16px 48px rgba(0,0,0,0.14)",
         border:"0.5px solid rgba(0,0,0,0.08)",
         display:"flex", alignItems:"center", gap:12, minWidth:280,
@@ -50,7 +50,7 @@ export function StreakToast({ streak, bonusAwarded, onDismiss }: StreakToastProp
       </div>
       {bonusAwarded && (
         <div style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:20,
-          background:"rgba(79,110,247,0.1)", color:"var(--color-accent-primary)", fontSize:12, fontWeight:700, flexShrink:0 }}>
+          background:"rgba(0,255,255,0.1)", color:"var(--color-accent-primary)", fontSize:12, fontWeight:700, flexShrink:0 }}>
           <Zap size={12}/> +10
         </div>
       )}

@@ -87,7 +87,7 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
                 width: 64, height: 64, borderRadius: 20,
                 overflow: "hidden",
                 margin: "0 auto 14px",
-                boxShadow: "0 8px 24px rgba(79,110,247,0.3)",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
               }}>
                 <img
                   src="/icons/icon-192.png"
@@ -125,9 +125,9 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
 
             {/* Value prop */}
             <div style={{
-              background: "linear-gradient(135deg,rgba(79,110,247,0.06),rgba(156,107,232,0.08))",
+              background: "rgba(0,255,255,0.05)",
               borderRadius: 16, padding: "16px 18px", marginBottom: 18,
-              border: "0.5px solid rgba(79,110,247,0.15)",
+              border: "0.5px solid rgba(0,255,255,0.15)",
             }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent-primary)", marginBottom: 8 }}>
                 Pro — Less than a cup of coffee
@@ -142,7 +142,7 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{
                       width: 16, height: 16, borderRadius: "50%",
-                      background: "rgba(79,110,247,0.12)",
+                      background: "rgba(0,255,255,0.1)",
                       display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                     }}>
                       <Zap size={9} color="var(--color-accent-primary)" />
@@ -158,9 +158,9 @@ export function OutOfTokensModal({ gameName, open, onClose }: OutOfTokensModalPr
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 width: "100%", padding: "14px", borderRadius: 16, border: "none",
-                background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
-                fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none",
-                marginBottom: 10, boxShadow: "0 6px 20px rgba(79,110,247,0.3)",
+                background: "var(--color-accent-primary)",
+                fontSize: 15, fontWeight: 700, color: "#000", textDecoration: "none",
+                marginBottom: 10, boxShadow: "0 6px 20px rgba(0,255,255,0.2)",
               }}>
               Start Pro — $2/mo <ChevronRight size={15} />
             </Link>

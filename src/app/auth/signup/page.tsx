@@ -42,7 +42,7 @@ export default function SignUpPage() {
     <div className="auth-page" style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <motion.div initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }}
         className="ms-card" style={{ width:"100%", maxWidth:380, padding:"40px 28px", textAlign:"center" }}>
-        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(79,110,247,0.12)", border:"0.5px solid rgba(79,110,247,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(0,255,255,0.1)", border:"0.5px solid rgba(0,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
           <Brain size={24} color="var(--color-accent-primary)"/>
         </div>
         <h2 style={{ fontSize:20, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:8 }}>Check your email</h2>
@@ -57,8 +57,8 @@ export default function SignUpPage() {
     <div className="auth-page" style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
       <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }} style={{ width:"100%", maxWidth:380 }}>
         <Link href="/" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, textDecoration:"none", marginBottom:32 }}>
-          <div style={{ width:32, height:32, borderRadius:"22.5%", background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(79,110,247,0.3)" }}>
-            <Brain size={16} color="white"/>
+          <div style={{ width:32, height:32, borderRadius:"22.5%", background:ACCENT, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 12px rgba(0,255,255,0.2)" }}>
+            <Brain size={16} color="#000"/>
           </div>
           <span style={{ fontWeight:700, fontSize:18, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)" }}>MindElement</span>
         </Link>
@@ -96,7 +96,7 @@ export default function SignUpPage() {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              style={{ width:"100%", padding:"13px", borderRadius:14, border:"none", background:ACCENT, color:"white", fontSize:14, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
+              style={{ width:"100%", padding:"13px", borderRadius:14, border:"none", background:ACCENT, color:"#000", fontSize:14, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
               {loading?"Creating account...":"Create Account"}
             </button>
           </form>
