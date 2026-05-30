@@ -130,7 +130,7 @@ export function MiniQueensHero() {
 }
 
 export function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
-  const [board] = useState<TangoBoard>(() => generateTangoBoard("hero-hard-77", "hard"));
+  const [board] = useState<TangoBoard>(() => generateTangoBoard("hero-easy-1", "easy"));
   const [playerGrid, setPlayerGrid] = useState<Cell[][]>(() => board.puzzle.map(r => [...r]));
   const [statuses, setStatuses] = useState<CellStatus[][]>(() =>
     board.puzzle.map(r => r.map(c => c !== null ? "given" : "empty"))
@@ -168,7 +168,7 @@ export function TangoDemo({ cellSize = 52 }: { cellSize?: number }) {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div>
-          <p style={{ fontSize: 9, color: "var(--color-text-secondary)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 1 }}>Hard · {board.size}×{board.size} · Free Play</p>
+          <p style={{ fontSize: 9, color: "var(--color-text-secondary)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 1 }}>Easy · {board.size}×{board.size} · Free Play</p>
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>Tango</p>
         </div>
         <AnimatePresence>
@@ -231,7 +231,7 @@ export function HeroCarousel() {
       <div style={{ display: "flex", gap: 6, marginBottom: 14, justifyContent: "center" }}>
         {CAROUSEL_GAMES.map((g, i) => (
           <button key={g.key} onClick={() => setActive(i)}
-            style={{ padding: "5px 14px", borderRadius: 20, border: "1.5px solid", fontSize: 11, fontWeight: 700, cursor: "pointer", outline: "none", transition: "all 0.15s", background: active === i ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)", color: active === i ? "white" : "var(--color-text-secondary)", borderColor: active === i ? "transparent" : "var(--color-border)" }}>
+            style={{ padding: "5px 14px", borderRadius: 20, border: "1.5px solid", fontSize: 11, fontWeight: 700, cursor: "pointer", outline: "none", transition: "all 0.15s", background: active === i ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--color-surface)", color: active === i ? "var(--color-on-accent)" : "var(--color-text-secondary)", borderColor: active === i ? "transparent" : "var(--color-border)" }}>
             {g.label}
           </button>
         ))}

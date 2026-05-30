@@ -72,7 +72,7 @@ export function GamesNav() {
             initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
             onClick={triggerInstall}
             className="hide-mobile-flex"
-            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 20, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", border: "none", cursor: "pointer", color: "white", fontSize: 12, fontWeight: 600 }}>
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 20, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", border: "none", cursor: "pointer", color: "var(--color-on-accent)", fontSize: 12, fontWeight: 600 }}>
             <Download size={13}/>
             Install App
           </motion.button>
@@ -105,8 +105,8 @@ export function GamesNav() {
               style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "7px 12px", borderRadius: 10, textDecoration: "none" }}>
               Sign in
             </Link>
-            <Link href="/auth/signup"
-              style={{ fontSize: 13, fontWeight: 700, color: "white", padding: "8px 14px", borderRadius: 12, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", textDecoration: "none", boxShadow: "0 3px 10px rgba(79,110,247,0.3)", whiteSpace: "nowrap" }}>
+            <Link href={user ? "/games" : "/onboard"}
+              style={{ fontSize: 13, fontWeight: 700, color: "var(--color-on-accent)", padding: "8px 14px", borderRadius: 12, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", textDecoration: "none", boxShadow: "0 3px 10px rgba(79,110,247,0.3)", whiteSpace: "nowrap" }}>
               Start Playing
             </Link>
           </div>

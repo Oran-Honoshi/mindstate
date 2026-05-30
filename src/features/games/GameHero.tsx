@@ -40,11 +40,11 @@ export function GameHero() {
             Step into an elegant, ad-free world of structural logic and language play — crafted to spark foundational reasoning in kids, clear cognitive overload for busy professionals, and preserve sharp recall for active seniors.
           </p>
           <div style={{ display: "flex", gap: 14, marginBottom: 40, flexWrap: "wrap" }}>
-            <Link href={user ? "/games" : "/auth/signup"}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 28px", borderRadius: 16, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color: "white", fontWeight: 700, fontSize: 16, textDecoration: "none", boxShadow: "0 8px 24px rgba(79,110,247,0.35)" }}>
+            <Link href={user ? "/games" : "/onboard"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 28px", borderRadius: 16, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color: "var(--color-on-accent)", fontWeight: 700, fontSize: 16, textDecoration: "none", boxShadow: "0 8px 24px rgba(79,110,247,0.35)" }}>
               Start Training Free <ChevronRight size={16}/>
             </Link>
-            <Link href="/games"
+            <Link href="#games"
               style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 28px", borderRadius: 16, background: "var(--color-surface)", color: "var(--color-text-secondary)", fontWeight: 600, fontSize: 16, textDecoration: "none", border: "0.5px solid var(--color-border)", boxShadow: "var(--shadow-sm)" }}>
               Explore Games <ArrowRight size={15}/>
             </Link>
@@ -100,10 +100,10 @@ export function GameHero() {
             { icon: Shield,   text: "Zero Ads. Ever." },
             { icon: Zap,      text: "5 Free Plays Daily" },
           ].map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, color: "white" }}>
-              <item.icon size={18} color="rgba(255,255,255,0.8)"/>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.95)", whiteSpace: "nowrap" }}>{item.text}</span>
-              {i < 4 && <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 20, marginLeft: 6 }}>·</span>}
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--color-on-accent)" }}>
+              <item.icon size={18} color="var(--color-on-accent)"/>
+              <span style={{ fontSize: 15, fontWeight: 600, color: "var(--color-on-accent)", whiteSpace: "nowrap" }}>{item.text}</span>
+              {i < 4 && <span style={{ color: "rgba(0,0,0,0.3)", fontSize: 20, marginLeft: 6 }}>·</span>}
             </div>
           ))}
         </div>
