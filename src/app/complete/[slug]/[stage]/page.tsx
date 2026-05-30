@@ -7,9 +7,9 @@ import { triggerConfetti } from "@/components/effects/Confetti";
 import { GAMES } from "@/features/games/GameGrid";
 
 function getMedal(xp: number) {
-  if (xp > 800) return { emoji: "🥇", label: "Gold",   color: "#F59E0B" };
-  if (xp > 500) return { emoji: "🥈", label: "Silver", color: "#9CA3AF" };
-  return             { emoji: "🥉", label: "Bronze", color: "#B45309" };
+  if (xp > 800) return { emoji: "🥇", label: "GOLD",   color: "#F59E0B" };
+  if (xp > 500) return { emoji: "🥈", label: "SILVER", color: "#9CA3AF" };
+  return             { emoji: "🥉", label: "BRONZE", color: "#B45309" };
 }
 
 function StageCompleteContent() {
@@ -18,101 +18,123 @@ function StageCompleteContent() {
   const router       = useRouter();
   const [copied, setCopied] = useState(false);
 
-  const slug    = params.slug  as string;
-  const stageN  = parseInt(params.stage as string, 10);
-  const xp      = parseInt(searchParams.get("xp")    ?? "0", 10);
-  const time    = searchParams.get("time")   ?? "—";
-  const hints   = parseInt(searchParams.get("hints") ?? "0", 10);
+  const slug   = params.slug  as string;
+  const stageN = parseInt(params.stage as string, 10);
+  const xp     = parseInt(searchParams.get("xp") ?? "0", 10);
+  const time   = searchParams.get("time") ?? "—";
+  const hints  = parseInt(searchParams.get("hints") ?? "0", 10);
 
   const gameName = GAMES.find(g => g.slug === slug)?.name ?? slug;
-  const medal    = getMedal(xp);
+  const medal = getMedal(xp);
 
   useEffect(() => {
-    const t = setTimeout(triggerConfetti, 120);
+    const t = setTimeout(triggerConfetti, 300);
     return () => clearTimeout(t);
   }, []);
 
   function handleShare() {
-    const url = `${window.location.origin}/games/${slug}?seed=${stageN}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {});
+    navigator.clipboard
+      .writeText(`${window.location.origin}/games/${slug}?seed=${stageN}`)
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); })
+      .catch(() => {});
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px", textAlign: "center" }}
-    >
-      {/* Medal */}
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
+
+      {/* Game · Stage label */}
+      <motion.p
+        initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+        style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 28 }}
+      >
+        {gameName} · Stage {stageN}
+      </motion.p>
+
+      {/* Medal ring */}
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.15, type: "spring", stiffness: 280, damping: 18 }}
-        style={{ fontSize: 72, marginBottom: 20 }}
+        initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1, type: "spring", stiffness: 280, damping: 20 }}
+        style={{
+          width: 84, height: 84, borderRadius: "50%",
+          border: `2px solid ${medal.color}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 40, marginBottom: 28,
+          boxShadow: `0 0 28px ${medal.color}30, 0 0 56px ${medal.color}10`,
+        }}
       >
         {medal.emoji}
       </motion.div>
 
-      {/* Game + stage label */}
-      <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-text-secondary)", marginBottom: 8, fontFamily: "var(--font-sans)" }}>
-        {gameName} · Stage {stageN}
-      </p>
-
-      {/* XP */}
-      <motion.p
-        initial={{ scale: 0.6, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.25, type: "spring", stiffness: 220 }}
-        style={{ fontSize: 96, fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-accent-primary)", lineHeight: 1, margin: "0 0 6px" }}
+      {/* XP number with ambient glow */}
+      <motion.div
+        initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 18 }}
+        style={{ position: "relative", textAlign: "center", marginBottom: 6 }}
       >
-        {xp}
-      </motion.p>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-text-secondary)", marginBottom: 32 }}>
-        XP Earned
-      </p>
+        <div style={{ position: "absolute", inset: -40,
+          background: "radial-gradient(circle, rgba(0,255,255,0.07) 0%, transparent 70%)",
+          pointerEvents: "none" }} />
+        <p style={{ fontSize: 96, fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-accent-primary)", lineHeight: 1, position: "relative" }}>
+          {xp}
+        </p>
+      </motion.div>
 
-      {/* Stats row */}
-      <div style={{ display: "flex", gap: 32, marginBottom: 40 }}>
+      <motion.p
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }}
+        style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 36 }}
+      >
+        XP EARNED
+      </motion.p>
+
+      {/* Stats — scoreboard row */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
+        style={{ display: "flex", border: "1px solid var(--color-border)", borderRadius: 10, overflow: "hidden", marginBottom: 36, width: "100%", maxWidth: 320 }}
+      >
         {[
-          { label: "Time",  value: time },
-          { label: "Hints", value: String(hints) },
-          { label: "Medal", value: medal.label, color: medal.color },
-        ].map(s => (
-          <div key={s.label}>
-            <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-text-secondary)", marginBottom: 4 }}>{s.label}</p>
-            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-mono)", color: s.color ?? "var(--color-text-primary)" }}>{s.value}</p>
+          { label: "TIME",  value: time },
+          { label: "HINTS", value: String(hints) },
+          { label: "MEDAL", value: medal.label, color: medal.color },
+        ].map((s, i) => (
+          <div key={s.label} style={{ flex: 1, padding: "14px 0", textAlign: "center",
+            borderRight: i < 2 ? "1px solid var(--color-border)" : "none",
+            background: "var(--color-surface)" }}>
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 6 }}>
+              {s.label}
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-mono)", color: s.color ?? "var(--color-text-primary)" }}>
+              {s.value}
+            </p>
           </div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Action buttons */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 320 }}>
-        <button
-          onClick={() => router.push(`/games/${slug}?stage=${stageN + 1}`)}
-          style={{ padding: "14px 24px", borderRadius: 14, border: "none", background: "var(--color-accent-primary)", color: "var(--color-on-accent)", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "var(--font-sans)" }}
-        >
+      {/* Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}
+        style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 320 }}
+      >
+        <button onClick={() => router.push(`/games/${slug}?stage=${stageN + 1}`)}
+          style={{ padding: "14px 24px", borderRadius: 10, border: "none", background: "var(--color-accent-primary)",
+            color: "#000", fontWeight: 700, fontSize: 15, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Next Stage <ChevronRight size={16} />
         </button>
-
-        <button
-          onClick={() => router.push(`/stages/${slug}`)}
-          style={{ padding: "14px 24px", borderRadius: 14, border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-primary)", fontWeight: 600, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "var(--font-sans)" }}
-        >
+        <button onClick={() => router.push(`/stages/${slug}`)}
+          style={{ padding: "14px 24px", borderRadius: 10, border: "1px solid var(--color-border)",
+            background: "var(--color-surface)", color: "var(--color-text-primary)", fontWeight: 600,
+            fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Map size={16} /> Back to Map
         </button>
-
-        <button
-          onClick={handleShare}
-          style={{ padding: "14px 24px", borderRadius: 14, border: "1px solid var(--color-border)", background: "transparent", color: "var(--color-text-secondary)", fontWeight: 600, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "var(--font-sans)" }}
-        >
-          {copied ? <><Check size={16} /> Copied!</> : <><Share2 size={16} /> Share Challenge</>}
+        <button onClick={handleShare}
+          style={{ padding: "12px 24px", borderRadius: 10, border: "1px solid var(--color-border)",
+            background: "transparent", color: "var(--color-text-secondary)", fontWeight: 600,
+            fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {copied ? <><Check size={15} /> Copied!</> : <><Share2 size={15} /> Share Challenge</>}
         </button>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
