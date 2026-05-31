@@ -2,11 +2,11 @@
 import { motion } from "framer-motion";
 
 const ROWS = [
-  { game: "QUEENS",   stage: 34, xp: 847,  medal: "🥇" },
-  { game: "TANGO",    stage: 71, xp: 1000, medal: "🥇" },
-  { game: "SUDOKU",   stage: 12, xp: 623,  medal: "🥈" },
-  { game: "BRIDGES",  stage: 8,  xp: 412,  medal: "🥉" },
-  { game: "ZIP",      stage: 55, xp: 791,  medal: "🥇" },
+  { game: "QUEENS",  stage: 34, xp: 847  },
+  { game: "TANGO",   stage: 71, xp: 1000 },
+  { game: "SUDOKU",  stage: 12, xp: 623  },
+  { game: "BRIDGES", stage: 8,  xp: 412  },
+  { game: "ZIP",     stage: 55, xp: 791  },
 ];
 
 const STATS = [
@@ -36,7 +36,7 @@ export function HeroScoreboard() {
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>
           LIVE SCORES
         </span>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 6px #22C55E" }} />
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-accent-secondary)", boxShadow: "0 0 6px var(--color-accent-secondary)" }} />
       </div>
 
       {/* Score rows */}
@@ -56,7 +56,7 @@ export function HeroScoreboard() {
               {i + 1}
             </span>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-text-primary)", fontFamily: "var(--font-mono)", marginBottom: 2 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 2 }}>
                 {row.game}
               </p>
               <p style={{ fontSize: 9, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>
@@ -64,12 +64,9 @@ export function HeroScoreboard() {
               </p>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-mono)" }}>
-              +{row.xp}
-            </span>
-            <span style={{ fontSize: 14 }}>{row.medal}</span>
-          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent-secondary)", fontFamily: "var(--font-mono)" }}>
+            +{row.xp}
+          </span>
         </motion.div>
       ))}
 

@@ -1,7 +1,6 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -42,14 +41,12 @@ export function StepWelcome({ onNext }: Props) {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          borderRadius: br + 4,
-          overflow: "hidden",
           boxShadow: isDark
             ? "0 0 36px rgba(0,255,255,0.2), 0 8px 32px rgba(0,0,0,0.55)"
             : "var(--shadow-md)",
         }}
       >
-        <Image src="/logo-128.png" alt="MindElement" width={96} height={96} priority />
+        <img src="/icons/icon-192.png" width={80} height={80} style={{ borderRadius: 16, display: "block" }} alt="Mind Element" />
       </motion.div>
 
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 12 }}>

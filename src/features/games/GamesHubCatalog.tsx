@@ -4,13 +4,27 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { GAMES } from "@/features/games/GameGrid";
+import { GameIcon } from "@/components/icons/GameIcons";
 import { getCompletedStages } from "@/lib/games/stageProgress";
 
-interface TileProps {
-  game: typeof GAMES[0];
-  isPro: boolean;
-  index: number;
+const DIFF_STYLE = {
+  easy:   { color: "var(--color-accent-secondary)", bg: "rgba(57,255,20,0.08)",   border: "rgba(57,255,20,0.25)"  },
+  medium: { color: "var(--color-accent-primary)",   bg: "rgba(0,255,255,0.08)",   border: "rgba(0,255,255,0.25)"  },
+  hard:   { color: "#F59E0B",                        bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
+};
+
+function DiffPill({ d }: { d: "easy" | "medium" | "hard" }) {
+  const s = DIFF_STYLE[d];
+  return (
+    <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+      color: s.color, background: s.bg, border: `1px solid ${s.border}`,
+      padding: "2px 5px", borderRadius: 3, fontFamily: "var(--font-mono)" }}>
+      {d}
+    </span>
+  );
 }
+
+interface TileProps { game: typeof GAMES[0]; isPro: boolean; index: number }
 
 function GameTile({ game, isPro, index }: TileProps) {
   const [completed, setCompleted] = useState(0);
@@ -26,8 +40,7 @@ function GameTile({ game, isPro, index }: TileProps) {
 
   function handleClick() {
     if (isLocked) { router.push("/pricing"); return; }
-    const onboarded = typeof window !== "undefined" && localStorage.getItem("onboarded") === "1";
-    router.push(onboarded ? `/games/${game.slug}` : `/onboard?next=/games/${game.slug}`);
+    router.push(`/games/${game.slug}`);
   }
 
   return (
@@ -40,12 +53,10 @@ function GameTile({ game, isPro, index }: TileProps) {
       onMouseLeave={() => setHovered(false)}
       aria-label={`${game.name}${isLocked ? " — Pro required" : ""}, ${completed} of 100 stages complete`}
       style={{
-        display: "flex", flexDirection: "column", gap: 10,
-        padding: "14px 14px 12px", borderRadius: 10, textAlign: "left",
-        width: "100%", minHeight: 88, cursor: "pointer",
-        background: isDone
-          ? "rgba(0,255,255,0.06)"
-          : isLocked ? "var(--color-surface)" : "var(--color-surface)",
+        display: "flex", flexDirection: "column", gap: 8,
+        padding: "12px 12px 11px", borderRadius: 10, textAlign: "left",
+        width: "100%", cursor: "pointer",
+        background: "var(--color-surface)",
         border: isDone
           ? "1px solid rgba(0,255,255,0.3)"
           : hovered && !isLocked
@@ -56,7 +67,6 @@ function GameTile({ game, isPro, index }: TileProps) {
         position: "relative",
       }}
     >
-      {/* Pro badge */}
       {isLocked && (
         <span style={{
           position: "absolute", top: 9, right: 9,
@@ -66,31 +76,38 @@ function GameTile({ game, isPro, index }: TileProps) {
           padding: "2px 6px", borderRadius: 3,
         }}>PRO</span>
       )}
-
-      {/* Done badge */}
       {isDone && (
         <span style={{ position: "absolute", top: 9, right: 9 }}>
           <Check size={13} color="var(--color-accent-primary)" strokeWidth={2.5} />
         </span>
       )}
 
-      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", lineHeight: 1.25, paddingRight: isLocked || isDone ? 28 : 0 }}>
-        {game.name}
-      </span>
-
-      <div style={{ width: "100%", height: 4, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
-        {pct > 0 && (
-          <div style={{
-            height: "100%", borderRadius: 2, width: `${pct}%`,
-            background: isDone ? "var(--color-accent-primary)" : "rgba(0,255,255,0.55)",
-            transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
-          }} />
-        )}
+      {/* Icon + name row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 9, paddingRight: isLocked || isDone ? 28 : 0 }}>
+        <GameIcon slug={game.slug} size={28} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {game.name}
+          </span>
+          <DiffPill d={game.difficulty} />
+        </div>
       </div>
 
-      <span style={{ fontSize: 10, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
-        {isDone ? "COMPLETE" : `${completed} / 100`}
-      </span>
+      {/* Progress — only shown once started */}
+      {pct > 0 && (
+        <>
+          <div style={{ width: "100%", height: 3, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: 2, width: `${pct}%`,
+              background: isDone ? "var(--color-accent-primary)" : "rgba(0,255,255,0.55)",
+              transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+            }} />
+          </div>
+          <span style={{ fontSize: 9, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
+            {isDone ? "COMPLETE" : `${completed} / 100`}
+          </span>
+        </>
+      )}
     </motion.button>
   );
 }

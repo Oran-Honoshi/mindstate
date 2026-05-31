@@ -11,39 +11,55 @@ import { useAuthStore } from "@/store/authStore";
 const WORK_M_IMG = "https://ixlcndaryfgkbcjooitu.supabase.co/storage/v1/object/public/asset%20library/man%20at%20work%20playing%20phone.jpg";
 
 export const GAMES = [
-  { slug: "tango",         name: "Tango",           desc: "Balance rows & columns",   free: true  },
-  { slug: "memory",        name: "Memory",           desc: "Flip cards, find pairs",   free: true  },
-  { slug: "queens",        name: "Queens",           desc: "One queen per region",     free: true  },
-  { slug: "sudoku",        name: "Mini Sudoku",      desc: "No repeats in grid",       free: false },
-  { slug: "zip",           name: "Zip",              desc: "Trace through every cell", free: false },
-  { slug: "flow",          name: "Flow",             desc: "Connect color dots",       free: false },
-  { slug: "bridges",       name: "Bridges",          desc: "Right number of bridges",  free: false },
-  { slug: "kakuro",        name: "Kakuro",           desc: "Digit sums guide you",     free: false },
-  { slug: "logic-path",    name: "Logic Path",       desc: "Rotate pipes to connect",  free: false },
-  { slug: "lightup",       name: "Light Up",         desc: "Illuminate every cell",    free: false },
-  { slug: "nonogram",      name: "Nonogram",         desc: "Pixel art from clues",     free: false },
-  { slug: "pattern-match", name: "Pattern Match",    desc: "Find the rule",            free: false },
-  { slug: "patches",       name: "Patches",          desc: "Tile with polyominoes",    free: false },
-  { slug: "2048-pro",      name: "2048 Pro",         desc: "Merge to the target",      free: false },
-  { slug: "gravity-sort",  name: "Gravity Sort",     desc: "Sort falling blocks",      free: false },
-  { slug: "hex-merge",     name: "Hex Merge",        desc: "Chain hex merges",         free: false },
-  { slug: "word-sling",    name: "Word Sling",       desc: "Build scoring words",      free: false },
-  { slug: "hearts",        name: "Hearts",           desc: "Avoid penalty cards",      free: false },
-  { slug: "solitaire",     name: "Solitaire",        desc: "Classic Klondike",         free: false },
-  { slug: "minesweeper",   name: "Minesweeper",      desc: "Deduce the mines",         free: false },
-  { slug: "word-climb",    name: "Word Climb",       desc: "Climb the word ladder",    free: false },
-  { slug: "pinpoint",      name: "Pinpoint",         desc: "Guess from clues",         free: false },
-  { slug: "name-country",  name: "Name the Country", desc: "Identify from the flag",   free: false },
-  { slug: "name-city",     name: "Name the City",    desc: "Identify the city",        free: false },
+  { slug: "tango",         name: "Tango",           desc: "Balance rows & columns",   free: true,  difficulty: "easy"   as const },
+  { slug: "memory",        name: "Memory",           desc: "Flip cards, find pairs",   free: true,  difficulty: "easy"   as const },
+  { slug: "queens",        name: "Queens",           desc: "One queen per region",     free: true,  difficulty: "easy"   as const },
+  { slug: "sudoku",        name: "Mini Sudoku",      desc: "No repeats in grid",       free: false, difficulty: "medium" as const },
+  { slug: "zip",           name: "Zip",              desc: "Trace through every cell", free: false, difficulty: "medium" as const },
+  { slug: "flow",          name: "Flow",             desc: "Connect color dots",       free: false, difficulty: "medium" as const },
+  { slug: "bridges",       name: "Bridges",          desc: "Right number of bridges",  free: false, difficulty: "medium" as const },
+  { slug: "kakuro",        name: "Kakuro",           desc: "Digit sums guide you",     free: false, difficulty: "hard"   as const },
+  { slug: "logic-path",    name: "Logic Path",       desc: "Rotate pipes to connect",  free: false, difficulty: "medium" as const },
+  { slug: "lightup",       name: "Light Up",         desc: "Illuminate every cell",    free: false, difficulty: "medium" as const },
+  { slug: "nonogram",      name: "Nonogram",         desc: "Pixel art from clues",     free: false, difficulty: "hard"   as const },
+  { slug: "pattern-match", name: "Pattern Match",    desc: "Find the rule",            free: false, difficulty: "easy"   as const },
+  { slug: "patches",       name: "Patches",          desc: "Tile with polyominoes",    free: false, difficulty: "medium" as const },
+  { slug: "2048-pro",      name: "2048 Pro",         desc: "Merge to the target",      free: false, difficulty: "medium" as const },
+  { slug: "gravity-sort",  name: "Gravity Sort",     desc: "Sort falling blocks",      free: false, difficulty: "medium" as const },
+  { slug: "hex-merge",     name: "Hex Merge",        desc: "Chain hex merges",         free: false, difficulty: "hard"   as const },
+  { slug: "word-sling",    name: "Word Sling",       desc: "Build scoring words",      free: false, difficulty: "easy"   as const },
+  { slug: "hearts",        name: "Hearts",           desc: "Avoid penalty cards",      free: false, difficulty: "medium" as const },
+  { slug: "solitaire",     name: "Solitaire",        desc: "Classic Klondike",         free: false, difficulty: "easy"   as const },
+  { slug: "minesweeper",   name: "Minesweeper",      desc: "Deduce the mines",         free: false, difficulty: "hard"   as const },
+  { slug: "word-climb",    name: "Word Climb",       desc: "Climb the word ladder",    free: false, difficulty: "easy"   as const },
+  { slug: "pinpoint",      name: "Pinpoint",         desc: "Guess from clues",         free: false, difficulty: "easy"   as const },
+  { slug: "name-country",  name: "Name the Country", desc: "Identify from the flag",   free: false, difficulty: "easy"   as const },
+  { slug: "name-city",     name: "Name the City",    desc: "Identify the city",        free: false, difficulty: "medium" as const },
 ];
+
+const DIFF_STYLE = {
+  easy:   { color: "var(--color-accent-secondary)", bg: "rgba(57,255,20,0.08)",   border: "rgba(57,255,20,0.25)"  },
+  medium: { color: "var(--color-accent-primary)",   bg: "rgba(0,255,255,0.08)",   border: "rgba(0,255,255,0.25)"  },
+  hard:   { color: "#F59E0B",                        bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
+};
+
+function DiffPill({ d }: { d: "easy" | "medium" | "hard" }) {
+  const s = DIFF_STYLE[d];
+  return (
+    <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+      color: s.color, background: s.bg, border: `1px solid ${s.border}`,
+      padding: "2px 5px", borderRadius: 3, fontFamily: "var(--font-mono)", flexShrink: 0 }}>
+      {d}
+    </span>
+  );
+}
 
 function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
 
   function handleGameClick() {
-    const onboarded = typeof window !== "undefined" && localStorage.getItem("onboarded") === "1";
-    router.push(onboarded ? `/games/${game.slug}` : `/onboard?next=/games/${game.slug}`);
+    router.push(`/games/${game.slug}`);
   }
 
   return (
@@ -73,7 +89,10 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
           </AnimatePresence>
         </div>
         <div style={{ padding: "11px 14px 13px" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 3 }}>{game.name}</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)" }}>{game.name}</p>
+            <DiffPill d={game.difficulty} />
+          </div>
           <p style={{ fontSize: 11, color: "var(--color-text-secondary)", lineHeight: 1.5 }}>{game.desc}</p>
         </div>
       </div>
