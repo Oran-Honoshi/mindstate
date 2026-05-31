@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GameSnapshot } from "@/components/ui/GameSnapshots";
+import { GameIcon } from "@/components/icons/GameIcons";
 import { ComingSoonTeaser } from "@/components/ui/ComingSoonTeaser";
 import { useAuthStore } from "@/store/authStore";
 
@@ -58,43 +59,49 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
 
-  function handleGameClick() {
-    router.push(`/games/${game.slug}`);
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: (i % 4) * 0.05 }}
-      onClick={handleGameClick}
-      style={{ cursor: "pointer" }}>
-      <div
-        className="ms-card"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{ overflow: "hidden" }}>
-        <div style={{ height: 110, background: hovered ? "rgba(0,255,255,0.06)" : "rgba(0,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", transition: "background 0.25s", overflow: "hidden" }}>
-          <GameSnapshot slug={game.slug}/>
-          <AnimatePresence>
-            {hovered && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
-                style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4, backdropFilter: "blur(4px)" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Start Training</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}>Uses 1 daily session</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        <div style={{ padding: "11px 14px 13px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)" }}>{game.name}</p>
-            <DiffPill d={game.difficulty} />
-          </div>
-          <p style={{ fontSize: 11, color: "var(--color-text-secondary)", lineHeight: 1.5 }}>{game.desc}</p>
-        </div>
+      onClick={() => router.push(`/games/${game.slug}`)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        cursor: "pointer", minHeight: 140, borderRadius: 10,
+        background: "var(--color-surface)", position: "relative", overflow: "hidden",
+        border: hovered
+          ? "1px solid var(--color-accent-primary)"
+          : "1px solid var(--color-border)",
+        transition: "border-color 0.2s ease",
+        display: "flex", flexDirection: "column", justifyContent: "flex-end",
+        padding: "12px 14px 13px",
+      }}
+    >
+      {/* Snapshot — right 60%, faint background */}
+      <div style={{
+        position: "absolute", top: 0, right: -8, bottom: 0, width: "60%",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        opacity: hovered ? 0.6 : 0.35,
+        transition: "opacity 0.2s ease",
+        pointerEvents: "none",
+        transform: "scale(1.3)", transformOrigin: "center right",
+      }}>
+        <GameSnapshot slug={game.slug} />
+      </div>
+
+      {/* Small icon — top-left */}
+      <div style={{ position: "absolute", top: 10, left: 12, opacity: 0.7 }}>
+        <GameIcon slug={game.slug} size={16} />
+      </div>
+
+      {/* Foreground text */}
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2 }}>
+          {game.name}
+        </p>
+        <DiffPill d={game.difficulty} />
       </div>
     </motion.div>
   );

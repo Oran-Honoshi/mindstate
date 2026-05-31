@@ -435,7 +435,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
   const snap = snaps[slug];
   if (!snap) return <GameIcon slug={slug} size={52} />;
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", transform: "scale(1.4)", transformOrigin: "center" }}>
       {snap}
     </div>
   );
