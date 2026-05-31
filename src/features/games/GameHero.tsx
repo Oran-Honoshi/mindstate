@@ -4,7 +4,7 @@ import { ChevronRight, Download } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { HeroScoreboard } from "./HeroScoreboard";
+import { HeroPhoneMockups } from "@/features/landing/HeroPhoneMockups";
 import { HeroTokens } from "./HeroTokens";
 import { HeroAudience } from "./HeroAudience";
 
@@ -17,7 +17,7 @@ const AVATAR_IMGS = [
   BASE + "woman%20at%20dining%20table%20at%20home%20smiling%20holding%20phone.jpg",
 ];
 
-const PROOF_STATS = ["24 GAMES", "2,400 STAGES", "7 LANGUAGES", "ZERO ADS"];
+const PROOF_STATS = ["24 GAMES", "THOUSANDS OF STAGES", "ZERO ADS EVER", "FREE TO START"];
 
 export function GameHero() {
   const { user } = useAuthStore();
@@ -68,15 +68,15 @@ export function GameHero() {
           </div>
         </motion.div>
 
-        <HeroScoreboard />
+        <HeroPhoneMockups />
       </section>
 
       {/* ── STAT TICKER ── */}
-      <section style={{ borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)" }}>
+      <section style={{ borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)", background: "var(--color-surface)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px", display: "flex", alignItems: "stretch" }}>
           {PROOF_STATS.map((stat, i) => (
             <div key={stat} style={{ flex: 1, padding: "18px 0", textAlign: "center", borderRight: i < PROOF_STATS.length - 1 ? "1px solid var(--color-border)" : "none" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>{stat}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "var(--color-text-primary)", fontFamily: "var(--font-mono)" }}>{stat}</span>
             </div>
           ))}
         </div>

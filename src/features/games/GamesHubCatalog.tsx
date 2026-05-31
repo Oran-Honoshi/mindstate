@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { GAMES } from "@/features/games/GameGrid";
-import { GameIcon } from "@/components/icons/GameIcons";
+import { GameSnapshot } from "@/components/ui/GameSnapshots";
 import { getCompletedStages } from "@/lib/games/stageProgress";
 
 const DIFF_STYLE = {
@@ -53,9 +53,9 @@ function GameTile({ game, isPro, index }: TileProps) {
       onMouseLeave={() => setHovered(false)}
       aria-label={`${game.name}${isLocked ? " — Pro required" : ""}, ${completed} of 100 stages complete`}
       style={{
-        display: "flex", flexDirection: "column", gap: 8,
+        display: "flex", flexDirection: "column", gap: 0,
         padding: "12px 12px 11px", borderRadius: 10, textAlign: "left",
-        width: "100%", cursor: "pointer",
+        width: "100%", cursor: "pointer", minHeight: 120,
         background: "var(--color-surface)",
         border: isDone
           ? "1px solid rgba(0,255,255,0.3)"
@@ -65,8 +65,22 @@ function GameTile({ game, isPro, index }: TileProps) {
         opacity: isLocked ? 0.65 : 1,
         transition: "border-color 0.15s, background 0.15s",
         position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Snapshot as faint background preview */}
+      <div style={{
+        position: "absolute", top: 0, right: -4, bottom: 0,
+        width: "52%", display: "flex", alignItems: "center", justifyContent: "center",
+        opacity: hovered && !isLocked ? 0.45 : 0.28,
+        pointerEvents: "none",
+        transition: "opacity 0.2s",
+        transform: "scale(1.15)",
+        transformOrigin: "center right",
+      }}>
+        <GameSnapshot slug={game.slug} />
+      </div>
+
       {isLocked && (
         <span style={{
           position: "absolute", top: 9, right: 9,
@@ -82,21 +96,18 @@ function GameTile({ game, isPro, index }: TileProps) {
         </span>
       )}
 
-      {/* Icon + name row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 9, paddingRight: isLocked || isDone ? 28 : 0 }}>
-        <GameIcon slug={game.slug} size={28} />
-        <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {game.name}
-          </span>
-          <DiffPill d={game.difficulty} />
-        </div>
+      {/* Name + difficulty */}
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 6, flex: 1, paddingRight: isLocked || isDone ? 28 : 0 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {game.name}
+        </span>
+        <DiffPill d={game.difficulty} />
       </div>
 
-      {/* Progress — only shown once started */}
+      {/* Progress bar */}
       {pct > 0 && (
-        <>
-          <div style={{ width: "100%", height: 3, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 3, marginTop: 10 }}>
+          <div style={{ width: "60%", height: 3, background: "var(--color-surface-2)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%", borderRadius: 2, width: `${pct}%`,
               background: isDone ? "var(--color-accent-primary)" : "rgba(0,255,255,0.55)",
@@ -106,7 +117,7 @@ function GameTile({ game, isPro, index }: TileProps) {
           <span style={{ fontSize: 9, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
             {isDone ? "COMPLETE" : `${completed} / 100`}
           </span>
-        </>
+        </div>
       )}
     </motion.button>
   );
@@ -125,7 +136,7 @@ export function GamesHubCatalog({ isPro }: GamesHubCatalogProps) {
           {GAMES.length} TITLES
         </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {GAMES.map((game, i) => (
           <GameTile key={game.slug} game={game} isPro={isPro} index={i} />
         ))}

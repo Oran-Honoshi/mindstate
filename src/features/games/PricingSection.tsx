@@ -64,10 +64,10 @@ export function PricingSection() {
           <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 40, color: "var(--color-text-primary)", marginBottom: 10 }}>Simple, Honest Pricing</h2>
           <p style={{ fontSize: 18, color: "var(--color-text-secondary)" }}>Less than a coffee. Invest in the sharpest version of your household.</p>
         </div>
-        <div className="pricing-grid" style={{ alignItems: "start", maxWidth: 860, margin: "0 auto" }}>
+        <div className="pricing-grid" style={{ alignItems: "stretch", maxWidth: 860, margin: "0 auto" }}>
           {PLANS.map((plan, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              style={{ borderRadius: 24, padding: 28, position: "relative", background: plan.highlight ? "var(--color-accent-primary)" : "var(--color-surface)", border: plan.highlight ? "none" : "0.5px solid var(--color-border)", boxShadow: plan.highlight ? "0 24px 56px rgba(0,255,255,0.2)" : "var(--shadow-sm)", color: plan.highlight ? "#000" : "var(--color-text-primary)" }}>
+              style={{ borderRadius: 24, padding: 28, position: "relative", background: plan.highlight ? "var(--color-accent-primary)" : "var(--color-surface)", border: plan.highlight ? "none" : "0.5px solid var(--color-border)", boxShadow: plan.highlight ? "0 24px 56px rgba(0,255,255,0.2)" : "var(--shadow-sm)", color: plan.highlight ? "#000" : "var(--color-text-primary)", display: "flex", flexDirection: "column" }}>
               {plan.highlight && (
                 <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", fontSize: 10, fontWeight: 700, color: "var(--color-accent-primary)", background: "white", padding: "4px 14px", borderRadius: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", whiteSpace: "nowrap" }}>
                   Most Popular
@@ -89,7 +89,7 @@ export function PricingSection() {
                 ))}
               </ul>
               {plan.free ? (
-                <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--color-surface)", color: "var(--color-text-secondary)", border: "1.5px solid var(--color-border)" }}>
+                <Link href="/auth/signup" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, textDecoration: "none", background: "var(--color-surface)", color: "var(--color-text-secondary)", border: "1.5px solid var(--color-border)", marginTop: "auto" }}>
                   Start Training Free
                 </Link>
               ) : (
@@ -105,7 +105,7 @@ export function PricingSection() {
                       });
                     }
                   }}
-                  style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "var(--color-accent-primary)" : "var(--color-text-secondary)", outline: plan.highlight ? "none" : "1.5px solid var(--color-border)" }}>
+                  style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", border: "none", background: plan.highlight ? "white" : "transparent", color: plan.highlight ? "var(--color-accent-primary)" : "var(--color-text-secondary)", outline: plan.highlight ? "none" : "1.5px solid var(--color-border)", marginTop: "auto" }}>
                   Test your skills free now
                 </button>
               )}

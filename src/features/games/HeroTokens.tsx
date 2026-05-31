@@ -1,29 +1,45 @@
 "use client";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { Grid, Flame, Infinity } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const RULES = [
+interface Step {
+  num: string;
+  title: string;
+  desc: string;
+  Icon: LucideIcon;
+  color: string;
+  iconBg: string;
+  iconBorder: string;
+}
+
+const STEPS: Step[] = [
   {
-    label: "FREE DAILY LIMIT",
-    value: "5",
-    unit: "PLAYS / DAY",
-    desc: "Full vault access. All 24 games. Sessions reset at midnight.",
-    accent: false,
+    num: "01",
+    title: "PICK A GAME",
+    desc: "Choose from 24 precision logic games. Each has 100 algorithmically generated stages.",
+    Icon: Grid,
+    color: "var(--color-accent-primary)",
+    iconBg: "rgba(0,255,255,0.1)",
+    iconBorder: "rgba(0,255,255,0.25)",
   },
   {
-    label: "WEEKLY STREAK BONUS",
-    value: "+10",
-    unit: "BONUS PLAYS",
-    desc: "Play 7 consecutive days. Bonus credited automatically.",
-    accent: false,
+    num: "02",
+    title: "TRAIN DAILY",
+    desc: "5 free sessions every day. Build your streak. The longer your streak, the sharper you get.",
+    Icon: Flame,
+    color: "var(--color-accent-secondary)",
+    iconBg: "rgba(57,255,20,0.1)",
+    iconBorder: "rgba(57,255,20,0.25)",
   },
   {
-    label: "PRO UNLIMITED",
-    value: "∞",
-    unit: "NO LIMITS",
-    desc: "Unlimited training from $2/month. Family plans from $5.",
-    accent: true,
+    num: "03",
+    title: "GO UNLIMITED",
+    desc: "Subscribe for $2/month. Unlimited play, family groups, and leaderboard glory.",
+    Icon: Infinity,
+    color: "var(--color-accent-primary)",
+    iconBg: "rgba(0,255,255,0.1)",
+    iconBorder: "rgba(0,255,255,0.25)",
   },
 ];
 
@@ -35,47 +51,43 @@ export function HeroTokens() {
           HOW IT WORKS
         </p>
         <h2 style={{ fontSize: "clamp(28px,3.5vw,44px)", fontWeight: 700, color: "var(--color-text-primary)", lineHeight: 1.1 }}>
-          Train daily. Build streaks. Go unlimited.
+          Three steps to sharper.
         </h2>
       </motion.div>
 
-      <div style={{ border: "1px solid var(--color-border)", borderRadius: 12, overflow: "hidden", marginBottom: 80 }}>
-        {RULES.map((rule, i) => (
-          <motion.div key={rule.label}
-            initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+      <div className="how-grid" style={{ marginBottom: 80 }}>
+        {STEPS.map((step, i) => (
+          <motion.div key={step.num}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
             style={{
-              display: "grid", gridTemplateColumns: "180px 1fr auto",
-              alignItems: "center", gap: "0 32px",
-              padding: "24px 28px",
-              borderBottom: i < 2 ? "1px solid var(--color-border)" : "none",
-              background: rule.accent ? "rgba(0,255,255,0.04)" : "var(--color-surface)",
+              padding: "28px 24px 24px",
+              borderRadius: 12,
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
             }}
           >
-            <div>
-              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", color: rule.accent ? "var(--color-accent-primary)" : "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 6 }}>
-                {rule.label}
-              </p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                <span style={{ fontSize: 40, fontWeight: 700, color: rule.accent ? "var(--color-accent-primary)" : "var(--color-text-primary)", fontFamily: "var(--font-mono)", lineHeight: 1 }}>
-                  {rule.value}
-                </span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>
-                  {rule.unit}
-                </span>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 800, color: "var(--color-text-primary)", lineHeight: 1, letterSpacing: "-0.02em" }}>
+                {step.num}
+              </span>
+              <div style={{ width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+                background: step.iconBg,
+                border: `1px solid ${step.iconBorder}`,
+              }}>
+                <step.Icon size={19} color={step.color} />
               </div>
             </div>
-            <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
-              {rule.desc}
-            </p>
-            {rule.accent ? (
-              <Link href="/pricing" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 8, background: "var(--color-accent-primary)", color: "#000", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
-                See Plans <ChevronRight size={12} />
-              </Link>
-            ) : (
-              <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                {i === 0 ? "NO CARD NEEDED" : "AUTO CREDITED"}
-              </span>
-            )}
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 8, letterSpacing: "0.02em" }}>
+                {step.title}
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.65, margin: 0 }}>
+                {step.desc}
+              </p>
+            </div>
           </motion.div>
         ))}
       </div>
