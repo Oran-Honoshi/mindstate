@@ -21,8 +21,13 @@ export default function SignInPage() {
     setLoading(true); setError(null);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { setError(error.message); setLoading(false); }
-    else router.push("/games");
+    if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        router.push("/games?verify=1");
+      } else {
+        setError(error.message); setLoading(false);
+      }
+    } else router.push("/games");
   }
 
   async function handleGoogle() {

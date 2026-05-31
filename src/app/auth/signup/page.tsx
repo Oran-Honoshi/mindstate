@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Brain, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const ACCENT = "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))";
 
@@ -14,18 +15,19 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string|null>(null);
-  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: { data:{ username }, emailRedirectTo:`${window.location.origin}/auth/callback` },
     });
     if (error) { setError(error.message); setLoading(false); }
-    else setSuccess(true);
+    else if (data.session) router.push("/games");
+    else router.push("/games?verify=1");
   }
 
   async function handleGoogle() {
@@ -37,21 +39,6 @@ export default function SignUpPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({ provider:"facebook", options:{ redirectTo:`${window.location.origin}/auth/callback` } });
   }
-
-  if (success) return (
-    <div className="auth-page" style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <motion.div initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }}
-        className="ms-card" style={{ width:"100%", maxWidth:380, padding:"40px 28px", textAlign:"center" }}>
-        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(0,255,255,0.1)", border:"0.5px solid rgba(0,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-          <Brain size={24} color="var(--color-accent-primary)"/>
-        </div>
-        <h2 style={{ fontSize:20, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:8 }}>Check your email</h2>
-        <p style={{ fontSize:13, color:"var(--color-text-secondary)", lineHeight:1.6 }}>
-          We sent a confirmation link to <strong style={{ color:"var(--color-text-primary)" }}>{email}</strong>. Click it to activate your account.
-        </p>
-      </motion.div>
-    </div>
-  );
 
   return (
     <div className="auth-page" style={{ minHeight:"100vh", background:"var(--color-bg)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>

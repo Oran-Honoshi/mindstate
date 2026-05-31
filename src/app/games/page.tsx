@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
-import { Flame, ChevronRight, Zap } from "lucide-react";
+import { Flame, ChevronRight, Zap, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { GamesNav } from "@/features/games/GamesNav";
 import { GamesHubCatalog } from "@/features/games/GamesHubCatalog";
 import { HeroMemory } from "@/features/games/HeroMemory";
@@ -18,6 +20,39 @@ function greetingWord() {
   if (h < 12) return "Good morning";
   if (h < 18) return "Good afternoon";
   return "Good evening";
+}
+
+function VerifyBanner() {
+  const [visible, setVisible] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("verify") === "1" && !sessionStorage.getItem("verify-dismissed")) {
+      setVisible(true);
+    }
+  }, [searchParams]);
+
+  function dismiss() {
+    sessionStorage.setItem("verify-dismissed", "1");
+    setVisible(false);
+  }
+
+  if (!visible) return null;
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "10px 20px",
+      background: "var(--color-surface-2)",
+      borderBottom: "1px solid var(--color-border)",
+    }}>
+      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
+        Check your email to verify your account.
+      </span>
+      <button onClick={dismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", display: "flex", alignItems: "center", padding: 4 }}>
+        <X size={15} />
+      </button>
+    </div>
+  );
 }
 
 export default function GamesHubPage() {
@@ -37,6 +72,7 @@ export default function GamesHubPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", paddingTop: 56 }}>
       <GamesNav />
+      <VerifyBanner />
 
       {user ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
