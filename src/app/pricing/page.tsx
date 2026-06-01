@@ -55,7 +55,7 @@ const PLANS = [
     free: false,
     highlight: false,
     icon: Users,
-    color: "#39FF14",
+    color: "#54D06A",
     features: ["Up to 7 independent profiles","Master billing dashboard","All Family Choice perks","Unlimited daily training","Full vault access","3-day free trial"],
   },
 ];

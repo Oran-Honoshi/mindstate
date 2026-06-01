@@ -62,7 +62,7 @@ export function formatElapsed(startTime: number, now = Date.now()): string {
 }
 
 export function xpColor(percentRemaining: number): string {
-  if (percentRemaining > 0.6) return "#39FF14";
+  if (percentRemaining > 0.6) return "#54D06A";
   if (percentRemaining > 0.3) return "#FFD700";
   return "#FF4444";
 }

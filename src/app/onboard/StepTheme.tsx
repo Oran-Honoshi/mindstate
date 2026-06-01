@@ -23,12 +23,12 @@ function ThemeCard({ id, label, colors, selected, onSelect }: PreviewProps) {
         flex: 1,
         padding: 0,
         cursor: "pointer",
-        border: selected ? "2px solid #00FFFF" : "2px solid transparent",
+        border: selected ? "2px solid #2FE6E0" : "2px solid transparent",
         borderRadius: 14,
         overflow: "hidden",
         background: "transparent",
         boxShadow: selected
-          ? "0 0 18px rgba(0,255,255,0.28), 0 4px 16px rgba(0,0,0,0.3)"
+          ? "0 0 18px rgba(47,230,224,0.28), 0 4px 16px rgba(0,0,0,0.3)"
           : "0 2px 8px rgba(0,0,0,0.18)",
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
       }}
@@ -53,7 +53,7 @@ function ThemeCard({ id, label, colors, selected, onSelect }: PreviewProps) {
 }
 
 const THEMES: { id: Theme; label: string; colors: ThemeColors }[] = [
-  { id: "dark",  label: "Dark",  colors: { bg: "#121212", surface: "#1E1E1E", surface2: "#2A2A2A", accent: "#00FFFF", text: "#F5F5F5", textSub: "#A0A0A0" } },
+  { id: "dark",  label: "Dark",  colors: { bg: "#121212", surface: "#1E1E1E", surface2: "#2A2A2A", accent: "#2FE6E0", text: "#F5F5F5", textSub: "#A0A0A0" } },
   { id: "light", label: "Light", colors: { bg: "#FFFFFF", surface: "#F5F5F5", surface2: "#E8E8E8", accent: "#00CCCC", text: "#121212", textSub: "#555555" } },
   { id: "paper", label: "Paper", colors: { bg: "#F2E8D9", surface: "#EDE0C8", surface2: "#E5D5B0", accent: "#2D5A1B", text: "#1A1714", textSub: "#4A3F35" } },
 ];

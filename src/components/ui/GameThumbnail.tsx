@@ -6,12 +6,12 @@ import { Brain } from "lucide-react";
 
 // Seeded color palette per slug — deterministic, no randomness
 const SLUG_PALETTES: Record<string, { from: string; to: string; accent: string }> = {
-  "tango":         { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#00FFFF" },
-  "memory":        { from:"#059669", to:"#0891B2", accent:"#39FF14" },
+  "tango":         { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#2FE6E0" },
+  "memory":        { from:"#059669", to:"#0891B2", accent:"#54D06A" },
   "queens":        { from:"#7C3AED", to:"var(--color-accent-primary)", accent:"#F59E0B" },
-  "sudoku":        { from:"#1D4ED8", to:"#7C3AED", accent:"#00FFFF" },
-  "zip":           { from:"#0891B2", to:"#059669", accent:"#39FF14" },
-  "flow":          { from:"var(--color-error)", to:"#F59E0B", accent:"#00FFFF" },
+  "sudoku":        { from:"#1D4ED8", to:"#7C3AED", accent:"#2FE6E0" },
+  "zip":           { from:"#0891B2", to:"#059669", accent:"#54D06A" },
+  "flow":          { from:"var(--color-error)", to:"#F59E0B", accent:"#2FE6E0" },
   "bridges":       { from:"#B45309", to:"#92400E", accent:"#FDE68A" },
   "kakuro":        { from:"#1D4ED8", to:"#1E40AF", accent:"#93C5FD" },
   "logic-path":    { from:"#0E7490", to:"#0891B2", accent:"#67E8F9" },
@@ -51,7 +51,7 @@ export function GameThumbnail({ slug, imageUrl, className = "" }: GameThumbnailP
     );
   }
 
-  const palette = SLUG_PALETTES[slug] ?? { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#00FFFF" };
+  const palette = SLUG_PALETTES[slug] ?? { from:"var(--color-accent-primary)", to:"var(--color-accent-primary)", accent:"#2FE6E0" };
 
   return (
     <div style={{

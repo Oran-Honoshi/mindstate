@@ -6,12 +6,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Map, Share2, Check } from "lucide-react";
 import { triggerConfetti } from "@/components/effects/Confetti";
 import { SparkyImg } from "@/components/ui/SparkyImg";
+import { AchievementCard } from "@/components/ui/AchievementCard";
 import { GAMES } from "@/features/games/GameGrid";
 import { ToastCelebration } from "@/components/celebrations/ToastCelebration";
 import { CardCelebration } from "@/components/celebrations/CardCelebration";
 import { LevelUpOverlay } from "@/components/celebrations/LevelUpOverlay";
 import { CenturyOverlay } from "@/components/celebrations/CenturyOverlay";
 import { useCompleteCelebrations } from "./useCompleteCelebrations";
+import { useAuthStore } from "@/store/authStore";
+
+function parseTimeSecs(t: string): number {
+  if (t === "—") return Infinity;
+  const parts = t.split(":").map(Number);
+  return (parts[0] || 0) * 60 + (parts[1] || 0);
+}
 
 function getMedal(xp: number) {
   if (xp > 800) return { emoji: "🥇", label: "GOLD",   color: "#F59E0B" };
@@ -24,6 +32,8 @@ function StageCompleteContent() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const [copied, setCopied] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const { user } = useAuthStore();
 
   const slug   = params.slug  as string;
   const stageN = parseInt(params.stage as string, 10);
@@ -39,6 +49,18 @@ function StageCompleteContent() {
     const t = setTimeout(triggerConfetti, 300);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (parseTimeSecs(time) < 30 && hints === 0 && xp > 900 && user) {
+      const key = `mindstate_achievements_${user.id}`;
+      const earned: string[] = JSON.parse(localStorage.getItem(key) ?? "[]");
+      if (!earned.includes("speed_demon")) {
+        localStorage.setItem(key, JSON.stringify([...earned, "speed_demon"]));
+        const timer = setTimeout(() => setShowAchievement(true), 1800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [time, hints, xp, user]);
 
   function handleShare() {
     navigator.clipboard
@@ -165,6 +187,14 @@ function StageCompleteContent() {
         )}
         {cel.levelUp && <LevelUpOverlay key="levelup" levelName={cel.levelUp.name} levelColor={cel.levelUp.color} onDismiss={() => dismiss("levelUp")} />}
         {cel.showCentury && <CenturyOverlay key="century" gameName={gameName} onDismiss={() => dismiss("showCentury")} />}
+        {showAchievement && (
+          <AchievementCard key="speed-demon"
+            title="Speed Demon"
+            description="Under 30 seconds, no hints, over 900 XP. Lightning fast."
+            imageSrc="/badges/speed.png"
+            sparkyMood="celebrate"
+            onDismiss={() => setShowAchievement(false)} />
+        )}
       </AnimatePresence>
     </div>
   );

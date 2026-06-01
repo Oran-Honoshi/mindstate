@@ -4,7 +4,6 @@ import { ChevronRight, Download } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { HeroPhoneMockups } from "@/features/landing/HeroPhoneMockups";
 import { HeroTokens } from "./HeroTokens";
 import { HeroAudience } from "./HeroAudience";
 
@@ -68,7 +67,11 @@ export function GameHero() {
           </div>
         </motion.div>
 
-        <HeroPhoneMockups />
+        <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55 }}
+          style={{ display: "flex", justifyContent: "center" }}>
+          <img src="/marketing/hero.png" alt="Mind Element on mobile"
+            style={{ width: "100%", maxWidth: 520, borderRadius: 24 }} />
+        </motion.div>
       </section>
 
       {/* ── STAT TICKER ── */}

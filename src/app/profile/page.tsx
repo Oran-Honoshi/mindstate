@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Zap, Target, Star, Flame, Crown } from "lucide-react";
+import { Flame, Crown } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
@@ -13,6 +13,8 @@ import { ProfileHeader } from "@/features/profile/ProfileHeader";
 import { ProfileActivity } from "@/features/profile/ProfileActivity";
 import { MasterySection } from "@/features/profile/MasterySection";
 import { SparkyImg } from "@/components/ui/SparkyImg";
+import { CollectibleFigure } from "@/components/ui/CollectibleFigure";
+import { XPRing } from "@/components/ui/XPRing";
 
 const ACHIEVEMENTS = [
   { id:"first_win",  icon:"🎯", name:"First Victory",    desc:"Complete your first stage",      check:(s:Score[])=>s.length>=1 },
@@ -61,7 +63,6 @@ export default function ProfilePage() {
   );
 
   const totalXP = scores.reduce((s, sc) => s + sc.xp_earned, 0);
-  const bestScore = scores.reduce((b, s) => s.xp_earned > b ? s.xp_earned : b, 0);
   const uniqueGames = new Set(scores.map(s => s.game_slug)).size;
   const currentStreak = streakData?.current_streak ?? 0;
   const longestStreak = streakData?.longest_streak ?? 0;
@@ -75,24 +76,8 @@ export default function ProfilePage() {
         <ProfileHeader user={user} username={profile?.username} isPro={isPro}
           currentStreak={currentStreak} tokens={tokens} />
 
-        {/* Stats row */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10, marginBottom:16 }}>
-          {[
-            { icon: Zap,    label:"Total XP",      value: totalXP.toLocaleString(),   color:"var(--color-accent-primary)" },
-            { icon: Target, label:"Stages Played",  value: scores.length.toString(),   color:"var(--color-accent-primary)" },
-            { icon: Trophy, label:"Best Score",     value: bestScore.toString(),        color:"#F59E0B" },
-            { icon: Star,   label:"Games Tried",    value: `${uniqueGames}/20`,         color:"#22C55E" },
-          ].map(({ icon: Icon, label, value, color }, i) => (
-            <motion.div key={label} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay: i * 0.04 }}
-              className="ms-card" style={{ padding:"16px 18px" }}>
-              <p style={{ fontSize:22, fontWeight:700, fontFamily:"var(--font-mono)", color, marginBottom:3 }}>{value}</p>
-              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <Icon size={11} color="var(--color-text-secondary)" />
-                <p style={{ fontSize:10, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase" }}>{label}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* XP Ring — hero stat block */}
+        <XPRing totalXP={totalXP} stagesPlayed={scores.length} uniqueGames={uniqueGames} />
 
         {/* Streak */}
         <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }}
@@ -154,6 +139,12 @@ export default function ProfilePage() {
               );
             })}
           </div>
+        </motion.div>
+
+        {/* Sparky Collectibles */}
+        <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.12 }}
+          className="ms-card" style={{ padding:"18px 20px", marginBottom:12 }}>
+          <CollectibleFigure userId={user.id} />
         </motion.div>
 
         <MasterySection />
