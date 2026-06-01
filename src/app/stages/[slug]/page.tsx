@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { getLastStage, getCompletedStages } from "@/lib/games/stageProgress";
+import { MasteryBadge } from "@/components/ui/MasteryBadge";
+import { WindingPath } from "./WindingPath";
 
 const GAME_NAMES: Record<string, string> = {
   tango:"Tango", memory:"Memory", queens:"Queens", sudoku:"Mini Sudoku",
@@ -18,20 +20,13 @@ const GAME_NAMES: Record<string, string> = {
 };
 
 const BANDS = [
-  { label:"EASY",   range:"1–30",   start:1,  end:30,  color:"#15803D", bg:"rgba(34,197,94,0.08)"   },
-  { label:"MEDIUM", range:"31–70",  start:31, end:70,  color:"#B45309", bg:"rgba(245,158,11,0.08)"  },
-  { label:"HARD",   range:"71–100", start:71, end:100, color:"#DC2626", bg:"rgba(239,68,68,0.08)"   },
+  { label:"EASY",   range:"1–30",   color:"#54D06A", bg:"rgba(84,208,106,0.08)"   },
+  { label:"MEDIUM", range:"31–70",  color:"#F5A623", bg:"rgba(245,166,35,0.08)"   },
+  { label:"HARD",   range:"71–100", color:"#FF5C66", bg:"rgba(255,92,102,0.08)"   },
 ];
-
-function bandColor(n: number) {
-  if (n <= 30) return "#15803D";
-  if (n <= 70) return "#B45309";
-  return "#DC2626";
-}
 
 export default function StagesPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
   const gameName = GAME_NAMES[slug] ?? slug.split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
   const [lastStage, setLastStage] = useState(1);
@@ -62,6 +57,7 @@ export default function StagesPage() {
           <p style={{ fontSize:16, fontWeight:700, color:"var(--color-text-primary)" }}>{gameName}</p>
           <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)" }}>STAGE MAP</p>
         </div>
+        <MasteryBadge slug={slug} size={34} />
         <div style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20,
           background:"var(--color-surface)", border:"0.5px solid var(--color-border)" }}>
           <Check size={11} color="#22C55E"/>
@@ -99,41 +95,10 @@ export default function StagesPage() {
           ))}
         </div>
 
-        {/* 10×10 grid */}
         <motion.div
           initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, duration:0.45 }}
-          style={{ display:"grid", gridTemplateColumns:"repeat(10, 1fr)", gap:4 }}
         >
-          {Array.from({ length:100 }, (_, i) => {
-            const n = i + 1;
-            const isDone    = completed.has(n);
-            const isCurrent = n === lastStage;
-            const isLocked  = n > lastStage;
-            const bg     = isDone ? "rgba(34,197,94,0.12)" : isCurrent ? "rgba(0,255,255,0.08)" : isLocked ? "var(--color-surface-2)" : "var(--color-surface)";
-            const border = isDone ? "1px solid #86EFAC" : isCurrent ? "1.5px solid var(--color-accent-primary)" : "0.5px solid var(--color-border)";
-            const color  = isDone ? "#15803D" : isCurrent ? "var(--color-accent-primary)" : isLocked ? "var(--color-text-secondary)" : "var(--color-text-primary)";
-            return (
-              <motion.button key={n}
-                onClick={() => !isLocked && router.push(`/games/${slug}?stage=${n}`)}
-                whileHover={!isLocked ? { scale:1.12 } : {}}
-                whileTap={!isLocked ? { scale:0.88 } : {}}
-                style={{ aspectRatio:"1", borderRadius:6, border, background:bg, color,
-                  fontSize:9, fontFamily:"var(--font-mono)", fontWeight:700,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  cursor:isLocked ? "not-allowed" : "pointer", outline:"none",
-                  opacity:isLocked ? 0.4 : 1, position:"relative",
-                  boxShadow:isCurrent ? "0 0 8px rgba(0,255,255,0.25)" : "none" }}>
-                {isDone ? <Check size={8}/> : n}
-                <div style={{ position:"absolute", top:0, left:0, right:0, height:2,
-                  borderRadius:"6px 6px 0 0", background:bandColor(n), opacity:0.5 }}/>
-                {isCurrent && (
-                  <motion.div animate={{ opacity:[1,0.2,1] }} transition={{ repeat:Infinity, duration:1.6 }}
-                    style={{ position:"absolute", inset:-2, borderRadius:8,
-                      border:"1.5px solid var(--color-accent-primary)", pointerEvents:"none" }}/>
-                )}
-              </motion.button>
-            );
-          })}
+          <WindingPath slug={slug} completed={completed} lastStage={lastStage} />
         </motion.div>
       </main>
     </div>

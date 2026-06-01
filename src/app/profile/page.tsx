@@ -11,6 +11,7 @@ import type { Score } from "@/lib/supabase/types";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 import { ProfileHeader } from "@/features/profile/ProfileHeader";
 import { ProfileActivity } from "@/features/profile/ProfileActivity";
+import { MasterySection } from "@/features/profile/MasterySection";
 
 const ACHIEVEMENTS = [
   { id:"first_win",  icon:"🎯", name:"First Victory",    desc:"Complete your first stage",      check:(s:Score[])=>s.length>=1 },
@@ -153,6 +154,8 @@ export default function ProfilePage() {
             })}
           </div>
         </motion.div>
+
+        <MasterySection />
 
         <ProfileActivity scores={scores} totalXP={totalXP} loading={loading} />
 

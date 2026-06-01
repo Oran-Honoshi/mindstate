@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { GAMES } from "@/features/games/GameGrid";
 import { BoardPreview } from "@/components/ui/BoardPreview";
+import { MasteryBadge } from "@/components/ui/MasteryBadge";
 import { getCompletedStages } from "@/lib/games/stageProgress";
 
 const DIFF_STYLE = {
@@ -90,10 +90,10 @@ function GameTile({ game, isPro, index }: TileProps) {
           padding: "2px 6px", borderRadius: 3,
         }}>PRO</span>
       )}
-      {isDone && (
-        <span style={{ position: "absolute", top: 9, right: 9 }}>
-          <Check size={13} color="var(--color-accent-primary)" strokeWidth={2.5} />
-        </span>
+      {!isLocked && (
+        <div style={{ position: "absolute", top: 7, right: 7 }}>
+          <MasteryBadge slug={game.slug} size={28} />
+        </div>
       )}
 
       {/* Name + difficulty */}

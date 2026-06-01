@@ -316,9 +316,9 @@ function MemoryGameInner() {
 
               const glowAnimate = card.matched && theme === "dark"
                 ? { boxShadow: [
-                    "0 0 8px 1px rgba(57,255,20,0.28)",
-                    "0 0 18px 3px rgba(57,255,20,0.52)",
-                    "0 0 8px 1px rgba(57,255,20,0.28)",
+                    "0 0 8px 1px rgba(84,208,106,0.28)",
+                    "0 0 18px 3px rgba(84,208,106,0.52)",
+                    "0 0 8px 1px rgba(84,208,106,0.28)",
                   ] }
                 : card.flipped && !card.matched && theme === "dark"
                 ? { boxShadow: [
@@ -352,7 +352,7 @@ function MemoryGameInner() {
                     cursor: card.matched ? "default" : "pointer",
                     outline: "none",
                     flexShrink: 0,
-                    perspective: "700px",
+                    perspective: "800px",
                   }}
                 >
                   {/* 3D flip container */}
@@ -360,7 +360,7 @@ function MemoryGameInner() {
                     position: "absolute",
                     top: 0, left: 0, right: 0, bottom: 0,
                     transformStyle: "preserve-3d",
-                    transition: "transform 0.44s cubic-bezier(0.25,0.46,0.45,0.94)",
+                    transition: "transform 0.5s cubic-bezier(0.3,0.7,0.3,1)",
                     transform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
                   }}>
                     {/* Back face */}
@@ -385,10 +385,10 @@ function MemoryGameInner() {
                       transform: "rotateY(180deg)",
                       borderRadius: 10,
                       background: card.matched
-                        ? "color-mix(in srgb, var(--color-accent-secondary) 9%, var(--color-surface))"
+                        ? "rgba(84,208,106,0.08)"
                         : "var(--color-surface)",
                       border: card.matched
-                        ? "1.5px solid var(--color-accent-secondary)"
+                        ? "1.5px solid #54D06A"
                         : "1.5px solid var(--color-accent-primary)",
                       display: "flex",
                       alignItems: "center",
