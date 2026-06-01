@@ -43,38 +43,37 @@ export function StepWelcome({ onNext }: Props) {
         transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         style={{
           boxShadow: isDark
-            ? "0 0 36px rgba(0,255,255,0.2), 0 8px 32px rgba(0,0,0,0.55)"
+            ? "0 0 48px rgba(0,255,255,0.22), 0 12px 40px rgba(0,0,0,0.6)"
             : "var(--shadow-md)",
         }}
       >
-        <SparkyImg mood="idle" size={96} />
+        <SparkyImg mood="hero" size={120} />
       </motion.div>
 
-      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 10 }}>
         <h1
           style={{
-            fontFamily: "var(--font-mono)",
-            fontWeight: 700,
-            fontSize: 26,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
+            fontFamily: "var(--font-sans)",
+            fontWeight: 800,
+            fontSize: 30,
+            letterSpacing: "-0.02em",
             color: "var(--color-text-primary)",
             margin: 0,
+            lineHeight: 1.1,
           }}
         >
           MindElement
         </h1>
         <p
           style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
+            fontFamily: "var(--font-sans)",
+            fontSize: 15,
             color: "var(--color-text-secondary)",
             margin: 0,
+            lineHeight: 1.5,
           }}
         >
-          Sharper Every Day
+          Train your mind. Sharper every day.
         </p>
       </div>
 

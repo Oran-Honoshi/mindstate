@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Zap, Target, Star, LogIn, Flame, Crown } from "lucide-react";
+import { Trophy, Zap, Target, Star, Flame, Crown } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
@@ -12,6 +12,7 @@ import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 import { ProfileHeader } from "@/features/profile/ProfileHeader";
 import { ProfileActivity } from "@/features/profile/ProfileActivity";
 import { MasterySection } from "@/features/profile/MasterySection";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 
 const ACHIEVEMENTS = [
   { id:"first_win",  icon:"🎯", name:"First Victory",    desc:"Complete your first stage",      check:(s:Score[])=>s.length>=1 },
@@ -46,7 +47,7 @@ export default function ProfilePage() {
     <div style={{ minHeight:"100vh", background:"var(--color-bg)" }}>
       <Navbar />
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"80vh", gap:20, textAlign:"center", padding:24 }}>
-        <LogIn size={32} color="var(--color-accent-primary)" />
+        <SparkyImg mood="idle" size={88} />
         <div>
           <h2 style={{ fontSize:20, fontWeight:800, color:"var(--color-text-primary)", marginBottom:6 }}>Sign in to view your profile</h2>
           <p style={{ fontSize:14, color:"var(--color-text-secondary)" }}>Track your progress, scores, and streaks.</p>

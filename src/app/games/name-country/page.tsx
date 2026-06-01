@@ -24,6 +24,7 @@ import { useBoardWidth } from "@/hooks/useScreenWidth";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
 import { GameShell } from "@/components/game";
 import { useSettingsStore } from "@/store/settingsStore";
+import { FactsRevealPanel } from "@/components/ui/FactsRevealPanel";
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -82,6 +83,7 @@ function NameCountryInner(){
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [nextUncompleted, setNextUncompleted] = useState<number | null>(null);
   const [showGameComplete, setShowGameComplete] = useState(false);
+  const [showFacts, setShowFacts] = useState(false);
   const[history,setHistory]=useState<{guesses:string[];results:LetterResult[][]}[]>([]);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const gridAreaWidth=useBoardWidth(32,480);
@@ -106,7 +108,7 @@ function NameCountryInner(){
     setBoard(b);setGuesses([]);setResults([]);setCurrent("");
     setCompleted(false);setLost(false);setFinalXP(0);
     setHintsUsed(0);setShownHints([]);setElapsedSeconds(0);setLiveXP(1000);setFinalElapsed("0:00");setXpState(xp);
-    setSolutionRevealed(false);
+    setSolutionRevealed(false);setShowFacts(false);
     setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
@@ -152,6 +154,7 @@ function NameCountryInner(){
         setFinalXP(earned);
         setFinalElapsed(formatTime(Math.floor((Date.now()-xpState.startTime)/1000)));
         setCompleted(true);
+        setShowFacts(true);
         clearGameState("name-country");
         if(timerRef.current)clearInterval(timerRef.current);
         playSuccess();
@@ -263,7 +266,18 @@ function NameCountryInner(){
           })}
         </div>
 
-        {!lost&&(
+        {completed&&showFacts&&board&&(
+          <FactsRevealPanel
+            type="country"
+            name={board.answer.charAt(0)+board.answer.slice(1).toLowerCase()}
+            subtitle={board.capital?`Capital: ${board.capital}`:undefined}
+            isDark={isDark}
+            xpEarned={finalXP}
+            onNext={()=>{setCompleted(false);setShowFacts(false);setStage(s=>s+1);}}
+          />
+        )}
+
+        {!lost&&!completed&&(
           <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%",maxWidth:480}}>
             {KB.map((row,ri)=>(
               <div key={ri} style={{display:"flex",justifyContent:"center",gap:5}}>
@@ -292,7 +306,7 @@ function NameCountryInner(){
       </GameShell>
 
       {showMap&&<StageMap gameSlug="name-country" totalStages={100} currentStage={stage} onSelectStage={s=>setStage(s)} onClose={()=>setShowMap(false)}/>}
-      <CompletionPopup open={completed} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={finalElapsed}
+      <CompletionPopup open={completed&&!showFacts} stage={stage} difficulty={getDifficulty(stage)} xpEarned={finalXP} elapsed={finalElapsed}
         onRetry={()=>loadStage(stage)} onNext={()=>{setCompleted(false);setStage(s=>s+1);}}
         onShare={()=>{const text=`MindElement · Name the Country Stage ${stage} · ${finalXP} XP`;if(navigator.share)navigator.share({title:"MindElement",text,url:"https://mindelement.app"}).catch(()=>{});else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text),"_blank");}}/>
     </>

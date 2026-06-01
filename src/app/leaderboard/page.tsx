@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/supabase/leaderboard";
 import { getUserFamilyGroup, getFamilyLeaderboard } from "@/lib/supabase/family";
 import { GlobalLeaderboard, FamilyLeaderboard, FamilyEmptyState } from "@/features/leaderboard/LeaderboardTable";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 
 const GAMES = [
   { slug:"all", name:"All Games" }, { slug:"tango", name:"Tango" },
@@ -144,6 +145,13 @@ export default function LeaderboardPage() {
             (user && familyGroupId)
               ? <FamilyLeaderboard entries={familyEntries} currentUserId={user.id} selectedGame={selectedGame} />
               : <FamilyEmptyState isSignedIn={!!user} hasFamilyGroup={!!familyGroupId} />
+          ) : globalEntries.length === 0 ? (
+            <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+              <SparkyImg mood="resting" size={76} />
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-secondary)", textAlign: "center", margin: 0 }}>
+                No scores yet. Be the first!
+              </p>
+            </div>
           ) : (
             <GlobalLeaderboard entries={globalEntries} currentUserId={user?.id} selectedGame={selectedGame} />
           )}

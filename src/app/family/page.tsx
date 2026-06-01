@@ -12,6 +12,7 @@ import {
 } from "@/lib/supabase/family";
 import { useRealtimeGoals } from "@/hooks/useRealtimeGoals";
 import { CelebrationToast } from "@/components/realtime/CelebrationToast";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 
 type Member = {
   id: string; username: string; avatar_url: string | null;
@@ -186,14 +187,14 @@ export default function FamilyPage() {
           {loading ? (
             <div style={{ textAlign: "center", padding: 60, color: "var(--color-text-secondary)" }}>Loading...</div>
           ) : !group ? (
-            <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 24, padding: "40px", textAlign: "center" }}>
-              <UserPlus size={40} color="var(--color-text-secondary)" style={{ margin: "0 auto 16px" }} />
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Create your family group</h2>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", marginBottom: 24, lineHeight: 1.7 }}>
-                You have a family plan. Create your group and invite family with a link.
+            <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 24, padding: "48px 40px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <SparkyImg mood="idle" size={80} />
+              <h2 style={{ fontSize: 20, fontWeight: 700, margin: "4px 0 0" }}>Start a family group</h2>
+              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: "0 0 12px", lineHeight: 1.7, maxWidth: 320 }}>
+                Create your group and invite family with a link. Everyone gets their own profile and scores.
               </p>
               <button onClick={createGroup}
-                style={{ padding: "13px 28px", borderRadius: 14, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }}>
+                style={{ padding: "13px 28px", borderRadius: 14, background: "var(--color-accent-primary)", color: "#000", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }}>
                 Create Family Group
               </button>
             </div>

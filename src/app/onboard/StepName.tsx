@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useSettingsStore } from "@/store/settingsStore";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 
 interface Props {
   value: string;
@@ -30,9 +31,14 @@ export function StepName({ value, onChange, onNext }: Props) {
   return (
     <motion.div
       {...slideProps}
-      style={{ ...panelStyle, borderRadius: br, padding: "40px 32px", display: "flex", flexDirection: "column", gap: 28 }}
+      style={{ ...panelStyle, borderRadius: br, padding: "40px 32px", display: "flex", flexDirection: "column", gap: 28, position: "relative" }}
     >
-      <h2 style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 20, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--color-text-primary)", margin: 0 }}>
+      {/* Sparky focused — top-right corner */}
+      <div style={{ position: "absolute", top: 16, right: 16, opacity: 0.85 }}>
+        <SparkyImg mood="focused" size={40} />
+      </div>
+
+      <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 22, letterSpacing: "-0.01em", color: "var(--color-text-primary)", margin: 0, paddingRight: 52 }}>
         What&apos;s your name?
       </h2>
 

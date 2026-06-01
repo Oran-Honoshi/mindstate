@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { useSettingsStore, type Theme } from "@/store/settingsStore";
+import { BoardPreview } from "@/components/ui/BoardPreview";
 
 interface ThemeColors {
   bg: string; surface: string; surface2: string; accent: string; text: string; textSub: string;
@@ -37,26 +38,10 @@ function ThemeCard({ id, label, colors, selected, onSelect }: PreviewProps) {
         <div style={{ width: 14, height: 3, borderRadius: 2, background: colors.textSub, opacity: 0.35 }} />
         <div style={{ width: 10, height: 3, borderRadius: 2, background: colors.textSub, opacity: 0.2 }} />
       </div>
-      <div style={{ background: colors.bg, padding: "8px 7px", display: "flex", flexDirection: "column", gap: 4 }}>
-        {[0, 1, 2].map(ri => (
-          <div key={ri} style={{ display: "flex", gap: 4 }}>
-            {[0, 1, 2].map(ci => (
-              <div
-                key={ci}
-                style={{
-                  flex: 1,
-                  height: 16,
-                  borderRadius: 3,
-                  background:
-                    ri === 0 && ci === 1 ? colors.accent + "55"
-                    : ri === 1 && ci === 0 ? colors.accent + "30"
-                    : colors.surface,
-                  border: `1px solid ${colors.surface2}`,
-                }}
-              />
-            ))}
-          </div>
-        ))}
+      <div style={{ background: colors.bg, padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", minHeight: 56 }}>
+        <div style={{ transform: "scale(0.36)", transformOrigin: "top center", pointerEvents: "none", opacity: 0.9 }}>
+          <BoardPreview game="tango" size={18} gap={3} />
+        </div>
       </div>
       <div style={{ background: colors.surface, padding: "7px 6px", textAlign: "center" }}>
         <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: colors.text }}>

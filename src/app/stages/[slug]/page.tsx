@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getLastStage, getCompletedStages } from "@/lib/games/stageProgress";
 import { MasteryBadge } from "@/components/ui/MasteryBadge";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 import { WindingPath } from "./WindingPath";
 
 const GAME_NAMES: Record<string, string> = {
@@ -94,6 +95,18 @@ export default function StagesPage() {
             </span>
           ))}
         </div>
+
+        {completed.size === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 20 }}
+          >
+            <SparkyImg mood="focused" size={64} />
+            <p style={{ fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-text-secondary)", margin: 0 }}>
+              Your journey starts here
+            </p>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, duration:0.45 }}

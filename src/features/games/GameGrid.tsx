@@ -1,13 +1,10 @@
 "use client";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { BoardPreview } from "@/components/ui/BoardPreview";
-import { GameIcon } from "@/components/icons/GameIcons";
 import { ComingSoonTeaser } from "@/components/ui/ComingSoonTeaser";
 import { useAuthStore } from "@/store/authStore";
+import { GameCard } from "@/features/games/GameCard";
 
 const WORK_M_IMG = "https://ixlcndaryfgkbcjooitu.supabase.co/storage/v1/object/public/asset%20library/man%20at%20work%20playing%20phone.jpg";
 
@@ -38,82 +35,12 @@ export const GAMES = [
   { slug: "name-city",     name: "Name the City",    desc: "Identify the city",        free: false, difficulty: "medium" as const },
 ];
 
-const DIFF_STYLE = {
-  easy:   { color: "var(--color-accent-secondary)", bg: "rgba(57,255,20,0.08)",   border: "rgba(57,255,20,0.25)"  },
-  medium: { color: "var(--color-accent-primary)",   bg: "rgba(0,255,255,0.08)",   border: "rgba(0,255,255,0.25)"  },
-  hard:   { color: "#F59E0B",                        bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
-};
-
-function DiffPill({ d }: { d: "easy" | "medium" | "hard" }) {
-  const s = DIFF_STYLE[d];
-  return (
-    <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-      color: s.color, background: s.bg, border: `1px solid ${s.border}`,
-      padding: "2px 5px", borderRadius: 3, fontFamily: "var(--font-mono)", flexShrink: 0 }}>
-      {d}
-    </span>
-  );
-}
-
-function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
-  const [hovered, setHovered] = useState(false);
-  const router = useRouter();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: (i % 4) * 0.05 }}
-      onClick={() => router.push(`/games/${game.slug}`)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        cursor: "pointer", minHeight: 140, borderRadius: 10,
-        background: "var(--color-surface)", position: "relative", overflow: "hidden",
-        border: hovered
-          ? "1px solid var(--color-accent-primary)"
-          : "1px solid var(--color-border)",
-        transition: "border-color 0.2s ease",
-        display: "flex", flexDirection: "column", justifyContent: "flex-end",
-        padding: "12px 14px 13px",
-      }}
-    >
-      {/* Snapshot — right 60%, faint background */}
-      <div style={{
-        position: "absolute", top: 0, right: -8, bottom: 0, width: "60%",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        opacity: hovered ? 0.6 : 0.35,
-        transition: "opacity 0.2s ease",
-        pointerEvents: "none",
-        transform: "scale(1.3)", transformOrigin: "center right",
-      }}>
-        <BoardPreview game={game.slug} size={14} gap={2} />
-      </div>
-
-      {/* Small icon — top-left */}
-      <div style={{ position: "absolute", top: 10, left: 12, opacity: 0.7 }}>
-        <GameIcon slug={game.slug} size={16} />
-      </div>
-
-      {/* Foreground text */}
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2 }}>
-          {game.name}
-        </p>
-        <DiffPill d={game.difficulty} />
-      </div>
-    </motion.div>
-  );
-}
-
 export function GameGrid() {
   const { user } = useAuthStore();
 
   return (
     <>
       <div id="games" style={{ scrollMarginTop: "70px" }}/>
-      {/* ── GAMES COLLECTION ── */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 80px" }}>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-secondary)", marginBottom: 10 }}>The Collection</p>
@@ -132,13 +59,11 @@ export function GameGrid() {
         </div>
       </section>
 
-      {/* ── COMING SOON TEASER (compact) ── */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px" }}>
         <ComingSoonTeaser compact/>
       </div>
 
       <div id="how-it-works" style={{ scrollMarginTop: "70px" }}/>
-      {/* ── HOW IT WORKS ── */}
       <section style={{ background: "var(--color-surface-2)", borderTop: "0.5px solid var(--color-border)", borderBottom: "0.5px solid var(--color-border)", padding: "72px 48px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 40, color: "var(--color-text-primary)", textAlign: "center", marginBottom: 52 }}>
@@ -163,7 +88,6 @@ export function GameGrid() {
         </div>
       </section>
 
-      {/* ── FULL WIDTH PHOTO CTA ── */}
       <section style={{ position: "relative", height: 460, overflow: "hidden" }}>
         <img src={WORK_M_IMG} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }}/>
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)" }}/>
