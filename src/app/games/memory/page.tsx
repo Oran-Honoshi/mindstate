@@ -31,6 +31,8 @@ function getDifficulty(stage: number): Difficulty {
   return h < 20 ? "easy" : h < 70 ? "medium" : "hard";
 }
 
+const faceUrl = (pairIndex: number) => `/memory/face-${pairIndex % 25}.png`;
+
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
@@ -310,9 +312,6 @@ function MemoryGameInner() {
             width: cols * cellSize + (cols - 1) * gap,
           }}>
             {cards.map(card => {
-              const iconData = ICONS[card.iconIdx];
-              const Icon = iconData.icon;
-              const cardColor = theme === "dark" ? iconData.darkColor : iconData.color;
               const isRevealed = card.flipped || card.matched;
 
               const glowAnimate = card.matched && theme === "dark"
@@ -364,19 +363,18 @@ function MemoryGameInner() {
                     transition: "transform 0.44s cubic-bezier(0.25,0.46,0.45,0.94)",
                     transform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
                   }}>
-                    {/* Back face: dot-matrix node */}
+                    {/* Back face */}
                     <div style={{
                       position: "absolute",
                       top: 0, left: 0, right: 0, bottom: 0,
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                       borderRadius: 10,
-                      background: theme === "dark"
-                        ? "radial-gradient(circle, rgba(0,255,255,0.18) 1px, transparent 1px), #080f1c"
-                        : `radial-gradient(circle, color-mix(in srgb, var(--color-accent-primary) 12%, transparent) 1px, transparent 1px), var(--color-surface-2)`,
-                      backgroundSize: "7px 7px",
+                      overflow: "hidden",
                       border: "1.5px solid color-mix(in srgb, var(--color-accent-primary) 24%, transparent)",
-                    }} />
+                    }}>
+                      <img src="/cards/back.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
 
                     {/* Front face: icon */}
                     <div style={{
@@ -397,13 +395,10 @@ function MemoryGameInner() {
                       justifyContent: "center",
                       transition: "border 0.3s ease-out, background 0.3s ease-out",
                     }}>
-                      <Icon
-                        size={Math.round(cellSize * 0.42)}
-                        color={cardColor}
-                        strokeWidth={1.5}
-                        style={{
-                          filter: `drop-shadow(0 0 ${card.matched ? "7px" : "4px"} ${cardColor}${card.matched ? "c0" : "70"})`,
-                        }}
+                      <img
+                        src={faceUrl(card.iconIdx)}
+                        alt=""
+                        style={{ width: "72%", height: "72%", objectFit: "cover", borderRadius: 6 }}
                       />
                     </div>
                   </div>

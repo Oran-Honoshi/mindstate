@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { useSettingsStore } from "@/store/settingsStore";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 
 interface Props {
   onNext: () => void;
@@ -46,7 +47,7 @@ export function StepWelcome({ onNext }: Props) {
             : "var(--shadow-md)",
         }}
       >
-        <img src="/icons/icon-192.png" width={80} height={80} style={{ borderRadius: 16, display: "block" }} alt="Mind Element" />
+        <SparkyImg mood="idle" size={96} />
       </motion.div>
 
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 12 }}>

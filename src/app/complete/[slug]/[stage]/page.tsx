@@ -4,6 +4,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronRight, Map, Share2, Check } from "lucide-react";
 import { triggerConfetti } from "@/components/effects/Confetti";
+import { SparkyImg } from "@/components/ui/SparkyImg";
 import { GAMES } from "@/features/games/GameGrid";
 
 function getMedal(xp: number) {
@@ -63,6 +64,18 @@ function StageCompleteContent() {
         }}
       >
         {medal.emoji}
+      </motion.div>
+
+      {/* Sparky mood */}
+      <motion.div
+        initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.15, type: "spring", stiffness: 260, damping: 22 }}
+        style={{ marginBottom: 12 }}
+      >
+        <SparkyImg
+          mood={xp > 800 ? "celebrate" : xp > 500 ? "happy" : "idle"}
+          size={80}
+        />
       </motion.div>
 
       {/* XP number with ambient glow */}

@@ -1,64 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&family=Spectral:ital,wght@0,600;0,700;1,600;1,700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-display: var(--font-sans), var(--font-sans);
+  --font-display: var(--font-display), sans-serif;
   --font-sans: var(--font-sans), system-ui, sans-serif;
   --font-mono: var(--font-mono), monospace;
+  --font-paper: var(--font-paper), serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── Shared defaults (non-palette) — inherited by all themes unless overridden ── */
 :root {
-  --color-accent-primary:   #00FFFF;
-  --color-accent-secondary: #39FF14;
-  --color-error:            #FF4444;
-  --color-success:          #39FF14;
-  --radius:                 8px;
-  --font-sans:              'Inter', sans-serif;
-  --font-mono:              'JetBrains Mono', monospace;
+  --color-accent-primary:    #2FE6E0;
+  --color-accent-secondary:  #2FE6E0;
+  --color-error:             #FF5C66;
+  --color-success:           #54D06A;
+  --color-gold:              #FFC24B;
+  --color-violet:            #8E7CFF;
+  --color-difficulty-easy:   #54D06A;
+  --color-difficulty-medium: #F5A623;
+  --color-difficulty-hard:   #FF5C66;
+  --radius:                  8px;
+  --radius-card:             16px;
+  --radius-tile:             12px;
+  --radius-pill:             999px;
+  --font-sans:               'DM Sans', sans-serif;
+  --font-display:            'Space Grotesk', sans-serif;
+  --font-mono:               'Space Mono', monospace;
+  --font-paper:              'Spectral', serif;
 }
 
 /* ── Dark theme (default) ── */
 [data-theme="dark"] {
-  --color-bg:               #121212;
-  --color-surface:          #1E1E1E;
-  --color-surface-2:        #2A2A2A;
-  --color-text-primary:     #F5F5F5;
-  --color-text-secondary:   #A0A0A0;
-  --color-border:           rgba(255,255,255,0.12);
-  --color-on-accent:        #000000;
+  --color-bg:               #0B0C0F;
+  --color-surface:          #14161B;
+  --color-surface-2:        #1D2027;
+  --color-text-primary:     #F4F6F8;
+  --color-text-secondary:   #868D99;
+  --color-text-faint:       #5A606C;
+  --color-border:           #2A2E37;
+  --color-on-accent:        #06231F;
   --shadow-sm:              0 2px 8px rgba(0,0,0,0.4);
   --shadow-md:              0 8px 24px rgba(0,0,0,0.5);
   --shadow-lg:              0 24px 64px rgba(0,0,0,0.6);
 }
 [data-theme="light"] {
-  --color-bg:               #FFFFFF;
-  --color-surface:          #F5F5F5;
-  --color-surface-2:        #E8E8E8;
-  --color-text-primary:     #121212;
-  --color-text-secondary:   #555555;
-  --color-border:           rgba(0,0,0,0.12);
-  --color-on-accent:        #000000;
+  --color-bg:               #F5F6F8;
+  --color-surface:          #FFFFFF;
+  --color-surface-2:        #EDEFF3;
+  --color-text-primary:     #15171C;
+  --color-text-secondary:   #5C6370;
+  --color-border:           #E2E5EB;
+  --color-accent-primary:   #0FB3AC;
+  --color-on-accent:        #FFFFFF;
   --shadow-sm:              0 2px 8px rgba(0,0,0,0.06);
   --shadow-md:              0 8px 24px rgba(0,0,0,0.08);
   --shadow-lg:              0 24px 64px rgba(0,0,0,0.10);
 }
 [data-theme="paper"] {
-  --color-bg:               #F2E8D9;
-  --color-surface:          #EDE0C8;
-  --color-surface-2:        #E5D5B0;
-  --color-text-primary:     #1A1714;
-  --color-text-secondary:   #4A3F35;
-  --color-accent-primary:   #1A1714;
-  --color-accent-secondary: #2D5A1B;
+  --color-bg:               #ECE3D0;
+  --color-surface:          #F5EFE0;
+  --color-surface-2:        #E5DAC0;
+  --color-text-primary:     #241A0C;
+  --color-text-secondary:   #7A6A4A;
+  --color-accent-primary:   #0EBB90;
+  --color-accent-secondary: #0EBB90;
   --color-error:            #8B1A1A;
-  --color-border:           rgba(26,23,20,0.20);
-  --color-on-accent:        #F2E8D9;
+  --color-border:           #D6C9AB;
+  --color-on-accent:        #FFFFFF;
   --radius:                 0px;
-  --font-sans:              'Old Standard TT', serif;
-  --font-mono:              'Special Elite', cursive;
+  --font-sans:              'DM Sans', sans-serif;
+  --font-display:           'Spectral', serif;
+  --font-mono:              'Space Mono', monospace;
   --shadow-sm:              2px 2px 0 rgba(26,23,20,0.15);
   --shadow-md:              3px 3px 0 rgba(26,23,20,0.20);
   --shadow-lg:              4px 4px 0 rgba(26,23,20,0.25);
