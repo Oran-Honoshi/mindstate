@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { GAMES } from "@/features/games/GameGrid";
-import { GameSnapshot } from "@/components/ui/GameSnapshots";
+import { BoardPreview } from "@/components/ui/BoardPreview";
 import { getCompletedStages } from "@/lib/games/stageProgress";
 
 const DIFF_STYLE = {
@@ -78,7 +78,7 @@ function GameTile({ game, isPro, index }: TileProps) {
         transform: "scale(1.15)",
         transformOrigin: "center right",
       }}>
-        <GameSnapshot slug={game.slug} />
+        <BoardPreview game={game.slug} size={13} gap={2} />
       </div>
 
       {isLocked && (

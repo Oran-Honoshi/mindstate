@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GameSnapshot } from "@/components/ui/GameSnapshots";
+import { BoardPreview } from "@/components/ui/BoardPreview";
 import { GameIcon } from "@/components/icons/GameIcons";
 import { ComingSoonTeaser } from "@/components/ui/ComingSoonTeaser";
 import { useAuthStore } from "@/store/authStore";
@@ -88,7 +88,7 @@ function GameCard({ game, i }: { game: typeof GAMES[0]; i: number }) {
         pointerEvents: "none",
         transform: "scale(1.3)", transformOrigin: "center right",
       }}>
-        <GameSnapshot slug={game.slug} />
+        <BoardPreview game={game.slug} size={14} gap={2} />
       </div>
 
       {/* Small icon — top-left */}
