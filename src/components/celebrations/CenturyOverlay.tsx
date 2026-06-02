@@ -1,8 +1,9 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { SparkyImg } from "@/components/ui/SparkyImg";
 import { triggerConfetti } from "@/components/effects/Confetti";
+import { Share2 } from "lucide-react";
 
 interface CenturyOverlayProps {
   gameName: string;
@@ -10,53 +11,133 @@ interface CenturyOverlayProps {
 }
 
 export function CenturyOverlay({ gameName, onDismiss }: CenturyOverlayProps) {
+  const [count, setCount] = useState(0);
+
   useEffect(() => {
     triggerConfetti();
-    const t = setTimeout(onDismiss, 5000);
-    return () => clearTimeout(t);
-  }, [onDismiss]);
+    const duration = 1500;
+    const start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.round(100 * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onDismiss}
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 300,
-        background: "rgba(0,0,0,0.96)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 28,
-        padding: 32,
-        textAlign: "center",
-        cursor: "pointer",
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "radial-gradient(130% 80% at 50% 18%, #2a1d3a, #0B0C0F 62%)",
+        display: "flex", flexDirection: "column",
       }}
     >
-      <motion.div
-        initial={{ scale: 0.4, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.06, type: "spring", stiffness: 240, damping: 18 }}
-      >
-        <SparkyImg mood="violet" size={148} />
-      </motion.div>
+      {/* Main content */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        padding: 30, position: "relative", zIndex: 4, textAlign: "center",
+      }}>
+        {/* Eyebrow */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.35 }}
+          style={{
+            fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700,
+            letterSpacing: "0.22em", textTransform: "uppercase",
+            color: "var(--color-violet)", marginBottom: 10,
+          }}
+        >
+          Milestone
+        </motion.div>
 
-      <motion.div
-        initial={{ y: 28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.45 }}
-      >
-        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 80, color: "#8E7CFF", lineHeight: 0.9, marginBottom: 14 }}>
-          CENTURY
-        </h1>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>
-          {gameName} · All 100 Stages Complete
-        </p>
-      </motion.div>
+        {/* Animated count */}
+        <div style={{
+          fontFamily: "var(--font-display)", fontWeight: 700,
+          fontSize: 110, lineHeight: 1,
+          letterSpacing: "-0.04em",
+          background: "linear-gradient(180deg, #8E7CFF, #2FE6E0)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          marginBottom: 8,
+          fontVariantNumeric: "tabular-nums",
+        }}>
+          {count}
+        </div>
+
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
+          <div style={{
+            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 24,
+            color: "var(--color-text-primary)", marginBottom: 10,
+          }}>
+            Century Club
+          </div>
+          <p style={{
+            fontFamily: "var(--font-sans)", fontSize: 13.5,
+            color: "var(--color-text-secondary)",
+            maxWidth: 240, lineHeight: 1.55, margin: "0 auto",
+          }}>
+            {gameName}, solved. You&apos;ve joined the top 6% of all players.
+          </p>
+        </motion.div>
+
+        {/* Sparky — small, below text */}
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.35, type: "spring", stiffness: 240, damping: 18 }}
+          style={{ marginTop: 22 }}
+        >
+          <SparkyImg mood="violet" size={60} />
+        </motion.div>
+      </div>
+
+      {/* Footer CTAs */}
+      <div style={{
+        padding: "0 30px 30px",
+        display: "flex", flexDirection: "column", gap: 9,
+        position: "relative", zIndex: 4,
+      }}>
+        <button
+          onClick={onDismiss}
+          style={{
+            width: "100%", padding: "14px 0",
+            borderRadius: 14, border: "none",
+            background: "var(--color-accent-primary)",
+            color: "var(--color-on-accent)",
+            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15,
+            cursor: "pointer",
+          }}
+        >
+          Continue
+        </button>
+        <button
+          onClick={onDismiss}
+          style={{
+            width: "100%", padding: "10px 0",
+            borderRadius: 14, border: "none",
+            background: "transparent",
+            color: "var(--color-text-secondary)",
+            fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 13,
+            cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+          }}
+        >
+          <Share2 size={14} />
+          Share the moment
+        </button>
+      </div>
     </motion.div>
   );
 }

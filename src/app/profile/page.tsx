@@ -108,7 +108,7 @@ export default function ProfilePage() {
                   fontFamily: "var(--font-sans)", fontSize: 12.5,
                   color: "var(--color-gold)", fontWeight: 600,
                 }}>
-                  Level {levelInfo.tier + 1} · {levelInfo.name}
+                  Level {levelInfo.levelNumber} · {levelInfo.rankName}
                 </span>
               </div>
               <div style={{ marginTop: 9, height: 6, background: "var(--color-surface-2)", borderRadius: 3, overflow: "hidden" }}>
@@ -123,7 +123,7 @@ export default function ProfilePage() {
                 fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.18em",
                 textTransform: "uppercase", color: "var(--color-text-faint)", marginTop: 5,
               }}>
-                {levelInfo.currentXP.toLocaleString()} / {levelInfo.nextLevelXP.toLocaleString()} XP to Level {levelInfo.tier + 2}
+                {levelInfo.currentXP.toLocaleString()} / {levelInfo.nextLevelXP.toLocaleString()} XP to Level {levelInfo.levelNumber + 1}
               </div>
             </div>
           </div>

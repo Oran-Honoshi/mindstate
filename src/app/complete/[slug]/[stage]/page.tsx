@@ -183,14 +183,14 @@ function StageCompleteContent() {
       </motion.div>
 
       <AnimatePresence>
-        {cel.showToast && <ToastCelebration key="toast" xpEarned={xp} onDismiss={() => dismiss("showToast")} />}
+        {cel.showToast && <ToastCelebration key="toast" xpEarned={xp} timeTaken={parseTimeSecs(time)} hintsUsed={hints} onDismiss={() => dismiss("showToast")} />}
         {cel.showCard && (
           <CardCelebration key="card"
             title={stageN % 10 === 0 ? `Stage ${stageN} Milestone!` : "Achievement!"}
             description={stageN % 10 === 0 ? `You've cleared ${stageN} stages in ${gameName}. Keep pushing!` : "A new achievement unlocked."}
             onDismiss={() => dismiss("showCard")} />
         )}
-        {cel.levelUp && <LevelUpOverlay key="levelup" levelName={cel.levelUp.name} levelColor={cel.levelUp.color} onDismiss={() => dismiss("levelUp")} />}
+        {cel.levelUp && <LevelUpOverlay key="levelup" levelNumber={cel.levelUp.levelNumber} rankName={cel.levelUp.rankName} currentXP={cel.levelUp.currentXP} nextLevelXP={cel.levelUp.nextLevelXP} onDismiss={() => dismiss("levelUp")} />}
         {cel.showCentury && <CenturyOverlay key="century" gameName={gameName} onDismiss={() => dismiss("showCentury")} />}
         {showAchievement && (
           <AchievementCard key="speed-demon"

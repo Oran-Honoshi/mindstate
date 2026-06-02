@@ -1,53 +1,99 @@
 "use client";
 import { useEffect } from "react";
-import { motion } from "framer-motion";
-import { SparkyImg } from "@/components/ui/SparkyImg";
+import { CheckCircle } from "lucide-react";
 
 interface ToastCelebrationProps {
   xpEarned: number;
+  timeTaken: number;   // seconds
+  hintsUsed: number;
   onDismiss: () => void;
 }
 
-export function ToastCelebration({ xpEarned, onDismiss }: ToastCelebrationProps) {
+function formatTime(s: number): string {
+  if (s === Infinity || isNaN(s)) return "—";
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+export function ToastCelebration({ xpEarned, timeTaken, hintsUsed, onDismiss }: ToastCelebrationProps) {
   useEffect(() => {
-    const t = setTimeout(onDismiss, 3000);
+    const t = setTimeout(onDismiss, 2600);
     return () => clearTimeout(t);
   }, [onDismiss]);
 
+  const hintsLabel = hintsUsed === 0
+    ? "no hints"
+    : `${hintsUsed} hint${hintsUsed > 1 ? "s" : ""} used`;
+
   return (
-    <motion.div
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -80, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 420, damping: 30 }}
-      onClick={onDismiss}
-      style={{
-        position: "fixed",
-        top: 20,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 90,
-        background: "var(--color-surface)",
-        border: "1px solid var(--color-border)",
-        borderRadius: "var(--radius-pill)",
-        padding: "10px 20px 10px 10px",
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-        cursor: "pointer",
-        minWidth: 200,
-      }}
-    >
-      <SparkyImg mood="happy" size={36} />
-      <div>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-text-secondary)", marginBottom: 2 }}>
-          XP Earned
-        </p>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 700, color: "var(--color-accent-primary)", lineHeight: 1 }}>
-          +{xpEarned}
-        </p>
+    <>
+      <style>{`
+        @keyframes me-slidedown {
+          0%   { transform: translateY(-120%); opacity: 0 }
+          12%  { transform: translateY(0);     opacity: 1 }
+          80%  { transform: translateY(0);     opacity: 1 }
+          100% { transform: translateY(-120%); opacity: 0 }
+        }
+      `}</style>
+      <div
+        onClick={onDismiss}
+        style={{
+          position: "fixed",
+          top: 56,
+          left: 18,
+          right: 18,
+          zIndex: 90,
+          animation: "me-slidedown 2.6s ease-in-out both forwards",
+          cursor: "pointer",
+        }}
+      >
+        <div style={{
+          background: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          borderRadius: 14,
+          padding: "12px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        }}>
+          {/* Left icon */}
+          <div style={{
+            width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+            background: "rgba(84,208,106,0.15)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <CheckCircle size={18} color="#54D06A" strokeWidth={2.4} />
+          </div>
+
+          {/* Center text */}
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 13,
+              color: "var(--color-text-primary)", lineHeight: 1,
+            }}>
+              Stage cleared
+            </div>
+            <div style={{
+              fontFamily: "var(--font-mono)", fontSize: 8.5,
+              letterSpacing: "0.06em",
+              color: "var(--color-text-secondary)",
+              marginTop: 4,
+            }}>
+              Solved in {formatTime(timeTaken)} · {hintsLabel}
+            </div>
+          </div>
+
+          {/* Right XP */}
+          <div style={{
+            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16,
+            color: "var(--color-accent-primary)", flexShrink: 0,
+          }}>
+            +{xpEarned}
+          </div>
+        </div>
       </div>
-    </motion.div>
+    </>
   );
 }

@@ -5,7 +5,13 @@ import { addAndGetTotalXP, getLevelInfo } from "@/lib/xpLevels";
 interface CelebrationState {
   showToast: boolean;
   showCard: boolean;
-  levelUp: { name: string; color: string } | null;
+  levelUp: {
+    levelNumber: number;
+    rankName: string;
+    color: string;
+    currentXP: number;
+    nextLevelXP: number;
+  } | null;
   showCentury: boolean;
 }
 
@@ -25,11 +31,19 @@ export function useCompleteCelebrations(xp: number, stage: number) {
     const { prev, next } = addAndGetTotalXP(xp);
     const prevLevel = getLevelInfo(prev);
     const nextLevel = getLevelInfo(next);
-    const levelCrossed = nextLevel.tier > prevLevel.tier;
+    const levelCrossed = nextLevel.levelNumber > prevLevel.levelNumber;
 
     setState({
       showCentury: stage === 100,
-      levelUp: levelCrossed ? { name: nextLevel.name, color: nextLevel.color } : null,
+      levelUp: levelCrossed
+        ? {
+            levelNumber: nextLevel.levelNumber,
+            rankName: nextLevel.rankName,
+            color: nextLevel.color,
+            currentXP: nextLevel.currentXP,
+            nextLevelXP: nextLevel.nextLevelXP,
+          }
+        : null,
       showCard: !levelCrossed && stage !== 100 && stage % 10 === 0,
       showToast: true,
     });
