@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
-import { Flame, ChevronRight, Zap, X } from "lucide-react";
+import { Flame, ChevronRight, Crown, X, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { GamesNav } from "@/features/games/GamesNav";
+import { AppHeader } from "@/components/nav/AppHeader";
 import { GamesHubCatalog } from "@/features/games/GamesHubCatalog";
 import { GAMES } from "@/features/games/GameGrid";
 import { useAuthStore } from "@/store/authStore";
-import { getTodaysFeaturedGame } from "@/lib/games/dailyChallenge";
+import { getTodaysFeaturedGame, getDailyStageInfo } from "@/lib/games/dailyChallenge";
+import { getTotalXP, getLevelInfo } from "@/lib/xpLevels";
 
 function todayLabel() {
   return new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -96,21 +97,27 @@ function GuestProgressModal() {
 
 export default function GamesHubPage() {
   const { user, profile, loading } = useAuthStore();
+  const router = useRouter();
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
   const streak = profile?.current_streak ?? 0;
   const dailyGame = getTodaysFeaturedGame();
   const dailyName = GAMES.find(g => g.slug === dailyGame)?.name ?? dailyGame;
-  const dailyDesc = GAMES.find(g => g.slug === dailyGame)?.desc ?? "";
+  const dailyStage = getDailyStageInfo(dailyGame).stage;
+  const [totalXP, setTotalXP] = useState(0);
+
+  useEffect(() => { setTotalXP(getTotalXP()); }, []);
+
+  const levelInfo = getLevelInfo(totalXP);
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", paddingTop: 56 }}>
-      <GamesNav />
+      <AppHeader />
     </div>
   );
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", paddingTop: 56 }}>
-      <GamesNav />
+      <AppHeader />
       <VerifyBanner />
       <GuestProgressModal />
 
@@ -137,13 +144,16 @@ export default function GamesHubPage() {
                   <span style={{ fontSize: 9, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>DAYS</span>
                 </div>
               </div>
-              <div style={{ padding: "12px 14px", borderRadius: 8, background: "var(--color-surface)", border: "1px solid var(--color-border)" }}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 6, textTransform: "uppercase" }}>Plan</p>
+              <div style={{ padding: "12px 14px", borderRadius: 16, background: "var(--color-surface)", border: "1px solid var(--color-border)", flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <Zap size={14} color="var(--color-accent-primary)" />
-                  <span style={{ fontSize: 15, fontWeight: 800, color: "var(--color-accent-primary)", fontFamily: "var(--font-mono)" }}>
-                    {isPro ? "PRO" : "FREE"}
-                  </span>
+                  <Crown size={16} color="var(--color-gold)" />
+                  <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", textTransform: "uppercase", margin: 0 }}>LEVEL</p>
+                </div>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, color: "var(--color-text-primary)", marginTop: 8 }}>
+                  {levelInfo.name}
+                </div>
+                <div style={{ height: 5, borderRadius: 3, background: "var(--color-surface-2)", overflow: "hidden", marginTop: 7 }}>
+                  <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg, var(--color-accent-primary), var(--color-gold))", width: `${levelInfo.progress * 100}%` }} />
                 </div>
               </div>
             </div>
@@ -151,21 +161,38 @@ export default function GamesHubPage() {
 
           {/* Daily challenge */}
           <section style={{ padding: "16px 24px 0" }}>
-            <Link href={`/games/${dailyGame}?daily=1`} style={{ display: "block", textDecoration: "none" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "18px 20px", borderRadius: 12, background: "var(--color-accent-primary)" }}>
-                <div>
-                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", color: "rgba(0,0,0,0.55)", fontFamily: "var(--font-mono)", marginBottom: 5, textTransform: "uppercase" }}>
-                    Today&apos;s Challenge
-                  </p>
-                  <p style={{ fontSize: 20, fontWeight: 800, color: "#000", letterSpacing: "-0.01em", marginBottom: 2 }}>
-                    {dailyName}
-                  </p>
-                  {dailyDesc && <p style={{ fontSize: 12, color: "rgba(0,0,0,0.55)", fontWeight: 500 }}>{dailyDesc}</p>}
+            <div
+              onClick={() => router.push(`/games/${dailyGame}?daily=1&from=daily`)}
+              style={{
+                borderRadius: 16, padding: 16, cursor: "pointer",
+                background: "linear-gradient(120deg, var(--color-accent-primary), color-mix(in srgb, var(--color-accent-primary) 80%, transparent))",
+                display: "flex", alignItems: "center", gap: 12,
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.15em",
+                  color: "var(--color-on-accent)", opacity: 0.8, textTransform: "uppercase",
+                }}>
+                  TODAY&apos;S CHALLENGE · STAGE {dailyStage}
                 </div>
-                <ChevronRight size={22} color="rgba(0,0,0,0.6)" strokeWidth={2.5} />
+                <div style={{
+                  fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18,
+                  color: "var(--color-on-accent)", marginTop: 4,
+                }}>
+                  {dailyName}
+                </div>
               </div>
-            </Link>
+              <div style={{
+                background: "var(--color-on-accent)", color: "var(--color-accent-primary)",
+                fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 12,
+                padding: "9px 14px", borderRadius: 10,
+                display: "flex", alignItems: "center", gap: 5,
+              }}>
+                <Play size={13} fill="var(--color-accent-primary)" color="var(--color-accent-primary)" />
+                Play
+              </div>
+            </div>
           </section>
 
           <GamesHubCatalog isPro={isPro} />

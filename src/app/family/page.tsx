@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Copy, RefreshCw, Trash2, Crown, Check, Link as LinkIcon, UserPlus, AlertCircle } from "lucide-react";
+import { Users, Trash2, Crown, Check, AlertCircle, Gift, ChevronRight, Trophy, Flame } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/nav/Navbar";
 import { useAuthStore } from "@/store/authStore";
@@ -120,6 +120,11 @@ export default function FamilyPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  // suppress unused warning
+  void regenerating;
+  void removing;
+  void Check;
+
   if (!user) return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)" }}>
       <Navbar />
@@ -199,114 +204,153 @@ export default function FamilyPage() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
 
-              {/* Member count */}
-              <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 20, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              {/* Group hero card */}
+              <div style={{
+                background: "radial-gradient(120% 80% at 50% 0%, rgba(142,124,255,0.1), transparent), var(--color-surface)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 16, padding: 18, marginBottom: 16,
+              }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Users size={20} color="white" />
+                  <div style={{
+                    width: 46, height: 46, borderRadius: 13,
+                    background: "var(--color-surface-2)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <Users size={22} color="var(--color-violet)" strokeWidth={2} />
                   </div>
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 700 }}>{members.length} / {group.member_limit} members</p>
-                    <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-                      {group.member_limit - members.length} slot{group.member_limit - members.length !== 1 ? "s" : ""} remaining
-                    </p>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 17, color: "var(--color-text-primary)" }}>
+                      {group.name ?? "Family Group"}
+                    </div>
+                    <div style={{
+                      fontFamily: "var(--font-mono)", fontSize: 8.5, letterSpacing: "0.18em",
+                      textTransform: "uppercase", color: "var(--color-text-faint)", marginTop: 3,
+                    }}>
+                      {members.length} of {group.member_limit} seats · Family plan
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {Array.from({ length: group.member_limit }).map((_, i) => (
-                    <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: i < members.length ? "var(--color-accent-primary)" : "var(--color-border)" }} />
-                  ))}
                 </div>
               </div>
 
-              {/* Invite link (admin only) */}
-              {isAdmin && (
-                <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 20, padding: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                    <LinkIcon size={16} color="var(--color-text-secondary)" />
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-secondary)" }}>Invite Link</p>
-                    {members.length >= group.member_limit && (
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: "rgba(239,68,68,0.1)", color: "var(--color-error)" }}>Group Full</span>
+              {/* Family leaderboard */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "22px 2px 12px" }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)" }}>Family leaderboard</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)" }}>This week</div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 22 }}>
+                {[...members].sort((a, b) => b.is_admin ? 1 : -1).map((m, i) => (
+                  <div key={m.id} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: 11, borderRadius: 16,
+                    background: m.id === user?.id ? "rgba(47,230,224,0.06)" : "var(--color-surface)",
+                    border: `1px solid ${m.id === user?.id ? "rgba(47,230,224,0.3)" : "var(--color-border)"}`,
+                  }}>
+                    <div style={{ width: 20, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, color: "var(--color-text-faint)", textAlign: "center" }}>
+                      {i + 1}
+                    </div>
+                    <div style={{
+                      width: 42, height: 42, borderRadius: "50%", flexShrink: 0,
+                      background: "var(--color-accent-primary)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 14, fontWeight: 700, color: "var(--color-on-accent)",
+                      fontFamily: "var(--font-display)",
+                    }}>
+                      {m.username[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 13.5, color: "var(--color-text-primary)" }}>
+                        {m.username}
+                        {m.is_admin && <span style={{ marginLeft: 6, fontSize: 10, color: "var(--color-gold)" }}>Admin</span>}
+                      </div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase", color: m.id === user?.id ? "var(--color-accent-primary)" : "var(--color-text-faint)", marginTop: 2 }}>
+                        {m.id === user?.id ? "You" : `Joined ${new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`}
+                      </div>
+                    </div>
+                    {isAdmin && !m.is_admin && (
+                      <button onClick={() => removeMember(m.id)} disabled={removing === m.id} title="Remove member"
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 10, background: "transparent", border: "0.5px solid rgba(239,68,68,0.2)", color: "var(--color-error)", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: removing === m.id ? 0.5 : 1 }}>
+                        <Trash2 size={12} />
+                        {removing === m.id ? "Removing..." : "Remove"}
+                      </button>
+                    )}
+                    {!isAdmin && m.id === user?.id && (
+                      <button onClick={leaveGroup}
+                        style={{ padding: "6px 12px", borderRadius: 10, background: "transparent", border: "0.5px solid var(--color-border)", color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                        Leave
+                      </button>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <div style={{ flex: 1, padding: "10px 14px", borderRadius: 12, background: "var(--color-surface-2)", border: "0.5px solid var(--color-border)", fontSize: 13, color: "var(--color-text-secondary)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {inviteUrl}
+                ))}
+              </div>
+
+              {/* Invite section (admin only) */}
+              {isAdmin && (
+                <div style={{ marginBottom: 22 }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)", marginBottom: 12 }}>Invite</div>
+                  <div
+                    onClick={copyInviteLink}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12, cursor: "pointer",
+                      padding: 14, borderRadius: 16,
+                      background: "var(--color-surface)",
+                      border: `1px dashed var(--color-border)`,
+                    }}
+                  >
+                    <div style={{
+                      width: 38, height: 38, borderRadius: 11, background: "var(--color-surface-2)",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Gift size={18} color="var(--color-accent-primary)" strokeWidth={2} />
                     </div>
-                    <button onClick={copyInviteLink}
-                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 12, background: copied ? "#22C55E" : "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", border: "none", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.2s" }}>
-                      {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy Link</>}
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
-                    <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-                      Share this link with family members. They'll need a Mind Element account to join.
-                    </p>
-                    <button onClick={regenerateCode} disabled={regenerating}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 10, background: "transparent", border: "0.5px solid var(--color-border)", color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                      <RefreshCw size={12} />
-                      {regenerating ? "Regenerating..." : "New Link"}
-                    </button>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 13, color: "var(--color-text-primary)" }}>
+                        Invite {group.member_limit - members.length} more
+                      </div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)", marginTop: 2 }}>
+                        {copied ? "Copied!" : "Share a link · seats included in your plan"}
+                      </div>
+                    </div>
+                    <ChevronRight size={16} color="var(--color-text-faint)" />
                   </div>
                 </div>
               )}
 
-              {/* Members list */}
-              <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 20, overflow: "hidden" }}>
-                <div style={{ padding: "16px 24px", borderBottom: "0.5px solid var(--color-border)" }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text-secondary)" }}>Members</p>
-                </div>
-                <AnimatePresence>
-                  {members
-                    .sort((a, b) => (b.is_admin ? 1 : 0) - (a.is_admin ? 1 : 0))
-                    .map((member) => (
-                      <motion.div key={member.id}
-                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderBottom: "0.5px solid var(--color-border)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "white", flexShrink: 0 }}>
-                            {member.username[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <p style={{ fontSize: 14, fontWeight: 600 }}>{member.username}</p>
-                              {member.is_admin && (
-                                <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "rgba(245,158,11,0.12)", color: "#D97706" }}>
-                                  <Crown size={9} /> Admin
-                                </span>
-                              )}
-                              {member.id === user?.id && !member.is_admin && (
-                                <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "var(--color-surface-2)", color: "var(--color-text-secondary)" }}>You</span>
-                              )}
-                            </div>
-                            <p style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>
-                              Joined {new Date(member.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </p>
-                          </div>
+              {/* Recent wins */}
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)", marginBottom: 12 }}>Recent wins</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {members.slice(0, 3).map((m, i) => {
+                  const icons = [Crown, Trophy, Flame] as const;
+                  const colors = ["var(--color-gold)", "var(--color-violet)", "#F59E0B"] as const;
+                  const WinIcon = icons[i % 3];
+                  return (
+                    <div key={m.id} style={{
+                      display: "flex", alignItems: "center", gap: 11, padding: 12, borderRadius: 16,
+                      background: "var(--color-surface)", border: "1px solid var(--color-border)",
+                    }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 9, background: "var(--color-surface-2)",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <WinIcon size={16} color={colors[i % 3]} strokeWidth={2} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "var(--font-sans)", fontSize: 12.5, color: "var(--color-text-primary)" }}>
+                          {m.username} completed a stage
                         </div>
-                        {isAdmin && !member.is_admin && (
-                          <button onClick={() => removeMember(member.id)} disabled={removing === member.id} title="Remove member"
-                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 10, background: "transparent", border: "0.5px solid rgba(239,68,68,0.2)", color: "var(--color-error)", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: removing === member.id ? 0.5 : 1 }}>
-                            <Trash2 size={12} />
-                            {removing === member.id ? "Removing..." : "Remove"}
-                          </button>
-                        )}
-                        {!isAdmin && member.id === user?.id && (
-                          <button onClick={leaveGroup}
-                            style={{ padding: "6px 12px", borderRadius: 10, background: "transparent", border: "0.5px solid var(--color-border)", color: "var(--color-text-secondary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                            Leave
-                          </button>
-                        )}
-                      </motion.div>
-                    ))}
-                </AnimatePresence>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 7.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-text-faint)", marginTop: 2 }}>
+                          Recently
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* P3 — admin delete group */}
               {isAdmin && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ marginTop: 32 }}>
                   {!showDeleteConfirm ? (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <p style={{ fontSize: 12, color: "var(--color-text-secondary)", lineHeight: 1.6 }}>

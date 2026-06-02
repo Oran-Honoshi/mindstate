@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Volume2, VolumeX, Sun, Moon, Globe, CreditCard, Shield, Bell, Trash2, Check, ChevronRight, Zap, Infinity as InfinityIcon } from "lucide-react";
+import { Volume2, Sun, Moon, Check, ChevronRight, Zap } from "lucide-react";
 import { Navbar } from "@/components/nav/Navbar";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -29,21 +29,6 @@ function Toggle({ value, onChange }: { value:boolean; onChange:()=>void }) {
   );
 }
 
-function SectionCard({ title, icon:Icon, children }: { title:string; icon:any; children:React.ReactNode }) {
-  return (
-    <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-      className="ms-card" style={{ padding:"18px 20px", marginBottom:14 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
-        <div style={{ width:30, height:30, borderRadius:9, background:"rgba(0,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <Icon size={14} color="var(--color-accent-primary)"/>
-        </div>
-        <h2 style={{ fontSize:14, fontWeight:700, color:"var(--color-text-primary)" }}>{title}</h2>
-      </div>
-      {children}
-    </motion.div>
-  );
-}
-
 function Row({ label, desc, children }: { label:string; desc?:string; children:React.ReactNode }) {
   return (
     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", borderBottom:"0.5px solid var(--color-border)" }}>
@@ -55,6 +40,11 @@ function Row({ label, desc, children }: { label:string; desc?:string; children:R
     </div>
   );
 }
+
+// suppress unused icon imports — they may be kept for future use
+void Sun;
+void Moon;
+void Volume2;
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -91,132 +81,138 @@ export default function SettingsPage() {
       <main style={{ maxWidth:560, margin:"0 auto", padding:"76px 16px 60px" }}>
 
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:24, marginTop:12 }}>
-          <h1 style={{ fontSize:28, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-sans)", marginBottom:4 }}>Settings</h1>
+          <h1 style={{ fontSize:22, fontWeight:700, color:"var(--color-text-primary)", fontFamily:"var(--font-display)", marginBottom:4 }}>Settings</h1>
           <p style={{ fontSize:13, color:"var(--color-text-secondary)" }}>Manage your account and preferences</p>
         </motion.div>
 
         {/* Profile */}
         {user && (
-          <SectionCard title="Profile" icon={Shield}>
-            <div style={{ marginBottom:12 }}>
-              <label style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", display:"block", marginBottom:6 }}>Username</label>
-              <input value={username} onChange={e=>setUsername(e.target.value)}
-                style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"0.5px solid var(--color-border)", fontSize:14, color:"var(--color-text-primary)", background:"var(--color-surface-2)", outline:"none" }}
-                placeholder="Your username"/>
-            </div>
-            <div style={{ marginBottom:16 }}>
-              <label style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", display:"block", marginBottom:6 }}>Email</label>
-              <input value={user.email??""} disabled
-                style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"0.5px solid var(--color-border)", fontSize:14, color:"var(--color-text-secondary)", background:"var(--color-surface-2)", cursor:"not-allowed" }}/>
-            </div>
-            <button onClick={saveProfile} disabled={saving}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:12, border:"none", background:ACCENT, color:"#000", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              {saved ? <><Check size={14}/> Saved!</> : saving ? "Saving..." : "Save Changes"}
-            </button>
-          </SectionCard>
-        )}
-
-        {/* Preferences */}
-        <SectionCard title="Preferences" icon={Volume2}>
-          <Row label="Silent Mode" desc="Disable all sounds and haptic feedback">
-            <Toggle value={isSilentMode} onChange={toggleSilentMode}/>
-          </Row>
-          <Row label="Theme" desc="Choose how MindState looks">
-            <ThemeSwitcher/>
-          </Row>
-          <Row label={t("settings_lang")} desc="Interface language · Direction auto-switches for RTL">
-            <div style={{ display:"flex", flexWrap:"wrap", gap:6, maxWidth:320, justifyContent:"flex-end" }}>
-              {SUPPORTED_LANGUAGES.map(lang=>(
-                <button key={lang.code} onClick={()=>setLanguage(lang.code as Language)}
-                  style={{ padding:"5px 10px", borderRadius:10, border:"0.5px solid", fontSize:12, fontWeight:600, cursor:"pointer", transition:"all 0.15s",
-                    background:language===lang.code?ACCENT:"var(--color-surface-2)",
-                    color:language===lang.code?"#000":"var(--color-text-secondary)",
-                    borderColor:language===lang.code?"transparent":"var(--color-border)" }}>
-                  {lang.flag} {lang.label}
-                </button>
-              ))}
-            </div>
-          </Row>
-        </SectionCard>
-
-        {/* Token status */}
-        <SectionCard title="Daily Plays" icon={Zap}>
-          {isPro ? (
-            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 0" }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"rgba(0,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <InfinityIcon size={18} color="var(--color-accent-primary)"/>
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-accent-primary)", marginBottom: 10 }}>Profile</div>
+            <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 16, padding: 16 }}>
+              <div style={{ marginBottom:12 }}>
+                <label style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", display:"block", marginBottom:6 }}>Username</label>
+                <input value={username} onChange={e=>setUsername(e.target.value)}
+                  style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"0.5px solid var(--color-border)", fontSize:14, color:"var(--color-text-primary)", background:"var(--color-surface-2)", outline:"none" }}
+                  placeholder="Your username"/>
               </div>
-              <div>
-                <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)" }}>Unlimited Plays</p>
-                <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Pro subscriber — play without limits</p>
+              <div style={{ marginBottom:16 }}>
+                <label style={{ fontSize:11, fontWeight:600, color:"var(--color-text-secondary)", letterSpacing:"0.1em", textTransform:"uppercase", display:"block", marginBottom:6 }}>Email</label>
+                <input value={user.email??""} disabled
+                  style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"0.5px solid var(--color-border)", fontSize:14, color:"var(--color-text-secondary)", background:"var(--color-surface-2)", cursor:"not-allowed" }}/>
               </div>
-            </div>
-          ) : (
-            <>
-              <Row label="Today's plays remaining" desc="Resets daily at midnight UTC">
-                <span style={{ fontSize:18, fontWeight:700, color: tokens>0?"var(--color-accent-primary)":"var(--color-error)", fontFamily:"var(--font-sans)" }}>
-                  {tokens}/{FREE_DAILY_TOKENS}
-                </span>
-              </Row>
-              <div style={{ height:6, background:"var(--color-surface-2)", borderRadius:3, overflow:"hidden", margin:"8px 0 12px" }}>
-                <div style={{ height:"100%", borderRadius:3, background:ACCENT, width:`${(tokens/FREE_DAILY_TOKENS)*100}%`, transition:"width 0.4s" }}/>
-              </div>
-              <Link href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:14, background:"rgba(0,255,255,0.06)", border:"0.5px solid rgba(0,255,255,0.15)", textDecoration:"none" }}>
-                <span style={{ fontSize:13, fontWeight:600, color:"var(--color-accent-primary)" }}>Upgrade to Pro for unlimited plays</span>
-                <ChevronRight size={14} color="var(--color-accent-primary)"/>
-              </Link>
-            </>
-          )}
-        </SectionCard>
-
-        {/* Subscription */}
-        <SectionCard title="Subscription" icon={CreditCard}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0" }}>
-            <div>
-              <p style={{ fontSize:13, fontWeight:600, color:"var(--color-text-primary)", marginBottom:2 }}>
-                {isPro ? "Pro Subscriber" : "Free Plan"}
-              </p>
-              <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>
-                {isPro ? "Unlimited plays · All features unlocked" : "5 daily plays across all 20 games"}
-              </p>
-            </div>
-            {isPro ? (
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--color-accent-secondary)", background:"rgba(16,244,160,0.08)", border:"0.5px solid rgba(16,244,160,0.3)", padding:"5px 12px", borderRadius:10 }}>
-                Active
-              </span>
-            ) : (
-              <Link href="/pricing" style={{ padding:"8px 16px", borderRadius:12, background:ACCENT, color:"#000", fontSize:12, fontWeight:700, textDecoration:"none" }}>
-                Upgrade
-              </Link>
-            )}
-          </div>
-        </SectionCard>
-
-        {/* Notifications */}
-        <SectionCard title="Notifications" icon={Bell}>
-          <Row label="Daily reminder" desc="Get reminded to play your daily challenge">
-            <Toggle value={false} onChange={()=>alert("Coming soon — enable browser notifications first")}/>
-          </Row>
-          <Row label="Streak alerts" desc="Be notified if you're about to break a streak">
-            <Toggle value={false} onChange={()=>alert("Coming soon")}/>
-          </Row>
-        </SectionCard>
-
-        {/* Danger zone */}
-        {user && (
-          <div className="ms-card" style={{ padding:"18px 20px", borderColor:"rgba(239,68,68,0.2)" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div>
-                <p style={{ fontSize:13, fontWeight:600, color:"var(--color-error)", marginBottom:2 }}>Sign Out</p>
-                <p style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Sign out on this device</p>
-              </div>
-              <button onClick={signOut}
-                style={{ padding:"8px 16px", borderRadius:12, border:"0.5px solid rgba(239,68,68,0.3)", background:"transparent", color:"var(--color-error)", fontSize:12, fontWeight:600, cursor:"pointer" }}>
-                Sign Out
+              <button onClick={saveProfile} disabled={saving}
+                style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:12, border:"none", background:ACCENT, color:"#000", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                {saved ? <><Check size={14}/> Saved!</> : saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
         )}
+
+        {/* Preferences */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-accent-primary)", marginBottom: 10 }}>Preferences</div>
+          <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 16, padding: 16 }}>
+            <Row label="Silent Mode" desc="Disable all sounds and haptic feedback">
+              <Toggle value={isSilentMode} onChange={toggleSilentMode}/>
+            </Row>
+            <Row label="Theme" desc="Choose how MindState looks">
+              <ThemeSwitcher/>
+            </Row>
+            <Row label={t("settings_lang")} desc="Interface language · Direction auto-switches for RTL">
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, maxWidth:320, justifyContent:"flex-end" }}>
+                {SUPPORTED_LANGUAGES.map(lang=>(
+                  <button key={lang.code} onClick={()=>setLanguage(lang.code as Language)}
+                    style={{ padding:"5px 10px", borderRadius:10, border:"0.5px solid", fontSize:12, fontWeight:600, cursor:"pointer", transition:"all 0.15s",
+                      background:language===lang.code?ACCENT:"var(--color-surface-2)",
+                      color:language===lang.code?"#000":"var(--color-text-secondary)",
+                      borderColor:language===lang.code?"transparent":"var(--color-border)" }}>
+                    {lang.flag} {lang.label}
+                  </button>
+                ))}
+              </div>
+            </Row>
+          </div>
+        </div>
+
+        {/* Subscription (combines Daily Plays + Subscription) */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-accent-primary)", marginBottom: 10 }}>Subscription</div>
+          <div style={{
+            background: "radial-gradient(120% 80% at 50% 0%, rgba(47,230,224,0.08), transparent), var(--color-surface)",
+            border: "1px solid var(--color-border)", borderRadius: 16, padding: 16,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isPro ? 0 : 16 }}>
+              <div>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, color: "var(--color-text-primary)", marginBottom: 4 }}>
+                  {isPro ? "Pro" : "Free plan"}
+                </div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-text-faint)" }}>
+                  {isPro ? "Unlimited plays · All features unlocked" : "5 daily plays across all 20 games"}
+                </div>
+              </div>
+              {!isPro && (
+                <Link href="/pricing" style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  padding: "9px 14px", borderRadius: 12,
+                  background: ACCENT, color: "#000", fontSize: 12, fontWeight: 700, textDecoration: "none",
+                }}>
+                  <Zap size={12} fill="#000" strokeWidth={0} />
+                  Upgrade
+                </Link>
+              )}
+            </div>
+            {!isPro && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-primary)" }}>Today&apos;s plays</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: tokens > 0 ? "var(--color-accent-primary)" : "var(--color-error)", fontFamily: "var(--font-display)" }}>
+                    {tokens}/{FREE_DAILY_TOKENS}
+                  </span>
+                </div>
+                <div style={{ height: 6, background: "var(--color-surface-2)", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 3, background: ACCENT, width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
+                </div>
+                <Link href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:14, background:"rgba(0,255,255,0.06)", border:"0.5px solid rgba(0,255,255,0.15)", textDecoration:"none", marginTop: 12 }}>
+                  <span style={{ fontSize:13, fontWeight:600, color:"var(--color-accent-primary)" }}>Upgrade to Pro for unlimited plays</span>
+                  <ChevronRight size={14} color="var(--color-accent-primary)"/>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--color-accent-primary)", marginBottom: 10 }}>Notifications</div>
+          <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 16, padding: 16 }}>
+            <Row label="Daily reminder" desc="Get reminded to play your daily challenge">
+              <Toggle value={false} onChange={()=>alert("Coming soon — enable browser notifications first")}/>
+            </Row>
+            <Row label="Streak alerts" desc="Be notified if you're about to break a streak">
+              <Toggle value={false} onChange={()=>alert("Coming soon")}/>
+            </Row>
+          </div>
+        </div>
+
+        {/* Sign out */}
+        {user && (
+          <div style={{ marginTop: 22 }}>
+            <button
+              onClick={signOut}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                padding: 13, borderRadius: 13,
+                background: "transparent", border: "1px solid var(--color-border)",
+                color: "var(--color-text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+
         {!user && (
           <div style={{ textAlign:"center", padding:"32px 0" }}>
             <p style={{ color:"var(--color-text-secondary)", fontSize:13, marginBottom:16 }}>Sign in to manage your settings</p>
