@@ -76,7 +76,7 @@ function FlowGameInner() {
       if (xpState && !completed && !solutionRevealed) {
         timerRef.current = setInterval(() => {
           setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
-          setLiveXP(calculateXP(xpState).currentXP);
+          if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xpState).currentXP);
         }, 500);
       }
     }
@@ -121,7 +121,7 @@ function FlowGameInner() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
-      setLiveXP(calculateXP(xp).currentXP);
+      if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xp).currentXP);
     }, 500);
   }, [user]);
 
@@ -353,6 +353,7 @@ function FlowGameInner() {
         slug={GAME_SLUG}
         gameName="Flow"
         stageNumber={stage}
+        difficulty={getDifficulty(stage)}
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}

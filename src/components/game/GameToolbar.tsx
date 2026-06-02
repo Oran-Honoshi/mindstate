@@ -1,7 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { Undo2, Lightbulb, CheckCircle2 } from "lucide-react";
+import { Undo, Lightbulb, Check } from "lucide-react";
 
 interface GameToolbarProps {
   onUndo: () => void;
@@ -10,23 +9,28 @@ interface GameToolbarProps {
   hintsRemaining: number;
 }
 
-const btnBase: CSSProperties = {
+const baseBtn: React.CSSProperties = {
   flex: 1,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   gap: 4,
-  padding: "10px 0",
-  background: "var(--color-surface-2)",
+  padding: "11px 0",
+  background: "var(--color-surface)",
   border: "1px solid var(--color-border)",
-  borderRadius: "var(--radius)",
-  color: "var(--color-text-primary)",
+  borderRadius: 13,
   cursor: "pointer",
-  fontSize: 12,
-  fontFamily: "var(--font-sans)",
-  fontWeight: 500,
   minHeight: 0,
+  transition: "transform 0.1s, background 0.15s, border-color 0.15s",
+};
+
+const microLabel: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 8,
+  letterSpacing: "0.15em",
+  textTransform: "uppercase" as const,
+  color: "var(--color-text-secondary)",
 };
 
 export function GameToolbar({ onUndo, onHint, onCheck, hintsRemaining }: GameToolbarProps) {
@@ -35,69 +39,60 @@ export function GameToolbar({ onUndo, onHint, onCheck, hintsRemaining }: GameToo
   return (
     <div style={{
       display: "flex",
-      gap: 16,
-      padding: 16,
+      gap: 9,
+      padding: "12px 16px 20px",
       background: "var(--color-surface)",
       borderTop: "1px solid var(--color-border)",
       flexShrink: 0,
     }}>
       {/* Undo */}
-      <button onClick={onUndo} style={btnBase} aria-label="Undo last move">
-        <Undo2 size={13} />
-        Undo
+      <button
+        onClick={onUndo}
+        aria-label="Undo"
+        style={baseBtn}
+        onMouseDown={e => (e.currentTarget.style.transform = "scale(0.96)")}
+        onMouseUp={e => (e.currentTarget.style.transform = "")}
+        onMouseLeave={e => (e.currentTarget.style.transform = "")}
+      >
+        <Undo size={19} strokeWidth={2} color="var(--color-text-primary)" />
+        <span style={microLabel}>UNDO</span>
       </button>
 
-      {/* Hint — with remaining-count badge */}
-      <div style={{ flex: 1, position: "relative" }}>
-        {hintsRemaining > 0 && (
-          <div aria-hidden style={{
-            position: "absolute",
-            top: -6,
-            right: -6,
-            zIndex: 1,
-            background: "var(--color-accent-secondary)",
-            color: "#000",
-            fontSize: 9,
-            fontWeight: 700,
-            fontFamily: "var(--font-mono)",
-            width: 16,
-            height: 16,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            {hintsRemaining}
-          </div>
-        )}
-        <button
-          onClick={onHint}
-          disabled={hintDisabled}
-          aria-label={`Use hint — ${hintsRemaining} remaining`}
-          style={{
-            ...btnBase,
-            width: "100%",
-            flex: "unset" as CSSProperties["flex"],
-            opacity: hintDisabled ? 0.35 : 1,
-            color: hintDisabled
-              ? "var(--color-text-secondary)"
-              : "var(--color-accent-primary)",
-            borderColor: hintDisabled
-              ? "var(--color-border)"
-              : "var(--color-accent-primary)",
-            cursor: hintDisabled ? "not-allowed" : "pointer",
-          }}
-        >
-          <Lightbulb size={13} />
-          Hint
-        </button>
-      </div>
+      {/* Hint */}
+      <button
+        onClick={onHint}
+        disabled={hintDisabled}
+        aria-label={`Hint — ${hintsRemaining} left`}
+        style={{
+          ...baseBtn,
+          opacity: hintDisabled ? 0.45 : 1,
+          cursor: hintDisabled ? "not-allowed" : "pointer",
+        }}
+        onMouseDown={e => { if (!hintDisabled) e.currentTarget.style.transform = "scale(0.96)"; }}
+        onMouseUp={e => (e.currentTarget.style.transform = "")}
+        onMouseLeave={e => (e.currentTarget.style.transform = "")}
+      >
+        <Lightbulb size={19} strokeWidth={2} color="var(--color-gold)" />
+        <span style={microLabel}>HINT · {hintsRemaining} LEFT</span>
+      </button>
 
-      {/* Check — only shown if game provides onCheck */}
+      {/* Check — only when game provides it */}
       {onCheck && (
-        <button onClick={onCheck} style={btnBase} aria-label="Check current state">
-          <CheckCircle2 size={13} />
-          Check
+        <button
+          onClick={onCheck}
+          aria-label="Check"
+          style={{
+            ...baseBtn,
+            flex: 1.4,
+            background: "var(--color-accent-primary)",
+            border: "none",
+          }}
+          onMouseDown={e => (e.currentTarget.style.transform = "scale(0.96)")}
+          onMouseUp={e => (e.currentTarget.style.transform = "")}
+          onMouseLeave={e => (e.currentTarget.style.transform = "")}
+        >
+          <Check size={19} strokeWidth={2.6} color="var(--color-on-accent)" />
+          <span style={{ ...microLabel, color: "var(--color-on-accent)", fontWeight: 700 }}>CHECK</span>
         </button>
       )}
     </div>

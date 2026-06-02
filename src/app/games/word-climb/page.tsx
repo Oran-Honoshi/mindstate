@@ -108,7 +108,7 @@ function WordClimbInner() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
-      setLiveXP(calculateXP(xp).currentXP);
+      if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xp).currentXP);
     }, 500);
   }, []);
 
@@ -179,6 +179,7 @@ function WordClimbInner() {
         slug={GAME_SLUG}
         gameName="Word Climb"
         stageNumber={stage}
+        difficulty={getDifficulty(stage)}
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}

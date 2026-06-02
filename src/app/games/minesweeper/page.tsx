@@ -133,7 +133,7 @@ function MinesweeperGameInner() {
       if (xpState && !gameOver && !solutionRevealed) {
         timerRef.current = setInterval(() => {
           setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
-          setLiveXP(calculateXP(xpState).currentXP);
+          if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xpState).currentXP);
         }, 500);
       }
     }
@@ -156,7 +156,7 @@ function MinesweeperGameInner() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
-      setLiveXP(calculateXP(xp).currentXP);
+      if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xp).currentXP);
     }, 500);
     const configs = { easy: { rows: 8, cols: 8, mines: 10 }, medium: { rows: 10, cols: 10, mines: 20 }, hard: { rows: 12, cols: 12, mines: 35 } };
     const { rows, cols } = configs[diff];
@@ -303,6 +303,7 @@ function MinesweeperGameInner() {
         slug={GAME_SLUG}
         gameName="Minesweeper"
         stageNumber={stage}
+        difficulty={getDifficulty(stage)}
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}

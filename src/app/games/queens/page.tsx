@@ -107,7 +107,7 @@ function QueensGameInner() {
         timerRef.current = setInterval(() => {
           if (!pausedRef.current) {
             setElapsedSeconds(Math.floor((Date.now() - xpState.startTime) / 1000));
-            setLiveXP(calculateXP(xpState).currentXP);
+            if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xpState).currentXP);
           }
         }, 500);
       }
@@ -142,7 +142,7 @@ function QueensGameInner() {
     timerRef.current = setInterval(() => {
       if (!pausedRef.current) {
         setElapsedSeconds(Math.floor((Date.now() - xp.startTime) / 1000));
-        setLiveXP(calculateXP(xp).currentXP);
+        if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xp).currentXP);
       }
     }, 500);
   }, []);
@@ -254,6 +254,7 @@ function QueensGameInner() {
         slug={GAME_SLUG}
         gameName="Queens"
         stageNumber={stage}
+        difficulty={getDifficulty(stage)}
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}

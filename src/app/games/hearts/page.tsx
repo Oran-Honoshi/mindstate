@@ -95,7 +95,7 @@ function HeartsPageInner(){
 
   usePageVisibility(
     ()=>{if(timerRef.current)clearInterval(timerRef.current);},
-    ()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xpState.startTime)/1000));setLiveXP(calculateXP(xpState).currentXP);},500);}}
+    ()=>{if(xpState&&!completed){timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xpState.startTime)/1000));if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xpState).currentXP);},500);}}
   );
 
   const loadStage=useCallback((s:number)=>{
@@ -110,7 +110,7 @@ function HeartsPageInner(){
     setHistory([]);
     setNextUncompleted(null);
     if(timerRef.current)clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));setLiveXP(calculateXP(xp).currentXP);},500);
+    timerRef.current=setInterval(()=>{setElapsedSeconds(Math.floor((Date.now()-xp.startTime)/1000));if (!useSettingsStore.getState().isPracticeMode) setLiveXP(calculateXP(xp).currentXP);},500);
     if(user&&!isDaily)consumeToken(user.id);
   },[user]);
 
@@ -194,6 +194,7 @@ function HeartsPageInner(){
         slug={GAME_SLUG}
         gameName="Hearts"
         stageNumber={stage}
+        difficulty={getDifficulty(stage)}
         xp={liveXP}
         maxXp={1000}
         elapsedSeconds={elapsedSeconds}
