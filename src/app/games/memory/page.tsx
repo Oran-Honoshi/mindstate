@@ -373,7 +373,15 @@ function MemoryGameInner() {
                       overflow: "hidden",
                       border: "1.5px solid color-mix(in srgb, var(--color-accent-primary) 24%, transparent)",
                     }}>
-                      <img src="/cards/back.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img
+                        src="/cards/back.png"
+                        alt=""
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.parentElement!.style.background = "var(--color-surface-2)";
+                        }}
+                      />
                     </div>
 
                     {/* Front face: icon */}

@@ -35,7 +35,7 @@ export function DailyGameGrid({ games, completedToday, featuredSlug }: Props) {
             <motion.div key={game}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 + i * 0.025, duration: 0.3 }}>
-              <Link href={`/games/${game}?daily=1`} style={{ display: "block", textDecoration: "none" }}>
+              <Link href={`/games/${game}?daily=1&from=daily`} style={{ display: "block", textDecoration: "none" }}>
                 <div style={{
                   padding: "14px",
                   borderRadius: 10,

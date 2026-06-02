@@ -30,7 +30,7 @@ export function DailyFeatured({ slug, isCompleted }: Props) {
         color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 10 }}>
         FEATURED TODAY
       </p>
-      <Link href={`/games/${slug}?daily=1`} style={{ display: "block", textDecoration: "none" }}>
+      <Link href={`/games/${slug}?daily=1&from=daily`} style={{ display: "block", textDecoration: "none" }}>
         <div style={{
           padding: "24px", borderRadius: 12,
           background: "var(--color-surface)",

@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface GameTopBarProps {
   slug: string;
@@ -12,6 +12,8 @@ interface GameTopBarProps {
 
 export function GameTopBar({ slug, gameName, stageNumber, xp }: GameTopBarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isFromDaily = searchParams.get("from") === "daily";
 
   return (
     <div style={{
@@ -25,7 +27,7 @@ export function GameTopBar({ slug, gameName, stageNumber, xp }: GameTopBarProps)
     }}>
       {/* Back button */}
       <button
-        onClick={() => router.push(`/stages/${slug}`)}
+        onClick={() => router.push(isFromDaily ? "/daily" : `/stages/${slug}`)}
         aria-label="Back to stages"
         style={{
           display: "flex",
