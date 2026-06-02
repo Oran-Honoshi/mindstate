@@ -3,7 +3,6 @@ const TOTAL_STAGES = 100;
 const GAME_SLUG = "word-climb";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { GamePageSchema } from "@/components/seo/GamePageSchema";
@@ -271,15 +270,6 @@ function WordClimbInner() {
           {error && <p style={{ fontSize:11, color:"var(--color-error)", fontWeight:600, fontFamily:"var(--font-mono)", letterSpacing:"0.05em" }}>{error.toUpperCase()}</p>}
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
-            style={{ padding:"8px 16px", borderRadius:10, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:11, color:"var(--color-text-secondary)", opacity:stage===1?0.4:1, fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600 }}>← PREV</button>
-          <span style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.06em" }}>STAGE {stage} / {TOTAL_STAGES}</span>
-          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
-            style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 16px", borderRadius:10, border:"0.5px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600 }}>
-            NEXT <ChevronRight size={13}/>
-          </button>
-        </div>
       </GameShell>
 
       {completed && (

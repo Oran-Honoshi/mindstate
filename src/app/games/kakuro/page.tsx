@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Delete } from "lucide-react";
+import { Delete } from "lucide-react";
 import { generateKakuro, checkKakuro, type KakuroBoard } from "@/lib/games/kakuroGenerator";
 import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -391,13 +391,6 @@ function KakuroGameInner() {
             </div>
           )}
 
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage===1}
-              style={{ padding:"8px 18px", borderRadius:10, border:"1px solid var(--color-border)", background:"var(--color-surface)", cursor:stage>1?"pointer":"not-allowed", fontSize:11, fontFamily:"var(--font-mono)", color:"var(--color-text-secondary)", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase" as const, opacity:stage===1?0.38:1 }}>← PREV</button>
-            <span style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)", fontWeight:600, letterSpacing:"0.06em" }}>STAGE {stage}/{TOTAL_STAGES}</span>
-            <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
-              style={{ display:"flex", alignItems:"center", gap:4, padding:"8px 18px", borderRadius:10, border:"1px solid var(--color-border)", background:"var(--color-surface)", cursor:"pointer", fontSize:11, fontFamily:"var(--font-mono)", color:"var(--color-text-secondary)", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase" as const }}>NEXT <ChevronRight size={12}/></button>
-          </div>
         </div>
       </GameShell>
 

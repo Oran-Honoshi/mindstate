@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion } from "framer-motion";
-import { ChevronRight, Leaf, Flame, Droplets, Star, Moon, Sun, Cloud, Zap, Heart, Crown, Gem, Snowflake, Feather, Fish, Bird, Music, Palette, Coffee, Globe, Compass, Atom } from "lucide-react";
+import { Leaf, Flame, Droplets, Star, Moon, Sun, Cloud, Zap, Heart, Crown, Gem, Snowflake, Feather, Fish, Bird, Music, Palette, Coffee, Globe, Compass, Atom } from "lucide-react";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
 import { GameCompleteModal } from "@/components/ui/GameCompleteModal";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
@@ -255,10 +255,11 @@ function MemoryGameInner() {
   const diff = getDifficulty(stage);
   const cols = diff === "easy" ? 4 : diff === "medium" ? 5 : 6;
   const gap = 8;
-  const cellSize = Math.min(
-    diff === "easy" ? 80 : diff === "medium" ? 72 : 62,
+  const cardW = Math.min(
+    diff === "easy" ? 70 : diff === "medium" ? 66 : 58,
     Math.floor((boardWidth - (cols - 1) * gap) / cols)
   );
+  const cardH = Math.round(cardW * 1.2);
 
   const matchedPairs = Math.round(cards.filter(c => c.matched).length / 2);
   const totalPairs = cards.length / 2;
@@ -297,6 +298,30 @@ function MemoryGameInner() {
         onUndo={handleUndo}
         onHint={handleHint}
       >
+        {/* Pair count header */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: 10,
+          width: cols * cardW + (cols - 1) * gap,
+        }}>
+          <span style={{
+            fontFamily: "var(--font-mono)", fontSize: 8,
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            color: "var(--color-text-secondary)",
+          }}>
+            PAIRS {matchedPairs} / {totalPairs}
+          </span>
+          {!completed && (
+            <span style={{
+              fontFamily: "var(--font-mono)", fontSize: 8,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "var(--color-accent-primary)",
+            }}>
+              TAP TO FLIP
+            </span>
+          )}
+        </div>
+
         {/* Matrix board panel */}
         <div style={{
           padding: 14,
@@ -308,9 +333,9 @@ function MemoryGameInner() {
         }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+            gridTemplateColumns: `repeat(${cols}, ${cardW}px)`,
             gap,
-            width: cols * cellSize + (cols - 1) * gap,
+            width: cols * cardW + (cols - 1) * gap,
           }}>
             {cards.map(card => {
               const isRevealed = card.flipped || card.matched;
@@ -343,8 +368,8 @@ function MemoryGameInner() {
                   animate={glowAnimate}
                   transition={{ boxShadow: glowTransition, scale: { duration: 0.1, ease: "easeOut" } }}
                   style={{
-                    width: cellSize,
-                    height: cellSize,
+                    width: cardW,
+                    height: cardH,
                     position: "relative",
                     background: "transparent",
                     border: "none",
@@ -373,15 +398,19 @@ function MemoryGameInner() {
                       borderRadius: 10,
                       overflow: "hidden",
                       border: "1.5px solid color-mix(in srgb, var(--color-accent-primary) 24%, transparent)",
+                      background: "radial-gradient(circle at center, rgba(47,230,224,0.1) 0%, var(--color-surface-2) 65%)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
+                      <div style={{
+                        width: 10, height: 10, borderRadius: "50%",
+                        background: "var(--color-accent-primary)", opacity: 0.3,
+                        position: "relative", zIndex: 1,
+                      }} />
                       <img
                         src="/cards/back.png"
                         alt=""
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                          e.currentTarget.parentElement!.style.background = "var(--color-surface-2)";
-                        }}
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
                       />
                     </div>
 
@@ -445,55 +474,6 @@ function MemoryGameInner() {
           <span style={{ color: diffColor, fontWeight: 700 }}>{diff.toUpperCase()}</span>
         </div>
 
-        {/* Nav controls */}
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:4 }}>
-          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
-            style={{
-              padding: "7px 14px", borderRadius: 10,
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface)",
-              cursor: stage > 1 ? "pointer" : "not-allowed",
-              fontSize: 12, fontFamily: "var(--font-mono)",
-              color: "var(--color-text-secondary)",
-              opacity: stage === 1 ? 0.4 : 1,
-            }}>
-            ← PREV
-          </button>
-          <button onClick={() => loadStage(stage)}
-            style={{
-              padding: "7px 12px", borderRadius: 10,
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface)",
-              cursor: "pointer", fontSize: 11,
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-text-secondary)",
-            }}>
-            RESTART
-          </button>
-          <button onClick={() => setShowMap(true)}
-            style={{
-              padding: "7px 12px", borderRadius: 10,
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface)",
-              cursor: "pointer", fontSize: 11,
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-text-secondary)", fontWeight: 600,
-            }}>
-            MAP
-          </button>
-          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
-            style={{
-              display: "flex", alignItems: "center", gap: 4,
-              padding: "7px 14px", borderRadius: 10,
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface)",
-              cursor: "pointer", fontSize: 12,
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-text-secondary)", fontWeight: 600,
-            }}>
-            NEXT <ChevronRight size={13}/>
-          </button>
-        </div>
       </GameShell>
 
       <OutOfTokensModal gameName="Memory" open={showTokenModal} onClose={() => setShowTokenModal(false)}/>

@@ -261,11 +261,6 @@ function HeartsPageInner(){
             </motion.button>
           )}
 
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>{ if(stage>1){ clearGameState(GAME_SLUG); setStage(s=>s-1); } }} disabled={stage===1} style={{padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:stage>1?"pointer":"not-allowed",fontSize:11,color:labelColor,opacity:stage===1?0.4:1,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>← PREV</button>
-            <span style={{fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em"}}>STAGE {stage} / {TOTAL_STAGES}</span>
-            <button onClick={()=>{ clearGameState(GAME_SLUG); setStage(s=>s+1); }} style={{display:"flex",alignItems:"center",gap:4,padding:"8px 16px",borderRadius:10,border:"0.5px solid rgba(255,255,255,0.15)",background:isDark?"rgba(6,13,24,0.7)":"rgba(255,255,255,0.1)",cursor:"pointer",fontSize:11,color:labelColor,fontFamily:"var(--font-mono)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>NEXT <ChevronRight size={13}/></button>
-          </div>
         </div>
       </GameShell>
 

@@ -22,9 +22,9 @@ function parseTimeSecs(t: string): number {
 }
 
 function getMedal(xp: number) {
-  if (xp > 800) return { emoji: "🥇", label: "GOLD",   color: "#F59E0B" };
-  if (xp > 500) return { emoji: "🥈", label: "SILVER", color: "#9CA3AF" };
-  return             { emoji: "🥉", label: "BRONZE", color: "#B45309" };
+  if (xp > 800) return { symbol: "★", label: "GOLD",   color: "#F59E0B" };
+  if (xp > 500) return { symbol: "◆", label: "SILVER", color: "#9CA3AF" };
+  return             { symbol: "◉", label: "BRONZE", color: "#B45309" };
 }
 
 function StageCompleteContent() {
@@ -70,7 +70,7 @@ function StageCompleteContent() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "16px 18px 22px" }}>
 
       {/* Game · Stage label */}
       <motion.p
@@ -87,12 +87,13 @@ function StageCompleteContent() {
         style={{
           width: 84, height: 84, borderRadius: "50%",
           border: `2px solid ${medal.color}`,
+          background: `${medal.color}15`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 40, marginBottom: 28,
+          fontSize: 32, color: medal.color, marginBottom: 28,
           boxShadow: `0 0 28px ${medal.color}30, 0 0 56px ${medal.color}10`,
         }}
       >
-        {medal.emoji}
+        {medal.symbol}
       </motion.div>
 
       {/* Sparky mood */}
@@ -116,7 +117,7 @@ function StageCompleteContent() {
         <div style={{ position: "absolute", inset: -40,
           background: "radial-gradient(circle, rgba(0,255,255,0.07) 0%, transparent 70%)",
           pointerEvents: "none" }} />
-        <p style={{ fontSize: 96, fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-accent-primary)", lineHeight: 1, position: "relative" }}>
+        <p style={{ fontSize: 96, fontWeight: 700, fontFamily: "var(--font-display)", color: "var(--color-accent-primary)", lineHeight: 1, position: "relative" }}>
           {xp}
         </p>
       </motion.div>
@@ -128,24 +129,26 @@ function StageCompleteContent() {
         XP EARNED
       </motion.p>
 
-      {/* Stats — scoreboard row */}
+      {/* Stats — individual cards */}
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
-        style={{ display: "flex", border: "1px solid var(--color-border)", borderRadius: 10, overflow: "hidden", marginBottom: 36, width: "100%", maxWidth: 320 }}
+        style={{ display: "flex", gap: 8, marginBottom: 36, width: "100%", maxWidth: 320 }}
       >
         {[
           { label: "TIME",  value: time },
           { label: "HINTS", value: String(hints) },
           { label: "MEDAL", value: medal.label, color: medal.color },
-        ].map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: "14px 0", textAlign: "center",
-            borderRight: i < 2 ? "1px solid var(--color-border)" : "none",
-            background: "var(--color-surface)" }}>
+        ].map((s) => (
+          <div key={s.label} style={{
+            flex: 1, padding: "14px 0", textAlign: "center",
+            background: "var(--color-surface)", border: "1px solid var(--color-border)",
+            borderRadius: 13,
+          }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
               color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)", marginBottom: 6 }}>
               {s.label}
             </p>
-            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-mono)", color: s.color ?? "var(--color-text-primary)" }}>
+            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: "var(--font-display)", color: s.color ?? "var(--color-text-primary)", margin: 0 }}>
               {s.value}
             </p>
           </div>
@@ -158,21 +161,23 @@ function StageCompleteContent() {
         style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 320 }}
       >
         <button onClick={() => router.push(`/games/${slug}?stage=${stageN + 1}`)}
-          style={{ padding: "14px 24px", borderRadius: 10, border: "none", background: "var(--color-accent-primary)",
-            color: "#000", fontWeight: 700, fontSize: 15, cursor: "pointer",
+          style={{ padding: "14px 24px", borderRadius: 13, border: "none", background: "var(--color-accent-primary)",
+            color: "#000", fontWeight: 700, fontSize: 14.5, fontFamily: "var(--font-display)", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Next Stage <ChevronRight size={16} />
         </button>
         <button onClick={() => router.push(`/stages/${slug}`)}
-          style={{ padding: "14px 24px", borderRadius: 10, border: "1px solid var(--color-border)",
-            background: "var(--color-surface)", color: "var(--color-text-primary)", fontWeight: 600,
-            fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          style={{ padding: "14px 24px", borderRadius: 13, border: "1px solid var(--color-border)",
+            background: "var(--color-surface)", color: "var(--color-text-primary)", fontWeight: 700,
+            fontSize: 14.5, fontFamily: "var(--font-display)", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Map size={16} /> Back to Map
         </button>
         <button onClick={handleShare}
-          style={{ padding: "12px 24px", borderRadius: 10, border: "1px solid var(--color-border)",
-            background: "transparent", color: "var(--color-text-secondary)", fontWeight: 600,
-            fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          style={{ padding: "12px 24px", borderRadius: 13, border: "1px solid var(--color-border)",
+            background: "transparent", color: "var(--color-text-secondary)", fontWeight: 700,
+            fontSize: 14.5, fontFamily: "var(--font-display)", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           {copied ? <><Check size={15} /> Copied!</> : <><Share2 size={15} /> Share Challenge</>}
         </button>
       </motion.div>

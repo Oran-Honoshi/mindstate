@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { GameTopBar } from "./GameTopBar";
-import { GameProgressStrip } from "./GameProgressStrip";
 import { GameToolbar } from "./GameToolbar";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { Difficulty } from "@/lib/games/xpEngine";
@@ -40,8 +39,6 @@ export function GameShell({
         stageNumber={stageNumber} difficulty={difficulty}
         xp={xp} maxXp={maxXp} elapsedSeconds={elapsedSeconds}
       />
-
-      <GameProgressStrip xp={xp} maxXp={maxXp} />
 
       <div style={{
         flex: 1, overflowY: "auto",

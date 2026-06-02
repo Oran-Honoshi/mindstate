@@ -1,13 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getLastStage, getCompletedStages } from "@/lib/games/stageProgress";
-import { MasteryBadge } from "@/components/ui/MasteryBadge";
-import { SparkyImg } from "@/components/ui/SparkyImg";
-import { WindingPath } from "./WindingPath";
+import { StagePath } from "./StagePath";
 
 const GAME_NAMES: Record<string, string> = {
   tango:"Tango", memory:"Memory", queens:"Queens", sudoku:"Mini Sudoku",
@@ -20,11 +18,22 @@ const GAME_NAMES: Record<string, string> = {
   "name-country":"Name the Country", "name-city":"Name the City",
 };
 
-const BANDS = [
-  { label:"EASY",   range:"1–30",   color:"#54D06A", bg:"rgba(84,208,106,0.08)"   },
-  { label:"MEDIUM", range:"31–70",  color:"#F5A623", bg:"rgba(245,166,35,0.08)"   },
-  { label:"HARD",   range:"71–100", color:"#FF5C66", bg:"rgba(255,92,102,0.08)"   },
-];
+function StageMedal({ count }: { count: number }) {
+  let color: string, symbol: string;
+  if (count >= 75) { color = "#A78BFA"; symbol = "◆"; }
+  else if (count >= 50) { color = "#FFC24B"; symbol = "★"; }
+  else if (count >= 25) { color = "#9CA3AF"; symbol = "◉"; }
+  else if (count >= 10) { color = "#B45309"; symbol = "●"; }
+  else return null;
+  return (
+    <div style={{
+      width: 34, height: 34, borderRadius: "50%",
+      border: `2px solid ${color}`, background: `${color}18`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: 14, color, flexShrink: 0,
+    }}>{symbol}</div>
+  );
+}
 
 export default function StagesPage() {
   const params = useParams();
@@ -50,21 +59,15 @@ export default function StagesPage() {
         backdropFilter:"blur(20px)", borderBottom:"0.5px solid var(--color-border)" }}>
         <Link href="/games" style={{ display:"flex", alignItems:"center", justifyContent:"center",
           width:34, height:34, borderRadius:10, background:"var(--color-surface)",
-          border:"0.5px solid var(--color-border)", textDecoration:"none",
+          border:"1px solid var(--color-border)", textDecoration:"none",
           color:"var(--color-text-secondary)", flexShrink:0 }}>
-          <ArrowLeft size={14}/>
+          <ArrowLeft size={18}/>
         </Link>
         <div style={{ flex:1 }}>
           <p style={{ fontSize:16, fontWeight:700, color:"var(--color-text-primary)" }}>{gameName}</p>
-          <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)" }}>STAGE MAP</p>
+          <p style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)" }}>{`Stage ${lastStage} of 100`}</p>
         </div>
-        <MasteryBadge slug={slug} size={34} />
-        <div style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20,
-          background:"var(--color-surface)", border:"0.5px solid var(--color-border)" }}>
-          <Check size={11} color="#22C55E"/>
-          <span style={{ fontSize:12, fontWeight:700, fontFamily:"var(--font-mono)", color:"var(--color-text-primary)" }}>{completed.size}</span>
-          <span style={{ fontSize:11, color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)" }}>/100</span>
-        </div>
+        <StageMedal count={completed.size} />
       </div>
 
       <main style={{ maxWidth:480, margin:"0 auto", padding:"72px 16px 48px" }}>
@@ -74,44 +77,18 @@ export default function StagesPage() {
           initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}
           style={{ marginBottom:20 }}
         >
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:8 }}>
-            <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.1em", color:"var(--color-text-secondary)", fontFamily:"var(--font-mono)" }}>PROGRESS</span>
-            <span style={{ fontSize:13, fontWeight:700, fontFamily:"var(--font-mono)", color: pct === 100 ? "var(--color-accent-primary)" : "var(--color-text-primary)" }}>{pct}%</span>
-          </div>
-          <div style={{ height:4, background:"var(--color-surface-2)", borderRadius:2, overflow:"hidden" }}>
+          <div style={{ height:6, background:"var(--color-surface-2)", borderRadius:3, overflow:"hidden" }}>
             <motion.div
               initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ delay:0.2, duration:0.6, ease:"easeOut" }}
-              style={{ height:"100%", borderRadius:2, background: pct === 100 ? "var(--color-accent-primary)" : "rgba(0,255,255,0.55)" }}
+              style={{ height:"100%", borderRadius:3, background:"linear-gradient(to right, var(--color-accent-primary), var(--color-gold))" }}
             />
           </div>
         </motion.div>
 
-        {/* Difficulty legend */}
-        <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap" }}>
-          {BANDS.map(b => (
-            <span key={b.label} style={{ fontSize:10, fontWeight:700, letterSpacing:"0.08em", padding:"3px 10px",
-              borderRadius:4, background:b.bg, color:b.color, fontFamily:"var(--font-mono)" }}>
-              {b.label} {b.range}
-            </span>
-          ))}
-        </div>
-
-        {completed.size === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 20 }}
-          >
-            <SparkyImg mood="focused" size={64} />
-            <p style={{ fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-text-secondary)", margin: 0 }}>
-              Your journey starts here
-            </p>
-          </motion.div>
-        )}
-
         <motion.div
           initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, duration:0.45 }}
         >
-          <WindingPath slug={slug} completed={completed} lastStage={lastStage} />
+          <StagePath slug={slug} completed={completed} lastStage={lastStage} />
         </motion.div>
       </main>
     </div>

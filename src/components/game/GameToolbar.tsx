@@ -40,7 +40,7 @@ export function GameToolbar({ onUndo, onHint, onCheck, hintsRemaining }: GameToo
     <div style={{
       display: "flex",
       gap: 9,
-      padding: "12px 16px 20px",
+      padding: "12px 16px 18px",
       background: "var(--color-surface)",
       borderTop: "1px solid var(--color-border)",
       flexShrink: 0,

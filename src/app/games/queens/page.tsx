@@ -9,7 +9,6 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { OutOfTokensModal } from "@/components/ui/OutOfTokensModal";
 import { CompletionPopup } from "@/components/ui/CompletionPopup";
@@ -378,24 +377,6 @@ function QueensGameInner() {
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
-            style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
-            ← PREV
-          </button>
-          <button onClick={() => loadStage(stage)}
-            style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
-            RESTART
-          </button>
-          <button onClick={() => setShowMap(true)}
-            style={{ padding: "7px 12px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
-            MAP
-          </button>
-          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
-            style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
-            NEXT <ChevronRight size={13} />
-          </button>
-        </div>
       </GameShell>
 
       <OutOfTokensModal gameName="Queens" open={showTokenModal} onClose={() => setShowTokenModal(false)} />

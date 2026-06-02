@@ -9,7 +9,7 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Delete } from "lucide-react";
+import { Delete } from "lucide-react";
 import { createXPState, calculateXP, finalizeXP, type XPState, type Difficulty } from "@/lib/games/xpEngine";
 import { buildSeed } from "@/lib/games/tangoGenerator";
 import { playClick, playSuccess, playError } from "@/lib/audio/soundEngine";
@@ -407,20 +407,6 @@ function SudokuGameInner() {
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => { if (stage > 1) { clearGameState(GAME_SLUG); setStage(s => s - 1); } }} disabled={stage === 1}
-            style={{ padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: stage > 1 ? "pointer" : "not-allowed", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", opacity: stage === 1 ? 0.4 : 1 }}>
-            ← PREV
-          </button>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
-            STAGE <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{stage}</span>
-            <span style={{ opacity: 0.5 }}>/100</span>
-          </span>
-          <button onClick={() => { clearGameState(GAME_SLUG); setStage(s => s + 1); }}
-            style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 10, border: "0.5px solid var(--color-border)", background: "var(--color-surface)", cursor: "pointer", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)", fontWeight: 600 }}>
-            NEXT <ChevronRight size={13} />
-          </button>
-        </div>
       </GameShell>
 
       <OutOfTokensModal gameName="Sudoku" open={showTokenModal} onClose={() => setShowTokenModal(false)} />

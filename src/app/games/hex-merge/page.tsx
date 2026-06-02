@@ -9,7 +9,6 @@ import { usePageVisibility } from "@/hooks/usePageVisibility";
 import{useState,useEffect,useCallback,useRef, Suspense }from"react";
 import{useSearchParams}from"next/navigation";
 import{motion,AnimatePresence}from"framer-motion";
-import{ChevronRight}from"lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { updateStreak } from "@/lib/supabase/streaks";
 import{OutOfTokensModal}from"@/components/ui/OutOfTokensModal";
@@ -293,19 +292,6 @@ function HexMergePageInner(){
             </svg>
           </div>
 
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>{ if(stage>1){ clearGameState(GAME_SLUG); setStage(s=>s-1); } }} disabled={stage===1}
-              style={{...navBtnStyle, opacity:stage===1?0.38:1, cursor:stage===1?"not-allowed":"pointer"}}>
-              ← PREV
-            </button>
-            <span style={{fontSize:11,color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontWeight:600,letterSpacing:"0.06em"}}>
-              STAGE {stage}/{TOTAL_STAGES}
-            </span>
-            <button onClick={()=>{ clearGameState(GAME_SLUG); setStage(s=>s+1); }}
-              style={{...navBtnStyle, display:"flex", alignItems:"center", gap:4, cursor:"pointer"}}>
-              NEXT <ChevronRight size={12}/>
-            </button>
-          </div>
         </div>
       </GameShell>
 
