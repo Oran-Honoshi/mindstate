@@ -1,0 +1,84 @@
+export const TOKENS = {
+  theme: {
+    dark: {
+      bg:       '#0B0C0F',
+      surf:     '#14161B',
+      surf2:    '#1D2027',
+      border:   '#2A2E37',
+      text:     '#F4F6F8',
+      muted:    '#868D99',
+      faint:    '#5A606C',
+      accent:   '#2FE6E0',
+      onAccent: '#06231F',
+    },
+    light: {
+      bg:       '#F5F6F8',
+      surf:     '#FFFFFF',
+      surf2:    '#EDEFF3',
+      border:   '#E2E5EB',
+      text:     '#15171C',
+      muted:    '#5C6370',
+      faint:    '#9AA1AD',
+      accent:   '#0FB3AC',
+      onAccent: '#FFFFFF',
+    },
+    paper: {
+      bg:       '#ECE3D0',
+      surf:     '#F5EFE0',
+      surf2:    '#E5DAC0',
+      border:   '#D6C9AB',
+      text:     '#241A0C',
+      muted:    '#7A6A4A',
+      faint:    '#A8967A',
+      accent:   '#0E8B90',
+      onAccent: '#FFFFFF',
+    },
+  },
+
+  fixed: {
+    gold:    '#FFC24B',
+    violet:  '#8E7CFF',
+    easy:    '#54D06A',
+    medium:  '#F5A623',
+    hard:    '#FF5C66',
+    error:   '#FF5C66',
+    success: '#54D06A',
+  },
+
+  radius: {
+    pill:   '99px',
+    card:   '16px',
+    cardSm: '12px',
+    btn:    '13px',
+    input:  '13px',
+    avatar: '50%',
+    icon:   '10px',
+  },
+
+  font: {
+    display: "'Space Grotesk', sans-serif",
+    body:    "'DM Sans', sans-serif",
+    mono:    "'Space Mono', monospace",
+  },
+
+  spacing: {
+    screenPad: '16px',
+    cardPad:   '14px',
+    cardPadLg: '18px',
+    gridGap:   '10px',
+    gridGapSm: '8px',
+  },
+
+  motion: {
+    tabSwipe:        'scroll-snap native',
+    screenSlide:     '250ms ease-out',
+    fadeRise:        '260ms ease-out',
+    cardFlip:        '450ms cubic-bezier(.3,.7,.3,1)',
+    xpDrain:         '1s linear',
+    nodePulse:       '1.8s infinite ease-out',
+    toast:           '350ms cubic-bezier(.22,.68,0,1.2)',
+    podiumIn:        '500ms ease-out',
+    sparkyStageFade: '400ms ease-out',
+    gridPageChange:  '220ms ease-out',
+  },
+} as const

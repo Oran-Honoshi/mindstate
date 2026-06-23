@@ -1,0 +1,74 @@
+/* ─── Google Fonts import ─── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+/* ─── Dark theme (default) ─── */
+:root, [data-theme="dark"] {
+  --bg:        #0B0C0F;
+  --surf:      #14161B;
+  --surf2:     #1D2027;
+  --border:    #2A2E37;
+  --text:      #F4F6F8;
+  --muted:     #868D99;
+  --faint:     #5A606C;
+  --accent:    #2FE6E0;
+  --on-accent: #06231F;
+}
+
+[data-theme="light"] {
+  --bg:        #F5F6F8;
+  --surf:      #FFFFFF;
+  --surf2:     #EDEFF3;
+  --border:    #E2E5EB;
+  --text:      #15171C;
+  --muted:     #5C6370;
+  --faint:     #9AA1AD;
+  --accent:    #0FB3AC;
+  --on-accent: #FFFFFF;
+}
+
+[data-theme="paper"] {
+  --bg:        #ECE3D0;
+  --surf:      #F5EFE0;
+  --surf2:     #E5DAC0;
+  --border:    #D6C9AB;
+  --text:      #241A0C;
+  --muted:     #7A6A4A;
+  --faint:     #A8967A;
+  --accent:    #0E8B90;
+  --on-accent: #FFFFFF;
+}
+
+/* ─── Fixed tokens (theme-invariant) ─── */
+:root {
+  --gold:   #FFC24B;
+  --violet: #8E7CFF;
+  --easy:   #54D06A;
+  --medium: #F5A623;
+  --hard:   #FF5C66;
+
+  --r-pill:    99px;
+  --r-card:    16px;
+  --r-card-sm: 12px;
+  --r-btn:     13px;
+  --r-input:   13px;
+  --r-icon:    10px;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'Space Mono', monospace;
+
+  /* Alias so Tailwind @theme var(--font-sans) still resolves */
+  --font-sans: var(--font-body);
+
+  --screen-pad: 16px;
+  --card-pad:   14px;
+  --grid-gap:   10px;
+}
+
+/* ─── Base reset ─── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}

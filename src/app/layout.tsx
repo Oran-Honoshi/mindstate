@@ -1,9 +1,9 @@
 import { FAQSchema, OrganizationSchema, WebAppSchema, HowToSchema } from "@/app/seo-schema";
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from 'next/font/google'
 import "./globals.css";
+import "@/themes/tokens.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ThemeProvider } from "@/themes/ThemeProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 import { WelcomeModal } from "@/components/modals/WelcomeModal";
@@ -12,18 +12,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SharePrompt } from "@/components/ui/SharePrompt";
 import { CosmicBackground } from "@/components/ui/CosmicBackground";
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  weight: ['400','500','600','700','800'],
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: ['500','700'],
-})
 
 export const metadata: Metadata = {
   title: {
@@ -87,7 +75,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#121212",
+  themeColor: "#0B0C0F",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -107,11 +95,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
         <meta name="apple-mobile-web-app-title" content="MindElement"/>
         <meta name="msapplication-TileImage" content="/icons/icon-192.png"/>
-        <meta name="msapplication-TileColor" content="#121212"/>
+        <meta name="msapplication-TileColor" content="#0B0C0F"/>
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             var root = document.documentElement;
-            var THEME_COLOR = { dark: '#121212', light: '#FFFFFF', paper: '#F2E8D9' };
+            var THEME_COLOR = { dark: '#0B0C0F', light: '#F5F6F8', paper: '#ECE3D0' };
             function setMeta(t) {
               var m = document.querySelector('meta[name="theme-color"]');
               if (!m) {
@@ -152,7 +140,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}}/>
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} min-h-full w-full overflow-x-hidden`} style={{ overscrollBehaviorX:"none" }}>
+      <body className="min-h-full w-full overflow-x-hidden" style={{ overscrollBehaviorX:"none" }}>
 
         <CosmicBackground />
 

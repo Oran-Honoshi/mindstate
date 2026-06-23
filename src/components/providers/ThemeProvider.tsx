@@ -4,9 +4,9 @@ import { useSettingsStore } from "@/store/settingsStore";
 import type { Theme } from "@/store/settingsStore";
 
 const THEME_COLOR: Record<Theme, string> = {
-  dark:  "#121212",
-  light: "#FFFFFF",
-  paper: "#F2E8D9",
+  dark:  "#0B0C0F",
+  light: "#F5F6F8",
+  paper: "#ECE3D0",
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
