@@ -1,6 +1,17 @@
 "use client";
 
-import { GameIcon } from "@/components/icons/GameIcons";
+import { GameIcon, type GameId } from "@/components/ui/GameIcon";
+
+const SLUG_TO_GAME_ID: Record<string, GameId> = {
+  "tango": "tango", "memory": "memory", "queens": "queens", "sudoku": "sudoku",
+  "zip": "zip", "flow": "flow", "bridges": "bridges", "kakuro": "kakuro",
+  "logic-path": "logicpath", "lightup": "lightup", "nonogram": "nonogram",
+  "pattern-match": "patternmatch", "patches": "patches", "2048-pro": "2048",
+  "gravity-sort": "gravity", "hex-merge": "hexmerge", "word-sling": "wordsling",
+  "hearts": "hearts", "solitaire": "solitaire", "minesweeper": "minesweeper",
+  "word-climb": "wordclimb", "pinpoint": "pinpoint",
+  "name-country": "namecountry", "name-city": "namecity",
+};
 
 export function GameSnapshot({ slug }: { slug: string }) {
   const snaps: Record<string, React.ReactNode> = {
@@ -433,7 +444,7 @@ export function GameSnapshot({ slug }: { slug: string }) {
   };
 
   const snap = snaps[slug];
-  if (!snap) return <GameIcon slug={slug} size={52} />;
+  if (!snap) return <GameIcon game={SLUG_TO_GAME_ID[slug] ?? "tango"} size={52} />;
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", transform: "scale(1.4)", transformOrigin: "center" }}>
       {snap}

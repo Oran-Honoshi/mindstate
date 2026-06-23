@@ -9,6 +9,7 @@ import {
   FREE_DAILY_TOKENS
 } from "@/lib/games/tokenEngine";
 import { useAuthStore } from "@/store/authStore";
+import { Bar } from "@/components/ui/Bar";
 
 interface TokenGateProps {
   open: boolean;
@@ -62,14 +63,14 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
           exit={{ scale: 0.92, y: 20 }}
           transition={{ type: "spring", stiffness: 400, damping: 28 }}
           style={{
-            background: "white", borderRadius: 28, padding: 32,
+            background: "var(--surf)", borderRadius: 28, padding: 32,
             maxWidth: 380, width: "100%", position: "relative",
             boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
           }}
         >
           <button onClick={onClose}
-            style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "#F8F7F5", border: "none", cursor: "pointer", display: "flex" }}>
-            <X size={14} color="#94A3B8" />
+            style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "var(--surf2)", border: "none", cursor: "pointer", display: "flex" }}>
+            <X size={14} color="var(--faint)" />
           </button>
 
           {tokens > 0 ? (
@@ -80,25 +81,23 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
                   <Zap size={22} color="#000" fill="#000" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-sans)" }}>
                     Play {gameName}
                   </h2>
-                  <p style={{ fontSize: 12, color: "#94A3B8" }}>This uses 1 daily play</p>
+                  <p style={{ fontSize: 12, color: "var(--faint)" }}>This uses 1 daily play</p>
                 </div>
               </div>
 
               {/* Token display */}
-              <div style={{ background: "#F8F7F5", borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
+              <div style={{ background: "var(--surf2)", borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1C1917" }}>Daily plays remaining</p>
-                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-sans)" }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>Daily plays remaining</p>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--accent)", fontFamily: "var(--font-sans)" }}>
                     {tokens} / {FREE_DAILY_TOKENS}
                   </p>
                 </div>
-                <div style={{ height: 6, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 3, background: "var(--color-accent-primary)", width: `${(tokens/FREE_DAILY_TOKENS)*100}%`, transition: "width 0.4s" }}/>
-                </div>
-                <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
+                <Bar value={tokens / FREE_DAILY_TOKENS} height={6} colorMode="accent" />
+                <p style={{ fontSize: 11, color: "var(--faint)", marginTop: 8 }}>
                   <Clock size={10} style={{ display: "inline", marginRight: 4 }}/>
                   Resets in {countdown}
                 </p>
@@ -111,7 +110,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               </button>
 
               <Link href="/pricing" onClick={onClose}
-                style={{ display: "block", textAlign: "center", fontSize: 12, color: "#94A3B8", textDecoration: "none" }}>
+                style={{ display: "block", textAlign: "center", fontSize: 12, color: "var(--faint)", textDecoration: "none" }}>
                 Go Pro for unlimited plays →
               </Link>
             </>
@@ -120,18 +119,18 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               {/* No tokens left */}
               <div style={{ textAlign: "center", marginBottom: 24 }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}></div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)", marginBottom: 6 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-sans)", marginBottom: 6 }}>
                   No plays left today
                 </h2>
-                <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>
                   You've used all {FREE_DAILY_TOKENS} free daily plays. Come back tomorrow, or upgrade for unlimited access.
                 </p>
               </div>
 
-              <div style={{ background: "#F8F7F5", borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
+              <div style={{ background: "var(--surf2)", borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <p style={{ fontSize: 13, color: "#64748B" }}>Resets in</p>
-                  <p style={{ fontSize: 16, fontWeight: 700, color: "#1C1917", fontFamily: "monospace" }}>{countdown}</p>
+                  <p style={{ fontSize: 13, color: "var(--muted)" }}>Resets in</p>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", fontFamily: "monospace" }}>{countdown}</p>
                 </div>
               </div>
 
@@ -141,7 +140,7 @@ export function TokenGate({ open, onClose, onConfirm, gameName, isDaily }: Token
               </Link>
 
               <button onClick={onClose}
-                style={{ width: "100%", padding: 11, borderRadius: 12, border: "none", background: "transparent", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>
+                style={{ width: "100%", padding: 11, borderRadius: 12, border: "none", background: "transparent", fontSize: 12, color: "var(--faint)", cursor: "pointer" }}>
                 Come back tomorrow
               </button>
             </>
@@ -168,8 +167,8 @@ export function TokenHUD({ userId, isPro }: { userId: string; isPro: boolean }) 
   }, [userId, isPro]);
 
   if (isPro) return (
-    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#22C55E", fontWeight: 600 }}>
-      <Zap size={12} fill="#22C55E" color="#22C55E" /> Pro
+    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--easy)", fontWeight: 600 }}>
+      <Zap size={12} fill="var(--easy)" color="var(--easy)" /> Pro
     </div>
   );
 

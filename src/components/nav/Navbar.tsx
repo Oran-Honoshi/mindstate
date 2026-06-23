@@ -71,7 +71,7 @@ export function Navbar() {
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
                   padding: "7px 12px", borderRadius: 10, textDecoration: "none",
-                  fontSize: 13, fontWeight: 500, color: "#64748B",
+                  fontSize: 13, fontWeight: 500, color: "var(--muted)",
                 }}>
                 {link.label}
               </a>
@@ -82,7 +82,7 @@ export function Navbar() {
                   padding: "7px 12px", borderRadius: 10, textDecoration: "none",
                   fontSize: 13, fontWeight: 500, transition: "all 0.15s",
                   background: isActive(link.href) ? "rgba(0,255,255,0.08)" : "transparent",
-                  color: isActive(link.href) ? "var(--color-accent-primary)" : "#64748B",
+                  color: isActive(link.href) ? "var(--color-accent-primary)" : "var(--muted)",
                 }}>
                 {link.label}
               </Link>
@@ -121,7 +121,7 @@ export function Navbar() {
               </Link>
               <Link href="/auth/signup"
                 style={{
-                  fontSize: 13, fontWeight: 700, color: "#000",
+                  fontSize: 13, fontWeight: 700, color: "var(--on-accent)",
                   padding: "7px 14px", borderRadius: 11, background: ACCENT,
                   textDecoration: "none", boxShadow: "0 3px 8px rgba(0,255,255,0.2)",
                 }}>
@@ -142,7 +142,7 @@ export function Navbar() {
                   <div style={{
                     width: 24, height: 24, borderRadius: "50%", background: ACCENT,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 10, fontWeight: 700, color: "#000", flexShrink: 0,
+                    fontSize: 10, fontWeight: 700, color: "var(--on-accent)", flexShrink: 0,
                   }}>
                     {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
                   </div>
@@ -152,7 +152,7 @@ export function Navbar() {
                   }}>
                     {profile?.username ?? "Profile"}
                   </span>
-                  <ChevronDown size={11} color="#94A3B8" />
+                  <ChevronDown size={11} color="var(--faint)" />
                 </button>
 
                 <AnimatePresence>
@@ -170,7 +170,7 @@ export function Navbar() {
                           borderRadius: 18, boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
                           zIndex: 50, overflow: "hidden",
                         }}>
-                        <div style={{ padding: "13px 15px 9px", borderBottom: "0.5px solid #F8F7F5" }}>
+                        <div style={{ padding: "13px 15px 9px", borderBottom: "0.5px solid var(--border)" }}>
                           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text-primary)", marginBottom: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {profile?.username ?? "Player"}
                           </p>
@@ -189,11 +189,11 @@ export function Navbar() {
                             style={{
                               display: "flex", alignItems: "center", gap: 10,
                               padding: "10px 15px", fontSize: 13, color: "var(--color-text-secondary)",
-                              textDecoration: "none", borderBottom: "0.5px solid #FAFAF9",
+                              textDecoration: "none", borderBottom: "0.5px solid var(--border)",
                             }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#F8F7F5"}
+                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--surf2)"}
                             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
-                            <item.icon size={14} color="#94A3B8" />
+                            <item.icon size={14} color="var(--faint)" />
                             {item.label}
                           </Link>
                         ))}
@@ -203,7 +203,7 @@ export function Navbar() {
                             padding: "10px 15px", fontSize: 13, color: "var(--color-error)",
                             background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
                           }}
-                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#FEF2F2"}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "color-mix(in srgb, var(--hard) 8%, transparent)"}
                           onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
                           <LogOut size={14} />
                           Sign out
@@ -220,7 +220,7 @@ export function Navbar() {
                 style={{
                   width: 30, height: 30, borderRadius: "50%", background: ACCENT,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 700, color: "#000",
+                  fontSize: 11, fontWeight: 700, color: "var(--on-accent)",
                   border: "none", cursor: "pointer", marginLeft: 2,
                 }}>
                 {(profile?.username ?? user.email ?? "U")[0].toUpperCase()}
@@ -236,7 +236,7 @@ export function Navbar() {
                 </Link>
                 <Link href="/auth/signup"
                   style={{
-                    fontSize: 13, fontWeight: 700, color: "#000",
+                    fontSize: 13, fontWeight: 700, color: "var(--on-accent)",
                     padding: "7px 14px", borderRadius: 11, background: ACCENT,
                     textDecoration: "none", boxShadow: "0 3px 8px rgba(0,255,255,0.2)",
                   }}>
@@ -281,7 +281,7 @@ export function Navbar() {
                 <span style={{ fontWeight: 700, color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}>Menu</span>
                 <button onClick={() => setMenuOpen(false)}
                   style={{ padding: 6, borderRadius: 8, background: "var(--color-surface-2)", border: "none", cursor: "pointer" }}>
-                  <X size={16} color="#64748B" />
+                  <X size={16} color="var(--muted)" />
                 </button>
               </div>
               <div style={{ flex: 1, padding: 12, display: "flex", flexDirection: "column", gap: 3, overflowY: "auto" }}>
@@ -292,7 +292,7 @@ export function Navbar() {
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "12px 14px", borderRadius: 12, textDecoration: "none",
                       fontSize: 14, fontWeight: 500,
-                      color: isActive(link.href) ? "var(--color-accent-primary)" : "#374151",
+                      color: isActive(link.href) ? "var(--color-accent-primary)" : "var(--text)",
                       background: isActive(link.href) ? "rgba(0,255,255,0.07)" : "transparent",
                     }}>
                     <link.icon size={16} />
@@ -312,7 +312,7 @@ export function Navbar() {
                           padding: "12px 14px", borderRadius: 12, textDecoration: "none",
                           fontSize: 14, fontWeight: 500, color: "var(--color-text-secondary)",
                         }}>
-                        <item.icon size={16} color="#94A3B8" />
+                        <item.icon size={16} color="var(--faint)" />
                         {item.label}
                       </Link>
                     ))}
@@ -341,7 +341,7 @@ export function Navbar() {
                       style={{
                         display: "block", textAlign: "center", padding: "12px",
                         borderRadius: 12, background: ACCENT,
-                        fontSize: 13, fontWeight: 700, color: "#000", textDecoration: "none",
+                        fontSize: 13, fontWeight: 700, color: "var(--on-accent)", textDecoration: "none",
                       }}>
                       Start Free
                     </Link>

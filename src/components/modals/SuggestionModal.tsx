@@ -60,23 +60,23 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
             exit={{ scale: 0.92, y: 20 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             style={{
-              background: "white", borderRadius: 28, padding: 32,
+              background: "var(--surf)", borderRadius: 28, padding: 32,
               maxWidth: 420, width: "100%", position: "relative",
               boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
             }}
           >
             <button onClick={onClose}
-              style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "#F8F7F5", border: "none", cursor: "pointer", display: "flex" }}>
-              <X size={14} color="#94A3B8" />
+              style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "var(--surf2)", border: "none", cursor: "pointer", display: "flex" }}>
+              <X size={14} color="var(--faint)" />
             </button>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: "#FFFBEB", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Lightbulb size={22} color="#F59E0B" />
+                <Lightbulb size={22} color="var(--gold)" />
               </div>
               <div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>Share an Idea</h2>
-                <p style={{ fontSize: 12, color: "#94A3B8" }}>We read every suggestion</p>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-sans)" }}>Share an Idea</h2>
+                <p style={{ fontSize: 12, color: "var(--faint)" }}>We read every suggestion</p>
               </div>
             </div>
 
@@ -84,10 +84,10 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
               <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
                 style={{ textAlign: "center", padding: "24px 0" }}>
                 <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#F0FDF4", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                  <Check size={26} color="#22C55E" />
+                  <Check size={26} color="var(--easy)" />
                 </div>
-                <p style={{ fontSize: 16, fontWeight: 700, color: "#1C1917", marginBottom: 4 }}>Thank you!</p>
-                <p style={{ fontSize: 13, color: "#64748B" }}>Your idea has been sent to our team.</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Thank you!</p>
+                <p style={{ fontSize: 13, color: "var(--muted)" }}>Your idea has been sent to our team.</p>
               </motion.div>
             ) : (
               <>
@@ -98,8 +98,8 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                       style={{
                         padding: "6px 14px", borderRadius: 20, border: "0.5px solid", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
                         background: category === cat.value ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "white",
-                        color: category === cat.value ? "white" : "#64748B",
-                        borderColor: category === cat.value ? "transparent" : "#E2E8F0",
+                        color: category === cat.value ? "white" : "var(--muted)",
+                        borderColor: category === cat.value ? "transparent" : "var(--border)",
                       }}>
                       {cat.label}
                     </button>
@@ -119,12 +119,12 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                   rows={4}
                   style={{
                     width: "100%", padding: "12px 14px", borderRadius: 14,
-                    border: "0.5px solid #E2E8F0", fontSize: 13, color: "#1C1917",
-                    background: "#FDFCFB", outline: "none", resize: "none",
+                    border: "0.5px solid #E2E8F0", fontSize: 13, color: "var(--text)",
+                    background: "var(--surf2)", outline: "none", resize: "none",
                     lineHeight: 1.6, fontFamily: "inherit",
                   }}
                 />
-                <p style={{ fontSize: 11, color: "#CBD5E1", marginTop: 6, marginBottom: 20 }}>
+                <p style={{ fontSize: 11, color: "var(--border)", marginTop: 6, marginBottom: 20 }}>
                   {content.length}/500 characters
                 </p>
 
@@ -133,9 +133,9 @@ export function SuggestionModal({ open, onClose }: SuggestionModalProps) {
                   disabled={!content.trim() || loading}
                   style={{
                     width: "100%", padding: 13, borderRadius: 14, border: "none",
-                    background: content.trim() ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "#E2E8F0",
+                    background: content.trim() ? "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))" : "var(--border)",
                     fontSize: 13, fontWeight: 700,
-                    color: content.trim() ? "white" : "#94A3B8",
+                    color: content.trim() ? "white" : "var(--faint)",
                     cursor: content.trim() ? "pointer" : "not-allowed",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   }}>

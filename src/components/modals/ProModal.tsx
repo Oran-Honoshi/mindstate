@@ -40,14 +40,14 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
             exit={{ scale: 0.92, y: 20 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             style={{
-              background: "white", borderRadius: 28, padding: 32,
+              background: "var(--surf)", borderRadius: 28, padding: 32,
               maxWidth: 380, width: "100%", position: "relative",
               boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
             }}
           >
             <button onClick={onClose}
-              style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "#F8F7F5", border: "none", cursor: "pointer", display: "flex" }}>
-              <X size={14} color="#94A3B8" />
+              style={{ position: "absolute", top: 14, right: 14, padding: 6, borderRadius: 8, background: "var(--surf2)", border: "none", cursor: "pointer", display: "flex" }}>
+              <X size={14} color="var(--faint)" />
             </button>
 
             {/* Header */}
@@ -68,32 +68,32 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
 
             {/* Features */}
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--faint)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>
                 What you unlock
               </p>
               {FEATURES.map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < FEATURES.length - 1 ? "0.5px solid #F8F7F5" : "none" }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < FEATURES.length - 1 ? "0.5px solid var(--border)" : "none" }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--surf2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <f.icon size={13} color="var(--color-accent-primary)" />
                   </div>
-                  <p style={{ fontSize: 13, color: "#374151" }}>{f.text}</p>
-                  <Check size={13} color="#22C55E" style={{ marginLeft: "auto", flexShrink: 0 }} />
+                  <p style={{ fontSize: 13, color: "var(--text)" }}>{f.text}</p>
+                  <Check size={13} color="var(--easy)" style={{ marginLeft: "auto", flexShrink: 0 }} />
                 </div>
               ))}
             </div>
 
             {/* Pricing */}
-            <div style={{ background: "#F8F7F5", borderRadius: 16, padding: "14px 16px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "var(--surf2)", borderRadius: 16, padding: "14px 16px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 2 }}>Individual Plan</p>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#1C1917", fontFamily: "var(--font-sans)" }}>
-                  $2<span style={{ fontSize: 13, fontWeight: 400, color: "#94A3B8" }}>/mo</span>
+                <p style={{ fontSize: 12, color: "var(--faint)", marginBottom: 2 }}>Individual Plan</p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-sans)" }}>
+                  $2<span style={{ fontSize: 13, fontWeight: 400, color: "var(--faint)" }}>/mo</span>
                 </p>
               </div>
               <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 2 }}>Family Plan from</p>
+                <p style={{ fontSize: 12, color: "var(--faint)", marginBottom: 2 }}>Family Plan from</p>
                 <p style={{ fontSize: 22, fontWeight: 700, color: "var(--color-accent-primary)", fontFamily: "var(--font-sans)" }}>
-                  $5<span style={{ fontSize: 13, fontWeight: 400, color: "#94A3B8" }}>/mo</span>
+                  $5<span style={{ fontSize: 13, fontWeight: 400, color: "var(--faint)" }}>/mo</span>
                 </p>
               </div>
             </div>
@@ -103,13 +103,13 @@ export function ProModal({ open, onClose, feature }: ProModalProps) {
                 display: "block", textAlign: "center", padding: 14,
                 borderRadius: 14, border: "none",
                 background: "linear-gradient(135deg,var(--color-accent-primary),var(--color-accent-primary))",
-                fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none",
+                fontSize: 14, fontWeight: 700, color: "var(--on-accent)", textDecoration: "none",
                 boxShadow: "0 8px 24px rgba(79,110,247,0.3)",
               }}>
               Upgrade to Pro — $2/mo
             </Link>
             <button onClick={onClose}
-              style={{ width: "100%", marginTop: 10, padding: "10px", borderRadius: 12, border: "none", background: "transparent", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>
+              style={{ width: "100%", marginTop: 10, padding: "10px", borderRadius: 12, border: "none", background: "transparent", fontSize: 12, color: "var(--faint)", cursor: "pointer" }}>
               Maybe later
             </button>
           </motion.div>
