@@ -294,6 +294,10 @@ body {
 .accessibility-mode[data-theme="dark"] { --border: rgba(255,255,255,0.25); --border2: rgba(255,255,255,0.35); }
 .accessibility-mode *:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
+/* ─── TAB SHELL SCROLLBAR HIDE ─── */
+.tab-shell-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.tab-shell-scroll::-webkit-scrollbar { display: none; }
+
 /* ─── MOBILE OVERFLOW CONTAINMENT ─── */
 html, body { overflow-x: hidden; max-width: 100vw; overscroll-behavior-x: none; }
 * { box-sizing: border-box; }
