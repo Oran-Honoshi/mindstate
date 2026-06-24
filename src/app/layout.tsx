@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/themes/ThemeProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 import { WelcomeModal } from "@/components/modals/WelcomeModal";
-import { RatingModal } from "@/components/modals/RatingModal";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SharePrompt } from "@/components/ui/SharePrompt";
@@ -154,7 +153,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Analytics />
                   <SpeedInsights />
                   <WelcomeModal />
-                  <RatingModal />
                   <SharePrompt />
                 </RealtimeProvider>
               </AuthProvider>
