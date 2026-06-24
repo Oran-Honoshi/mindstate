@@ -1,11 +1,11 @@
 {
   "name": "Mind Element",
   "short_name": "Mind Element",
-  "description": "Sharper Every Day — 20 precision logic games for the modern mind.",
+  "description": "Sharper Every Day — 24 precision logic games for the modern mind.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#121212",
+  "background_color": "#0B0C0F",
+  "theme_color": "#0B0C0F",
   "orientation": "portrait-primary",
   "lang": "en",
   "icons": [
@@ -23,7 +23,7 @@
   "categories": ["games", "education", "productivity"],
   "shortcuts": [
     { "name": "Daily Challenge", "url": "/daily",  "description": "Play today's daily challenge", "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}] },
-    { "name": "All Games",       "url": "/games",  "description": "Browse all 20 games",          "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}] },
+    { "name": "All Games",       "url": "/games",  "description": "Browse all 24 games",          "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}] },
     { "name": "My Profile",      "url": "/profile","description": "View your stats and streaks",  "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}] }
   ],
   "screenshots": [

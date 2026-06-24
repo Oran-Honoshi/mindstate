@@ -1,0 +1,17 @@
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+export function AuthGuard() {
+  const router = useRouter();
+  useEffect(() => {
+    async function check() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) router.replace("/shell");
+    }
+    check();
+  }, [router]);
+  return null;
+}

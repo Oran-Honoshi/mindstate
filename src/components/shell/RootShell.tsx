@@ -35,8 +35,8 @@ export function RootShell({
   userInitial,
 }: RootShellProps) {
   const [activeTab, setActiveTab] = useState(0);
-  const { toasts, addToast, dismissToast } = useToastStack();
-  const { triggerLevelUp, triggerCentury, triggerStreak } = useCelebrationStore();
+  const { toasts, dismissToast } = useToastStack();
+  useCelebrationStore();
 
   // Paywall
   const { isOpen: paywallOpen, close: closePaywall } = usePaywallModal();
@@ -63,14 +63,6 @@ export function RootShell({
       setWelcomeBackOpen(true);
     }
   }, [lastPlayedDate]);
-
-  // Debug toast trigger for /shell testing
-  function fireDebugToasts() {
-    addToast({ type: 'xp',      xp: 847,  gameName: 'Tango' });
-    setTimeout(() => addToast({ type: 'streak', streak: 7 }), 3200);
-    setTimeout(() => addToast({ type: 'century', gameName: 'Tango' }), 6400);
-    setTimeout(() => addToast({ type: 'levelUp', level: 8, levelTitle: 'Strategist' }), 9600);
-  }
 
   return (
     <SubScreenProvider>
@@ -126,36 +118,6 @@ export function RootShell({
 
       {/* Celebration overlay system */}
       <CelebrationManager />
-
-      {/* Debug buttons for /shell — remove before production */}
-      {typeof window !== "undefined" && window.location.pathname === "/shell" && (
-        <div style={{ position: "fixed", bottom: 80, right: 16, zIndex: 400, display: "flex", flexDirection: "column", gap: 6 }}>
-          <button
-            onClick={fireDebugToasts}
-            style={{ background: "var(--accent)", color: "var(--on-accent)", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
-          >
-            Test Toasts
-          </button>
-          <button
-            onClick={() => triggerLevelUp(8, "Strategist", 3200)}
-            style={{ background: "var(--violet)", color: "#fff", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
-          >
-            Test LevelUp
-          </button>
-          <button
-            onClick={() => triggerCentury("tango", "Tango", 9240, 971, 3)}
-            style={{ background: "var(--gold)", color: "#06231F", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
-          >
-            Test Century
-          </button>
-          <button
-            onClick={() => triggerStreak(30, Array.from({ length: 28 }, (_, i) => i < 28))}
-            style={{ background: "var(--hard)", color: "#fff", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
-          >
-            Test Streak
-          </button>
-        </div>
-      )}
     </div>
     </SubScreenProvider>
   );
