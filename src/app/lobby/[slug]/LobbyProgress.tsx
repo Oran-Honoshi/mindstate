@@ -13,8 +13,8 @@ export function LobbyProgress({ stagesCompleted: sc }: LobbyProgressProps) {
   const pct = Math.round((sc / 100) * 100)
 
   const tiers = [
-    { label: 'Bronze', count: 10,  reached: sc >= 1,  color: '#CD7F32', flex: 1 },
-    { label: 'Silver', count: 20, reached: sc >= 10, color: '#C0C0C0', flex: 2 },
+    { label: 'Bronze', count: 10,  reached: sc >= 1,  color: 'var(--bronze)', flex: 1 },
+    { label: 'Silver', count: 20, reached: sc >= 10, color: 'var(--silver)', flex: 2 },
     { label: 'Gold',   count: 30, reached: sc >= 30, color: 'var(--gold)', flex: 3 },
     { label: 'Diamond',count: 40, reached: sc >= 60, color: 'var(--violet)', flex: 4 },
   ]

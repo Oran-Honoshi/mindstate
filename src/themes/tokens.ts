@@ -43,6 +43,8 @@ export const TOKENS = {
     hard:    '#FF5C66',
     error:   '#FF5C66',
     success: '#54D06A',
+    bronze:  '#CD7F32',
+    silver:  '#C0C0C0',
   },
 
   radius: {

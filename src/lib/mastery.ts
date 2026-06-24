@@ -17,8 +17,8 @@ export function getMasteryTier(completedStages: number): MasteryTier {
 
 export function getMasteryColor(tier: MasteryTier): string {
   switch (tier) {
-    case "bronze":  return "#CD7F32";
-    case "silver":  return "#C0C0C0";
+    case "bronze":  return "var(--bronze)";
+    case "silver":  return "var(--silver)";
     case "gold":    return "#FFC24B";
     case "diamond": return "#8E7CFF";
     default:        return "transparent";
