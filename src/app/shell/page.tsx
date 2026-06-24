@@ -1,18 +1,23 @@
-import { RootShell } from "@/components/shell/RootShell";
-import { GamesTab } from "@/features/games/GamesTab";
-import { DailyTab } from "@/features/daily/DailyTab";
-import { LeadersTab } from "@/features/leaderboard/LeadersTab";
-import { ProfileTab } from "@/features/profile/ProfileTab";
+import { Suspense } from 'react'
+import { RootShell } from '@/components/shell/RootShell'
+import { GamesTab } from '@/features/games/GamesTab'
+import { DailyTab } from '@/features/daily/DailyTab'
+import { LeadersTab } from '@/features/leaderboard/LeadersTab'
+import { ProfileTab } from '@/features/profile/ProfileTab'
+import { OnboardReset } from './OnboardReset'
 
-export const metadata = { title: "Shell Preview | MindElement" };
+export const metadata = { title: 'Shell Preview | MindElement' }
 
 export default function ShellPreviewPage() {
   return (
     <RootShell>
+      <Suspense>
+        <OnboardReset />
+      </Suspense>
       <GamesTab />
       <DailyTab />
       <LeadersTab />
       <ProfileTab />
     </RootShell>
-  );
+  )
 }

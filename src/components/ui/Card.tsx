@@ -8,6 +8,7 @@ interface CardProps {
   radius?: string
   onClick?: () => void
   className?: string
+  style?: CSSProperties
   children: ReactNode
 }
 
@@ -37,6 +38,7 @@ export function Card({
   radius,
   onClick,
   className,
+  style: styleOverride,
   children,
 }: CardProps) {
   const style: CSSProperties = {
@@ -45,6 +47,7 @@ export function Card({
     padding: padding ?? 'var(--card-pad)',
     cursor: onClick ? 'pointer' : undefined,
     transition: onClick ? 'transform 0.1s, background 0.15s, border-color 0.15s' : undefined,
+    ...styleOverride,
   }
 
   return (
