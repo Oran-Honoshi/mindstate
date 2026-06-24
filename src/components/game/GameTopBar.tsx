@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { ArrowLeft, Clock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GameIcon } from "@/components/icons/GameIcons";
@@ -27,7 +28,7 @@ function formatTime(totalSeconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export function GameTopBar({
+function GameTopBarInner({
   slug, gameName, stageNumber, difficulty, xp, maxXp, elapsedSeconds,
 }: GameTopBarProps) {
   const router = useRouter();
@@ -124,5 +125,13 @@ export function GameTopBar({
 
       </div>
     </div>
+  );
+}
+
+export function GameTopBar(props: GameTopBarProps) {
+  return (
+    <Suspense fallback={<div style={{ height: 80, borderBottom: "1px solid var(--color-border)" }} />}>
+      <GameTopBarInner {...props} />
+    </Suspense>
   );
 }

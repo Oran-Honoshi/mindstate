@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Flame, ChevronRight, Crown, X, Play } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { GamesHubCatalog } from "@/features/games/GamesHubCatalog";
@@ -118,7 +118,7 @@ export default function GamesHubPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", paddingTop: 56 }}>
       <AppHeader />
-      <VerifyBanner />
+      <Suspense><VerifyBanner /></Suspense>
       <GuestProgressModal />
 
       {user ? (
