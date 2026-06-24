@@ -10,6 +10,8 @@ import { RatingModal } from "@/components/modals/RatingModal";
 import { WelcomeBackModal } from "@/components/modals/WelcomeBackModal";
 import { usePaywallModal } from "@/store/usePaywallModal";
 import { useGameProgressStore } from "@/store/useGameProgressStore";
+import { CelebrationManager } from "@/components/celebrations/CelebrationManager";
+import { useCelebrationStore } from "@/store/useCelebrationStore";
 
 interface RootShellProps {
   children: ReactNode;
@@ -32,6 +34,7 @@ export function RootShell({
 }: RootShellProps) {
   const [activeTab, setActiveTab] = useState(0);
   const { toasts, addToast, dismissToast } = useToastStack();
+  const { triggerLevelUp, triggerCentury, triggerStreak } = useCelebrationStore();
 
   // Paywall
   const { isOpen: paywallOpen, close: closePaywall } = usePaywallModal();
@@ -115,20 +118,37 @@ export function RootShell({
         onGoToGames={() => setWelcomeBackOpen(false)}
       />
 
-      {/* Debug toast button — remove before production */}
+      {/* Celebration overlay system */}
+      <CelebrationManager />
+
+      {/* Debug buttons for /shell — remove before production */}
       {typeof window !== "undefined" && window.location.pathname === "/shell" && (
-        <button
-          onClick={fireDebugToasts}
-          style={{
-            position: "fixed", bottom: 80, right: 16, zIndex: 300,
-            background: "var(--accent)", color: "var(--on-accent)",
-            fontFamily: "var(--font-mono)", fontSize: 10,
-            border: "none", borderRadius: 8, padding: "8px 12px",
-            cursor: "pointer",
-          }}
-        >
-          Test Toasts
-        </button>
+        <div style={{ position: "fixed", bottom: 80, right: 16, zIndex: 400, display: "flex", flexDirection: "column", gap: 6 }}>
+          <button
+            onClick={fireDebugToasts}
+            style={{ background: "var(--accent)", color: "var(--on-accent)", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
+          >
+            Test Toasts
+          </button>
+          <button
+            onClick={() => triggerLevelUp(8, "Strategist", 3200)}
+            style={{ background: "var(--violet)", color: "#fff", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
+          >
+            Test LevelUp
+          </button>
+          <button
+            onClick={() => triggerCentury("tango", "Tango", 9240, 971, 3)}
+            style={{ background: "var(--gold)", color: "#06231F", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
+          >
+            Test Century
+          </button>
+          <button
+            onClick={() => triggerStreak(30, Array.from({ length: 28 }, (_, i) => i < 28))}
+            style={{ background: "var(--hard)", color: "#fff", fontFamily: "var(--font-mono)", fontSize: 10, border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer" }}
+          >
+            Test Streak
+          </button>
+        </div>
       )}
     </div>
   );

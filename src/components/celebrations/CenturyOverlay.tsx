@@ -1,3 +1,4 @@
+// DEPRECATED — superseded by CenturyClubOverlay (Step 12). Safe to delete after QA.
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";

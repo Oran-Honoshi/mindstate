@@ -13,8 +13,6 @@ import { Card } from '@/components/ui/Card'
 import { Btn } from '@/components/ui/Btn'
 import { ToastCelebration } from '@/components/celebrations/ToastCelebration'
 import { CardCelebration } from '@/components/celebrations/CardCelebration'
-import { LevelUpOverlay } from '@/components/celebrations/LevelUpOverlay'
-import { CenturyOverlay } from '@/components/celebrations/CenturyOverlay'
 import { useCompleteCelebrations } from './useCompleteCelebrations'
 import { GAMES } from '@/features/games/GameGrid'
 
@@ -46,7 +44,7 @@ function StageCompleteContent() {
   const gameName = GAMES.find(g => g.slug === slug)?.name ?? slug
   const starsEarned = xp >= 800 ? 3 : xp >= 500 ? 2 : 1
   const sparkyExpr: SparkyExpr = xp >= 800 ? 'celebrate' : xp >= 500 ? 'happy' : xp >= 200 ? 'focused' : 'surprised'
-  const { state: cel, dismiss } = useCompleteCelebrations(xp, stageN)
+  const { state: cel, dismiss } = useCompleteCelebrations(xp, stageN, slug, gameName)
 
   useEffect(() => {
     const t = setTimeout(triggerConfetti, 300)
@@ -96,8 +94,6 @@ function StageCompleteContent() {
       <AnimatePresence>
         {cel.showToast && <ToastCelebration key="toast" xpEarned={xp} timeTaken={parseTimeSecs(time)} hintsUsed={hints} onDismiss={() => dismiss('showToast')} />}
         {cel.showCard && <CardCelebration key="card" title={stageN % 10 === 0 ? `Stage ${stageN} Milestone!` : 'Achievement!'} description={stageN % 10 === 0 ? `You've cleared ${stageN} stages in ${gameName}. Keep pushing!` : 'A new achievement unlocked.'} onDismiss={() => dismiss('showCard')} />}
-        {cel.levelUp && <LevelUpOverlay key="levelup" levelNumber={cel.levelUp.levelNumber} rankName={cel.levelUp.rankName} currentXP={cel.levelUp.currentXP} nextLevelXP={cel.levelUp.nextLevelXP} onDismiss={() => dismiss('levelUp')} />}
-        {cel.showCentury && <CenturyOverlay key="century" gameName={gameName} onDismiss={() => dismiss('showCentury')} />}
       </AnimatePresence>
     </div>
   )

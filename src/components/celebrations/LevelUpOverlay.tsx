@@ -1,180 +1,89 @@
 "use client";
-import { Users, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 import { SparkyImg } from "@/components/ui/SparkyImg";
-import { triggerConfetti } from "@/components/effects/Confetti";
-import { useEffect } from "react";
+import { Card } from "@/components/ui/Card";
+import { CelebrationOverlay } from "./CelebrationOverlay";
+import { Confetti } from "./Confetti";
 
 interface LevelUpOverlayProps {
-  levelNumber: number;
-  rankName: string;
-  currentXP: number;
-  nextLevelXP: number;
+  isOpen: boolean;
   onDismiss: () => void;
+  newLevel: number;
+  newLevelTitle: string;
+  totalXP: number;
 }
 
-export function LevelUpOverlay({ levelNumber, rankName, currentXP, nextLevelXP, onDismiss }: LevelUpOverlayProps) {
-  useEffect(() => {
-    triggerConfetti();
-  }, []);
+const BG = "radial-gradient(ellipse 90% 70% at 50% 30%, color-mix(in srgb, var(--violet) 30%, var(--bg)) 0%, var(--bg) 70%)";
 
-  const pct = Math.min(100, Math.round((currentXP / nextLevelXP) * 100));
+export function LevelUpOverlay({ isOpen, onDismiss, newLevel, newLevelTitle, totalXP }: LevelUpOverlayProps) {
+  if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 300,
-        background: "radial-gradient(130% 80% at 50% 16%, #15233a, #0B0C0F 62%)",
-        display: "flex", flexDirection: "column",
-      }}
-    >
-      {/* Main content */}
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: 30, position: "relative", zIndex: 4, textAlign: "center",
-      }}>
-        {/* Eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.35 }}
-          style={{
-            fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700,
-            letterSpacing: "0.22em", textTransform: "uppercase",
-            color: "var(--color-gold)", marginBottom: 22,
-          }}
-        >
-          Level up
-        </motion.div>
+    <>
+      <style>{`
+        @keyframes sparkyPop {
+          0%   { transform: scale(0) }
+          70%  { transform: scale(1.1) }
+          100% { transform: scale(1) }
+        }
+      `}</style>
+      <CelebrationOverlay background={BG} autoDismissMs={4000} onDismiss={onDismiss}>
+        <Confetti count={30} />
 
-        {/* Sparky with gold aura */}
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.08, type: "spring", stiffness: 260, damping: 20 }}
-          style={{ position: "relative", marginBottom: 14 }}
-        >
-          <div style={{
-            position: "absolute",
-            inset: -26, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,194,75,0.22), transparent 70%)",
-            pointerEvents: "none",
-          }} />
-          <SparkyImg mood="gold" size={128} />
-        </motion.div>
+        {/* Content layer above confetti */}
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {/* Sparky */}
+          <div style={{ animation: "sparkyPop 500ms ease-out both", marginBottom: 20 }}>
+            <SparkyImg expr="celebrate" size={96} />
+          </div>
 
-        {/* Level number */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-        >
+          {/* Eyebrow */}
           <div style={{
-            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 44,
-            color: "var(--color-text-primary)", letterSpacing: "-0.02em", lineHeight: 1,
+            fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700,
+            letterSpacing: "0.2em", textTransform: "uppercase",
+            color: "var(--violet)", marginBottom: 8,
           }}>
-            Level {levelNumber}
+            LEVEL UP
           </div>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 7,
-            justifyContent: "center", marginTop: 8,
-          }}>
-            <span style={{
-              fontFamily: "var(--font-sans)", fontSize: 14,
-              color: "var(--color-text-secondary)",
-            }}>
-              {rankName}
-            </span>
-          </div>
-        </motion.div>
 
-        {/* XP progress bar */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          style={{ width: "78%", marginTop: 28 }}
-        >
+          {/* Level number */}
           <div style={{
-            height: 5, background: "rgba(255,255,255,0.08)",
-            borderRadius: 3, overflow: "hidden",
+            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 52,
+            color: "var(--text)", lineHeight: 1, margin: "8px 0",
           }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ delay: 0.55, duration: 0.8, ease: "easeOut" }}
-              style={{
-                height: "100%", borderRadius: 3,
-                background: "linear-gradient(90deg, var(--color-accent-primary), var(--color-gold))",
-              }}
-            />
+            Level {newLevel}
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 7 }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "rgba(255,255,255,0.35)" }}>
-              {currentXP} XP
-            </span>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "rgba(255,255,255,0.35)" }}>
-              {nextLevelXP} → LVL {levelNumber + 1}
-            </span>
-          </div>
-        </motion.div>
 
-        {/* Unlock feature card */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          style={{
-            width: "78%", marginTop: 18,
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 13, padding: "12px 14px",
-            display: "flex", alignItems: "center", gap: 11,
-          }}
-        >
+          {/* Level title */}
           <div style={{
-            width: 34, height: 34, borderRadius: 9,
-            background: "rgba(47,230,224,0.14)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
+            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 24,
+            color: "var(--violet)", marginBottom: 20,
           }}>
-            <Users size={17} color="var(--color-accent-primary)" strokeWidth={2} />
+            {newLevelTitle}
           </div>
-          <div style={{ flex: 1, textAlign: "left" }}>
-            <div style={{
-              fontFamily: "var(--font-mono)", fontSize: 8, fontWeight: 700,
-              letterSpacing: "0.16em", textTransform: "uppercase",
-              color: "var(--color-accent-primary)",
-            }}>
-              Unlocked
+
+          {/* XP badge */}
+          <Card variant="default" padding="10px 20px">
+            <div style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+              <Zap size={16} color="var(--gold)" fill="var(--gold)" strokeWidth={0} />
+              <span style={{
+                fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 14,
+                color: "var(--gold)",
+              }}>
+                {totalXP.toLocaleString()} XP total
+              </span>
             </div>
-            <div style={{
-              fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 12.5,
-              color: "var(--color-text-primary)", marginTop: 2,
-            }}>
-              Family challenge invites
-            </div>
-          </div>
-          <Check size={18} color="#54D06A" strokeWidth={2.4} />
-        </motion.div>
-      </div>
+          </Card>
 
-      {/* Footer CTA */}
-      <div style={{ padding: "0 30px 30px", position: "relative", zIndex: 4 }}>
-        <button
-          onClick={onDismiss}
-          style={{
-            width: "100%", padding: "14px 0",
-            borderRadius: 14, border: "none",
-            background: "var(--color-accent-primary)",
-            color: "var(--color-on-accent)",
-            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15,
-            cursor: "pointer",
-          }}
-        >
-          Continue
-        </button>
-      </div>
-    </motion.div>
+          {/* Tap to dismiss */}
+          <div style={{
+            fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)",
+            marginTop: 24,
+          }}>
+            Tap anywhere to continue
+          </div>
+        </div>
+      </CelebrationOverlay>
+    </>
   );
 }
