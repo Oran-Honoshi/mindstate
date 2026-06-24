@@ -77,13 +77,13 @@ export function GamesTab() {
       {RECENT_GAMES.length > 0 && (
         <ContinueStrip
           recentGames={RECENT_GAMES}
-          onSelect={(slug) => router.push(`/games/${slug}`)}
+          onSelect={(slug) => router.push(`/lobby/${slug}`)}
         />
       )}
 
       <GameGridTab
         games={allGames}
-        onSelect={(slug) => router.push(`/games/${slug}`)}
+        onSelect={(slug) => router.push(`/lobby/${slug}`)}
       />
     </div>
   )

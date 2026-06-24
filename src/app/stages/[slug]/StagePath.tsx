@@ -1,188 +1,91 @@
-"use client";
-import { useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+'use client'
 
-interface StagePathProps {
-  slug: string;
-  completed: Set<number>;
-  lastStage: number;
-}
+import { useRef, useEffect } from 'react'
+import { StageNode } from './StageNode'
 
-const NODE_R = 23;
-const AMPLITUDE = 84;
-const VSPACING = 70;
-const SVG_W = 300;
-const TOTAL = 100;
+const SVG_W = 300
+const AMPLITUDE = 84
+const VSPACING = 70
+const TOP_PAD = 80
+const TOTAL = 100
 
 function nodePos(i: number) {
   return {
     x: SVG_W / 2 + AMPLITUDE * Math.sin(i * 0.8),
-    y: i * VSPACING + 35,
-  };
+    y: TOP_PAD + i * VSPACING,
+  }
 }
 
-export function StagePath({ slug, completed, lastStage }: StagePathProps) {
-  const router = useRouter();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const currentPos = nodePos(lastStage - 1);
-  const svgHeight = (TOTAL - 1) * VSPACING + 35 + 80;
+interface StagePathProps {
+  slug: string
+  completed: Set<number>
+  lastStage: number
+  onStageSelect: (stage: number) => void
+}
+
+const DIFF_LABELS = [
+  { i: 0,  label: 'EASY' },
+  { i: 30, label: 'MEDIUM' },
+  { i: 70, label: 'HARD' },
+]
+
+export function StagePath({ completed, lastStage, onStageSelect }: StagePathProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const positions = Array.from({ length: TOTAL }, (_, i) => nodePos(i))
+  const svgHeight = TOP_PAD + (TOTAL - 1) * VSPACING + 80
+
+  const allPts = positions.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+  const donePts = positions.slice(0, lastStage).map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [lastStage]);
-
-  const positions = Array.from({ length: TOTAL }, (_, i) => nodePos(i));
-  const allPoints = positions.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const donePoints = positions.slice(0, lastStage).map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [lastStage])
 
   return (
     <>
       <style>{`
-        @keyframes stageNodePulse {
-          0%, 100% { opacity: 0.55; }
-          50% { opacity: 0.1; }
-        }
-        .snp { animation: stageNodePulse 1.8s ease-in-out infinite; }
+        @keyframes stagePulse { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0.55; } 100% { transform: translate(-50%,-50%) scale(1.8); opacity: 0; } }
+        @keyframes sparkyFade { 0% { opacity:0; transform:translateX(-50%) translateY(8px); } 100% { opacity:1; transform:translateX(-50%) translateY(0); } }
       `}</style>
-      <div style={{ position: "relative" }}>
-        <div
-          ref={scrollRef}
-          style={{
-            position: "absolute",
-            top: Math.max(0, currentPos.y - NODE_R - 10),
-            height: NODE_R * 2 + 20,
-            width: 1,
-            pointerEvents: "none",
-          }}
-        />
+      <div style={{ position: 'relative', width: SVG_W, margin: '0 auto', padding: '0 0 40px', height: svgHeight }}>
+        {/* SVG background + completed path */}
         <svg
-          width={SVG_W}
-          height={svgHeight}
+          width={SVG_W} height={svgHeight}
           viewBox={`0 0 ${SVG_W} ${svgHeight}`}
-          style={{ display: "block", margin: "0 auto", overflow: "visible" }}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'block' }}
         >
-          {/* Background dashed path */}
-          <polyline
-            points={allPoints}
-            fill="none"
-            stroke="var(--color-border)"
-            strokeWidth={2}
-            strokeDasharray="4 6"
-          />
-          {/* Completed path */}
-          {lastStage > 1 && (
-            <polyline
-              points={donePoints}
-              fill="none"
-              stroke="var(--color-accent-primary)"
-              strokeWidth={2}
-              strokeOpacity={0.55}
-            />
-          )}
-
-          {positions.map((pos, i) => {
-            const stageNum = i + 1;
-            const done = completed.has(stageNum);
-            const current = stageNum === lastStage;
-            const locked = stageNum > lastStage;
-            const isMilestone = stageNum % 5 === 0;
-
-            const strokeColor = done || current
-              ? "var(--color-accent-primary)"
-              : isMilestone
-              ? "var(--color-gold)"
-              : "var(--color-border)";
-
-            const fillColor = done
-              ? "rgba(47,230,224,0.12)"
-              : current
-              ? "rgba(47,230,224,0.07)"
-              : isMilestone
-              ? "rgba(255,194,75,0.07)"
-              : "var(--color-surface)";
-
-            const textColor = done || current
-              ? "var(--color-accent-primary)"
-              : isMilestone
-              ? "var(--color-gold)"
-              : locked
-              ? "var(--color-text-faint)"
-              : "var(--color-text-secondary)";
-
+          <polyline points={allPts} fill="none" stroke="var(--border)" strokeWidth={2} strokeDasharray="6 4" />
+          {lastStage > 1 && <polyline points={donePts} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.6} />}
+          {DIFF_LABELS.map(({ i, label }) => {
+            const p = positions[i]
+            const xOff = p.x > SVG_W / 2 ? -10 : SVG_W - 10
             return (
-              <g
-                key={i}
-                onClick={() => !locked && router.push(`/games/${slug}?stage=${stageNum}`)}
-                style={{ cursor: locked ? "not-allowed" : "pointer" }}
-              >
-                {/* Milestone dashed ring */}
-                {isMilestone && (
-                  <circle
-                    cx={pos.x} cy={pos.y}
-                    r={NODE_R + 5}
-                    fill="none"
-                    stroke="var(--color-gold)"
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                    opacity={locked ? 0.15 : 0.45}
-                  />
-                )}
-
-                {/* Pulse ring for current stage */}
-                {current && (
-                  <circle
-                    cx={pos.x} cy={pos.y}
-                    r={NODE_R + 7}
-                    fill="none"
-                    stroke="var(--color-accent-primary)"
-                    strokeWidth={1.5}
-                    className="snp"
-                  />
-                )}
-
-                {/* Main node */}
-                <circle
-                  cx={pos.x} cy={pos.y}
-                  r={NODE_R}
-                  fill={fillColor}
-                  stroke={strokeColor}
-                  strokeWidth={done || current ? 2 : 1.5}
-                  opacity={locked ? 0.28 : 1}
-                />
-
-                {/* Label or checkmark */}
-                <text
-                  x={pos.x}
-                  y={pos.y + 4}
-                  textAnchor="middle"
-                  fontSize={done ? 13 : stageNum >= 100 ? 9 : 11}
-                  fill={textColor}
-                  fontFamily="var(--font-mono)"
-                  fontWeight="700"
-                  opacity={locked ? 0.28 : 1}
-                >
-                  {done ? "✓" : stageNum}
-                </text>
-
-                {/* NOW label */}
-                {current && (
-                  <text
-                    x={pos.x + NODE_R + 9}
-                    y={pos.y + 4}
-                    fontSize={8}
-                    fill="var(--color-accent-primary)"
-                    fontFamily="var(--font-mono)"
-                    fontWeight="700"
-                    letterSpacing="0.1em"
-                  >
-                    NOW
-                  </text>
-                )}
-              </g>
-            );
+              <text key={label} x={xOff} y={p.y - 14}
+                textAnchor={p.x > SVG_W / 2 ? 'end' : 'start'}
+                fontFamily="var(--font-mono)" fontSize={8} fill="var(--faint)" letterSpacing="0.15em">
+                {label}
+              </text>
+            )
           })}
         </svg>
+
+        {/* Scroll anchor */}
+        <div ref={scrollRef} style={{ position: 'absolute', top: Math.max(0, nodePos(lastStage - 1).y - 60), height: 1, width: 1, pointerEvents: 'none' }} />
+
+        {/* Nodes */}
+        {positions.map((pos, i) => {
+          const stageNum = i + 1
+          const done = completed.has(stageNum)
+          const current = stageNum === lastStage
+          const locked = stageNum > lastStage
+          const isMilestone = stageNum % 5 === 0
+          return (
+            <StageNode key={i} stageNum={stageNum} pos={pos} done={done} current={current}
+              locked={locked} isMilestone={isMilestone} lastStage={lastStage}
+              onTap={() => onStageSelect(stageNum)} />
+          )
+        })}
       </div>
     </>
-  );
+  )
 }
