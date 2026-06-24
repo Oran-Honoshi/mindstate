@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 import { getTokensRemaining, FREE_DAILY_TOKENS } from "@/lib/games/tokenEngine";
 import { SparkyImg } from "@/components/ui/SparkyImg";
 import { Icon } from "@/components/ui/Icon";
+import { useSubScreenSafe } from "@/components/shell/SubScreenContext";
 
 interface AppHeaderProps {
   livesUsed?: number;
@@ -32,6 +33,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const router = useRouter();
   const { user, profile } = useAuthStore();
+  const subScreen = useSubScreenSafe();
   const isPro = profile?.subscription_status !== "free" && profile?.subscription_status != null;
   const [tokens, setTokens] = useState(FREE_DAILY_TOKENS);
 
@@ -109,7 +111,7 @@ export function AppHeader({
 
       {/* Settings button */}
       <button
-        onClick={() => router.push("/settings")}
+        onClick={() => subScreen ? subScreen.openSubScreen("settings") : router.push("/settings")}
         aria-label="Settings"
         style={{
           width: 32,

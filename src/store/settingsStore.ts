@@ -9,11 +9,13 @@ interface SettingsState {
   isSilentMode: boolean;
   isAccessibilityMode: boolean;
   isPracticeMode: boolean;
+  isTimerEnabled: boolean;
   theme: Theme;
   language: Language;
   toggleSilentMode: () => void;
   toggleAccessibilityMode: () => void;
   togglePracticeMode: () => void;
+  toggleTimer: () => void;
   setTheme: (theme: Theme) => void;
   setLanguage: (lang: Language) => void;
 }
@@ -24,11 +26,13 @@ export const useSettingsStore = create<SettingsState>()(
       isSilentMode: false,
       isAccessibilityMode: false,
       isPracticeMode: false,
+      isTimerEnabled: true,
       theme: "dark",
       language: "en",
 
       toggleSilentMode: () => set(s => ({ isSilentMode: !s.isSilentMode })),
       togglePracticeMode: () => set(s => ({ isPracticeMode: !s.isPracticeMode })),
+      toggleTimer: () => set(s => ({ isTimerEnabled: !s.isTimerEnabled })),
 
       toggleAccessibilityMode: () => {
         const next = !get().isAccessibilityMode;

@@ -1,15 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
+import { useSubScreen } from '@/components/shell/SubScreenContext'
 
 interface QuickLinksProps {
   isSubscribed: boolean
   onOpenPaywall: () => void
 }
 
-export function QuickLinks({ isSubscribed, onOpenPaywall }: QuickLinksProps) {
-  const router = useRouter()
+export function QuickLinks({ isSubscribed, onOpenPaywall: _onOpenPaywall }: QuickLinksProps) {
+  const { openSubScreen } = useSubScreen()
 
   const cardBase = {
     flex: 1,
@@ -30,21 +30,21 @@ export function QuickLinks({ isSubscribed, onOpenPaywall }: QuickLinksProps) {
       icon: 'User' as const,
       color: 'var(--accent)',
       label: 'Family',
-      action: () => router.push('/family'),
+      action: () => openSubScreen('family'),
       show: true,
     },
     {
       icon: 'Crown' as const,
       color: 'var(--gold)',
       label: 'Go Pro',
-      action: onOpenPaywall,
+      action: () => openSubScreen('pricing'),
       show: !isSubscribed,
     },
     {
       icon: 'Settings' as const,
       color: 'var(--muted)',
       label: 'Settings',
-      action: () => router.push('/settings'),
+      action: () => openSubScreen('settings'),
       show: true,
     },
   ].filter((l) => l.show)

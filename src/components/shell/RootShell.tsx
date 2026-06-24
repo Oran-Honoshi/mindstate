@@ -12,6 +12,8 @@ import { usePaywallModal } from "@/store/usePaywallModal";
 import { useGameProgressStore } from "@/store/useGameProgressStore";
 import { CelebrationManager } from "@/components/celebrations/CelebrationManager";
 import { useCelebrationStore } from "@/store/useCelebrationStore";
+import { SubScreenProvider } from "./SubScreenContext";
+import { SubScreenLayer } from "./SubScreenLayer";
 
 interface RootShellProps {
   children: ReactNode;
@@ -71,6 +73,7 @@ export function RootShell({
   }
 
   return (
+    <SubScreenProvider>
     <div
       style={{
         display: "flex",
@@ -80,6 +83,9 @@ export function RootShell({
         overflow: "hidden",
       }}
     >
+      {/* Sub-screens slide in above everything at z-50 */}
+      <SubScreenLayer />
+
       {/* Toast layer — above everything */}
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
 
@@ -151,5 +157,6 @@ export function RootShell({
         </div>
       )}
     </div>
+    </SubScreenProvider>
   );
 }
