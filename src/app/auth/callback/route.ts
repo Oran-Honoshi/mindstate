@@ -7,15 +7,22 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createServerSupabaseClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .single();
+
+      const isNewUser = !profile;
+
+      if (isNewUser) {
+        return NextResponse.redirect(`${origin}/onboard`);
+      }
+    }
   }
 
-  const response = NextResponse.redirect(`${origin}/games`);
-  // Mark user as onboarded so the client-side gate never bounces OAuth users
-  response.cookies.set("onboarded", "1", {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-    sameSite: "lax",
-  });
-  return response;
+  return NextResponse.redirect(`${origin}/shell`);
 }
