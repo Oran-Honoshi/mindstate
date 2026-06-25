@@ -8,6 +8,8 @@ import { StagePath } from './StagePath'
 import { StageIntroModal } from '@/components/modals/StageIntroModal'
 import { getLastStage, getCompletedStages } from '@/lib/games/stageProgress'
 import { getGameProgress } from '@/lib/persistence/getGameProgress'
+import { checkAndDecrementToken } from '@/lib/persistence/checkAndDecrementToken'
+import { PaywallModal } from '@/components/modals/PaywallModal'
 import { useAuthStore } from '@/store/authStore'
 
 const GAME_NAMES: Record<string, string> = {
@@ -37,6 +39,7 @@ export default function StagesPage() {
   const [lastStage, setLastStage] = useState(1)
   const [completed, setCompleted] = useState<Set<number>>(new Set())
   const [pendingStage, setPendingStage] = useState<number | null>(null)
+  const [paywallOpen, setPaywallOpen] = useState(false)
 
   useEffect(() => {
     // Seed from localStorage immediately for instant render
@@ -52,7 +55,17 @@ export default function StagesPage() {
       .catch((err) => console.error('StagesPage: failed to load progress', err))
   }, [slug, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleStart(stage: number, timerEnabled: boolean) {
+  async function handleStart(stage: number, timerEnabled: boolean) {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    const { allowed } = await checkAndDecrementToken(user.id)
+    if (!allowed) {
+      setPendingStage(null)
+      setPaywallOpen(true)
+      return
+    }
     router.push(`/play/${slug}?stage=${stage}&timer=${timerEnabled}`)
   }
 
@@ -102,6 +115,12 @@ export default function StagesPage() {
           bestXP={0}
         />
       )}
+
+      <PaywallModal
+        isOpen={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        onSelectPlan={() => setPaywallOpen(false)}
+      />
     </div>
   )
 }
