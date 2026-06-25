@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useMemo, CSSProperties } from 'react'
+import { useState, useRef, useMemo, useEffect, CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { MOCK_CHALLENGES, DailyChallenge } from './dailyData'
 import { DailyHeader } from './DailyHeader'
@@ -9,11 +9,36 @@ import { ChallengeCarousel, ChallengeCarouselHandle } from './ChallengeCarousel'
 import { DotIndicator } from './DotIndicator'
 import { StatsStrip } from './StatsStrip'
 
+function readTodayCompletions(): Record<string, { xpEarned: number }> {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    return JSON.parse(localStorage.getItem(`me-daily-${today}`) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+function applyCompletions(base: DailyChallenge[]): DailyChallenge[] {
+  const done = readTodayCompletions()
+  return base.map((c) => {
+    const entry = done[c.gameSlug]
+    if (!entry) return c
+    return { ...c, isCompleted: true, xpEarned: entry.xpEarned }
+  })
+}
+
 export function DailyTab() {
   const router = useRouter()
-  const [challenges] = useState<DailyChallenge[]>(MOCK_CHALLENGES)
+  const [challenges, setChallenges] = useState<DailyChallenge[]>(() =>
+    applyCompletions(MOCK_CHALLENGES)
+  )
   const [currentIndex, setCurrentIndex] = useState(0)
   const carouselRef = useRef<ChallengeCarouselHandle>(null)
+
+  // Re-read completions when the tab becomes visible (user returns from a game)
+  useEffect(() => {
+    setChallenges(applyCompletions(MOCK_CHALLENGES))
+  }, [])
 
   const resetsAt = useMemo(() => {
     const d = new Date()
@@ -28,7 +53,7 @@ export function DailyTab() {
     .filter(i => i >= 0)
 
   function handlePlay(challenge: DailyChallenge) {
-    router.push(`/games/${challenge.gameSlug}?stage=${challenge.stage}&daily=true`)
+    router.push(`/play/${challenge.gameSlug}?stage=${challenge.stage}&daily=true`)
   }
 
   function handleDotTap(i: number) {

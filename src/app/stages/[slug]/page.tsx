@@ -7,6 +7,8 @@ import { Bar } from '@/components/ui/Bar'
 import { StagePath } from './StagePath'
 import { StageIntroModal } from '@/components/modals/StageIntroModal'
 import { getLastStage, getCompletedStages } from '@/lib/games/stageProgress'
+import { getGameProgress } from '@/lib/persistence/getGameProgress'
+import { useAuthStore } from '@/store/authStore'
 
 const GAME_NAMES: Record<string, string> = {
   tango:'Tango', memory:'Memory', queens:'Queens', sudoku:'Mini Sudoku',
@@ -19,9 +21,17 @@ const GAME_NAMES: Record<string, string> = {
   'name-country':'Name the Country', 'name-city':'Name the City',
 }
 
+function getNextUnplayed(completedSet: Set<number>): number {
+  for (let s = 1; s <= 100; s++) {
+    if (!completedSet.has(s)) return s
+  }
+  return 100
+}
+
 export default function StagesPage() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
+  const { user } = useAuthStore()
   const gameName = GAME_NAMES[slug] ?? slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
 
   const [lastStage, setLastStage] = useState(1)
@@ -29,9 +39,18 @@ export default function StagesPage() {
   const [pendingStage, setPendingStage] = useState<number | null>(null)
 
   useEffect(() => {
+    // Seed from localStorage immediately for instant render
     setLastStage(getLastStage(slug))
     setCompleted(getCompletedStages(slug))
-  }, [slug])
+
+    if (!user) return
+    getGameProgress(user.id, slug)
+      .then((progress) => {
+        setCompleted(progress.completedSet)
+        setLastStage(getNextUnplayed(progress.completedSet))
+      })
+      .catch((err) => console.error('StagesPage: failed to load progress', err))
+  }, [slug, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStart(stage: number, timerEnabled: boolean) {
     router.push(`/play/${slug}?stage=${stage}&timer=${timerEnabled}`)
@@ -43,7 +62,6 @@ export default function StagesPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50, height: 56,
         background: 'var(--surf)', borderBottom: '0.5px solid var(--border)',
@@ -65,10 +83,8 @@ export default function StagesPage() {
         </span>
       </div>
 
-      {/* XP bar flush below header */}
       <Bar colorMode="accent" value={completed.size / 100} height={4} animated={false} />
 
-      {/* Scrollable stage path */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <StagePath slug={slug} completed={completed} lastStage={lastStage} onStageSelect={setPendingStage} />
       </div>

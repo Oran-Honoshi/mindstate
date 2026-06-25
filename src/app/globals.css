@@ -261,6 +261,12 @@ body {
 }
 .streak-fire { animation: flicker 1.5s ease-in-out infinite; }
 
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Neon pulse */
 @keyframes neon-pulse {
   0%,100% { box-shadow: 0 0 6px rgba(47,230,224,0.3); }

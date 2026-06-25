@@ -1,7 +1,12 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore'
+import { getUserStats, type UserStats } from '@/lib/persistence/getUserStats'
+import { getLevelInfo } from '@/lib/xpLevels'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Card } from '@/components/ui/Card'
 import { SparkyGreetingRow } from './SparkyGreetingRow'
 import { StatCards } from './StatCards'
 import { DailyBanner } from './DailyBanner'
@@ -9,21 +14,19 @@ import { ContinueStrip } from './ContinueStrip'
 import { GameGridTab, GridGame } from './GameGridTab'
 import { GAMES } from '@/features/games/GameGrid'
 
-const MOCK_PROGRESS: Record<string, [number, number]> = {
-  tango:          [34, 34], memory:     [40, 40], queens:      [12, 12],
-  sudoku:         [8,  8],  zip:        [14, 14], flow:        [33, 33],
-  bridges:        [5,  5],  kakuro:     [0,  0],  'logic-path':[7,   7],
-  lightup:        [19, 19], nonogram:   [2,  2],  'pattern-match':[11, 11],
-}
-
-const RECENT_GAMES = [
-  { slug: 'tango',  name: 'Tango',  difficulty: 'easy'   as const, stagesCompleted: 34, currentStage: 34 },
-  { slug: 'queens', name: 'Queens', difficulty: 'easy'   as const, stagesCompleted: 12, currentStage: 12 },
-  { slug: 'memory', name: 'Memory', difficulty: 'easy'   as const, stagesCompleted: 40, currentStage: 40 },
-]
-
 export function GamesTab() {
   const router = useRouter()
+  const { user, profile } = useAuthStore()
+  const [stats, setStats] = useState<UserStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return }
+    getUserStats(user.id)
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetsAt = useMemo(() => {
     const d = new Date()
@@ -31,39 +34,45 @@ export function GamesTab() {
     return d
   }, [])
 
+  const totalXP = stats?.totalXP ?? 0
+  const levelInfo = getLevelInfo(totalXP)
+  const streak = stats?.currentStreak ?? 0
+  const username = profile?.username ?? user?.email?.split('@')[0] ?? 'Player'
+  const recentGames = stats?.recentGames ?? []
+
   const allGames: GridGame[] = useMemo(() =>
     GAMES.map((g, i) => {
-      const [currentStage, stagesCompleted] = MOCK_PROGRESS[g.slug] ?? [0, 0]
+      const progress = stats?.gameProgress?.[g.slug]
       const isUnlocked = i < 12
       return {
         slug: g.slug,
         name: g.name,
         difficulty: g.difficulty,
-        currentStage: isUnlocked ? currentStage : 0,
-        stagesCompleted: isUnlocked ? stagesCompleted : 0,
+        currentStage: isUnlocked ? Math.min((progress?.latestStage ?? 0) + 1, 100) : 0,
+        stagesCompleted: isUnlocked ? (progress?.stagesCompleted ?? 0) : 0,
         isUnlocked,
         unlockLevel: isUnlocked ? undefined : Math.ceil((i - 11) * 2),
       }
-    }), []
-  )
+    }), [stats])
 
   return (
-    <div style={{
-      padding: '12px var(--screen-pad) 0',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 14,
-      paddingBottom: 80,
-    }}>
-      <SparkyGreetingRow username="Oran" streak={7} level={3} />
+    <div style={{ padding: '12px var(--screen-pad) 0', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 80 }}>
+      <SparkyGreetingRow username={username} streak={streak} level={levelInfo.levelNumber} />
 
-      <StatCards
-        streak={7}
-        level={3}
-        levelTitle="Spark"
-        currentXP={1840}
-        nextLevelXP={2500}
-      />
+      {loading ? (
+        <div style={{ display: 'flex', gap: 'var(--grid-gap)' }}>
+          <div style={{ flex: 1 }}><Card padding="12px"><Skeleton height={60} /></Card></div>
+          <div style={{ flex: 1 }}><Card padding="12px"><Skeleton height={60} /></Card></div>
+        </div>
+      ) : (
+        <StatCards
+          streak={streak}
+          level={levelInfo.levelNumber}
+          levelTitle={levelInfo.rankName}
+          currentXP={levelInfo.currentXP}
+          nextLevelXP={levelInfo.nextLevelXP}
+        />
+      )}
 
       <DailyBanner
         gameSlug="tango"
@@ -74,9 +83,9 @@ export function GamesTab() {
         onPlay={() => router.push('/daily')}
       />
 
-      {RECENT_GAMES.length > 0 && (
+      {recentGames.length > 0 && (
         <ContinueStrip
-          recentGames={RECENT_GAMES}
+          recentGames={recentGames}
           onSelect={(slug) => router.push(`/lobby/${slug}`)}
         />
       )}

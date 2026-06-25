@@ -45,6 +45,7 @@ function PlayContent() {
 
   const stage = parseInt(searchParams.get('stage') ?? '1')
   const timerEnabled = searchParams.get('timer') !== 'false'
+  const isDaily = searchParams.get('daily') === 'true'
   const gameId = (SLUG_MAP[slug] ?? slug) as GameId
   const gameName = GAME_NAMES[slug] ?? slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
   const difficulty = getDifficulty(stage)
@@ -69,7 +70,19 @@ function PlayContent() {
 
   function handleWin(result: WinResult) {
     playSuccess()
-    router.push(`/complete/${slug}/${stage}?xp=${xpRemaining}&time=${fmtTime(timerSeconds)}&hints=${result.hintsUsed}`)
+    if (isDaily) {
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const key = `me-daily-${today}`
+        const existing = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, { xpEarned: number }>
+        if (!existing[slug]) {
+          existing[slug] = { xpEarned: xpRemaining }
+          localStorage.setItem(key, JSON.stringify(existing))
+        }
+      } catch {}
+    }
+    const dailyParam = isDaily ? '&daily=true' : ''
+    router.push(`/complete/${slug}/${stage}?xp=${xpRemaining}&time=${fmtTime(timerSeconds)}&hints=${result.hintsUsed}${dailyParam}`)
   }
 
   function handleError() { playError() }
