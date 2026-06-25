@@ -22,23 +22,47 @@ export function PlayTopBar({ gameName, gameId, stage, xpRemaining, timerSeconds,
   const xpColor = xpRemaining > 700 ? 'var(--accent)' : xpRemaining > 300 ? 'var(--medium)' : 'var(--hard)'
   return (
     <div style={{ background: 'var(--surf)', borderBottom: '0.5px solid var(--border)', flexShrink: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 4px', gap: 8 }}>
-        <button onClick={onQuit} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--text)' }}>
+      {/* Row 1 */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 6px', gap: 8 }}>
+        <button
+          onClick={onQuit}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--text)' }}
+        >
           <Icon name="ChevronLeft" size={20} color="var(--text)" />
         </button>
-        <span style={{ flex: 1, textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>
+        <span style={{
+          flex: 1,
+          textAlign: 'center',
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 15,
+          color: 'var(--text)',
+        }}>
           {gameName} · Stage {stage}
         </span>
         <GameIcon game={gameId} size={20} />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px 10px' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 16, color: xpColor, flexShrink: 0 }}>
+      {/* Row 2 */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px 10px', gap: 10 }}>
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontWeight: 700,
+          fontSize: 18,
+          color: xpColor,
+          minWidth: 48,
+        }}>
           {xpRemaining}
         </span>
         <div style={{ flex: 1 }}>
           <Bar colorMode="xp" value={xpRemaining / 1000} height={6} />
         </div>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 13,
+          color: 'var(--muted)',
+          minWidth: 44,
+          textAlign: 'right',
+        }}>
           {fmtTime(timerSeconds)}
         </span>
       </div>
