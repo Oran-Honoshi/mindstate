@@ -55,7 +55,9 @@ export function generateMineBoard(
   const { rows, cols, mines } = SETTINGS[difficulty];
   const rng = mulberry32(seedToNumber(seed));
 
-  // Build list of all positions excluding safe zone (3x3 around first click)
+  // First-click guarantee: exclude the 3×3 zone around the first click from mine placement.
+  // useMinesweeperGame regenerates the board on the actual first click with the real (r,c),
+  // so safeR/safeC always match the cell the player clicked.
   const allPositions: [number, number][] = [];
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++) {

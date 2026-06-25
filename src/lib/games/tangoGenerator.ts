@@ -127,6 +127,37 @@ function generateConstraints(solution: Cell[][], size: number, rng: () => number
   }));
 }
 
+function countTangoSolutions(
+  puzzle: Cell[][],
+  size: number,
+  constraints: CellConstraint[],
+  maxCount = 2,
+  maxIter = 500000
+): number {
+  const board = puzzle.map(row => [...row]);
+  let count = 0;
+  let iter = 0;
+  function bt(pos: number): void {
+    if (count >= maxCount || iter++ > maxIter) return;
+    if (pos === size * size) { count++; return; }
+    const r = Math.floor(pos / size), c = pos % size;
+    if (board[r][c] !== null) { bt(pos + 1); return; }
+    for (const sym of ["S", "M"] as Cell[]) {
+      if (!canPlace(board, size, r, c, sym)) continue;
+      board[r][c] = sym;
+      const ok = constraints.every(({ row1, col1, row2, col2, type }) => {
+        const v1 = board[row1][col1], v2 = board[row2][col2];
+        if (v1 === null || v2 === null) return true;
+        return type === "same" ? v1 === v2 : v1 !== v2;
+      });
+      if (ok) bt(pos + 1);
+      board[r][c] = null;
+    }
+  }
+  bt(0);
+  return count;
+}
+
 function maskPuzzle(solution: Cell[][], size: number, rng: () => number, revealRatio: number): Cell[][] {
   const puzzle = solution.map(row => [...row]);
   const indices = Array.from({ length: size * size }, (_, i) => i);
@@ -160,10 +191,33 @@ export function generateTangoBoard(seed: string, difficulty: "easy" | "medium" |
     solve(solution, size, () => 0.3);
   }
 
+  const puzzle = maskPuzzle(solution, size, rng, revealRatio);
+  const baseConstraints = generateConstraints(solution, size, rng, constraintCount);
+
+  // Ensure unique solution — add constraints until the puzzle is uniquely solvable
+  const activeConstraints = [...baseConstraints];
+  const allPairs: Array<[number, number, number, number]> = [];
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+    if (c + 1 < size) allPairs.push([r, c, r, c + 1]);
+    if (r + 1 < size) allPairs.push([r, c, r + 1, c]);
+  }
+  const usedKeys = new Set(activeConstraints.map(ct => `${ct.row1},${ct.col1},${ct.row2},${ct.col2}`));
+  const unusedPairs = allPairs.filter(([r1, c1, r2, c2]) => !usedKeys.has(`${r1},${c1},${r2},${c2}`));
+  let pairIdx = 0;
+  let sols = countTangoSolutions(puzzle, size, activeConstraints);
+  while (sols > 1 && pairIdx < unusedPairs.length) {
+    const [r1, c1, r2, c2] = unusedPairs[pairIdx++];
+    activeConstraints.push({
+      row1: r1, col1: c1, row2: r2, col2: c2,
+      type: solution[r1][c1] === solution[r2][c2] ? "same" : "diff",
+    });
+    sols = countTangoSolutions(puzzle, size, activeConstraints);
+  }
+
   return {
     size, solution,
-    puzzle: maskPuzzle(solution, size, rng, revealRatio),
-    constraints: generateConstraints(solution, size, rng, constraintCount),
+    puzzle,
+    constraints: activeConstraints,
     seed, difficulty,
   };
 }

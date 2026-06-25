@@ -105,6 +105,16 @@ export function generateZipBoard(seed: string, difficulty: "easy" | "medium" | "
     }
   }
 
+  // Explicit completeness guarantee: path must visit every cell exactly once
+  if (path.length !== size * size) {
+    path = [];
+    for (let r = 0; r < size; r++) {
+      const cols = Array.from({ length: size }, (_, c) => c);
+      if (r % 2 === 1) cols.reverse();
+      cols.forEach(c => (path as [number, number][]).push([r, c]));
+    }
+  }
+
   // Pick evenly spaced waypoints along the path
   const waypointIndices = new Set<number>();
   waypointIndices.add(0); // always mark start

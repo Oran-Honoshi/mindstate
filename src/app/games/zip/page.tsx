@@ -83,6 +83,14 @@ function generateZipBoard(seed: string, difficulty: Difficulty): ZipBoard {
       for (const c of cols) path.push([r, c]);
     }
   }
+  // Explicit completeness guarantee: path must visit every cell exactly once
+  if (path.length !== size * size) {
+    path = [];
+    for (let r = 0; r < size; r++) {
+      const cols = r % 2 === 0 ? Array.from({ length: size }, (_, c) => c) : Array.from({ length: size }, (_, c) => size - 1 - c);
+      for (const c of cols) (path as Pos[]).push([r, c]);
+    }
+  }
   const numWaypoints = difficulty === "easy" ? 4 : difficulty === "medium" ? 5 : 6;
   const interval = Math.floor(path.length / (numWaypoints - 1));
   const waypointIndices = [0];

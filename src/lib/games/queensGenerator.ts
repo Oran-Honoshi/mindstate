@@ -127,9 +127,10 @@ const SIZES = { easy: 6, medium: 8, hard: 10 };
 export function generateQueensBoard(seed: string, difficulty: "easy"|"medium"|"hard"): QueensBoard {
   const size = SIZES[difficulty];
   const rng = mulberry32(seedToNumber(seed));
+  let fallback: number[][] | null = null;
 
   // Try many region configurations until we find one with exactly 1 solution
-  for (let attempt = 0; attempt < 200; attempt++) {
+  for (let attempt = 0; attempt < 500; attempt++) {
     const queens = placeQueensForRegions(size, rng);
     if (!queens) continue;
     const regions = generateRegions(size, queens, rng);
@@ -137,12 +138,15 @@ export function generateQueensBoard(seed: string, difficulty: "easy"|"medium"|"h
     if (solutions === 1) {
       return { size, regions, seed, difficulty };
     }
+    // Save first solvable board in case we can't find a unique one
+    if (solutions > 0 && !fallback) fallback = regions;
   }
 
-  // Fallback: return last generated board (shouldn't happen in practice)
-  const queens = placeQueensForRegions(size, rng) ?? Array.from({length:size},(_,i)=>[i,i] as [number,number]);
-  const regions = generateRegions(size, queens, rng);
-  return { size, regions, seed, difficulty };
+  // Use any solvable board rather than returning an unverified one
+  if (fallback) return { size, regions: fallback, seed, difficulty };
+  const rng2 = mulberry32(seedToNumber(seed) ^ 0xDEADBEEF);
+  const queens = placeQueensForRegions(size, rng2) ?? Array.from({length:size},(_,i)=>[i,i] as [number,number]);
+  return { size, regions: generateRegions(size, queens, rng2), seed, difficulty };
 }
 
 // Validate: check all queen constraints (used by game page)
