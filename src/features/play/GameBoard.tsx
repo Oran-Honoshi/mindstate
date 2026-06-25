@@ -4,6 +4,12 @@ import { TangoBoard } from './boards/TangoBoard'
 import { MemoryBoard } from './boards/MemoryBoard'
 import { QueensBoard } from './boards/QueensBoard'
 import { MinesweeperBoard } from './boards/MinesweeperBoard'
+import { SudokuBoard } from './boards/SudokuBoard'
+import { ZipBoard } from './boards/ZipBoard'
+import { BridgesBoard } from './boards/BridgesBoard'
+import { FlowBoard } from './boards/FlowBoard'
+import { TwentyFortyEightBoard } from './boards/TwentyFortyEightBoard'
+import { NonogramBoard } from './boards/NonogramBoard'
 
 export interface WinResult { hintsUsed: number; movesCount: number }
 export interface BoardRef { applyHint: () => void; check: () => void }
@@ -27,6 +33,12 @@ export function GameBoard({ slug, stage, difficulty, onWin, onError, onGameOver,
   if (slug === 'memory') return <MemoryBoard {...props} />
   if (slug === 'queens') return <QueensBoard {...props} />
   if (slug === 'minesweeper') return <MinesweeperBoard {...props} onGameOver={onGameOver} />
+  if (slug === 'sudoku') return <SudokuBoard {...props} />
+  if (slug === 'zip') return <ZipBoard {...props} />
+  if (slug === 'bridges') return <BridgesBoard {...props} />
+  if (slug === 'flow') return <FlowBoard {...props} />
+  if (slug === '2048-pro') return <TwentyFortyEightBoard {...props} />
+  if (slug === 'nonogram') return <NonogramBoard {...props} />
 
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
