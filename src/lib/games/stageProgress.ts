@@ -107,6 +107,34 @@ export function shouldShowGameCompleteModal(
 export { getCompletedStages as getAllCompletedStages };
 
 // ─── Supabase-aware remote API (used by game pages after auth) ────────────────
+
+/**
+ * Upserts stage_progress in Supabase so the next stage unlocks immediately
+ * across devices. Only advances — never writes a lower last_stage.
+ */
+export async function syncStageProgressToSupabase(
+  gameSlug: string,
+  stage: number,
+  userId: string
+): Promise<void> {
+  const nextStage = stage + 1;
+  const client = sb();
+  const { data } = await client
+    .from("stage_progress")
+    .select("last_stage")
+    .eq("user_id", userId)
+    .eq("game_id", gameSlug)
+    .maybeSingle();
+  const currentRemote = (data?.last_stage as number) ?? 0;
+  if (nextStage > currentRemote) {
+    await client
+      .from("stage_progress")
+      .upsert(
+        { user_id: userId, game_id: gameSlug, last_stage: nextStage },
+        { onConflict: "user_id,game_id" }
+      );
+  }
+}
 // These are thin wrappers that call the Supabase client when a user is logged in,
 // falling back to localStorage for guests.
 

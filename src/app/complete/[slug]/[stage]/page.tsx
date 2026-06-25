@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import { triggerConfetti } from '@/components/effects/Confetti'
-import { markStageCompleted } from '@/lib/games/stageProgress'
+import { markStageCompleted, syncStageProgressToSupabase } from '@/lib/games/stageProgress'
 import { saveStageResult } from '@/lib/persistence/saveStageResult'
 import { useAuthStore } from '@/store/authStore'
 import { SparkyImg } from '@/components/ui/SparkyImg'
@@ -59,7 +59,10 @@ function StageCompleteContent() {
 
   const gameId = (SLUG_MAP[slug] ?? slug) as GameId
   const gameName = GAMES.find(g => g.slug === slug)?.name ?? slug
-  const starsEarned = xp >= 800 ? 3 : xp >= 500 ? 2 : 1
+  const difficulty = stageN <= 30 ? 'easy' as const : stageN <= 70 ? 'medium' as const : 'hard' as const
+  const STAR_3 = { easy: 700, medium: 600, hard: 500 }[difficulty]
+  const STAR_2 = { easy: 400, medium: 300, hard: 200 }[difficulty]
+  const starsEarned = xp >= STAR_3 ? 3 : xp >= STAR_2 ? 2 : 1
   const sparkyExpr: SparkyExpr = xp >= 800 ? 'celebrate' : xp >= 500 ? 'happy' : xp >= 200 ? 'focused' : 'surprised'
   const { state: cel, dismiss } = useCompleteCelebrations(xp, stageN, slug, gameName)
 
@@ -67,7 +70,7 @@ function StageCompleteContent() {
     markStageCompleted(slug, stageN)
     if (isDaily) writeDailyCompletion(slug, xp)
     if (!user) return
-    const difficulty = stageN <= 30 ? 'easy' : stageN <= 70 ? 'medium' : 'hard'
+    syncStageProgressToSupabase(slug, stageN, user.id).catch(err => console.error('stageProgress sync failed:', err))
     saveStageResult({
       userId: user.id,
       gameSlug: slug,
