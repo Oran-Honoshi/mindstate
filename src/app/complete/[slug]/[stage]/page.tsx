@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import { triggerConfetti } from '@/components/effects/Confetti'
+import { markStageCompleted } from '@/lib/games/stageProgress'
 import { SparkyImg } from '@/components/ui/SparkyImg'
 import type { SparkyExpr } from '@/components/ui/SparkyImg'
 import { GameIcon } from '@/components/ui/GameIcon'
@@ -45,6 +46,10 @@ function StageCompleteContent() {
   const starsEarned = xp >= 800 ? 3 : xp >= 500 ? 2 : 1
   const sparkyExpr: SparkyExpr = xp >= 800 ? 'celebrate' : xp >= 500 ? 'happy' : xp >= 200 ? 'focused' : 'surprised'
   const { state: cel, dismiss } = useCompleteCelebrations(xp, stageN, slug, gameName)
+
+  useEffect(() => {
+    markStageCompleted(slug, stageN)
+  }, [slug, stageN])
 
   useEffect(() => {
     const t = setTimeout(triggerConfetti, 300)
