@@ -18,9 +18,10 @@ function formatCountdown(resetsAt: Date): string {
 }
 
 export function DailyHeader({ completedCount, resetsAt }: DailyHeaderProps) {
-  const [countdown, setCountdown] = useState(() => formatCountdown(resetsAt))
+  const [countdown, setCountdown] = useState('')
 
   useEffect(() => {
+    setCountdown(formatCountdown(resetsAt))
     const id = setInterval(() => {
       setCountdown(formatCountdown(resetsAt))
     }, 1000)

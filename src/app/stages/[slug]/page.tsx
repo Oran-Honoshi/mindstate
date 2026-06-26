@@ -57,7 +57,7 @@ export default function StagesPage() {
 
   async function handleStart(stage: number, timerEnabled: boolean) {
     if (!user) {
-      router.push('/login')
+      router.push('/auth/signin')
       return
     }
     const { allowed } = await checkAndDecrementToken(user.id)
