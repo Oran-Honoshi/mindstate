@@ -71,12 +71,12 @@ export function LandingNav() {
           </div>
 
           {/* Sign in */}
-          <a href="/auth/login" style={{
+          <a href="/auth/signin" style={{
             fontFamily: "var(--font-body)", fontSize: 14, color: "var(--muted)", textDecoration: "none",
           }}>Sign in</a>
 
           {/* CTA */}
-          <Btn variant="primary" size="sm" fullWidth={false} onClick={() => router.push("/auth/register")}>
+          <Btn variant="primary" size="sm" fullWidth={false} onClick={() => router.push("/auth/signup")}>
             Start Free
           </Btn>
         </div>

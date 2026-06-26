@@ -51,7 +51,7 @@ export function HeroSection() {
         {/* CTA group */}
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           <button
-            onClick={() => router.push("/auth/register")}
+            onClick={() => router.push("/auth/signup")}
             style={{
               fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16,
               padding: "15px 28px", borderRadius: "var(--r-btn)",
@@ -61,7 +61,7 @@ export function HeroSection() {
           >
             Start Free — No card needed
           </button>
-          <a href="/auth/login" style={{
+          <a href="/auth/signin" style={{
             fontFamily: "var(--font-body)", fontSize: 14, color: "var(--muted)",
             textDecoration: "none", alignSelf: "center",
           }}>Sign in</a>

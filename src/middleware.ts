@@ -40,6 +40,14 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p))
 
+  // Redirect legacy auth paths cached in old PWA installs
+  if (pathname === '/auth/login') {
+    return NextResponse.redirect(new URL('/auth/signin', req.url))
+  }
+  if (pathname === '/auth/register') {
+    return NextResponse.redirect(new URL('/auth/signup', req.url))
+  }
+
   const e2eBypass = process.env.NODE_ENV === 'development' && req.cookies.get('e2e-bypass')?.value === '1'
   if (isProtected && !session && !e2eBypass) {
     return NextResponse.redirect(new URL("/auth/signin", req.url))

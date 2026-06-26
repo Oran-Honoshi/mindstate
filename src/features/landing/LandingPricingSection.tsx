@@ -50,7 +50,7 @@ export function LandingPricingSection() {
         <div style={{ maxWidth: 420, margin: "24px auto 0", background: "var(--surf)", border: "0.5px solid var(--border)", borderRadius: "var(--r-card)", padding: 16, textAlign: "center" }}>
           <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, color: "var(--text)", marginBottom: 6 }}>Not ready? Play free.</div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "var(--muted)", marginBottom: 14 }}>5 games per day, all 24 games, no card required.</div>
-          <button onClick={() => router.push("/auth/register")} style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, color: "var(--accent)", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: "var(--r-btn)", padding: "10px 20px", cursor: "pointer" }}>
+          <button onClick={() => router.push("/auth/signup")} style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, color: "var(--accent)", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: "var(--r-btn)", padding: "10px 20px", cursor: "pointer" }}>
             Try for free
           </button>
         </div>

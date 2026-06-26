@@ -75,7 +75,7 @@ export function AccountSlide({ values, errors, onChange }: Props) {
 
       <p style={{ marginTop: 20, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>
         Already have an account?{' '}
-        <span onClick={() => router.push('/auth/login')} style={{ color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}>
+        <span onClick={() => router.push('/auth/signin')} style={{ color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}>
           Sign in
         </span>
       </p>
