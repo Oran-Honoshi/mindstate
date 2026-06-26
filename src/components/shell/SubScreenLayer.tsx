@@ -7,15 +7,18 @@ import { FamilyScreen } from "@/features/family/FamilyScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { PricingScreen } from "@/features/pricing/PricingScreen";
 import { InviteModal } from "@/components/modals/InviteModal";
-
-const INVITE_MEMBERS = [
-  { name: "Oran", initial: "O" },
-  { name: "Sara", initial: "S" },
-];
+import { useAuthStore } from "@/store/authStore";
 
 export function SubScreenLayer() {
   const { activeSub, closeSubScreen } = useSubScreen();
   const [inviteOpen, setInviteOpen] = useState(false);
+  const { user, profile } = useAuthStore();
+  const myName = profile?.username ?? user?.email?.split('@')[0] ?? 'You';
+  const myInitial = myName[0]?.toUpperCase() ?? 'Y';
+  const inviteMembers = [
+    { name: myName, initial: myInitial },
+    { name: "Sara", initial: "S" },
+  ];
 
   return (
     <>
@@ -40,10 +43,10 @@ export function SubScreenLayer() {
       <InviteModal
         isOpen={inviteOpen}
         onClose={() => setInviteOpen(false)}
-        inviteCode="ORAN-7F2K"
+        inviteCode="INVITE-CODE"
         memberCount={2}
         maxSeats={3}
-        members={INVITE_MEMBERS}
+        members={inviteMembers}
       />
     </>
   );

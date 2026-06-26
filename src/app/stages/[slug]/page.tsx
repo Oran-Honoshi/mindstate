@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, notFound } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
 import { Bar } from '@/components/ui/Bar'
 import { StagePath } from './StagePath'
@@ -22,6 +22,7 @@ const GAME_NAMES: Record<string, string> = {
   'word-climb':'Word Climb', pinpoint:'Pinpoint',
   'name-country':'Name the Country', 'name-city':'Name the City',
 }
+const VALID_GAME_SLUGS = new Set(Object.keys(GAME_NAMES))
 
 function getNextUnplayed(completedSet: Set<number>): number {
   for (let s = 1; s <= 100; s++) {
@@ -34,6 +35,9 @@ export default function StagesPage() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const { user } = useAuthStore()
+
+  if (!VALID_GAME_SLUGS.has(slug)) notFound()
+
   const gameName = GAME_NAMES[slug] ?? slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
 
   const [lastStage, setLastStage] = useState(1)

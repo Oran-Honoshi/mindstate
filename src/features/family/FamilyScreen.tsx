@@ -3,21 +3,15 @@ import { ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Micro } from "@/components/ui/Micro";
 import { Icon } from "@/components/ui/Icon";
+import { useAuthStore } from "@/store/authStore";
 
 interface FamilyScreenProps {
   onOpenInvite: () => void;
 }
 
-const MEMBERS = [
-  { name: "Oran", lvl: 7, xp: 3240, you: true, isAdmin: true, ring: "var(--accent)" },
+const MOCK_FAMILY = [
   { name: "Sara", lvl: 5, xp: 1840, you: false, isAdmin: false, ring: "var(--violet)" },
   { name: "Tom", lvl: 3, xp: 920, you: false, isAdmin: false, ring: "var(--gold)" },
-].sort((a, b) => b.xp - a.xp);
-
-const WINS = [
-  { icon: "Crown" as const, text: "Oran completed Tango Stage 34", time: "2h ago", color: "var(--gold)" },
-  { icon: "Trophy" as const, text: "Sara hit a 7-day streak", time: "Yesterday", color: "var(--violet)" },
-  { icon: "Flame" as const, text: "Tom completed Memory Stage 8", time: "2d ago", color: "var(--medium)" },
 ];
 
 const REMAINING_SEATS = 1;
@@ -32,6 +26,20 @@ function SecHead({ left, right }: { left: string; right?: string }) {
 }
 
 export function FamilyScreen({ onOpenInvite }: FamilyScreenProps) {
+  const { user, profile } = useAuthStore();
+  const myName = profile?.username ?? user?.email?.split('@')[0] ?? 'You';
+
+  const members = [
+    { name: myName, lvl: 7, xp: 3240, you: true, isAdmin: true, ring: "var(--accent)" },
+    ...MOCK_FAMILY,
+  ].sort((a, b) => b.xp - a.xp);
+
+  const wins = [
+    { icon: "Crown" as const, text: `${myName} completed Tango Stage 34`, time: "2h ago", color: "var(--gold)" },
+    { icon: "Trophy" as const, text: "Sara hit a 7-day streak", time: "Yesterday", color: "var(--violet)" },
+    { icon: "Flame" as const, text: "Tom completed Memory Stage 8", time: "2d ago", color: "var(--medium)" },
+  ];
+
   return (
     <div style={{ padding: "16px 18px 28px" }}>
       {/* Plan badge */}
@@ -60,7 +68,7 @@ export function FamilyScreen({ onOpenInvite }: FamilyScreenProps) {
       {/* Family leaderboard */}
       <SecHead left="Family Leaderboard" right="This Week" />
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {MEMBERS.map((m, i) => (
+        {members.map((m, i) => (
           <Card key={m.name} variant="default" padding="12px 14px" style={{
             display: "flex", alignItems: "center", gap: 12,
             ...(m.you ? { background: "color-mix(in srgb, var(--accent) 6%, transparent)", borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)" } : {}),
@@ -95,7 +103,7 @@ export function FamilyScreen({ onOpenInvite }: FamilyScreenProps) {
       {/* Recent wins */}
       <SecHead left="Recent Wins" />
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {WINS.map((w, i) => (
+        {wins.map((w, i) => (
           <Card key={i} variant="default" padding="12px" style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--surf2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Icon name={w.icon} size={16} color={w.color} strokeWidth={2} />

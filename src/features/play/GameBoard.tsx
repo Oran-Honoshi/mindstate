@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { TangoBoard } from './boards/TangoBoard'
 import { MemoryBoard } from './boards/MemoryBoard'
 import { QueensBoard } from './boards/QueensBoard'
@@ -24,27 +25,41 @@ interface GameBoardProps {
   boardRef?: React.MutableRefObject<BoardRef | null>
 }
 
+const BOARD_FALLBACK = (
+  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--muted)' }}>
+      Failed to load game board. Go back and try again.
+    </p>
+  </div>
+)
+
 export function GameBoard({ slug, stage, difficulty, onWin, onError, onGameOver, boardRef }: GameBoardProps) {
   const internalRef = React.useRef<BoardRef | null>(null)
   const ref = boardRef ?? internalRef
   const props = { stage, difficulty, boardRef: ref, onWin, onError }
 
-  if (slug === 'tango') return <TangoBoard {...props} />
-  if (slug === 'memory') return <MemoryBoard {...props} />
-  if (slug === 'queens') return <QueensBoard {...props} />
-  if (slug === 'minesweeper') return <MinesweeperBoard {...props} onGameOver={onGameOver} />
-  if (slug === 'sudoku') return <SudokuBoard {...props} />
-  if (slug === 'zip') return <ZipBoard {...props} />
-  if (slug === 'bridges') return <BridgesBoard {...props} />
-  if (slug === 'flow') return <FlowBoard {...props} />
-  if (slug === '2048-pro') return <TwentyFortyEightBoard {...props} />
-  if (slug === 'nonogram') return <NonogramBoard {...props} />
-
-  return (
+  let board: React.ReactElement
+  if (slug === 'tango') board = <TangoBoard {...props} />
+  else if (slug === 'memory') board = <MemoryBoard {...props} />
+  else if (slug === 'queens') board = <QueensBoard {...props} />
+  else if (slug === 'minesweeper') board = <MinesweeperBoard {...props} onGameOver={onGameOver} />
+  else if (slug === 'sudoku') board = <SudokuBoard {...props} />
+  else if (slug === 'zip') board = <ZipBoard {...props} />
+  else if (slug === 'bridges') board = <BridgesBoard {...props} />
+  else if (slug === 'flow') board = <FlowBoard {...props} />
+  else if (slug === '2048-pro') board = <TwentyFortyEightBoard {...props} />
+  else if (slug === 'nonogram') board = <NonogramBoard {...props} />
+  else board = (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--muted)' }}>
         {slug} · coming soon
       </p>
     </div>
+  )
+
+  return (
+    <ErrorBoundary game={slug} fallback={BOARD_FALLBACK}>
+      {board}
+    </ErrorBoundary>
   )
 }

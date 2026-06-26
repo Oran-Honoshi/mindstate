@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, Children, isValidElement } from "react";
 import { StatusBar } from "./StatusBar";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { TabShell } from "./TabShell";
@@ -14,6 +14,7 @@ import { CelebrationManager } from "@/components/celebrations/CelebrationManager
 import { useCelebrationStore } from "@/store/useCelebrationStore";
 import { SubScreenProvider } from "./SubScreenContext";
 import { SubScreenLayer } from "./SubScreenLayer";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 interface RootShellProps {
   children: ReactNode;
@@ -91,7 +92,9 @@ export function RootShell({
         userInitial={userInitial}
       />
       <TabShell activeTab={activeTab} onTabChange={setActiveTab}>
-        {children}
+        {Children.map(children, (child, i) =>
+          isValidElement(child) ? <ErrorBoundary key={i}>{child}</ErrorBoundary> : child
+        )}
       </TabShell>
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} fixed={false} />
 

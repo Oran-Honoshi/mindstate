@@ -2,7 +2,7 @@
 
 import React from "react";
 
-interface Props { children: React.ReactNode; game?: string; }
+interface Props { children: React.ReactNode; game?: string; fallback?: React.ReactNode; }
 interface State { hasError: boolean; error: string; stack: string; }
 
 export class ErrorBoundary extends React.Component<Props, State> {
@@ -17,6 +17,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
       return (
         <div style={{ minHeight:"100vh", background:"#0F0F14", display:"flex",
           flexDirection:"column", alignItems:"center", justifyContent:"center",

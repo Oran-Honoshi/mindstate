@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, notFound } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { GameId } from '@/components/ui/GameIcon'
@@ -42,9 +42,13 @@ const MOCK: Record<string, { stagesCompleted: number; level: number; bestXP: num
   memory: { stagesCompleted: 8,  level: 2, bestXP: 723 },
 }
 
+const VALID_GAME_SLUGS = new Set(Object.keys(GAME_NAMES))
+
 export default function LobbyPage() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
+
+  if (!VALID_GAME_SLUGS.has(slug)) notFound()
 
   const gameId = (SLUG_MAP[slug] ?? slug) as GameId
   const gameName = GAME_NAMES[slug] ?? slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')

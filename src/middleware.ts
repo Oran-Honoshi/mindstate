@@ -45,7 +45,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/auth/signin", req.url))
   }
 
-  if (session && (pathname === "/auth/signin" || pathname === "/auth/signup" || pathname === "/auth/login" || pathname === "/auth/register")) {
+  if (session && (pathname === "/" || pathname === "/auth/signin" || pathname === "/auth/signup" || pathname === "/auth/login" || pathname === "/auth/register")) {
     return NextResponse.redirect(new URL("/shell", req.url))
   }
 

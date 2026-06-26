@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState, useEffect, useRef } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useParams, useSearchParams, useRouter, notFound } from 'next/navigation'
 import { HintModal } from '@/components/modals/HintModal'
 import { QuitModal } from '@/components/modals/QuitModal'
 import { GameBoard } from '@/features/play/GameBoard'
@@ -38,10 +38,14 @@ function getDifficulty(stage: number): 'easy' | 'medium' | 'hard' {
 
 const HINT_COSTS = [50, 150, 400]
 
+const VALID_GAME_SLUGS = new Set(Object.keys(GAME_NAMES))
+
 function PlayContent() {
   const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  if (!VALID_GAME_SLUGS.has(slug)) notFound()
 
   const stage = parseInt(searchParams.get('stage') ?? '1')
   const timerEnabled = searchParams.get('timer') !== 'false'
